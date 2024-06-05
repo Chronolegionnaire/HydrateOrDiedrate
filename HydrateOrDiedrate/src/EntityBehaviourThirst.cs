@@ -34,8 +34,6 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             entity.WatchedAttributes.MarkPathDirty("currentThirst");
             entity.WatchedAttributes.MarkPathDirty("maxThirst");
-
-            entity.World.Api.Logger.Debug($"Thirst initialized: currentThirst={currentThirst}, maxThirst={maxThirst}");
         }
 
         public override void OnGameTick(float deltaTime)
@@ -50,7 +48,7 @@ namespace HydrateOrDiedrate.EntityBehavior
                 entity.ReceiveDamage(new DamageSource()
                 {
                     Source = EnumDamageSource.Internal,
-                    Type = EnumDamageType.Hunger // Using hunger as damage type for thirst
+                    Type = EnumDamageType.Hunger 
                 }, 1f);
             }
 
@@ -59,8 +57,6 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             entity.WatchedAttributes.MarkPathDirty("currentThirst");
             entity.WatchedAttributes.MarkPathDirty("maxThirst");
-
-            entity.World.Api.Logger.Debug($"Thirst updated: currentThirst={currentThirst}");
         }
 
         public override void OnEntityDeath(DamageSource damageSource)
@@ -68,8 +64,6 @@ namespace HydrateOrDiedrate.EntityBehavior
             currentThirst = 0.5f;
             entity.WatchedAttributes.SetFloat("currentThirst", currentThirst);
             entity.WatchedAttributes.MarkPathDirty("currentThirst");
-
-            entity.World.Api.Logger.Debug("Thirst reset on death.");
         }
 
         public override string PropertyName()

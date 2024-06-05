@@ -58,18 +58,10 @@ namespace HydrateOrDiedrate.Gui
                 var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
                 var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
 
-                if (maxThirst == 0)
-                {
-                    capi.Logger.Warning("Thirst value not found.");
-                    return;
-                }
-
                 var lineInterval = maxThirst * 0.07f;
 
                 _statbar.SetLineInterval(lineInterval);
                 _statbar.SetValues(currentThirst, 0.0f, maxThirst);
-
-                capi.Logger.Debug($"Thirst bar updated: currentThirst={currentThirst}, maxThirst={maxThirst}");
             }
             catch (Exception ex)
             {
