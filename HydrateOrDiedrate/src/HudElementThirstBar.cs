@@ -64,7 +64,7 @@ namespace HydrateOrDiedrate.Gui
                     return;
                 }
 
-                var lineInterval = maxThirst * 0.1f;
+                var lineInterval = maxThirst * 0.07f;
 
                 _statbar.SetLineInterval(lineInterval);
                 _statbar.SetValues(currentThirst, 0.0f, maxThirst);
@@ -100,7 +100,7 @@ namespace HydrateOrDiedrate.Gui
                 var alignmentOffsetX = isRight ? -2.0 : 1.0;
 
                 var thirstBarBounds = ElementStdBounds.Statbar(alignment, statsBarWidth)
-                    .WithFixedAlignmentOffset(alignmentOffsetX, -10)
+                    .WithFixedAlignmentOffset(alignmentOffsetX, -16)
                     .WithFixedHeight(10);
 
                 var thirstBarParentBounds = statsBarBounds.FlatCopy().FixedGrow(0.0, 20.0);

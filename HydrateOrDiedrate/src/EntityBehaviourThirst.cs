@@ -17,7 +17,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             set
             {
                 currentThirst = GameMath.Clamp(value, 0, maxThirst);
-                MarkDirty();
+                entity.WatchedAttributes.MarkPathDirty("currentThirst");
             }
         }
 
@@ -63,10 +63,13 @@ namespace HydrateOrDiedrate.EntityBehavior
             entity.World.Api.Logger.Debug($"Thirst updated: currentThirst={currentThirst}");
         }
 
-        private void MarkDirty()
+        public override void OnEntityDeath(DamageSource damageSource)
         {
+            currentThirst = 0.5f;
+            entity.WatchedAttributes.SetFloat("currentThirst", currentThirst);
             entity.WatchedAttributes.MarkPathDirty("currentThirst");
-            entity.WatchedAttributes.MarkPathDirty("maxThirst");
+
+            entity.World.Api.Logger.Debug("Thirst reset on death.");
         }
 
         public override string PropertyName()

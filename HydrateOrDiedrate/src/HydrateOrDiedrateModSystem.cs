@@ -8,7 +8,7 @@ namespace HydrateOrDiedrate
     public class HydrateOrDiedrateModSystem : ModSystem
     {
         private ICoreServerAPI _serverApi;
-        private float _maxThirst = 1f;
+        private float _maxThirst = 50f;
 
         public override void StartServerSide(ICoreServerAPI api)
         {
@@ -17,6 +17,7 @@ namespace HydrateOrDiedrate
 
             api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
             api.Event.RegisterGameTickListener(OnServerTick, 3000); // Every 3 seconds
+            api.Event.PlayerRespawn += OnPlayerRespawn;
         }
 
         public override void StartClientSide(ICoreClientAPI api)
@@ -34,7 +35,17 @@ namespace HydrateOrDiedrate
 
         private void OnPlayerNowPlaying(IServerPlayer byPlayer)
         {
-            byPlayer.Entity.WatchedAttributes.SetFloat("currentThirst", _maxThirst);
+            if (!byPlayer.Entity.WatchedAttributes.HasAttribute("currentThirst"))
+            {
+                byPlayer.Entity.WatchedAttributes.SetFloat("currentThirst", _maxThirst);
+            }
+
+            byPlayer.Entity.WatchedAttributes.SetFloat("maxThirst", _maxThirst);
+        }
+
+        private void OnPlayerRespawn(IServerPlayer byPlayer)
+        {
+            byPlayer.Entity.WatchedAttributes.SetFloat("currentThirst", 0.5f);
             byPlayer.Entity.WatchedAttributes.SetFloat("maxThirst", _maxThirst);
         }
 
