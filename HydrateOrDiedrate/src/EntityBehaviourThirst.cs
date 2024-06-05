@@ -2,6 +2,7 @@
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace HydrateOrDiedrate.EntityBehavior
 {
@@ -48,7 +49,7 @@ namespace HydrateOrDiedrate.EntityBehavior
                 entity.ReceiveDamage(new DamageSource()
                 {
                     Source = EnumDamageSource.Internal,
-                    Type = EnumDamageType.Hunger 
+                    Type = EnumDamageType.Hunger
                 }, 1f);
             }
 
@@ -59,16 +60,47 @@ namespace HydrateOrDiedrate.EntityBehavior
             entity.WatchedAttributes.MarkPathDirty("maxThirst");
         }
 
-        public override void OnEntityDeath(DamageSource damageSource)
-        {
-            currentThirst = 0.5f;
-            entity.WatchedAttributes.SetFloat("currentThirst", currentThirst);
-            entity.WatchedAttributes.MarkPathDirty("currentThirst");
-        }
-
         public override string PropertyName()
         {
             return "thirst";
+        }
+
+        public static void SetInitialThirst(IServerPlayer byPlayer, float maxThirst)
+        {
+            byPlayer.Entity.WatchedAttributes.SetFloat("currentThirst", maxThirst);
+            byPlayer.Entity.WatchedAttributes.SetFloat("maxThirst", maxThirst);
+        }
+
+        public static void ResetThirstOnRespawn(IServerPlayer byPlayer, float maxThirst)
+        {
+            byPlayer.Entity.WatchedAttributes.SetFloat("currentThirst", 0.5f);
+            byPlayer.Entity.WatchedAttributes.SetFloat("maxThirst", maxThirst);
+        }
+
+        public static void UpdateThirstOnServerTick(IServerPlayer player, float deltaTime, float maxThirst)
+        {
+            float currentThirst = player.Entity.WatchedAttributes.GetFloat("currentThirst", maxThirst);
+
+            currentThirst -= 0.05f * deltaTime; // Adjust thirst drain rate
+            currentThirst = GameMath.Clamp(currentThirst, 0f, maxThirst);
+
+            if (currentThirst <= 0)
+            {
+                player.Entity.Stats.Set("walkspeed", "global", 0.5f, true); // Slow player
+
+                player.Entity.ReceiveDamage(new DamageSource()
+                {
+                    Source = EnumDamageSource.Internal,
+                    Type = EnumDamageType.Hunger // Use hunger damage type
+                }, player.Entity.Stats.GetBlended("health") * 0.05f * deltaTime);
+            }
+            else
+            {
+                player.Entity.Stats.Set("walkspeed", "global", 1f, true); // Reset speed
+            }
+
+            player.Entity.WatchedAttributes.SetFloat("currentThirst", currentThirst);
+            player.Entity.Stats.Set("thirst", "", currentThirst, true); // Update thirst
         }
     }
 }

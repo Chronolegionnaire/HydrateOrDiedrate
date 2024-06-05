@@ -15,8 +15,6 @@ namespace HydrateOrDiedrate.Gui
         {
             try
             {
-                capi.Logger.Debug("HudElementThirstBar constructor called.");
-
                 ComposeGuis();
             }
             catch (Exception ex)
@@ -53,7 +51,11 @@ namespace HydrateOrDiedrate.Gui
         {
             try
             {
-                if (_statbar == null) return;
+                if (_statbar == null) 
+                {
+                    capi.Logger.Debug("HudElementThirstBar _statbar is null.");
+                    return;
+                }
 
                 var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
                 var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
@@ -74,6 +76,7 @@ namespace HydrateOrDiedrate.Gui
         {
             try
             {
+                capi.Logger.Debug("HudElementThirstBar ComposeGuis called.");
                 const float statsBarParentWidth = 850f;
                 const float statsBarWidth = statsBarParentWidth * 0.41f;
 
