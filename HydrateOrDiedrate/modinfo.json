@@ -1,0 +1,13 @@
+{
+    "type": "code",
+    "modid": "hydrateordiedrate",
+    "name": "Hydrate Or Diedrate",
+    "authors": [
+        "Chronolegionnaire"
+    ],
+    "description": "Adds a thirst mechanic to the game.",
+    "version": "1.0.0",
+    "dependencies": {
+        "game": "*"
+    }
+}

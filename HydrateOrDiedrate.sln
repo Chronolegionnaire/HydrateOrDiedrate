@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CakeBuild", "CakeBuild\CakeBuild.csproj", "{12BCA742-EB24-4FB8-ABB8-E208B2855B34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HydrateOrDiedrate", "HydrateOrDiedrate\HydrateOrDiedrate.csproj", "{7B8B6CDA-6372-41D9-A965-ED8194257F50}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{12BCA742-EB24-4FB8-ABB8-E208B2855B34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12BCA742-EB24-4FB8-ABB8-E208B2855B34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12BCA742-EB24-4FB8-ABB8-E208B2855B34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12BCA742-EB24-4FB8-ABB8-E208B2855B34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B8B6CDA-6372-41D9-A965-ED8194257F50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B8B6CDA-6372-41D9-A965-ED8194257F50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B8B6CDA-6372-41D9-A965-ED8194257F50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B8B6CDA-6372-41D9-A965-ED8194257F50}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
