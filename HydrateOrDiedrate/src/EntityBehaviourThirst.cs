@@ -18,7 +18,19 @@ namespace HydrateOrDiedrate.EntityBehavior
             set
             {
                 currentThirst = GameMath.Clamp(value, 0, maxThirst);
+                entity.WatchedAttributes.SetFloat("currentThirst", currentThirst);
                 entity.WatchedAttributes.MarkPathDirty("currentThirst");
+            }
+        }
+
+        public float MaxThirst
+        {
+            get => maxThirst;
+            set
+            {
+                maxThirst = value;
+                entity.WatchedAttributes.SetFloat("maxThirst", maxThirst);
+                entity.WatchedAttributes.MarkPathDirty("maxThirst");
             }
         }
 
@@ -30,6 +42,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         private void InitializeThirst()
         {
             currentThirst = entity.WatchedAttributes.GetFloat("currentThirst", maxThirst);
+            maxThirst = entity.WatchedAttributes.GetFloat("maxThirst", maxThirst);
             entity.WatchedAttributes.SetFloat("currentThirst", currentThirst);
             entity.WatchedAttributes.SetFloat("maxThirst", maxThirst);
 
@@ -58,6 +71,24 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             entity.WatchedAttributes.MarkPathDirty("currentThirst");
             entity.WatchedAttributes.MarkPathDirty("maxThirst");
+        }
+
+        public override void Initialize(EntityProperties properties, JsonObject attributes)
+        {
+            base.Initialize(properties, attributes);
+            InitializeThirst();
+        }
+
+        public override void OnEntityLoaded()
+        {
+            base.OnEntityLoaded();
+            InitializeThirst();
+        }
+
+        public override void OnEntitySpawn()
+        {
+            base.OnEntitySpawn();
+            InitializeThirst();
         }
 
         public override string PropertyName()
@@ -100,6 +131,9 @@ namespace HydrateOrDiedrate.EntityBehavior
             }
 
             player.Entity.WatchedAttributes.SetFloat("currentThirst", currentThirst);
+            player.Entity.WatchedAttributes.SetFloat("maxThirst", maxThirst);
+            player.Entity.WatchedAttributes.MarkPathDirty("currentThirst");
+            player.Entity.WatchedAttributes.MarkPathDirty("maxThirst");
             player.Entity.Stats.Set("thirst", "", currentThirst, true); // Update thirst
         }
     }

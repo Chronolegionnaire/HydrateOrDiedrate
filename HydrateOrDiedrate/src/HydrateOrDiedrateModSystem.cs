@@ -10,7 +10,6 @@ namespace HydrateOrDiedrate
     {
         private ICoreServerAPI _serverApi;
         private ICoreClientAPI _clientApi;
-        private float _maxThirst = 10f;
         private HudElementThirstBar _thirstHud;
 
         public override void StartServerSide(ICoreServerAPI api)
@@ -32,19 +31,22 @@ namespace HydrateOrDiedrate
 
         private void OnPlayerNowPlaying(IServerPlayer byPlayer)
         {
-            EntityBehaviorThirst.SetInitialThirst(byPlayer, _maxThirst);
+            if (!byPlayer.Entity.WatchedAttributes.HasAttribute("currentThirst"))
+            {
+                EntityBehaviorThirst.SetInitialThirst(byPlayer, 10f); // Default max thirst if not set
+            }
         }
 
         private void OnPlayerRespawn(IServerPlayer byPlayer)
         {
-            EntityBehaviorThirst.ResetThirstOnRespawn(byPlayer, _maxThirst);
+            EntityBehaviorThirst.ResetThirstOnRespawn(byPlayer, 10f); // Default max thirst if not set
         }
 
         private void OnServerTick(float dt)
         {
             foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
             {
-                EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, _maxThirst);
+                EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, 10f); // Default max thirst if not set
             }
         }
     }

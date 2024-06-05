@@ -1,7 +1,5 @@
 ﻿using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.MathTools;
-using System;
 
 namespace HydrateOrDiedrate.Gui
 {
@@ -13,15 +11,7 @@ namespace HydrateOrDiedrate.Gui
 
         public HudElementThirstBar(ICoreClientAPI capi) : base(capi)
         {
-            try
-            {
-                ComposeGuis();
-            }
-            catch (Exception ex)
-            {
-                capi.Logger.Error($"Error in HudElementThirstBar constructor: {ex.Message}");
-                throw;
-            }
+            ComposeGuis();
         }
 
         public void OnGameTick(float dt)
@@ -31,94 +21,65 @@ namespace HydrateOrDiedrate.Gui
 
         public void OnFlashStatbar(float dt)
         {
-            try
-            {
-                var thirstTree = capi.World.Player.Entity.WatchedAttributes.GetTreeAttribute("thirst");
+            var thirstTree = capi.World.Player.Entity.WatchedAttributes.GetTreeAttribute("thirst");
 
-                if (thirstTree != null && _statbar != null)
-                {
-                    _statbar.ShouldFlash = _statbar.GetValue() < 0.2f;
-                }
-            }
-            catch (Exception ex)
+            if (thirstTree != null && _statbar != null)
             {
-                capi.Logger.Error($"Error in OnFlashStatbar: {ex.Message}");
-                throw;
+                _statbar.ShouldFlash = _statbar.GetValue() < 0.2f;
             }
         }
 
         private void UpdateThirst()
         {
-            try
-            {
-                if (_statbar == null) 
-                {
-                    capi.Logger.Debug("HudElementThirstBar _statbar is null.");
-                    return;
-                }
+            if (_statbar == null) return;
 
-                var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
-                var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
+            var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
+            var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
 
-                var lineInterval = maxThirst * 0.07f;
+            var lineInterval = maxThirst * 0.07f;
 
-                _statbar.SetLineInterval(lineInterval);
-                _statbar.SetValues(currentThirst, 0.0f, maxThirst);
-            }
-            catch (Exception ex)
-            {
-                capi.Logger.Error($"Error in UpdateThirst: {ex.Message}");
-                throw;
-            }
+            _statbar.SetLineInterval(lineInterval);
+            _statbar.SetValues(currentThirst, 0.0f, maxThirst);
         }
 
         private void ComposeGuis()
         {
-            try
+            const float statsBarParentWidth = 850f;
+            const float statsBarWidth = statsBarParentWidth * 0.41f;
+
+            double[] thirstBarColor = { 0, 0.4, 0.5, 0.5 };
+
+            var statsBarBounds = new ElementBounds()
             {
-                capi.Logger.Debug("HudElementThirstBar ComposeGuis called.");
-                const float statsBarParentWidth = 850f;
-                const float statsBarWidth = statsBarParentWidth * 0.41f;
+                Alignment = EnumDialogArea.CenterBottom,
+                BothSizing = ElementSizing.Fixed,
+                fixedWidth = statsBarParentWidth,
+                fixedHeight = 100
+            }.WithFixedAlignmentOffset(0.0, 5.0);
 
-                double[] thirstBarColor = { 0, 0.4, 0.5, 0.5 };
+            var isRight = true;
+            var alignment = isRight ? EnumDialogArea.RightTop : EnumDialogArea.LeftTop;
+            var alignmentOffsetX = isRight ? -2.0 : 1.0;
 
-                var statsBarBounds = new ElementBounds()
-                {
-                    Alignment = EnumDialogArea.CenterBottom,
-                    BothSizing = ElementSizing.Fixed,
-                    fixedWidth = statsBarParentWidth,
-                    fixedHeight = 100
-                }.WithFixedAlignmentOffset(0.0, 5.0);
+            var thirstBarBounds = ElementStdBounds.Statbar(alignment, statsBarWidth)
+                .WithFixedAlignmentOffset(alignmentOffsetX, -16)
+                .WithFixedHeight(10);
 
-                var isRight = true;
-                var alignment = isRight ? EnumDialogArea.RightTop : EnumDialogArea.LeftTop;
-                var alignmentOffsetX = isRight ? -2.0 : 1.0;
+            var thirstBarParentBounds = statsBarBounds.FlatCopy().FixedGrow(0.0, 20.0);
 
-                var thirstBarBounds = ElementStdBounds.Statbar(alignment, statsBarWidth)
-                    .WithFixedAlignmentOffset(alignmentOffsetX, -16)
-                    .WithFixedHeight(10);
+            var composer = capi.Gui.CreateCompo("thirststatbar", thirstBarParentBounds);
 
-                var thirstBarParentBounds = statsBarBounds.FlatCopy().FixedGrow(0.0, 20.0);
+            _statbar = new GuiElementStatbar(composer.Api, thirstBarBounds, thirstBarColor, isRight, false);
 
-                var composer = capi.Gui.CreateCompo("thirststatbar", thirstBarParentBounds);
+            composer
+                .BeginChildElements(statsBarBounds)
+                .AddInteractiveElement(_statbar, "thirststatsbar")
+                .EndChildElements()
+                .Compose();
 
-                _statbar = new GuiElementStatbar(composer.Api, thirstBarBounds, thirstBarColor, isRight, false);
+            Composers["thirstbar"] = composer;
 
-                composer
-                    .BeginChildElements(statsBarBounds)
-                    .AddInteractiveElement(_statbar, "thirststatsbar")
-                    .EndChildElements()
-                    .Compose();
-
-                Composers["thirstbar"] = composer;
-
-                TryOpen();
-            }
-            catch (Exception ex)
-            {
-                capi.Logger.Error($"Error in ComposeGuis: {ex.Message}");
-                throw;
-            }
+            TryOpen();
         }
 
         public override void OnOwnPlayerDataReceived()
@@ -131,15 +92,7 @@ namespace HydrateOrDiedrate.Gui
         {
             if (capi.World.Player.WorldData.CurrentGameMode == EnumGameMode.Spectator) return;
 
-            try
-            {
-                base.OnRenderGUI(deltaTime);
-            }
-            catch (Exception ex)
-            {
-                capi.Logger.Error($"Error in OnRenderGUI: {ex.Message}");
-                throw;
-            }
+            base.OnRenderGUI(deltaTime);
         }
 
         public override bool TryClose() => false;
