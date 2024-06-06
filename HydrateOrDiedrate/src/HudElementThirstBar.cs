@@ -6,7 +6,6 @@ namespace HydrateOrDiedrate.Gui
     public class HudElementThirstBar : HudElement
     {
         private GuiElementStatbar _statbar;
-
         public override double InputOrder => 1.0;
 
         public HudElementThirstBar(ICoreClientAPI capi) : base(capi)

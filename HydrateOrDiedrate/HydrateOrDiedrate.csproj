@@ -59,7 +59,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="assets\hydrateordiedrate\config\" />
       <Folder Include="assets\hydrateordiedrate\hud\" />
       <Folder Include="assets\hydrateordiedrate\item\" />
       <Folder Include="assets\hydrateordiedrate\shapes\item\" />

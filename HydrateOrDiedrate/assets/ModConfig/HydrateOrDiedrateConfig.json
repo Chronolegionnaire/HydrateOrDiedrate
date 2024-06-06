@@ -1,0 +1,7 @@
+﻿{
+  "MaxThirst": 10.0,
+  "ThirstDamage": 1.0,
+  "MovementSpeedPenalty": 0.75,
+  "ThirstDecayRate": 0.01,
+  "SprintThirstMultiplier": 1.25
+}
