@@ -1,7 +1,6 @@
 ﻿using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
 using HydrateOrDiedrate.Configuration;
 
@@ -9,28 +8,27 @@ namespace HydrateOrDiedrate.EntityBehavior
 {
     public class EntityBehaviorThirst : Vintagestory.API.Common.Entities.EntityBehavior
     {
-        private float currentThirst;
-        private float customThirstRate;
-        private int customThirstTicks;
-        private Config config;
-
-        private bool penaltyApplied = false;
-        private float defaultWalkSpeed = -1f;
+        private float _currentThirst;
+        private float _customThirstRate;
+        private int _customThirstTicks;
+        private Config _config;
+        private float _currentPenaltyAmount = 0f;
 
         public float CurrentThirst
         {
-            get => currentThirst;
+            get => _currentThirst;
             set
             {
-                currentThirst = GameMath.Clamp(value, 0, config.MaxThirst);
-                entity.WatchedAttributes.SetFloat("currentThirst", currentThirst);
+                _currentThirst = GameMath.Clamp(value, 0, _config.MaxThirst);
+                entity.WatchedAttributes.SetFloat("currentThirst", _currentThirst);
                 entity.WatchedAttributes.MarkPathDirty("currentThirst");
             }
         }
 
         public EntityBehaviorThirst(Entity entity, Config config) : base(entity)
         {
-            this.config = config;
+            this._config = config;
+            LoadThirst();
         }
 
         public override void OnGameTick(float deltaTime)
@@ -44,18 +42,18 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         private void HandleThirstDecay(float deltaTime)
         {
-            float thirstDecayRate = config.ThirstDecayRate;
+            float thirstDecayRate = _config.ThirstDecayRate;
 
             var player = entity as EntityPlayer;
             if (player != null && player.Controls != null && player.Controls.Sprint)
             {
-                thirstDecayRate *= config.SprintThirstMultiplier;
+                thirstDecayRate *= _config.SprintThirstMultiplier;
             }
 
-            if (customThirstTicks > 0)
+            if (_customThirstTicks > 0)
             {
-                thirstDecayRate = customThirstRate;
-                customThirstTicks--;
+                thirstDecayRate = _customThirstRate;
+                _customThirstTicks--;
             }
 
             CurrentThirst -= thirstDecayRate * deltaTime;
@@ -66,12 +64,12 @@ namespace HydrateOrDiedrate.EntityBehavior
             if (CurrentThirst <= 0)
             {
                 ApplyDamage();
-                ApplyMovementSpeedPenalty(config.MovementSpeedPenalty);
+                ApplyMovementSpeedPenalty(_config.MaxMovementSpeedPenalty);
             }
-            else if (CurrentThirst < config.SprintMovementSpeedPenaltyThreshold)
+            else if (CurrentThirst < _config.MovementSpeedPenaltyThreshold)
             {
-                float penaltyMultiplier = 1f - (config.MovementSpeedPenalty * (config.SprintMovementSpeedPenaltyThreshold - CurrentThirst) / config.SprintMovementSpeedPenaltyThreshold);
-                ApplyMovementSpeedPenalty(penaltyMultiplier);
+                float penaltyAmount = _config.MaxMovementSpeedPenalty * (_config.MovementSpeedPenaltyThreshold - CurrentThirst) / _config.MovementSpeedPenaltyThreshold;
+                ApplyMovementSpeedPenalty(penaltyAmount);
             }
             else
             {
@@ -81,22 +79,26 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public void SetInitialThirst()
         {
-            CurrentThirst = config.MaxThirst;
+            CurrentThirst = _config.MaxThirst;
 
             entity.WatchedAttributes.SetFloat("currentThirst", CurrentThirst);
-            entity.WatchedAttributes.SetFloat("maxThirst", config.MaxThirst);
+            entity.WatchedAttributes.SetFloat("maxThirst", _config.MaxThirst);
             entity.WatchedAttributes.MarkPathDirty("currentThirst");
             entity.WatchedAttributes.MarkPathDirty("maxThirst");
+
+            RemoveMovementSpeedPenalty(); // Ensure speed is reset on initialization
         }
 
         public void ResetThirstOnRespawn(Entity entity)
         {
-            CurrentThirst = 0.5f * config.MaxThirst;
+            CurrentThirst = 0.5f * _config.MaxThirst;
 
             entity.WatchedAttributes.SetFloat("currentThirst", CurrentThirst);
-            entity.WatchedAttributes.SetFloat("maxThirst", config.MaxThirst);
+            entity.WatchedAttributes.SetFloat("maxThirst", _config.MaxThirst);
             entity.WatchedAttributes.MarkPathDirty("currentThirst");
             entity.WatchedAttributes.MarkPathDirty("maxThirst");
+
+            RemoveMovementSpeedPenalty(); // Ensure speed is reset on respawn
         }
 
         private void ApplyDamage()
@@ -105,27 +107,30 @@ namespace HydrateOrDiedrate.EntityBehavior
             {
                 Source = EnumDamageSource.Internal,
                 Type = EnumDamageType.Hunger
-            }, config.ThirstDamage);
+            }, _config.ThirstDamage);
         }
 
-        private void ApplyMovementSpeedPenalty(float penaltyMultiplier)
+        private void ApplyMovementSpeedPenalty(float penaltyAmount)
         {
-            if (defaultWalkSpeed < 0)
+            if (_currentPenaltyAmount != penaltyAmount)
             {
-                defaultWalkSpeed = entity.Stats.GetBlended("walkspeed");
+                _currentPenaltyAmount = penaltyAmount;
+                UpdateWalkSpeed();
             }
-
-            entity.Stats.Set("walkspeed", "global", defaultWalkSpeed * penaltyMultiplier, true);
-            penaltyApplied = true;
         }
 
         private void RemoveMovementSpeedPenalty()
         {
-            if (penaltyApplied)
+            if (_currentPenaltyAmount != 0f)
             {
-                entity.Stats.Set("walkspeed", "global", defaultWalkSpeed, true);
-                penaltyApplied = false;
+                _currentPenaltyAmount = 0f;
+                UpdateWalkSpeed();
             }
+        }
+
+        private void UpdateWalkSpeed()
+        {
+            entity.Stats.Set("walkspeed", "thirstPenalty", -_currentPenaltyAmount, true); // Apply the penalty as a blended stat part
         }
 
         public void UpdateThirstAttributes()
@@ -136,8 +141,13 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public void ApplyCustomThirstRate(float rate, int ticks)
         {
-            customThirstRate = rate;
-            customThirstTicks = ticks;
+            _customThirstRate = rate;
+            _customThirstTicks = ticks;
+        }
+
+        public void LoadThirst()
+        {
+            _currentThirst = entity.WatchedAttributes.GetFloat("currentThirst", _config.MaxThirst);
         }
 
         public static void UpdateThirstOnServerTick(IServerPlayer player, float deltaTime, Config config)
@@ -147,7 +157,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             {
                 thirstBehavior.HandleThirstDecay(deltaTime);
                 thirstBehavior.ApplyThirstEffects();
-                thirstBehavior.UpdateThirstAttributes(); 
+                thirstBehavior.UpdateThirstAttributes();
             }
         }
 
