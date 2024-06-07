@@ -3,8 +3,6 @@ using Vintagestory.API.Server;
 using HydrateOrDiedrate.EntityBehavior;
 using HydrateOrDiedrate.Gui;
 using Vintagestory.API.Client;
-using Vintagestory.API.Config;
-using Vintagestory.API.Util;
 using HydrateOrDiedrate.Configuration;
 
 namespace HydrateOrDiedrate
@@ -49,6 +47,7 @@ namespace HydrateOrDiedrate
         {
             _serverApi = api;
 
+            api.Event.PlayerJoin += OnPlayerJoin;
             api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
             api.Event.PlayerRespawn += OnPlayerRespawn;
             api.Event.RegisterGameTickListener(OnServerTick, 1000);
@@ -75,6 +74,23 @@ namespace HydrateOrDiedrate
                 .HandleWith(OnSetThirstCommand);
         }
 
+        private void OnPlayerJoin(IServerPlayer byPlayer)
+        {
+            var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
+            if (thirstBehavior == null)
+            {
+                thirstBehavior = new EntityBehaviorThirst(byPlayer.Entity, LoadedConfig);
+                byPlayer.Entity.AddBehavior(thirstBehavior);
+            }
+
+            if (byPlayer.WorldData.CurrentGameMode == EnumGameMode.Creative) return;
+
+            if (!byPlayer.Entity.WatchedAttributes.HasAttribute("currentThirst"))
+            {
+                thirstBehavior.SetInitialThirst(); // Initialize thirst for new players
+            }
+        }
+
         private void OnPlayerNowPlaying(IServerPlayer byPlayer)
         {
             var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
@@ -84,7 +100,7 @@ namespace HydrateOrDiedrate
                 byPlayer.Entity.AddBehavior(thirstBehavior);
             }
 
-            thirstBehavior.SetInitialThirst();
+            thirstBehavior.LoadThirst(); // Load the saved thirst value for returning players
         }
 
         private void OnPlayerRespawn(IServerPlayer byPlayer)
