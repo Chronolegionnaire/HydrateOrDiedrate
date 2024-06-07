@@ -1,9 +1,0 @@
-﻿{
-  "config": {
-    "maxThirst": 10.0,
-    "thirstDamage": 1.0,
-    "movementSpeedPenalty": 0.75,
-    "thirstDecayRate": 1,
-    "sprintThirstMultiplier": 1.25
-  }
-}

@@ -1,78 +1,79 @@
 ﻿{
   "version": 1,
-  "patches": {
-    "float": {
-      "hydrateordiedrate:modsystem.json": {
-        "config/maxThirst": "MAX_THIRST",
-        "config/thirstDamage": "THIRST_DAMAGE",
-        "config/movementSpeedPenalty": "MOVEMENT_SPEED_PENALTY",
-        "config/thirstDecayRate": "THIRST_DECAY_RATE",
-        "config/sprintThirstMultiplier": "SPRINT_THIRST_MULTIPLIER"
-      }
-    }
-  },
   "settings": {
     "float": {
-      "MAX_THIRST": {
-        "name": "max-thirst",
-        "ingui": "hydrateordiedrate:setting-max-thirst",
-        "weight": 1.0,
-        "comment": "Maximum thirst value.",
-        "default": 10.0,
-        "range": {
-          "min": 1,
-          "max": 100,
-          "step": 1
-        }
-      },
-      "THIRST_DAMAGE": {
-        "name": "thirst-damage",
-        "ingui": "hydrateordiedrate:setting-thirst-damage",
-        "weight": 2.0,
-        "comment": "Damage taken when thirst reaches zero.",
-        "default": 1.0,
-        "range": {
-          "min": 0.1,
-          "max": 10.0,
-          "step": 0.1
-        }
-      },
-      "MOVEMENT_SPEED_PENALTY": {
-        "name": "movement-speed-penalty",
-        "ingui": "hydrateordiedrate:setting-movement-speed-penalty",
-        "weight": 3.0,
-        "comment": "Movement speed penalty when thirst is zero.",
-        "default": 0.75,
-        "range": {
-          "min": 0.1,
-          "max": 1.0,
-          "step": 0.01
-        }
-      },
       "THIRST_DECAY_RATE": {
-        "name": "thirst-decay-rate",
+        "name": "ThirstDecayRate",
         "ingui": "hydrateordiedrate:setting-thirst-decay-rate",
-        "weight": 4.0,
-        "comment": "Rate at which thirst decays.",
+        "weight": 1.0,
+        "comment": "Rate at which thirst drains over time.",
         "default": 0.01,
         "range": {
           "min": 0.001,
-          "max": 0.1,
-          "step": 0.001
+          "max": 0.1
+        }
+      },
+      "MAX_THIRST": {
+        "name": "MaxThirst",
+        "ingui": "hydrateordiedrate:setting-max-thirst",
+        "weight": 1.1,
+        "comment": "Maximum thirst value.",
+        "default": 10.0,
+        "range": {
+          "min": 1.0,
+          "max": 20.0
         }
       },
       "SPRINT_THIRST_MULTIPLIER": {
-        "name": "sprint-thirst-multiplier",
+        "name": "SprintThirstMultiplier",
         "ingui": "hydrateordiedrate:setting-sprint-thirst-multiplier",
-        "weight": 5.0,
-        "comment": "Multiplier for thirst decay when sprinting.",
+        "weight": 1.2,
+        "comment": "Multiplier for thirst drain rate while sprinting.",
         "default": 1.25,
         "range": {
           "min": 1.0,
-          "max": 5.0,
-          "step": 0.1
+          "max": 5.0
+        }
+      },
+      "THIRST_DAMAGE": {
+        "name": "ThirstDamage",
+        "ingui": "hydrateordiedrate:setting-thirst-damage",
+        "weight": 1.3,
+        "comment": "Damage dealt when thirst reaches zero.",
+        "default": 1.0,
+        "range": {
+          "min": 0.1,
+          "max": 10.0
+        }
+      },
+      "MOVEMENT_SPEED_PENALTY": {
+        "name": "MovementSpeedPenalty",
+        "ingui": "hydrateordiedrate:setting-movement-speed-penalty",
+        "weight": 1.4,
+        "comment": "Movement speed penalty at low thirst.",
+        "default": 0.75,
+        "range": {
+          "min": 0.1,
+          "max": 1.0
+        }
+      },
+      "SPRINT_MOVEMENT_SPEED_PENALTY_THRESHOLD": {
+        "name": "SprintMovementSpeedPenaltyThreshold",
+        "ingui": "hydrateordiedrate:setting-sprint-movement-speed-penalty-threshold",
+        "weight": 1.5,
+        "comment": "Thirst level at which sprint movement speed penalty starts.",
+        "default": 4.0,
+        "range": {
+          "min": 0.0,
+          "max": 10.0
         }
       }
     }
-  }
+  },
+  "formatting": [
+    {
+      "type": "separator",
+      "weight": 1.0
+    }
+  ]
 }

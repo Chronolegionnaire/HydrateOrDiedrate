@@ -1,10 +1,11 @@
-﻿using System.IO;
-using Vintagestory.API.Common;
+﻿using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using HydrateOrDiedrate.EntityBehavior;
 using HydrateOrDiedrate.Gui;
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
+using Vintagestory.API.Util;
+using HydrateOrDiedrate.Configuration;
 
 namespace HydrateOrDiedrate
 {
@@ -13,16 +14,51 @@ namespace HydrateOrDiedrate
         private ICoreServerAPI _serverApi;
         private ICoreClientAPI _clientApi;
         private HudElementThirstBar _thirstHud;
-        private ThirstConfig _config;
+        public static Config LoadedConfig;
+
+        public override void StartPre(ICoreAPI api)
+        {
+            base.StartPre(api);
+            try
+            {
+                Config loaded;
+                if ((loaded = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json")) == null)
+                {
+                    LoadedConfig = new Config(api);
+                    ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
+                }
+                else
+                {
+                    LoadedConfig = loaded;
+                }
+            }
+            catch
+            {
+                LoadedConfig = new Config(api);
+                ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
+            }
+        }
+
+        public override void Start(ICoreAPI api)
+        {
+            base.Start(api);
+            LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+        }
 
         public override void StartServerSide(ICoreServerAPI api)
         {
             _serverApi = api;
-            LoadConfig(api);
 
             api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
-            api.Event.PlayerRespawn += OnPlayerRespawn; // Re-added event
+            api.Event.PlayerRespawn += OnPlayerRespawn;
             api.Event.RegisterGameTickListener(OnServerTick, 1000);
+
+            api.ChatCommands
+                .Create("setthirst")
+                .WithDescription("Sets the player's thirst level.")
+                .RequiresPrivilege("controlserver")
+                .WithArgs(api.ChatCommands.Parsers.Float("thirstValue"))
+                .HandleWith(OnSetThirstCommand);
         }
 
         public override void StartClientSide(ICoreClientAPI api)
@@ -32,28 +68,11 @@ namespace HydrateOrDiedrate
             api.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
             api.Event.RegisterGameTickListener(_thirstHud.OnFlashStatbar, 1000);
             api.Gui.RegisterDialog(_thirstHud);
-        }
 
-        private void LoadConfig(ICoreAPI api)
-        {
-            string configDirectory = Path.Combine(GamePaths.Config, "hydrateordiedrate");
-            string configPath = Path.Combine(configDirectory, "config.json");
-
-            if (!Directory.Exists(configDirectory))
-            {
-                Directory.CreateDirectory(configDirectory);
-            }
-
-            if (!File.Exists(configPath))
-            {
-                _config = new ThirstConfig();
-                api.StoreModConfig(_config, configPath);
-            }
-            else
-            {
-                _config = api.LoadModConfig<ThirstConfig>(configPath) ?? new ThirstConfig();
-                api.StoreModConfig(_config, configPath);
-            }
+            api.ChatCommands
+                .Create("setthirst")
+                .WithDescription("Sets the player's thirst level.")
+                .HandleWith(OnSetThirstCommand);
         }
 
         private void OnPlayerNowPlaying(IServerPlayer byPlayer)
@@ -61,11 +80,11 @@ namespace HydrateOrDiedrate
             var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior == null)
             {
-                thirstBehavior = new EntityBehaviorThirst(byPlayer.Entity);
+                thirstBehavior = new EntityBehaviorThirst(byPlayer.Entity, LoadedConfig);
                 byPlayer.Entity.AddBehavior(thirstBehavior);
             }
 
-            thirstBehavior.LoadThirst(); // Ensure thirst values are loaded on login
+            thirstBehavior.SetInitialThirst();
         }
 
         private void OnPlayerRespawn(IServerPlayer byPlayer)
@@ -73,7 +92,7 @@ namespace HydrateOrDiedrate
             var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior != null)
             {
-                thirstBehavior.ResetThirstOnRespawn(_config);
+                thirstBehavior.ResetThirstOnRespawn(byPlayer.Entity);
             }
         }
 
@@ -81,22 +100,32 @@ namespace HydrateOrDiedrate
         {
             foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
             {
-                EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, _config);
+                EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, LoadedConfig);
             }
         }
 
-        public ThirstConfig GetConfig()
+        private TextCommandResult OnSetThirstCommand(TextCommandCallingArgs args)
         {
-            return _config;
-        }
-    }
+            var player = args.Caller.Player as IServerPlayer;
+            if (player == null) return TextCommandResult.Error("Player not found.");
 
-    public class ThirstConfig
-    {
-        public float MaxThirst { get; set; } = 10f;
-        public float ThirstDamage { get; set; } = 1f;
-        public float MovementSpeedPenalty { get; set; } = 0.75f;
-        public float ThirstDecayRate { get; set; } = 0.01f;
-        public float SprintThirstMultiplier { get; set; } = 1.25f;
+            var entity = player.Entity;
+            if (entity == null) return TextCommandResult.Error("Player entity not found.");
+
+            var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
+            if (thirstBehavior == null) return TextCommandResult.Error("Thirst behavior not found.");
+
+            if (args.ArgCount < 1) return TextCommandResult.Error("Missing thirst value.");
+
+            if (!float.TryParse(args[0].ToString(), out float thirstValue))
+            {
+                return TextCommandResult.Error("Invalid thirst value. Please enter a valid number.");
+            }
+
+            thirstBehavior.CurrentThirst = thirstValue;
+            thirstBehavior.UpdateThirstAttributes();
+
+            return TextCommandResult.Success($"Thirst set to {thirstValue}.");
+        }
     }
 }
