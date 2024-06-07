@@ -58,10 +58,4 @@
         </Content>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="assets\hydrateordiedrate\hud\" />
-      <Folder Include="assets\hydrateordiedrate\item\" />
-      <Folder Include="assets\hydrateordiedrate\shapes\item\" />
-    </ItemGroup>
-
 </Project>
