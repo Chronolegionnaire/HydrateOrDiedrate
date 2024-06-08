@@ -35,6 +35,12 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             if (!entity.Alive) return;
 
+            var player = entity as EntityPlayer;
+            if (player?.Player?.WorldData?.CurrentGameMode == EnumGameMode.Creative || player?.Player?.WorldData?.CurrentGameMode == EnumGameMode.Spectator)
+            {
+                return; // Don't update thirst if the player is in Creative or Spectator mode
+            }
+
             HandleThirstDecay(deltaTime);
             ApplyThirstEffects();
             UpdateThirstAttributes();
@@ -155,9 +161,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior != null)
             {
-                thirstBehavior.HandleThirstDecay(deltaTime);
-                thirstBehavior.ApplyThirstEffects();
-                thirstBehavior.UpdateThirstAttributes();
+                thirstBehavior.OnGameTick(deltaTime);
             }
         }
 

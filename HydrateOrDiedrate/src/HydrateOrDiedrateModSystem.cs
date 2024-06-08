@@ -1,9 +1,11 @@
-﻿using Vintagestory.API.Common;
+﻿using Vintagestory.API.Client;
+using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
+using Vintagestory.API.MathTools;
+using HydrateOrDiedrate.Configuration;
 using HydrateOrDiedrate.EntityBehavior;
 using HydrateOrDiedrate.Gui;
-using Vintagestory.API.Client;
-using HydrateOrDiedrate.Configuration;
 
 namespace HydrateOrDiedrate
 {
@@ -13,6 +15,10 @@ namespace HydrateOrDiedrate
         private ICoreClientAPI _clientApi;
         private HudElementThirstBar _thirstHud;
         public static Config LoadedConfig;
+        private WaterInteractionHandler _waterInteractionHandler;
+
+        private bool isShiftHeld;
+        private bool shiftActionFired;
 
         public override void StartPre(ICoreAPI api)
         {
@@ -41,6 +47,7 @@ namespace HydrateOrDiedrate
         {
             base.Start(api);
             LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+            _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
         }
 
         public override void StartServerSide(ICoreServerAPI api)
@@ -58,6 +65,8 @@ namespace HydrateOrDiedrate
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.Float("thirstValue"))
                 .HandleWith(OnSetThirstCommand);
+
+            api.Event.RegisterGameTickListener(CheckPlayerInteraction, 100);
         }
 
         public override void StartClientSide(ICoreClientAPI api)
@@ -67,11 +76,6 @@ namespace HydrateOrDiedrate
             api.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
             api.Event.RegisterGameTickListener(_thirstHud.OnFlashStatbar, 1000);
             api.Gui.RegisterDialog(_thirstHud);
-
-            api.ChatCommands
-                .Create("setthirst")
-                .WithDescription("Sets the player's thirst level.")
-                .HandleWith(OnSetThirstCommand);
         }
 
         private void OnPlayerJoin(IServerPlayer byPlayer)
@@ -82,8 +86,6 @@ namespace HydrateOrDiedrate
                 thirstBehavior = new EntityBehaviorThirst(byPlayer.Entity, LoadedConfig);
                 byPlayer.Entity.AddBehavior(thirstBehavior);
             }
-
-            if (byPlayer.WorldData.CurrentGameMode == EnumGameMode.Creative) return;
 
             if (!byPlayer.Entity.WatchedAttributes.HasAttribute("currentThirst"))
             {
@@ -143,5 +145,49 @@ namespace HydrateOrDiedrate
 
             return TextCommandResult.Success($"Thirst set to {thirstValue}.");
         }
+
+        private void CheckPlayerInteraction(float dt)
+        {
+            foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
+            {
+                if (player.Entity.Controls.Sneak && player.Entity.Controls.RightMouseDown)
+                {
+                    if (!isShiftHeld)
+                    {
+                        isShiftHeld = true;
+                        HandleWaterInteraction(player);
+                    }
+                }
+                else
+                {
+                    isShiftHeld = false;
+                }
+            }
+        }
+
+        private void HandleWaterInteraction(IServerPlayer player)
+        {
+            var blockSel = player.CurrentBlockSelection;
+            if (blockSel != null)
+            {
+                var blockPosAbove = blockSel.Position.UpCopy();
+                var block = player.Entity.World.BlockAccessor.GetBlock(blockPosAbove, BlockLayersAccess.Fluid);
+
+                if (block.LiquidCode == "water" || block.LiquidCode == "saltwater" || block.LiquidCode == "boilingwater")
+                {
+                    _serverApi.Logger.Debug("Liquid block detected at {0}.", blockPosAbove);
+                    _waterInteractionHandler.HandleWaterInteraction(player, block);
+                }
+                else
+                {
+                    _serverApi.Logger.Debug("No liquid block detected at position {0}.", blockPosAbove);
+                }
+            }
+            else
+            {
+                _serverApi.Logger.Debug("No highlighted block found.");
+            }
+        }
+
     }
 }

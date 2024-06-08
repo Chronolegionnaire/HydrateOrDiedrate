@@ -11,6 +11,13 @@ namespace HydrateOrDiedrate.Configuration
         public float SprintThirstMultiplier { get; set; } = 1.25f;
         public float MovementSpeedPenaltyThreshold { get; set; } = 4.0f;
 
+        // New config options
+        public float RegularWaterThirstDecrease { get; set; } = 10.0f;
+        public float SaltWaterThirstIncrease { get; set; } = 5.0f;
+        public float BoilingWaterDamage { get; set; } = 5.0f;
+        public bool EnableSaltWaterThirstIncrease { get; set; } = true;
+        public bool EnableBoilingWaterDamage { get; set; } = true;
+
         public Config() { }
 
         public Config(ICoreAPI api, Config previousConfig = null)
@@ -21,6 +28,11 @@ namespace HydrateOrDiedrate.Configuration
             ThirstDecayRate = previousConfig?.ThirstDecayRate ?? 0.01f;
             SprintThirstMultiplier = previousConfig?.SprintThirstMultiplier ?? 1.25f;
             MovementSpeedPenaltyThreshold = previousConfig?.MovementSpeedPenaltyThreshold ?? 4.0f;
+            RegularWaterThirstDecrease = previousConfig?.RegularWaterThirstDecrease ?? 10.0f;
+            SaltWaterThirstIncrease = previousConfig?.SaltWaterThirstIncrease ?? 5.0f;
+            BoilingWaterDamage = previousConfig?.BoilingWaterDamage ?? 5.0f;
+            EnableSaltWaterThirstIncrease = previousConfig?.EnableSaltWaterThirstIncrease ?? true;
+            EnableBoilingWaterDamage = previousConfig?.EnableBoilingWaterDamage ?? true;
         }
     }
 }
