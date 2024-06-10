@@ -96,7 +96,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             entity.ReceiveDamage(new DamageSource
             {
                 Source = EnumDamageSource.Internal,
-                Type = EnumDamageType.Hunger
+                Type = EnumDamageType.Injury
             }, _config.ThirstDamage);
         }
 
