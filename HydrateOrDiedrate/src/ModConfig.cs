@@ -8,57 +8,40 @@ namespace HydrateOrDiedrate.Configuration
     {
         public static T ReadConfig<T>(ICoreAPI api, string jsonConfig) where T : class, IModConfig
         {
-            string configPath = Path.Combine(api.GetOrCreateDataPath("ModConfig"), "hydrateordiedrate");
-            EnsureDirectoryExists(configPath);
+            string configPath = GetConfigPath(api);
             string configFilePath = Path.Combine(configPath, jsonConfig);
 
-            T config;
-
-            try
-            {
-                config = LoadConfig<T>(api, configFilePath);
-
-                if (config == null)
-                {
-                    GenerateConfig<T>(api, configFilePath);
-                    config = LoadConfig<T>(api, configFilePath);
-                }
-                else
-                {
-                    GenerateConfig(api, configFilePath, config);
-                }
-            }
-            catch
-            {
-                GenerateConfig<T>(api, configFilePath);
-                config = LoadConfig<T>(api, configFilePath);
-            }
-
-            return config;
+            EnsureDirectoryExists(configPath);
+            return LoadOrGenerateConfig<T>(api, configFilePath);
         }
 
         public static void WriteConfig<T>(ICoreAPI api, string jsonConfig, T config) where T : class, IModConfig
         {
-            string configPath = Path.Combine(api.GetOrCreateDataPath("ModConfig"), "hydrateordiedrate");
-            EnsureDirectoryExists(configPath);
+            string configPath = GetConfigPath(api);
             string configFilePath = Path.Combine(configPath, jsonConfig);
 
-            GenerateConfig(api, configFilePath, config);
+            EnsureDirectoryExists(configPath);
+            api.StoreModConfig(config, configFilePath);
         }
 
-        private static T LoadConfig<T>(ICoreAPI api, string configFilePath) where T : class, IModConfig
+        private static T LoadOrGenerateConfig<T>(ICoreAPI api, string configFilePath) where T : class, IModConfig
         {
-            return api.LoadModConfig<T>(configFilePath);
+            T config = api.LoadModConfig<T>(configFilePath);
+            if (config == null)
+            {
+                api.StoreModConfig(Activator.CreateInstance<T>(), configFilePath);
+                config = api.LoadModConfig<T>(configFilePath);
+            }
+            else
+            {
+                api.StoreModConfig(config, configFilePath);
+            }
+            return config;
         }
 
-        private static void GenerateConfig<T>(ICoreAPI api, string configFilePath, T previousConfig = null) where T : class, IModConfig
+        private static string GetConfigPath(ICoreAPI api)
         {
-            api.StoreModConfig(CloneConfig(api, previousConfig), configFilePath);
-        }
-
-        private static T CloneConfig<T>(ICoreAPI api, T config = null) where T : class, IModConfig
-        {
-            return (T)Activator.CreateInstance(typeof(T), new object[] { api, config });
+            return Path.Combine(api.GetOrCreateDataPath("ModConfig"), "hydrateordiedrate");
         }
 
         private static void EnsureDirectoryExists(string path)

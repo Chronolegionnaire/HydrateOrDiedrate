@@ -18,27 +18,15 @@ namespace HydrateOrDiedrate.Gui
             UpdateThirst();
         }
 
-        public void OnFlashStatbar(float dt)
-        {
-            var thirstTree = capi.World.Player.Entity.WatchedAttributes.GetTreeAttribute("thirst");
-
-            if (thirstTree != null && _statbar != null)
-            {
-                _statbar.ShouldFlash = _statbar.GetValue() < 0.2f;
-            }
-        }
-
         private void UpdateThirst()
         {
             if (_statbar == null) return;
 
             var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
             var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
-
-            var lineInterval = maxThirst * 0.07f;
-
-            _statbar.SetLineInterval(lineInterval);
             _statbar.SetValues(currentThirst, 0.0f, maxThirst);
+            _statbar.SetLineInterval(maxThirst * 0.07f);
+            _statbar.ShouldFlash = currentThirst < 0.2f;
         }
 
         private void ComposeGuis()
@@ -57,10 +45,9 @@ namespace HydrateOrDiedrate.Gui
             }.WithFixedAlignmentOffset(0.0, 5.0);
 
             var isRight = true;
-            var alignment = isRight ? EnumDialogArea.RightTop : EnumDialogArea.LeftTop;
             var alignmentOffsetX = isRight ? -2.0 : 1.0;
 
-            var thirstBarBounds = ElementStdBounds.Statbar(alignment, statsBarWidth)
+            var thirstBarBounds = ElementStdBounds.Statbar(isRight ? EnumDialogArea.RightTop : EnumDialogArea.LeftTop, statsBarWidth)
                 .WithFixedAlignmentOffset(alignmentOffsetX, -16)
                 .WithFixedHeight(10);
 

@@ -1,12 +1,9 @@
 ﻿using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Vintagestory.API.Client;
-using Vintagestory.API.Common.Entities;
 using HydrateOrDiedrate.Configuration;
 using HydrateOrDiedrate.EntityBehavior;
 using HydrateOrDiedrate.Gui;
-using Vintagestory.Client.NoObf;
-using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate
 {
@@ -21,24 +18,13 @@ namespace HydrateOrDiedrate
         public override void StartPre(ICoreAPI api)
         {
             base.StartPre(api);
-            try
-            {
-                Config loaded;
-                if ((loaded = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json")) == null)
-                {
-                    LoadedConfig = new Config(api);
-                    ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
-                }
-                else
-                {
-                    LoadedConfig = loaded;
-                }
-            }
-            catch
-            {
-                LoadedConfig = new Config(api);
-                ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
-            }
+            LoadConfig(api);
+        }
+
+        private void LoadConfig(ICoreAPI api)
+        {
+            LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json") ?? new Config(api);
+            ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
         }
 
         public override void Start(ICoreAPI api)
@@ -52,10 +38,11 @@ namespace HydrateOrDiedrate
         {
             _serverApi = api;
 
-            api.Event.PlayerJoin += OnPlayerJoin;
-            api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
+            api.Event.PlayerJoin += OnPlayerJoinOrNowPlaying;
+            api.Event.PlayerNowPlaying += OnPlayerJoinOrNowPlaying;
             api.Event.PlayerRespawn += OnPlayerRespawn;
             api.Event.RegisterGameTickListener(OnServerTick, 1000);
+            api.Event.RegisterGameTickListener(_waterInteractionHandler.CheckPlayerInteraction, 100);
 
             api.ChatCommands
                 .Create("setthirst")
@@ -63,8 +50,6 @@ namespace HydrateOrDiedrate
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.Float("thirstValue"))
                 .HandleWith(OnSetThirstCommand);
-
-            api.Event.RegisterGameTickListener(_waterInteractionHandler.CheckPlayerInteraction, 100);
         }
 
         public override void StartClientSide(ICoreClientAPI api)
@@ -72,44 +57,27 @@ namespace HydrateOrDiedrate
             _clientApi = api;
             _thirstHud = new HudElementThirstBar(api);
             api.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
-            api.Event.RegisterGameTickListener(_thirstHud.OnFlashStatbar, 1000);
             api.Gui.RegisterDialog(_thirstHud);
         }
 
-        private void OnPlayerJoin(IServerPlayer byPlayer)
+        private void OnPlayerJoinOrNowPlaying(IServerPlayer byPlayer)
         {
-            var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
-            if (thirstBehavior == null)
-            {
-                thirstBehavior = new EntityBehaviorThirst(byPlayer.Entity, LoadedConfig);
-                byPlayer.Entity.AddBehavior(thirstBehavior);
-            }
+            var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>() ?? new EntityBehaviorThirst(byPlayer.Entity, LoadedConfig);
+            byPlayer.Entity.AddBehavior(thirstBehavior);
 
             if (!byPlayer.Entity.WatchedAttributes.HasAttribute("currentThirst"))
             {
-                thirstBehavior.SetInitialThirst(); // Initialize thirst for new players
+                thirstBehavior.SetInitialThirst();
             }
-        }
-
-        private void OnPlayerNowPlaying(IServerPlayer byPlayer)
-        {
-            var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
-            if (thirstBehavior == null)
+            else
             {
-                thirstBehavior = new EntityBehaviorThirst(byPlayer.Entity, LoadedConfig);
-                byPlayer.Entity.AddBehavior(thirstBehavior);
+                thirstBehavior.LoadThirst();
             }
-
-            thirstBehavior.LoadThirst(); // Load the saved thirst value for returning players
         }
 
         private void OnPlayerRespawn(IServerPlayer byPlayer)
         {
-            var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
-            if (thirstBehavior != null)
-            {
-                thirstBehavior.ResetThirstOnRespawn(byPlayer.Entity);
-            }
+            byPlayer.Entity.GetBehavior<EntityBehaviorThirst>()?.ResetThirstOnRespawn();
         }
 
         private void OnServerTick(float dt)
@@ -122,21 +90,11 @@ namespace HydrateOrDiedrate
 
         private TextCommandResult OnSetThirstCommand(TextCommandCallingArgs args)
         {
-            var player = args.Caller.Player as IServerPlayer;
-            if (player == null) return TextCommandResult.Error("Player not found.");
-
-            var entity = player.Entity;
-            if (entity == null) return TextCommandResult.Error("Player entity not found.");
-
-            var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
+            if (!(args.Caller.Player is IServerPlayer player)) return TextCommandResult.Error("Player not found.");
+            var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior == null) return TextCommandResult.Error("Thirst behavior not found.");
 
-            if (args.ArgCount < 1) return TextCommandResult.Error("Missing thirst value.");
-
-            if (!float.TryParse(args[0].ToString(), out float thirstValue))
-            {
-                return TextCommandResult.Error("Invalid thirst value. Please enter a valid number.");
-            }
+            if (!float.TryParse(args[0].ToString(), out float thirstValue)) return TextCommandResult.Error("Invalid thirst value. Please enter a valid number.");
 
             thirstBehavior.CurrentThirst = thirstValue;
             thirstBehavior.UpdateThirstAttributes();
