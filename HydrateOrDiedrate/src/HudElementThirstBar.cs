@@ -25,7 +25,7 @@ namespace HydrateOrDiedrate.Gui
             var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
             var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
             _statbar.SetValues(currentThirst, 0.0f, maxThirst);
-            _statbar.SetLineInterval(maxThirst * 0.07f);
+            _statbar.SetLineInterval(100f);
             _statbar.ShouldFlash = currentThirst < 0.2f;
         }
 
