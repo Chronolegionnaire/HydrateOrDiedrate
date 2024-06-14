@@ -1,0 +1,13 @@
+[
+  {
+    "op": "addmerge",
+    "path": "/attributes/waterTightContainerProps/nutritionPropsPerLitre",
+    "value": {
+      "satiety": 0,
+      "foodcategory": "NoNutrition",
+      "hydration": 100
+    },
+    "side": "Server",
+    "file": "game:itemtypes/liquid/waterportion.json"
+  }
+]

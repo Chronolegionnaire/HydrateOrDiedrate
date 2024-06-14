@@ -58,4 +58,9 @@
         </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="assets\game\patches\itemtypes\liquid\dairy\" />
+      <Folder Include="src\patches\" />
+    </ItemGroup>
+
 </Project>
