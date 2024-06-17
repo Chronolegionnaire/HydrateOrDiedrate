@@ -4,6 +4,9 @@ using Vintagestory.API.Client;
 using HydrateOrDiedrate.Configuration;
 using HydrateOrDiedrate.EntityBehavior;
 using HydrateOrDiedrate.Gui;
+using HarmonyLib;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace HydrateOrDiedrate
 {
@@ -19,12 +22,30 @@ namespace HydrateOrDiedrate
         {
             base.StartPre(api);
             LoadConfig(api);
+            HydrationConfigLoader.GenerateDefaultHydrationConfig(api);
+
+            Harmony harmony = new Harmony("com.chronolegionnaire.hydrateordiedrate");
+            harmony.PatchAll();
         }
 
         private void LoadConfig(ICoreAPI api)
         {
             LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json") ?? new Config(api);
             ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
+        }
+
+        public override void AssetsFinalize(ICoreAPI api)
+        {
+            base.AssetsFinalize(api);
+
+            api.Logger.Debug("Loading hydration patches from configuration.");
+            LoadAndApplyHydrationPatches(api);
+        }
+
+        private void LoadAndApplyHydrationPatches(ICoreAPI api)
+        {
+            List<JObject> hydrationPatches = HydrationConfigLoader.LoadHydrationPatches(api);
+            HydrationManager.ApplyHydrationPatches(api, hydrationPatches);
         }
 
         public override void Start(ICoreAPI api)
@@ -50,6 +71,13 @@ namespace HydrateOrDiedrate
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.Float("thirstValue"))
                 .HandleWith(OnSetThirstCommand);
+
+            api.ChatCommands
+                .Create("checkhydration")
+                .WithDescription("Checks the hydration value of the specified item.")
+                .RequiresPrivilege("controlserver")
+                .WithArgs(api.ChatCommands.Parsers.Word("itemCode"))
+                .HandleWith(OnCheckHydrationCommand);
         }
 
         public override void StartClientSide(ICoreClientAPI api)
@@ -100,6 +128,14 @@ namespace HydrateOrDiedrate
             thirstBehavior.UpdateThirstAttributes();
 
             return TextCommandResult.Success($"Thirst set to {thirstValue}.");
+        }
+
+        private TextCommandResult OnCheckHydrationCommand(TextCommandCallingArgs args)
+        {
+            if (!(args.Caller.Player is IServerPlayer player)) return TextCommandResult.Error("Player not found.");
+            string itemCode = args[0].ToString();
+            float hydrationValue = HydrationManager.GetHydration(_serverApi, itemCode);
+            return TextCommandResult.Success($"The hydration value for {itemCode} is {hydrationValue}.");
         }
     }
 }

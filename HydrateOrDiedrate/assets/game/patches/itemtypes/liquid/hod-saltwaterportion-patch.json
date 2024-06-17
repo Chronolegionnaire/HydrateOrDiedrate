@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "op": "add",
     "path": "/attributes/waterTightContainerProps/nutritionPropsPerLitre",
@@ -6,7 +6,7 @@
       "satiety": 0,
       "foodcategory": "NoNutrition"
     },
-    "file": "game:itemtypes/liquid/waterportion.json",
+    "file": "game:itemtypes/liquid/saltwaterportion.json",
     "side": "Server"
   }
 ]

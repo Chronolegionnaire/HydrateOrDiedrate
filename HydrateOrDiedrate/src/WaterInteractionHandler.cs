@@ -179,7 +179,7 @@ namespace HydrateOrDiedrate
             ModifyThirst(player, -_config.SaltWaterThirstIncrease);
         }
 
-        private void ModifyThirst(IPlayer player, float amount)
+        public void ModifyThirst(IPlayer player, float amount)
         {
             var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior != null)
