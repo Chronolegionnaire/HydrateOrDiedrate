@@ -39,7 +39,7 @@ namespace HydrateOrDiedrate.Configuration
             return config;
         }
 
-        private static string GetConfigPath(ICoreAPI api)
+        public static string GetConfigPath(ICoreAPI api)
         {
             return Path.Combine(api.GetOrCreateDataPath("ModConfig"), "hydrateordiedrate");
         }
