@@ -11,11 +11,8 @@ public static class GetHeldItemInfoPatch
 {
     public static void Postfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
     {
-        // Hydration info for the held item itself
         string itemCode = inSlot.Itemstack.Collectible.Code.ToString();
         float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
-
-        // Check if the item is a container and get the contents' hydration value if applicable
         if (hydrationValue == 0 && inSlot.Itemstack.Block is BlockLiquidContainerBase block)
         {
             ItemStack contentStack = block.GetContent(inSlot.Itemstack);
@@ -23,14 +20,10 @@ public static class GetHeldItemInfoPatch
             {
                 string contentItemCode = contentStack.Collectible.Code.ToString();
                 float contentHydrationValue = HydrationManager.GetHydration(world.Api, contentItemCode);
-
-                // Get the volume of the liquid in the container in liters
                 float litres = block.GetCurrentLitres(inSlot.Itemstack);
                 hydrationValue = contentHydrationValue * litres;
             }
         }
-
-        // Update the existing "When eaten: ..." line or add it if it doesn't exist
         string existingText = dsc.ToString();
         string whenEatenLine = "When eaten: ";
         int startIndex = existingText.IndexOf(whenEatenLine);

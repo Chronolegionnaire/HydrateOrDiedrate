@@ -56,11 +56,11 @@ namespace HydrateOrDiedrate
 
         public void CheckPlayerInteraction(float dt)
         {
-            double currentTime = _api.World.Calendar.TotalHours * 3600; // convert in-game hours to seconds
+            double currentTime = _api.World.Calendar.TotalHours * 3600;
 
             foreach (IServerPlayer player in _api.World.AllOnlinePlayers)
             {
-                if (currentTime - _lastInteractionTime < 1) continue; // Skip if cooldown not over
+                if (currentTime - _lastInteractionTime < 1) continue;
 
                 if (player.Entity.Controls.Sneak && player.Entity.Controls.RightMouseDown)
                 {
@@ -121,7 +121,7 @@ namespace HydrateOrDiedrate
             var currentPos = fromPos.Clone();
             int dimensionId = (int)(player.Entity.ServerPos.Y / BlockPos.DimensionBoundary);
 
-            while (currentPos.SquareDistanceTo(fromPos) <= 5 * 5) // Check within 5 block distance
+            while (currentPos.SquareDistanceTo(fromPos) <= 5 * 5)
             {
                 var blockPos = new BlockPos((int)currentPos.X, (int)currentPos.Y, (int)currentPos.Z, dimensionId);
                 var block = _api.World.BlockAccessor.GetBlock(blockPos);
@@ -171,7 +171,7 @@ namespace HydrateOrDiedrate
 
         private void QuenchThirst(IPlayer player)
         {
-            ModifyThirst(player, _config.RegularWaterThirstDecrease);
+            ModifyThirstAndHunger(player, _config.RegularWaterThirstDecrease);
         }
 
         private void IncreaseThirst(IPlayer player)
@@ -185,6 +185,22 @@ namespace HydrateOrDiedrate
             if (thirstBehavior != null)
             {
                 thirstBehavior.CurrentThirst += amount;
+            }
+        }
+
+        private void ModifyThirstAndHunger(IPlayer player, float amount)
+        {
+            var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
+            var hungerBehavior = player.Entity.GetBehavior<Vintagestory.GameContent.EntityBehaviorHunger>();
+
+            if (thirstBehavior != null)
+            {
+                thirstBehavior.CurrentThirst += amount;
+            }
+
+            if (hungerBehavior != null)
+            {
+                hungerBehavior.Saturation -= _config.SourceBlockHungerDecrease;
             }
         }
 

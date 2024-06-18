@@ -35,8 +35,6 @@ public class TryEatStopBlockLiquidContainerBasePatch
                 if (playerByUid != null)
                 {
                     handler.ModifyThirst(playerByUid, hydrationAmount);
-
-                    // Reduce the liquid content after drinking
                     block.SetCurrentLitres(slot.Itemstack, currentLitres - litresToDrink);
                 }
             }

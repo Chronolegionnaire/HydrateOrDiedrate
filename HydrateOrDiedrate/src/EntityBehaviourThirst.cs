@@ -13,6 +13,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         private int _customThirstTicks;
         private readonly Config _config;
         private float _currentPenaltyAmount;
+        private int _thirstTickCounter;
 
         public float CurrentThirst
         {
@@ -29,6 +30,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             _config = config;
             LoadThirst();
+            _thirstTickCounter = 0;
         }
 
         public override void OnGameTick(float deltaTime)
@@ -61,19 +63,26 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         private void ApplyThirstEffects()
         {
-            if (CurrentThirst <= 0)
+            _thirstTickCounter++;
+            
+            if (_thirstTickCounter >= 250)
             {
-                ApplyDamage();
-                ApplyMovementSpeedPenalty(_config.MaxMovementSpeedPenalty);
-            }
-            else if (CurrentThirst < _config.MovementSpeedPenaltyThreshold)
-            {
-                float penaltyAmount = _config.MaxMovementSpeedPenalty * (_config.MovementSpeedPenaltyThreshold - CurrentThirst) / _config.MovementSpeedPenaltyThreshold;
-                ApplyMovementSpeedPenalty(penaltyAmount);
-            }
-            else
-            {
-                RemoveMovementSpeedPenalty();
+                if (CurrentThirst <= 0)
+                {
+                    ApplyDamage();
+                    ApplyMovementSpeedPenalty(_config.MaxMovementSpeedPenalty);
+                }
+                else if (CurrentThirst < _config.MovementSpeedPenaltyThreshold)
+                {
+                    float penaltyAmount = _config.MaxMovementSpeedPenalty * (_config.MovementSpeedPenaltyThreshold - CurrentThirst) / _config.MovementSpeedPenaltyThreshold;
+                    ApplyMovementSpeedPenalty(penaltyAmount);
+                }
+                else
+                {
+                    RemoveMovementSpeedPenalty();
+                }
+
+                _thirstTickCounter = 0;
             }
         }
 

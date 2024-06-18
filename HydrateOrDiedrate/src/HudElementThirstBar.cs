@@ -6,16 +6,38 @@ namespace HydrateOrDiedrate.Gui
     public class HudElementThirstBar : HudElement
     {
         private GuiElementStatbar _statbar;
+        private bool isFlashing;
+
         public override double InputOrder => 1.0;
 
         public HudElementThirstBar(ICoreClientAPI capi) : base(capi)
         {
             ComposeGuis();
+            capi.Event.RegisterGameTickListener(OnGameTick, 100);
+            capi.Event.RegisterGameTickListener(OnFlashStatbars, 2500); // Set to 2.5 seconds like the original code
         }
 
         public void OnGameTick(float dt)
         {
             UpdateThirst();
+        }
+
+        private void OnFlashStatbars(float dt)
+        {
+            if (_statbar == null) return;
+
+            var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
+            var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
+
+            if (currentThirst < maxThirst * 0.2f)
+            {
+                isFlashing = !isFlashing;
+                _statbar.ShouldFlash = isFlashing;
+            }
+            else
+            {
+                _statbar.ShouldFlash = false;
+            }
         }
 
         private void UpdateThirst()
@@ -25,8 +47,7 @@ namespace HydrateOrDiedrate.Gui
             var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
             var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
             _statbar.SetValues(currentThirst, 0.0f, maxThirst);
-            _statbar.SetLineInterval(maxThirst/15f);
-            _statbar.ShouldFlash = currentThirst < 0.2f;
+            _statbar.SetLineInterval(maxThirst / 15f);
         }
 
         private void ComposeGuis()

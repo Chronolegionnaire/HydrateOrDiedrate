@@ -15,8 +15,7 @@ namespace HydrateOrDiedrate
 
         public static float GetHydration(ICoreAPI api, string itemCode)
         {
-            float hydration = ItemHydrationDict.TryGetValue(itemCode, out var value) ? value : 0f;
-            return hydration;
+            return ItemHydrationDict.TryGetValue(itemCode, out var value) ? value : 0f;
         }
 
         public static void ApplyHydrationPatches(ICoreAPI api, List<JObject> patches)
@@ -45,7 +44,7 @@ namespace HydrateOrDiedrate
                                 if (IsMatch(itemName, key))
                                 {
                                     SetHydration(api, itemName, hydration);
-                                    break; // Ensure only one hydration value is applied to each item
+                                    break;
                                 }
                             }
                         }
