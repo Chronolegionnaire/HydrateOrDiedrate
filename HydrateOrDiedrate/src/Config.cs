@@ -15,6 +15,7 @@ namespace HydrateOrDiedrate.Configuration
         public float BoilingWaterDamage { get; set; } = 5.0f;
         public bool EnableSaltWaterThirstIncrease { get; set; } = true;
         public bool EnableBoilingWaterDamage { get; set; } = true;
+        public float SourceBlockHungerDecrease { get; set; } = 100.0f; 
 
         public Config() { }
 
@@ -31,6 +32,7 @@ namespace HydrateOrDiedrate.Configuration
             BoilingWaterDamage = previousConfig?.BoilingWaterDamage ?? 5.0f;
             EnableSaltWaterThirstIncrease = previousConfig?.EnableSaltWaterThirstIncrease ?? true;
             EnableBoilingWaterDamage = previousConfig?.EnableBoilingWaterDamage ?? true;
+            SourceBlockHungerDecrease = previousConfig?.SourceBlockHungerDecrease ?? 100.0f;
         }
     }
 }
