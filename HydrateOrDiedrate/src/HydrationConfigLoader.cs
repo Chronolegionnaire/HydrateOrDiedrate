@@ -39,7 +39,6 @@ namespace HydrateOrDiedrate.Configuration
                 }
                 catch (System.Exception ex)
                 {
-                    api.Logger.Error($"Error reading hydration config file {file}: {ex.Message}");
                 }
             }
             Dictionary<string, JObject> mergedPatches = new Dictionary<string, JObject>();
@@ -168,7 +167,6 @@ namespace HydrateOrDiedrate.Configuration
                             ["itemname"] = "game:bushmeat-*",
                             ["hydrationByType"] = new JObject
                             {
-                                ["game:bushmeat-raw"] = -2,
                                 ["game:bushmeat-cooked"] = -5,
                                 ["game:bushmeat-cured"] = -10,
                                 ["*"] = -5
@@ -381,7 +379,7 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject
                         {
                             ["itemname"] = "game:saltwaterportion",
-                            ["hydration"] = -1000,
+                            ["hydration"] = -100,
                             ["IsLiquid"] = true
                         },
                         new JObject
@@ -421,7 +419,7 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject
                         {
                             ["itemname"] = "game:waterportion",
-                            ["hydration"] = 1500,
+                            ["hydration"] = 100,
                             ["IsLiquid"] = true
                         }
                     }
@@ -433,7 +431,6 @@ namespace HydrateOrDiedrate.Configuration
                 }
                 catch (System.Exception ex)
                 {
-                    api.Logger.Error($"Error writing default hydration config file: {ex.Message}");
                 }
             }
         }

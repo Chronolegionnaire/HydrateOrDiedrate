@@ -7,39 +7,48 @@ using Vintagestory.GameContent;
 [HarmonyPatch(typeof(BlockLiquidContainerBase), "tryEatStop")]
 public class TryEatStopBlockLiquidContainerBasePatch
 {
-    static bool Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity)
+    static void Postfix(float secondsUsed, ItemSlot slot, EntityAgent byEntity)
     {
         var api = byEntity?.World?.Api;
         if (api?.Side == EnumAppSide.Server)
         {
-            if (slot?.Itemstack == null) return true;
+            if (slot?.Itemstack == null)
+            {
+                return;
+            }
 
             BlockLiquidContainerBase block = slot.Itemstack.Block as BlockLiquidContainerBase;
-            if (block == null) return true;
-
-            float currentLitres = block.GetCurrentLitres(slot.Itemstack);
-            ItemStack contentStack = block.GetContent(slot.Itemstack);
-            if (contentStack == null) return true;
-
-            string itemCode = contentStack.Collectible.Code?.ToString() ?? "Unknown Item";
-            float hydrationValue = HydrationManager.GetHydration(api, itemCode);
-
-            if (hydrationValue != 0 && byEntity is EntityPlayer player)
+            if (block == null)
             {
-                float drinkCapLitres = 1f;
-                float litresToDrink = Math.Min(drinkCapLitres, currentLitres);
-                float hydrationAmount = (hydrationValue * litresToDrink) / drinkCapLitres;
+                return;
+            }
 
-                var handler = new WaterInteractionHandler(api, HydrateOrDiedrateModSystem.LoadedConfig);
-                var playerByUid = api.World.PlayerByUid(player.PlayerUID);
-                if (playerByUid != null)
+            FoodNutritionProperties nutriProps = slot.Itemstack.Collectible.GetNutritionProperties(byEntity.World, slot.Itemstack, byEntity);
+            if (nutriProps != null && secondsUsed >= 0.95f)
+            {
+                float currentLitres = block.GetCurrentLitres(slot.Itemstack);
+                ItemStack contentStack = block.GetContent(slot.Itemstack);
+                if (contentStack == null)
                 {
-                    handler.ModifyThirst(playerByUid, hydrationAmount);
-                    block.SetCurrentLitres(slot.Itemstack, currentLitres - litresToDrink);
+                    return;
+                }
+
+                string itemCode = contentStack.Collectible.Code?.ToString() ?? "Unknown Item";
+                float hydrationValue = HydrationManager.GetHydration(api, itemCode);
+
+                if (hydrationValue != 0 && byEntity is EntityPlayer player)
+                {
+                    float drinkCapLitres = 1f;
+                    float litresToDrink = Math.Min(drinkCapLitres, currentLitres);
+                    float hydrationAmount = (hydrationValue * litresToDrink) / drinkCapLitres;
+                    var handler = new WaterInteractionHandler(api, HydrateOrDiedrateModSystem.LoadedConfig);
+                    var playerByUid = api.World.PlayerByUid(player.PlayerUID);
+                    if (playerByUid != null)
+                    {
+                        handler.ModifyThirst(playerByUid, hydrationAmount);
+                    }
                 }
             }
         }
-
-        return true;
     }
 }

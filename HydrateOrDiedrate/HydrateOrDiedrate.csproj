@@ -59,12 +59,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="assets\game\patches\itemtypes\food\" />
-      <Folder Include="assets\game\patches\itemtypes\liquid\dairy\" />
+      <Compile Remove="src\patches\GetContentInfoPatch.cs" />
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="src\patches\GetContentInfoPatch.cs" />
+      <Folder Include="assets\game\entities\humanoid\" />
+      <Folder Include="assets\game\itemtypes\liquid\" />
+      <Folder Include="assets\hydrateordiedrate\patches\" />
     </ItemGroup>
 
 </Project>
