@@ -93,6 +93,13 @@ namespace HydrateOrDiedrate
             if (blockSel == null) return;
             var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
             if (block.BlockMaterial != EnumBlockMaterial.Liquid) return;
+
+            var hungerBehavior = player.Entity.GetBehavior<Vintagestory.GameContent.EntityBehaviorHunger>();
+            if (hungerBehavior == null || hungerBehavior.Saturation < _config.SourceBlockHungerDecrease)
+            {
+                return;
+            }
+
             string liquidCode = block.LiquidCode;
             var adjustedPos = blockSel.HitPosition;
             _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), adjustedPos.X, adjustedPos.Y, adjustedPos.Z, null, true, 32f, 1f);

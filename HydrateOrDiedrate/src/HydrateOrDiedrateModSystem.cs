@@ -26,6 +26,7 @@ namespace HydrateOrDiedrate
             base.StartPre(api);
             LoadConfig(api);
             HydrationConfigLoader.GenerateDefaultHydrationConfig(api);
+            CoolingConfigLoader.GenerateDefaultCoolingConfig(api);
             harmony = new Harmony("com.chronolegionnaire.hydrateordiedrate");
             harmony.PatchAll();
         }
@@ -40,6 +41,7 @@ namespace HydrateOrDiedrate
         {
             base.AssetsFinalize(api);
             LoadAndApplyHydrationPatches(api);
+            LoadAndApplyCoolingPatches(api);
         }
 
         private void LoadAndApplyHydrationPatches(ICoreAPI api)
@@ -48,11 +50,18 @@ namespace HydrateOrDiedrate
             HydrationManager.ApplyHydrationPatches(api, hydrationPatches);
         }
 
+        private void LoadAndApplyCoolingPatches(ICoreAPI api)
+        {
+            List<JObject> coolingPatches = CoolingConfigLoader.LoadCoolingPatches(api);
+            CoolingManager.ApplyCoolingPatches(api, coolingPatches);
+        }
+
         public override void Start(ICoreAPI api)
         {
             base.Start(api);
             LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
             api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
+            api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot)); // Register new behavior
             _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
         }
 
@@ -81,6 +90,7 @@ namespace HydrateOrDiedrate
         {
             var entity = byPlayer.Entity;
             EnsureThirstBehavior(entity);
+            EnsureBodyTemperatureHotBehavior(entity);
         }
 
         private void OnPlayerRespawn(IServerPlayer byPlayer)
@@ -88,6 +98,7 @@ namespace HydrateOrDiedrate
             var entity = byPlayer.Entity;
             var thirstBehavior = EnsureThirstBehavior(entity);
             thirstBehavior.ResetThirstOnRespawn();
+            EnsureBodyTemperatureHotBehavior(entity);
         }
 
         private EntityBehaviorThirst EnsureThirstBehavior(Entity entity)
@@ -111,6 +122,15 @@ namespace HydrateOrDiedrate
             return thirstBehavior;
         }
 
+        private void EnsureBodyTemperatureHotBehavior(Entity entity)
+        {
+            var bodyTemperatureHotBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
+            if (bodyTemperatureHotBehavior == null)
+            {
+                bodyTemperatureHotBehavior = new EntityBehaviorBodyTemperatureHot(entity, LoadedConfig);
+                entity.AddBehavior(bodyTemperatureHotBehavior);
+            }
+        }
 
         private void OnServerTick(float dt)
         {

@@ -7,5 +7,14 @@
     },
     "file": "game:entities/humanoid/player.json",
     "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/server/behaviors/11",
+    "value": {
+      "code": "bodytemperaturehot"
+    },
+    "file": "game:entities/humanoid/player.json",
+    "side": "Server"
   }
 ]

@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Common;
+﻿using System;
+using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
@@ -14,6 +15,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         private readonly Config _config;
         private float _currentPenaltyAmount;
         private int _thirstTickCounter;
+        private bool _isPenaltyApplied;
 
         public float CurrentThirst
         {
@@ -33,6 +35,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             _config = new Config();
             LoadThirst();
             _thirstTickCounter = 0;
+            _isPenaltyApplied = false;
         }
 
         public EntityBehaviorThirst(Entity entity, Config config) : base(entity)
@@ -40,6 +43,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             _config = config;
             LoadThirst();
             _thirstTickCounter = 0;
+            _isPenaltyApplied = false;
         }
 
         public override void OnGameTick(float deltaTime)
@@ -71,6 +75,9 @@ namespace HydrateOrDiedrate.EntityBehavior
                 if (climate.Temperature > _config.TemperatureThreshold)
                 {
                     thirstDecayRate += (climate.Temperature - _config.TemperatureThreshold) * _config.ThirstIncreasePerDegree;
+
+                    float coolingFactor = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f) * _config.CoolingMultiplier;
+                    thirstDecayRate -= Math.Min(coolingFactor, thirstDecayRate - _config.ThirstDecayRate);
                 }
             }
 
@@ -130,18 +137,20 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         private void ApplyMovementSpeedPenalty(float penaltyAmount)
         {
-            if (_currentPenaltyAmount == penaltyAmount) return;
+            if (_currentPenaltyAmount == penaltyAmount && _isPenaltyApplied) return;
 
             _currentPenaltyAmount = penaltyAmount;
             UpdateWalkSpeed();
+            _isPenaltyApplied = true;
         }
 
         private void RemoveMovementSpeedPenalty()
         {
-            if (_currentPenaltyAmount == 0f) return;
+            if (_currentPenaltyAmount == 0f && !_isPenaltyApplied) return;
 
             _currentPenaltyAmount = 0f;
             UpdateWalkSpeed();
+            _isPenaltyApplied = false;
         }
 
         private void UpdateWalkSpeed()
@@ -175,7 +184,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             player.Entity.GetBehavior<EntityBehaviorThirst>()?.OnGameTick(deltaTime);
         }
-        
+
         public void UpdateThirstRate(float rate)
         {
             entity.WatchedAttributes.SetFloat("thirstRate", rate);

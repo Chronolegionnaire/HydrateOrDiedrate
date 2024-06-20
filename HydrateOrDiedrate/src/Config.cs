@@ -19,6 +19,7 @@ namespace HydrateOrDiedrate.Configuration
         public float TemperatureThreshold { get; set; } = 27.0f; 
         public float ThirstIncreasePerDegree { get; set; } = 0.1f;
         public bool HarshHeat { get; set; } = true;
+        public float CoolingMultiplier { get; set; } = 0.35f;
 
         public Config() { }
 
@@ -37,8 +38,9 @@ namespace HydrateOrDiedrate.Configuration
             EnableBoilingWaterDamage = previousConfig?.EnableBoilingWaterDamage ?? true;
             SourceBlockHungerDecrease = previousConfig?.SourceBlockHungerDecrease ?? 100.0f;
             TemperatureThreshold = previousConfig?.TemperatureThreshold ?? 27.0f;
-            ThirstIncreasePerDegree = previousConfig?.ThirstIncreasePerDegree ?? 0.1f;
+            ThirstIncreasePerDegree = previousConfig?.ThirstIncreasePerDegree ?? 0.75f;
             HarshHeat = previousConfig?.HarshHeat ?? true;
+            CoolingMultiplier = previousConfig?.CoolingMultiplier ?? 0.35f;
         }
     }
 }
