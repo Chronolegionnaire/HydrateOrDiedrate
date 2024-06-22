@@ -59,12 +59,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Remove="src\patches\GetContentInfoPatch.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="assets\game\entities\humanoid\" />
-      <Folder Include="assets\game\itemtypes\liquid\" />
       <Folder Include="assets\hydrateordiedrate\patches\" />
     </ItemGroup>
 

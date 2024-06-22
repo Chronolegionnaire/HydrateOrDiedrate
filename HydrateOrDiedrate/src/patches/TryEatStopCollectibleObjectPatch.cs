@@ -1,8 +1,11 @@
 ﻿using HarmonyLib;
 using HydrateOrDiedrate;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using HydrateOrDiedrate.EntityBehavior;
+using HydrateOrDiedrate.Configuration;
 
 [HarmonyPatch(typeof(CollectibleObject), "tryEatStop")]
 public class TryEatStopCollectibleObjectPatch
@@ -25,11 +28,10 @@ public class TryEatStopCollectibleObjectPatch
 
                 if (hydration != 0 && byEntity is EntityPlayer player)
                 {
-                    var handler = new WaterInteractionHandler(api, HydrateOrDiedrateModSystem.LoadedConfig);
-                    var playerByUid = api.World.PlayerByUid(player.PlayerUID);
-                    if (playerByUid != null)
+                    var thirstBehavior = byEntity.GetBehavior<EntityBehaviorThirst>();
+                    if (thirstBehavior != null)
                     {
-                        handler.ModifyThirst(playerByUid, hydration);
+                        thirstBehavior.ModifyThirst(hydration);
                     }
                 }
             }

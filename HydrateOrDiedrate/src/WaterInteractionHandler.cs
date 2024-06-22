@@ -183,15 +183,10 @@ namespace HydrateOrDiedrate
 
         private void IncreaseThirst(IPlayer player)
         {
-            ModifyThirst(player, -_config.SaltWaterThirstIncrease);
-        }
-
-        public void ModifyThirst(IPlayer player, float amount)
-        {
             var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior != null)
             {
-                thirstBehavior.CurrentThirst += amount;
+                thirstBehavior.ModifyThirst(-_config.SaltWaterThirstIncrease);
             }
         }
 
@@ -202,7 +197,7 @@ namespace HydrateOrDiedrate
 
             if (thirstBehavior != null)
             {
-                thirstBehavior.CurrentThirst += amount;
+                thirstBehavior.ModifyThirst(amount);
             }
 
             if (hungerBehavior != null)

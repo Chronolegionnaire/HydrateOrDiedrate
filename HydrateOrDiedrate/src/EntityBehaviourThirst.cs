@@ -16,6 +16,9 @@ namespace HydrateOrDiedrate.EntityBehavior
         private float _currentPenaltyAmount;
         private int _thirstTickCounter;
         private bool _isPenaltyApplied;
+        private float thirstCounter;
+        private int sprintCounter;
+        private long lastMoveMs;
 
         public float CurrentThirst
         {
@@ -34,16 +37,23 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             _config = new Config();
             LoadThirst();
-            _thirstTickCounter = 0;
-            _isPenaltyApplied = false;
+            InitializeCounters();
         }
 
         public EntityBehaviorThirst(Entity entity, Config config) : base(entity)
         {
             _config = config;
             LoadThirst();
+            InitializeCounters();
+        }
+
+        private void InitializeCounters()
+        {
             _thirstTickCounter = 0;
             _isPenaltyApplied = false;
+            thirstCounter = 0f;
+            sprintCounter = 0;
+            lastMoveMs = entity.World.ElapsedMilliseconds;
         }
 
         public override void OnGameTick(float deltaTime)
@@ -56,17 +66,52 @@ namespace HydrateOrDiedrate.EntityBehavior
                 return;
             }
 
-            HandleThirstDecay(deltaTime);
+            thirstCounter += deltaTime;
+            if (thirstCounter > 10f)
+            {
+                HandleThirstDecay(deltaTime);
+                thirstCounter = 0f;
+                sprintCounter = 0;
+            }
+
             ApplyThirstEffects();
         }
 
         private void HandleThirstDecay(float deltaTime)
         {
             float thirstDecayRate = _customThirstTicks > 0 ? _customThirstRate : _config.ThirstDecayRate;
+            float hydrationLossDelay = entity.WatchedAttributes.GetFloat("hydrationLossDelay", 0);
 
-            if (entity is EntityPlayer player && player.Controls?.Sprint == true)
+            if (hydrationLossDelay > 0)
             {
-                thirstDecayRate *= _config.SprintThirstMultiplier;
+                hydrationLossDelay -= deltaTime;
+                entity.WatchedAttributes.SetFloat("hydrationLossDelay", hydrationLossDelay);
+
+                // Log the countdown
+                entity.World.Logger.Notification($"[HydrateOrDiedrate] Hydration loss delay remaining: {hydrationLossDelay} seconds.");
+
+                return;  // Skip the decay if delay is active
+            }
+
+            var player = entity as EntityPlayer;
+            if (player != null)
+            {
+                if (player.Controls?.Sprint == true)
+                {
+                    thirstDecayRate *= _config.SprintThirstMultiplier;
+                    sprintCounter++;
+                }
+
+                if (player.Controls.TriesToMove || player.Controls.Jump || player.Controls.LeftMouseDown || player.Controls.RightMouseDown)
+                {
+                    lastMoveMs = entity.World.ElapsedMilliseconds;
+                }
+
+                bool isIdle = entity.World.ElapsedMilliseconds - lastMoveMs > 3000L;
+                if (isIdle)
+                {
+                    thirstDecayRate /= 4f;
+                }
             }
 
             if (_config.HarshHeat)
@@ -74,16 +119,27 @@ namespace HydrateOrDiedrate.EntityBehavior
                 var climate = entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues);
                 if (climate.Temperature > _config.TemperatureThreshold)
                 {
-                    thirstDecayRate += (climate.Temperature - _config.TemperatureThreshold) * _config.ThirstIncreasePerDegree;
+                    float thirstIncrease = _config.ThirstIncreasePerDegreeMultiplier * (float)Math.Exp(0.2f * (climate.Temperature - _config.TemperatureThreshold));
+                    thirstDecayRate += thirstIncrease;
 
-                    float coolingFactor = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f) * _config.CoolingMultiplier;
-                    thirstDecayRate -= Math.Min(coolingFactor, thirstDecayRate - _config.ThirstDecayRate);
+                    float coolingFactor = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f);
+                    float coolingEffect = coolingFactor * (1f / (1f + (float)Math.Exp(-0.5f * (climate.Temperature - _config.TemperatureThreshold))));
+                    thirstDecayRate -= Math.Min(coolingEffect, thirstDecayRate - _config.ThirstDecayRate);
+
+                    // Logging the cooling factor and its effect
+                    entity.World.Logger.Notification($"[Thirst] Temperature: {climate.Temperature}°C, ThirstIncrease: {thirstIncrease}, CoolingFactor: {coolingFactor}, CoolingEffect: {coolingEffect}, ThirstDecayRate: {thirstDecayRate}");
                 }
             }
 
             if (_customThirstTicks > 0) _customThirstTicks--;
 
-            CurrentThirst -= thirstDecayRate * deltaTime;
+            // Add logging before ModifyThirst call
+            entity.World.Logger.Notification($"[Thirst] Calling ModifyThirst with amount: {-thirstDecayRate * deltaTime}");
+            ModifyThirst(-thirstDecayRate * deltaTime);
+
+            // Logging the thirst rate change
+            entity.World.Logger.Notification($"[Thirst] ThirstRate: {thirstDecayRate}, CurrentThirst: {CurrentThirst}");
+
             UpdateThirstRate(thirstDecayRate);
         }
 
@@ -189,6 +245,25 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             entity.WatchedAttributes.SetFloat("thirstRate", rate);
             entity.WatchedAttributes.MarkPathDirty("thirstRate");
+        }
+
+        public void ApplyHydrationLossDelay(float hydLossDelay)
+        {
+            entity.WatchedAttributes.SetFloat("hydrationLossDelay", hydLossDelay);
+            entity.WatchedAttributes.MarkPathDirty("hydrationLossDelay");
+        }
+
+        public void ModifyThirst(float amount, float hydLossDelay = 0)
+        {
+            entity.World.Logger.Notification($"[Thirst] ModifyThirst called with amount: {amount}, hydLossDelay: {hydLossDelay}");
+            entity.World.Logger.Notification($"[Thirst] Stack trace: {Environment.StackTrace}");
+    
+            CurrentThirst += amount;
+            if (hydLossDelay > 0)
+            {
+                ApplyHydrationLossDelay(hydLossDelay);
+            }
+            entity.World.Logger.Notification($"[Thirst] Modified thirst by {amount}. CurrentThirst: {CurrentThirst}");
         }
 
         public override string PropertyName() => "thirst";
