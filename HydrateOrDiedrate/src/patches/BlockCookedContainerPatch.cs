@@ -48,7 +48,7 @@ namespace HydrateOrDiedrate
                     float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
                     if (IsLiquidPortion(stack))
                     {
-                        hydrationValue *= stack.StackSize * 0.01f;  // Adjust for liquid portions
+                        hydrationValue *= stack.StackSize * 0.01f;
                     }
                     else
                     {

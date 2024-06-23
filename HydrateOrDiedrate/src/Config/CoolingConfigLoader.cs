@@ -24,8 +24,6 @@ namespace HydrateOrDiedrate.Configuration
 
             foreach (string file in configFiles)
             {
-                try
-                {
                     string json = File.ReadAllText(file);
                     JObject parsedFile = JObject.Parse(json);
                     int priority = parsedFile["priority"]?.Value<int>() ?? 5;
@@ -37,10 +35,6 @@ namespace HydrateOrDiedrate.Configuration
 
                     var patches = parsedFile["patches"].ToObject<List<JObject>>();
                     sortedPatches[priority].AddRange(patches);
-                }
-                catch (System.Exception ex)
-                {
-                }
             }
 
             Dictionary<string, JObject> mergedPatches = new Dictionary<string, JObject>();
@@ -346,14 +340,7 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject { ["itemname"] = "game:clothes-face-snow-goggles", ["cooling"] = 0.4 }
                     }
                 };
-
-                try
-                {
                     File.WriteAllText(configPath, defaultConfig.ToString());
-                }
-                catch (System.Exception ex)
-                {
-                }
             }
         }
     }

@@ -131,8 +131,6 @@ namespace HydrateOrDiedrate.Patches
         [HarmonyPostfix]
         public static void UpdateStats_Postfix(object __instance)
         {
-            try
-            {
                 Type type = __instance.GetType();
                 FieldInfo capiField = type.GetField("capi", BindingFlags.NonPublic | BindingFlags.Instance);
                 ICoreClientAPI capi = (ICoreClientAPI)capiField.GetValue(__instance);
@@ -181,10 +179,6 @@ namespace HydrateOrDiedrate.Patches
                     walkSpeedDynamicText.SetNewText($"{(int)Math.Round(effectiveWalkSpeed * 100)}%", false, false,
                         false);
                 }
-            }
-            catch (Exception ex)
-            {
-            }
         }
 
         private static void getHealthSat(EntityPlayer entity, out float? health, out float? maxHealth, out float? saturation, out float? maxSaturation)

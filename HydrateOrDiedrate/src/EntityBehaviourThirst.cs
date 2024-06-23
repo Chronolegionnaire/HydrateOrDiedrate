@@ -9,8 +9,8 @@ namespace HydrateOrDiedrate.EntityBehavior
 {
     public class EntityBehaviorThirst : Vintagestory.API.Common.Entities.EntityBehavior
     {
-        private const float DefaultSpeedOfTime = 60f; // Default SpeedOfTime
-        private const float DefaultCalendarSpeedMul = 0.5f; // Default CalendarSpeedMul
+        private const float DefaultSpeedOfTime = 60f;
+        private const float DefaultCalendarSpeedMul = 0.5f;
 
         private float _currentThirst;
         private float _customThirstRate;
@@ -94,11 +94,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             {
                 hydrationLossDelay -= Math.Max(1, (int)Math.Floor(multiplierPerGameSec));
                 entity.WatchedAttributes.SetFloat("hydrationLossDelay", hydrationLossDelay);
-
-                entity.World.Logger.Notification(
-                    $"[HydrateOrDiedrate] Hydration loss delay ticked down. Remaining: {hydrationLossDelay} thirst ticks.");
-
-                return; // Skip the decay if delay is active
+                return;
             }
 
             var player = entity as EntityPlayer;

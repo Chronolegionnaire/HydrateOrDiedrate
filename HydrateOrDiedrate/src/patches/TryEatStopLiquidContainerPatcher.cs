@@ -54,13 +54,8 @@ public class TryEatStopBlockLiquidContainerBasePatch
                 float drinkCapLitres = 1f;
                 float litresToDrink = Math.Min(drinkCapLitres, currentLitres);
                 capturedHydrationAmount = (hydrationValue * litresToDrink) / drinkCapLitres;
-
-                
                 float intoxicationValue = nutriProps.Intoxication;
-                api.Logger.Notification("Extracted Intoxication Value: " + intoxicationValue);
-
                 var config = HydrateOrDiedrateModSystem.LoadedConfig;
-
                 float scalingFactorLow = 100f;
                 float scalingFactorHigh = 5f;
 

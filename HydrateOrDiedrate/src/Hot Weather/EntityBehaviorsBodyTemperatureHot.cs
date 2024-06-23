@@ -40,7 +40,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             slowaccum = 0f;
             coolingCounter = 0f;
-            plrpos = new BlockPos();
+            plrpos = entity.Pos.AsBlockPos.Copy(); // Use AsBlockPos and copy it
             inEnclosedRoom = false;
             nearHeatSourceStrength = 0f;
             world = entity.World;
@@ -60,8 +60,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         public override void OnGameTick(float deltaTime)
         {
             if (!entity.Alive || !_config.HarshHeat) return;
-
-            // Accumulate deltaTime for cooling updates
+            
             coolingCounter += deltaTime;
             if (coolingCounter > 10f)
             {
@@ -87,7 +86,6 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             for (int i = 0; i < entityAgent.GearInventory.Count; i++)
             {
-                // Ignore specific slots based on their indices
                 if (i == 0 || i == 6 || i == 7 || i == 8 || i == 9 || i == 10)
                 {
                     continue;
@@ -97,7 +95,6 @@ namespace HydrateOrDiedrate.EntityBehavior
 
                 if (slot?.Itemstack == null)
                 {
-                    // Count unequipped slots
                     unequippedSlots++;
                 }
                 else
@@ -109,8 +106,7 @@ namespace HydrateOrDiedrate.EntityBehavior
                     }
                 }
             }
-
-            // Add 1 cooling factor for each unequipped slot
+            
             coolingFactor += unequippedSlots;
 
             if (entity.WatchedAttributes.GetFloat("wetness", 0f) > 0)
@@ -128,12 +124,12 @@ namespace HydrateOrDiedrate.EntityBehavior
             CurrentCooling = Math.Max(0, coolingFactor);
         }
 
-
         private void CheckRoom()
         {
             if (entity.Api.Side != EnumAppSide.Server) return;
 
             plrpos.Set((int)entity.Pos.X, (int)entity.Pos.Y, (int)entity.Pos.Z);
+            plrpos.SetDimension(entity.Pos.AsBlockPos.dimension);
             Room room = entity.Api.ModLoader.GetModSystem<RoomRegistry>()?.GetRoomForPosition(plrpos);
 
             inEnclosedRoom = (room != null && (room.ExitCount == 0 || room.SkylightCount < room.NonSkylightCount));
@@ -147,8 +143,8 @@ namespace HydrateOrDiedrate.EntityBehavior
             BlockPos min, max;
             if (inEnclosedRoom && room.Location.SizeX >= 1 && room.Location.SizeY >= 1 && room.Location.SizeZ >= 1)
             {
-                min = new BlockPos(room.Location.MinX, room.Location.MinY, room.Location.MinZ);
-                max = new BlockPos(room.Location.MaxX, room.Location.MaxY, room.Location.MaxZ);
+                min = new BlockPos(room.Location.MinX, room.Location.MinY, room.Location.MinZ, plrpos.dimension);
+                max = new BlockPos(room.Location.MaxX, room.Location.MaxY, room.Location.MaxZ, plrpos.dimension);
             }
             else
             {
@@ -158,12 +154,12 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             world.BlockAccessor.WalkBlocks(min, max, (block, x, y, z) =>
             {
-                var blockEntity = world.BlockAccessor.GetBlockEntity(new BlockPos(x, y, z));
+                var blockEntity = world.BlockAccessor.GetBlockEntity(new BlockPos(x, y, z, plrpos.dimension));
                 if (blockEntity is Vintagestory.GameContent.IHeatSource heatSource)
                 {
                     tmpPos.Set(x, y, z);
                     float factor = Math.Min(1f, 9f / (8f + (float)Math.Pow(tmpPos.DistanceTo(px, py, pz), proximityPower)));
-                    nearHeatSourceStrength += heatSource.GetHeatStrength(world, new BlockPos(x, y, z), plrpos) * factor;
+                    nearHeatSourceStrength += heatSource.GetHeatStrength(world, new BlockPos(x, y, z, plrpos.dimension), plrpos) * factor;
                 }
             });
 
