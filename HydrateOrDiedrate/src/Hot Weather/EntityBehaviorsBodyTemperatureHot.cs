@@ -126,9 +126,6 @@ namespace HydrateOrDiedrate.EntityBehavior
             coolingFactor -= nearHeatSourceStrength * 0.5f;
 
             CurrentCooling = Math.Max(0, coolingFactor);
-
-            // Logging the cooling factor and unequipped slots
-            entity.World.Logger.Notification($"[Cooling] CoolingFactor: {coolingFactor}, UnequippedSlots: {unequippedSlots}");
         }
 
 

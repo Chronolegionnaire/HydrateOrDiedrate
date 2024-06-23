@@ -19,7 +19,7 @@ namespace HydrateOrDiedrate.Configuration
         public float TemperatureThreshold { get; set; } = 27.0f; 
         public float ThirstIncreasePerDegreeMultiplier { get; set; } = 5f;
         public bool HarshHeat { get; set; } = true;
-        public float HydrationLossDelayMultiplier { get; set; } = 2f;
+        public float HydrationLossDelayMultiplier { get; set; } = 0.05f;
 
         public Config() { }
 
@@ -40,7 +40,7 @@ namespace HydrateOrDiedrate.Configuration
             TemperatureThreshold = previousConfig?.TemperatureThreshold ?? 27.0f;
             ThirstIncreasePerDegreeMultiplier = previousConfig?.ThirstIncreasePerDegreeMultiplier ?? 5f;
             HarshHeat = previousConfig?.HarshHeat ?? true;
-            HydrationLossDelayMultiplier = previousConfig?.HydrationLossDelayMultiplier ?? 10f;
+            HydrationLossDelayMultiplier = previousConfig?.HydrationLossDelayMultiplier ?? 0.05f;
         }
     }
 }

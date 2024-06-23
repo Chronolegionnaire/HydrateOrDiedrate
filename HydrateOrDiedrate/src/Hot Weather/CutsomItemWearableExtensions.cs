@@ -3,7 +3,6 @@ using HydrateOrDiedrate;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
-using Vintagestory.API.Util;  // For logger
 
 public static class CustomItemWearableExtensions
 {

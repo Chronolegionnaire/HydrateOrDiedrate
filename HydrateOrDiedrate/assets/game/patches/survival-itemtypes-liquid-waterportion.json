@@ -3,7 +3,7 @@
     "op": "add",
     "path": "/attributes/waterTightContainerProps/nutritionPropsPerLitre",
     "value": {
-      "satiety": -100,
+      "satiety": -600,
       "foodcategory": "NoNutrition"
     },
     "file": "game:itemtypes/liquid/waterportion.json",
