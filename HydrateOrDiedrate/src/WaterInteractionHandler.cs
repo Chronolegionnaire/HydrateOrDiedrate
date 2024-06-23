@@ -93,6 +93,13 @@ namespace HydrateOrDiedrate
             if (blockSel == null) return;
             var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
             if (block.BlockMaterial != EnumBlockMaterial.Liquid) return;
+
+            var hungerBehavior = player.Entity.GetBehavior<Vintagestory.GameContent.EntityBehaviorHunger>();
+            if (hungerBehavior == null || hungerBehavior.Saturation < _config.SourceBlockHungerDecrease)
+            {
+                return;
+            }
+
             string liquidCode = block.LiquidCode;
             var adjustedPos = blockSel.HitPosition;
             _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), adjustedPos.X, adjustedPos.Y, adjustedPos.Z, null, true, 32f, 1f);
@@ -176,15 +183,10 @@ namespace HydrateOrDiedrate
 
         private void IncreaseThirst(IPlayer player)
         {
-            ModifyThirst(player, -_config.SaltWaterThirstIncrease);
-        }
-
-        public void ModifyThirst(IPlayer player, float amount)
-        {
             var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior != null)
             {
-                thirstBehavior.CurrentThirst += amount;
+                thirstBehavior.ModifyThirst(-_config.SaltWaterThirstIncrease);
             }
         }
 
@@ -195,7 +197,7 @@ namespace HydrateOrDiedrate
 
             if (thirstBehavior != null)
             {
-                thirstBehavior.CurrentThirst += amount;
+                thirstBehavior.ModifyThirst(amount);
             }
 
             if (hungerBehavior != null)

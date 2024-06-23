@@ -7,7 +7,7 @@ using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
 [HarmonyPatch(typeof(CollectibleObject), "GetHeldItemInfo")]
-public static class GetHeldItemInfoPatch
+public static class CollectibleObjectGetHeldItemInfoPatch
 {
     public static void Postfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
     {

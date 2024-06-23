@@ -39,7 +39,6 @@ namespace HydrateOrDiedrate.Configuration
                 }
                 catch (System.Exception ex)
                 {
-                    api.Logger.Error($"Error reading hydration config file {file}: {ex.Message}");
                 }
             }
             Dictionary<string, JObject> mergedPatches = new Dictionary<string, JObject>();
@@ -168,7 +167,6 @@ namespace HydrateOrDiedrate.Configuration
                             ["itemname"] = "game:bushmeat-*",
                             ["hydrationByType"] = new JObject
                             {
-                                ["game:bushmeat-raw"] = -2,
                                 ["game:bushmeat-cooked"] = -5,
                                 ["game:bushmeat-cured"] = -10,
                                 ["*"] = -5
@@ -253,7 +251,6 @@ namespace HydrateOrDiedrate.Configuration
                             ["itemname"] = "game:legume-*",
                             ["hydrationByType"] = new JObject
                             {
-                                ["game:legume-soybean"] = -3,
                                 ["game:legume-peanut"] = -3,
                                 ["*"] = -3
                             },
@@ -355,14 +352,32 @@ namespace HydrateOrDiedrate.Configuration
                             ["itemname"] = "game:ciderportion-*",
                             ["hydrationByType"] = new JObject
                             {
-                                ["game:ciderportion-apple"] = 500,
+                                ["game:ciderportion-cranberry"] = 300,
+                                ["game:ciderportion-blueberry"] = 350,
+                                ["game:ciderportion-pinkapple"] = 375,
+                                ["game:ciderportion-lychee"] = 425,
+                                ["game:ciderportion-redcurrant"] = 400,
+                                ["game:ciderportion-breadfruit"] = 250,
+                                ["game:ciderportion-pineapple"] = 475,
+                                ["game:ciderportion-blackcurrant"] = 400,
+                                ["game:ciderportion-saguaro"] = 300,
+                                ["game:ciderportion-whitecurrant"] = 400,
+                                ["game:ciderportion-redapple"] = 450,
+                                ["game:ciderportion-yellowapple"] = 450,
+                                ["game:ciderportion-cherry"] = 400,
+                                ["game:ciderportion-peach"] = 475,
+                                ["game:ciderportion-pear"] = 475,
+                                ["game:ciderportion-orange"] = 500,
+                                ["game:ciderportion-mango"] = 475,
+                                ["game:ciderportion-pomegranate"] = 425,
+                                ["game:ciderportion-apple"] = 450,
                                 ["game:ciderportion-mead"] = 400,
-                                ["game:ciderportion-spelt"] = 450,
-                                ["game:ciderportion-rice"] = 450,
-                                ["game:ciderportion-rye"] = 450,
-                                ["game:ciderportion-amaranth"] = 450,
+                                ["game:ciderportion-spelt"] = 450, 
+                                ["game:ciderportion-rice"] = 450, 
+                                ["game:ciderportion-rye"] = 450, 
+                                ["game:ciderportion-amaranth"] = 450, 
                                 ["game:ciderportion-cassava"] = 450,
-                                ["*"] = 450
+                                ["*"] = 375 
                             },
                             ["IsLiquid"] = true
                         },
@@ -381,23 +396,7 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject
                         {
                             ["itemname"] = "game:saltwaterportion",
-                            ["hydration"] = -1000,
-                            ["IsLiquid"] = true
-                        },
-                        new JObject
-                        {
-                            ["itemname"] = "game:spirit-*",
-                            ["hydrationByType"] = new JObject
-                            {
-                                ["game:spirit-apple"] = 250,
-                                ["game:spirit-mead"] = 200,
-                                ["game:spirit-spelt"] = 225,
-                                ["game:spirit-rice"] = 225,
-                                ["game:spirit-rye"] = 225,
-                                ["game:spirit-amaranth"] = 225,
-                                ["game:spirit-cassava"] = 225,
-                                ["*"] = 225
-                            },
+                            ["hydration"] = -600,
                             ["IsLiquid"] = true
                         },
                         new JObject
@@ -421,7 +420,71 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject
                         {
                             ["itemname"] = "game:waterportion",
-                            ["hydration"] = 1500,
+                            ["hydration"] = 600,
+                            ["IsLiquid"] = true
+                        },
+                        new JObject
+                        {
+                            ["itemname"] = "game:mushroom-*",
+                            ["hydrationByType"] = new JObject
+                            {
+                                ["game:mushroom-flyagaric"] = -5,
+                                ["game:mushroom-earthball"] = -6,
+                                ["game:mushroom-deathcap"] = -15,
+                                ["game:mushroom-elfinsaddle"] = -6,
+                                ["game:mushroom-jackolantern"] = -5,
+                                ["game:mushroom-devilbolete"] = -8,
+                                ["game:mushroom-bitterbolete"] = -1,
+                                ["game:mushroom-devilstooth"] = -2,
+                                ["game:mushroom-golddropmilkcap"] = -2,
+                                ["game:mushroom-beardedtooth"] = 1,
+                                ["game:mushroom-whiteoyster"] = 1,
+                                ["game:mushroom-pinkoyster"] = 1,
+                                ["game:mushroom-dryadsaddle"] = 1,
+                                ["game:mushroom-tinderhoof"] = 1,
+                                ["game:mushroom-chickenofthewoods"] = 1,
+                                ["game:mushroom-reishi"] = 1,
+                                ["game:mushroom-funeralbell"] = -20,
+                                ["game:mushroom-livermushroom"] = 1,
+                                ["game:mushroom-pinkbonnet"] = -5,
+                                ["game:mushroom-shiitake"] = 1,
+                                ["game:mushroom-deerear"] = 1,
+                                ["*"] = 0
+                            },
+                            ["IsLiquid"] = false
+                        },
+                        new JObject
+                        {
+                            ["itemname"] = "game:spiritportion-*",
+                            ["hydrationByType"] = new JObject
+                            {
+                                ["game:spiritportion-cranberry"] = 160,
+                                ["game:spiritportion-blueberry"] = 180,
+                                ["game:spiritportion-pinkapple"] = 190,
+                                ["game:spiritportion-lychee"] = 220,
+                                ["game:spiritportion-redcurrant"] = 210,
+                                ["game:spiritportion-breadfruit"] = 130,
+                                ["game:spiritportion-pineapple"] = 250,
+                                ["game:spiritportion-blackcurrant"] = 210,
+                                ["game:spiritportion-saguaro"] = 160,
+                                ["game:spiritportion-whitecurrant"] = 210,
+                                ["game:spiritportion-redapple"] = 240,
+                                ["game:spiritportion-yellowapple"] = 240,
+                                ["game:spiritportion-cherry"] = 210,
+                                ["game:spiritportion-peach"] = 250,
+                                ["game:spiritportion-pear"] = 250,
+                                ["game:spiritportion-orange"] = 270,
+                                ["game:spiritportion-mango"] = 250,
+                                ["game:spiritportion-pomegranate"] = 220,
+                                ["game:spiritportion-apple"] = 240, 
+                                ["game:spiritportion-mead"] = 200, 
+                                ["game:spiritportion-spelt"] = 225,
+                                ["game:spiritportion-rice"] = 225, 
+                                ["game:spiritportion-rye"] = 225,
+                                ["game:spiritportion-amaranth"] = 225,
+                                ["game:spiritportion-cassava"] = 225, 
+                                ["*"] = 190 
+                            },
                             ["IsLiquid"] = true
                         }
                     }
@@ -433,7 +496,6 @@ namespace HydrateOrDiedrate.Configuration
                 }
                 catch (System.Exception ex)
                 {
-                    api.Logger.Error($"Error writing default hydration config file: {ex.Message}");
                 }
             }
         }

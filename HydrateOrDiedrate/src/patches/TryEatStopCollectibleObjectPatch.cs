@@ -1,38 +1,68 @@
 ﻿using HarmonyLib;
 using HydrateOrDiedrate;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using HydrateOrDiedrate.EntityBehavior;
+using HydrateOrDiedrate.Configuration;
 
 [HarmonyPatch(typeof(CollectibleObject), "tryEatStop")]
 public class TryEatStopCollectibleObjectPatch
 {
-    static void Postfix(float secondsUsed, ItemSlot slot, EntityAgent byEntity)
+    static bool alreadyCalled = false;
+    static float capturedHydrationAmount;
+    static EntityPlayer capturedPlayer;
+
+    [HarmonyPrefix]
+    static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity)
     {
+        alreadyCalled = false;
+        capturedHydrationAmount = 0;
+        capturedPlayer = null;
+
         var api = byEntity?.World?.Api;
-        if (api?.Side == EnumAppSide.Server)
+
+        if (api == null || api.Side != EnumAppSide.Server || slot?.Itemstack == null)
         {
-            if (slot?.Itemstack == null)
-            {
-                return;
-            }
+            return;
+        }
 
+        FoodNutritionProperties nutriProps = slot.Itemstack.Collectible.GetNutritionProperties(byEntity.World, slot.Itemstack, byEntity);
+        if (nutriProps != null && secondsUsed >= 0.95f)
+        {
             string itemCode = slot.Itemstack.Collectible.Code?.ToString() ?? "Unknown Item";
-            float hydration = HydrationManager.GetHydration(api, itemCode);
+            capturedHydrationAmount = HydrationManager.GetHydration(api, itemCode);
 
-            if (hydration != 0 && byEntity is EntityPlayer player)
+            if (capturedHydrationAmount != 0 && byEntity is EntityPlayer player)
             {
-                var handler = new WaterInteractionHandler(api, HydrateOrDiedrateModSystem.LoadedConfig);
-                var playerByUid = api.World.PlayerByUid(player.PlayerUID);
-                if (playerByUid != null)
-                {
-                    handler.ModifyThirst(playerByUid, hydration);
-                }
-                else
-                {
-                    api.Logger.Error("TryEatStopCollectibleObjectPatch: Player by UID not found for {0}", player.PlayerUID);
-                }
+                capturedPlayer = player;
             }
         }
+    }
+
+    [HarmonyPostfix]
+    static void Postfix()
+    {
+        if (alreadyCalled) return;
+        alreadyCalled = true;
+
+        if (capturedPlayer == null || capturedHydrationAmount == 0) return;
+
+        var api = capturedPlayer?.World?.Api;
+
+        if (api == null || api.Side != EnumAppSide.Server)
+        {
+            return;
+        }
+
+        var thirstBehavior = capturedPlayer.GetBehavior<EntityBehaviorThirst>();
+        if (thirstBehavior != null)
+        {
+            thirstBehavior.ModifyThirst(capturedHydrationAmount);
+        }
+
+        capturedHydrationAmount = 0;
+        capturedPlayer = null;
     }
 }

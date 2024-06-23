@@ -7,6 +7,8 @@ using HydrateOrDiedrate.Gui;
 using HarmonyLib;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using Vintagestory.API.Common.Entities;
+using HydrateOrDiedrate.Commands;
 
 namespace HydrateOrDiedrate
 {
@@ -17,14 +19,15 @@ namespace HydrateOrDiedrate
         private HudElementThirstBar _thirstHud;
         public static Config LoadedConfig;
         private WaterInteractionHandler _waterInteractionHandler;
+        private Harmony harmony;
 
         public override void StartPre(ICoreAPI api)
         {
             base.StartPre(api);
             LoadConfig(api);
             HydrationConfigLoader.GenerateDefaultHydrationConfig(api);
-
-            Harmony harmony = new Harmony("com.chronolegionnaire.hydrateordiedrate");
+            CoolingConfigLoader.GenerateDefaultCoolingConfig(api);
+            harmony = new Harmony("com.chronolegionnaire.hydrateordiedrate");
             harmony.PatchAll();
         }
 
@@ -37,9 +40,8 @@ namespace HydrateOrDiedrate
         public override void AssetsFinalize(ICoreAPI api)
         {
             base.AssetsFinalize(api);
-
-            api.Logger.Debug("Loading hydration patches from configuration.");
             LoadAndApplyHydrationPatches(api);
+            LoadAndApplyCoolingPatches(api);
         }
 
         private void LoadAndApplyHydrationPatches(ICoreAPI api)
@@ -48,10 +50,18 @@ namespace HydrateOrDiedrate
             HydrationManager.ApplyHydrationPatches(api, hydrationPatches);
         }
 
+        private void LoadAndApplyCoolingPatches(ICoreAPI api)
+        {
+            List<JObject> coolingPatches = CoolingConfigLoader.LoadCoolingPatches(api);
+            CoolingManager.ApplyCoolingPatches(api, coolingPatches);
+        }
+
         public override void Start(ICoreAPI api)
         {
             base.Start(api);
             LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+            api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
+            api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot)); // Register new behavior
             _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
         }
 
@@ -65,19 +75,7 @@ namespace HydrateOrDiedrate
             api.Event.RegisterGameTickListener(OnServerTick, 1000);
             api.Event.RegisterGameTickListener(_waterInteractionHandler.CheckPlayerInteraction, 100);
 
-            api.ChatCommands
-                .Create("setthirst")
-                .WithDescription("Sets the player's thirst level.")
-                .RequiresPrivilege("controlserver")
-                .WithArgs(api.ChatCommands.Parsers.Float("thirstValue"))
-                .HandleWith(OnSetThirstCommand);
-
-            api.ChatCommands
-                .Create("checkhydration")
-                .WithDescription("Checks the hydration value of the specified item.")
-                .RequiresPrivilege("controlserver")
-                .WithArgs(api.ChatCommands.Parsers.Word("itemCode"))
-                .HandleWith(OnCheckHydrationCommand);
+            ThirstCommands.Register(api, LoadedConfig);
         }
 
         public override void StartClientSide(ICoreClientAPI api)
@@ -90,10 +88,29 @@ namespace HydrateOrDiedrate
 
         private void OnPlayerJoinOrNowPlaying(IServerPlayer byPlayer)
         {
-            var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>() ?? new EntityBehaviorThirst(byPlayer.Entity, LoadedConfig);
-            byPlayer.Entity.AddBehavior(thirstBehavior);
+            var entity = byPlayer.Entity;
+            EnsureThirstBehavior(entity);
+            EnsureBodyTemperatureHotBehavior(entity);
+        }
 
-            if (!byPlayer.Entity.WatchedAttributes.HasAttribute("currentThirst"))
+        private void OnPlayerRespawn(IServerPlayer byPlayer)
+        {
+            var entity = byPlayer.Entity;
+            var thirstBehavior = EnsureThirstBehavior(entity);
+            thirstBehavior.ResetThirstOnRespawn();
+            EnsureBodyTemperatureHotBehavior(entity);
+        }
+
+        private EntityBehaviorThirst EnsureThirstBehavior(Entity entity)
+        {
+            var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
+            if (thirstBehavior == null)
+            {
+                thirstBehavior = new EntityBehaviorThirst(entity, LoadedConfig);
+                entity.AddBehavior(thirstBehavior);
+            }
+
+            if (!entity.WatchedAttributes.HasAttribute("currentThirst"))
             {
                 thirstBehavior.SetInitialThirst();
             }
@@ -101,11 +118,18 @@ namespace HydrateOrDiedrate
             {
                 thirstBehavior.LoadThirst();
             }
+
+            return thirstBehavior;
         }
 
-        private void OnPlayerRespawn(IServerPlayer byPlayer)
+        private void EnsureBodyTemperatureHotBehavior(Entity entity)
         {
-            byPlayer.Entity.GetBehavior<EntityBehaviorThirst>()?.ResetThirstOnRespawn();
+            var bodyTemperatureHotBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
+            if (bodyTemperatureHotBehavior == null)
+            {
+                bodyTemperatureHotBehavior = new EntityBehaviorBodyTemperatureHot(entity, LoadedConfig);
+                entity.AddBehavior(bodyTemperatureHotBehavior);
+            }
         }
 
         private void OnServerTick(float dt)
@@ -116,26 +140,10 @@ namespace HydrateOrDiedrate
             }
         }
 
-        private TextCommandResult OnSetThirstCommand(TextCommandCallingArgs args)
+        public override void Dispose()
         {
-            if (!(args.Caller.Player is IServerPlayer player)) return TextCommandResult.Error("Player not found.");
-            var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
-            if (thirstBehavior == null) return TextCommandResult.Error("Thirst behavior not found.");
-
-            if (!float.TryParse(args[0].ToString(), out float thirstValue)) return TextCommandResult.Error("Invalid thirst value. Please enter a valid number.");
-
-            thirstBehavior.CurrentThirst = thirstValue;
-            thirstBehavior.UpdateThirstAttributes();
-
-            return TextCommandResult.Success($"Thirst set to {thirstValue}.");
-        }
-
-        private TextCommandResult OnCheckHydrationCommand(TextCommandCallingArgs args)
-        {
-            if (!(args.Caller.Player is IServerPlayer player)) return TextCommandResult.Error("Player not found.");
-            string itemCode = args[0].ToString();
-            float hydrationValue = HydrationManager.GetHydration(_serverApi, itemCode);
-            return TextCommandResult.Success($"The hydration value for {itemCode} is {hydrationValue}.");
+            harmony.UnpatchAll("com.chronolegionnaire.hydrateordiedrate");
+            base.Dispose();
         }
     }
 }

@@ -1,0 +1,11 @@
+﻿[
+  {
+    "op": "add",
+    "path": "/server/behaviors/6",
+    "value": {
+      "code": "thirst"
+    },
+    "file": "game:entities/humanoid/player.json",
+    "side": "Server"
+  }
+]
