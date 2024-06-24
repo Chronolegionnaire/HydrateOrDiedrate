@@ -15,7 +15,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         private float _currentThirst;
         private float _customThirstRate;
         private int _customThirstTicks;
-        private readonly Config _config;
+        private Config _config;
         private float _currentPenaltyAmount;
         private int _thirstTickCounter;
         private bool _isPenaltyApplied;
@@ -38,7 +38,7 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public EntityBehaviorThirst(Entity entity) : base(entity)
         {
-            _config = new Config();
+            _config = ModConfig.ReadConfig<Config>(entity.Api, "HydrateOrDiedrateConfig.json");
             LoadThirst();
             InitializeCounters();
         }
