@@ -132,14 +132,7 @@ namespace HydrateOrDiedrate
                 else
                     QuenchThirst(player, hydrationValue, hungerReduction);
             }
-            else if (liquidCode.StartsWith("saltwater"))
-            {
-                if (_config.EnableSaltWaterThirstIncrease)
-                    QuenchThirst(player, hydrationValue, hungerReduction);
-                else
-                    QuenchThirst(player, hydrationValue, hungerReduction);
-            }
-            else if (liquidCode.StartsWith("water"))
+            else
             {
                 QuenchThirst(player, hydrationValue, hungerReduction);
             }
