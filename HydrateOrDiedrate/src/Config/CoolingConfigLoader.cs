@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Vintagestory.API.Common;
+using System.Text.RegularExpressions;
 
 namespace HydrateOrDiedrate.Configuration
 {
@@ -12,7 +13,7 @@ namespace HydrateOrDiedrate.Configuration
         {
             List<JObject> allPatches = new List<JObject>();
             string configFolder = ModConfig.GetConfigPath(api);
-            List<string> configFiles = Directory.GetFiles(configFolder, "HoD.AddCooling*.json").ToList();
+            List<string> configFiles = Directory.GetFiles(configFolder, "*AddCooling*.json").ToList();
             string defaultConfigPath = Path.Combine(configFolder, "HoD.AddCooling.json");
             if (!File.Exists(defaultConfigPath))
             {
@@ -24,27 +25,53 @@ namespace HydrateOrDiedrate.Configuration
 
             foreach (string file in configFiles)
             {
-                    string json = File.ReadAllText(file);
-                    JObject parsedFile = JObject.Parse(json);
-                    int priority = parsedFile["priority"]?.Value<int>() ?? 5;
+                string json = File.ReadAllText(file);
+                JObject parsedFile = JObject.Parse(json);
+                int priority = parsedFile["priority"]?.Value<int>() ?? 5;
 
-                    if (!sortedPatches.ContainsKey(priority))
-                    {
-                        sortedPatches[priority] = new List<JObject>();
-                    }
+                if (!sortedPatches.ContainsKey(priority))
+                {
+                    sortedPatches[priority] = new List<JObject>();
+                }
 
-                    var patches = parsedFile["patches"].ToObject<List<JObject>>();
-                    sortedPatches[priority].AddRange(patches);
+                var patches = parsedFile["patches"].ToObject<List<JObject>>();
+                sortedPatches[priority].AddRange(patches);
             }
 
             Dictionary<string, JObject> mergedPatches = new Dictionary<string, JObject>();
+            List<KeyValuePair<string, JObject>> wildcardPatches = new List<KeyValuePair<string, JObject>>();
 
             foreach (var priorityLevel in sortedPatches.Keys.OrderByDescending(k => k))
             {
                 foreach (var patch in sortedPatches[priorityLevel])
                 {
                     string itemname = patch["itemname"].ToString();
-                    mergedPatches[itemname] = patch;
+                    if (itemname.Contains("*"))
+                    {
+                        wildcardPatches.Add(new KeyValuePair<string, JObject>(itemname, patch));
+                    }
+                    else
+                    {
+                        mergedPatches[itemname] = patch;
+                    }
+                }
+            }
+
+            // Handle wildcard patches
+            foreach (var wildcardPatch in wildcardPatches)
+            {
+                string pattern = "^" + Regex.Escape(wildcardPatch.Key).Replace("\\*", ".*") + "$";
+                Regex regex = new Regex(pattern);
+
+                foreach (var itemname in mergedPatches.Keys.ToList())
+                {
+                    if (regex.IsMatch(itemname))
+                    {
+                        mergedPatches[itemname].Merge(wildcardPatch.Value, new JsonMergeSettings
+                        {
+                            MergeArrayHandling = MergeArrayHandling.Union
+                        });
+                    }
                 }
             }
 
