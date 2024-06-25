@@ -3,6 +3,8 @@ using HydrateOrDiedrate.EntityBehavior;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HydrateOrDiedrate
 {
@@ -94,29 +96,52 @@ namespace HydrateOrDiedrate
             var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
             if (block.BlockMaterial != EnumBlockMaterial.Liquid) return;
 
-            var hungerBehavior = player.Entity.GetBehavior<Vintagestory.GameContent.EntityBehaviorHunger>();
-            if (hungerBehavior == null || hungerBehavior.Saturation < _config.SourceBlockHungerDecrease)
+            var blockHydrationConfig = BlockHydrationManager.GetBlockHydration(block.Code.Path);
+
+            if (blockHydrationConfig == null)
             {
                 return;
             }
 
-            string liquidCode = block.LiquidCode;
+            string liquidCode = block.Code.Path;
             var adjustedPos = blockSel.HitPosition;
             _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), adjustedPos.X, adjustedPos.Y, adjustedPos.Z, null, true, 32f, 1f);
             SpawnWaterParticles(adjustedPos);
-            if (liquidCode.StartsWith("boilingwater"))
+            
+            bool isBoiling = blockHydrationConfig.IsBoiling;
+            float hungerReduction = blockHydrationConfig.HungerReduction;
+            var hydrationByType = blockHydrationConfig.HydrationByType;
+
+            if (hydrationByType == null || !hydrationByType.Any())
             {
-                if (_config.EnableBoilingWaterDamage) ApplyHeatDamage(player);
-                else QuenchThirst(player);
+                return;
+            }
+
+            float hydrationValue = hydrationByType.ContainsKey("*") ? hydrationByType["*"] : 0f;
+
+            var hungerBehavior = player.Entity.GetBehavior<Vintagestory.GameContent.EntityBehaviorHunger>();
+            if (hungerBehavior != null && hungerBehavior.Saturation < hungerReduction)
+            {
+                return;
+            }
+
+            if (isBoiling)
+            {
+                if (_config.EnableBoilingWaterDamage)
+                    ApplyHeatDamage(player);
+                else
+                    QuenchThirst(player, hydrationValue, hungerReduction);
             }
             else if (liquidCode.StartsWith("saltwater"))
             {
-                if (_config.EnableSaltWaterThirstIncrease) IncreaseThirst(player);
-                else QuenchThirst(player);
+                if (_config.EnableSaltWaterThirstIncrease)
+                    QuenchThirst(player, hydrationValue, hungerReduction);
+                else
+                    QuenchThirst(player, hydrationValue, hungerReduction);
             }
             else if (liquidCode.StartsWith("water"))
             {
-                QuenchThirst(player);
+                QuenchThirst(player, hydrationValue, hungerReduction);
             }
         }
 
@@ -176,33 +201,19 @@ namespace HydrateOrDiedrate
             }
         }
 
-        private void QuenchThirst(IPlayer player)
-        {
-            ModifyThirstAndHunger(player, _config.RegularWaterThirstDecrease);
-        }
-
-        private void IncreaseThirst(IPlayer player)
-        {
-            var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
-            if (thirstBehavior != null)
-            {
-                thirstBehavior.ModifyThirst(-_config.SaltWaterThirstIncrease);
-            }
-        }
-
-        private void ModifyThirstAndHunger(IPlayer player, float amount)
+        private void QuenchThirst(IPlayer player, float hydrationValue, float hungerReduction)
         {
             var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
             var hungerBehavior = player.Entity.GetBehavior<Vintagestory.GameContent.EntityBehaviorHunger>();
 
             if (thirstBehavior != null)
             {
-                thirstBehavior.ModifyThirst(amount);
+                thirstBehavior.ModifyThirst(hydrationValue);
             }
 
             if (hungerBehavior != null)
             {
-                hungerBehavior.Saturation -= _config.SourceBlockHungerDecrease;
+                hungerBehavior.Saturation -= hungerReduction;
             }
         }
 

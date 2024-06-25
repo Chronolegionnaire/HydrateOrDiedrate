@@ -6,14 +6,14 @@ using Vintagestory.API.Common;
 
 namespace HydrateOrDiedrate.Configuration
 {
-    public static class HydrationConfigLoader
+    public static class ItemHydrationConfigLoader
     {
         public static List<JObject> LoadHydrationPatches(ICoreAPI api)
         {
             List<JObject> allPatches = new List<JObject>();
             string configFolder = ModConfig.GetConfigPath(api);
-            List<string> configFiles = Directory.GetFiles(configFolder, "HoD.AddHydration*.json").ToList();
-            string defaultConfigPath = Path.Combine(configFolder, "HoD.AddHydration.json");
+            List<string> configFiles = Directory.GetFiles(configFolder, "*AddItemHydration*.json").ToList();
+            string defaultConfigPath = Path.Combine(configFolder, "HoD.AddItemHydration.json");
             if (!File.Exists(defaultConfigPath))
             {
                 GenerateDefaultHydrationConfig(api);
@@ -51,7 +51,7 @@ namespace HydrateOrDiedrate.Configuration
 
         public static void GenerateDefaultHydrationConfig(ICoreAPI api)
         {
-            string configPath = Path.Combine(ModConfig.GetConfigPath(api), "HoD.AddHydration.json");
+            string configPath = Path.Combine(ModConfig.GetConfigPath(api), "HoD.AddItemHydration.json");
             if (!File.Exists(configPath))
             {
                 var defaultConfig = new JObject
@@ -479,6 +479,53 @@ namespace HydrateOrDiedrate.Configuration
                                 ["game:spiritportion-cassava"] = 225, 
                                 ["*"] = 190 
                             },
+                            ["IsLiquid"] = true
+                        },
+                        new JObject
+                        {
+                            ["itemname"] = "alchemy:potionportion-*",
+                            ["hydrationByType"] = new JObject
+                            {
+                                ["alchemy:potionportion-all-medium"] = -100,
+                                ["alchemy:potionportion-all-strong"] = -300,
+                                ["alchemy:potionportion-alltick-medium"] = -100,
+                                ["alchemy:potionportion-alltick-strong"] = -300,
+                                ["alchemy:potionportion-archer-medium"] = -100,
+                                ["alchemy:potionportion-archer-strong"] = -300,
+                                ["alchemy:potionportion-healingeffect-medium"] = -100,
+                                ["alchemy:potionportion-healingeffect-strong"] = -300,
+                                ["alchemy:potionportion-hungerenhance-medium"] = -100,
+                                ["alchemy:potionportion-hungerenhance-strong"] = -300,
+                                ["alchemy:potionportion-hungersupress-medium"] = -100,
+                                ["alchemy:potionportion-hungersupress-strong"] = -300,
+                                ["alchemy:potionportion-hunter-medium"] = -100,
+                                ["alchemy:potionportion-hunter-strong"] = -300,
+                                ["alchemy:potionportion-looter-medium"] = -100,
+                                ["alchemy:potionportion-looter-strong"] = -300,
+                                ["alchemy:potionportion-melee-medium"] = -100,
+                                ["alchemy:potionportion-melee-strong"] = -300,
+                                ["alchemy:potionportion-mining-medium"] = -100,
+                                ["alchemy:potionportion-mining-strong"] = -300,
+                                ["alchemy:potionportion-poison-medium"] = -100,
+                                ["alchemy:potionportion-poison-strong"] = -300,
+                                ["alchemy:potionportion-predator-medium"] = -100,
+                                ["alchemy:potionportion-predator-strong"] = -300,
+                                ["alchemy:potionportion-regen-medium"] = -100,
+                                ["alchemy:potionportion-regen-strong"] = -300,
+                                ["alchemy:potionportion-scentmask-medium"] = -100,
+                                ["alchemy:potionportion-scentmask-strong"] = -300,
+                                ["alchemy:potionportion-speed-medium"] = -100,
+                                ["alchemy:potionportion-speed-strong"] = -300,
+                                ["alchemy:potionportion-vitality-medium"] = -100,
+                                ["alchemy:potionportion-vitality-strong"] = -300,
+                                ["*"] = -200
+                            },
+                            ["IsLiquid"] = true
+                        },
+                        new JObject
+                        {
+                            ["itemname"] = "alchemy:potionteaportion",
+                            ["hydration"] = 300,
                             ["IsLiquid"] = true
                         }
                     }
