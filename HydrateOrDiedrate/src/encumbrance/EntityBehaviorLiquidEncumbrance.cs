@@ -137,7 +137,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             base.OnEntityDeath(damageSourceForDeath);
             _serverApi?.Event.EnqueueMainThreadTask(() => 
             {
-                if (entity.HasBehavior<EntityBehaviorLiquidEncumbrance>() == null)
+                if (!entity.HasBehavior<EntityBehaviorLiquidEncumbrance>())
                 {
                     entity.AddBehavior(new EntityBehaviorLiquidEncumbrance(entity));
                 }
