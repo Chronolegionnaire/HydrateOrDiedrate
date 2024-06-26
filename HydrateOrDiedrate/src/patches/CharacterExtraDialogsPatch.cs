@@ -58,16 +58,26 @@ namespace HydrateOrDiedrate.Patches
 
                 composers["playerstats"] = capi.Gui.CreateCompo("playerstats", dialogBounds)
                     .AddShadedDialogBG(bgBounds, true, 5.0, 0.75f)
-                    .AddDialogTitleBar(Lang.Get("Stats", Array.Empty<object>()), () =>
+                    .AddDialogTitleBar(Lang.Get("Stats"), () =>
                     {
-                        var method = dlg.GetType().GetMethod("OnTitleBarClose", BindingFlags.NonPublic | BindingFlags.Instance);
-                        if (method != null)
+                        var tryCloseMethod = dlg.GetType().GetMethod("TryClose", BindingFlags.Public | BindingFlags.Instance);
+                        if (tryCloseMethod != null)
                         {
-                            method.Invoke(dlg, null);
+                            tryCloseMethod.Invoke(dlg, null);
+                        }
+                        else
+                        {
+                            var isOpenedField = dlg.GetType().GetField("isOpened", BindingFlags.NonPublic | BindingFlags.Instance);
+                            var callbackIdField = dlg.GetType().GetField("callbackId", BindingFlags.NonPublic | BindingFlags.Instance);
+                            if (isOpenedField != null && callbackIdField != null)
+                            {
+                                isOpenedField.SetValue(dlg, false);
+                                long callbackId = (long)callbackIdField.GetValue(dlg);
+                                capi.Event.UnregisterCallback(callbackId);
+                            }
                         }
                     }, null, null)
                     .BeginChildElements(bgBounds);
-
 
                 if (saturation != null)
                 {
@@ -112,8 +122,6 @@ namespace HydrateOrDiedrate.Patches
                         CairoFont.WhiteDetailText(), 
                         thirstRateBounds, 
                         "hydrateordiedrate_thirstrate");
-
-
                 }
 
                 composers["playerstats"].EndChildElements().Compose(true);
@@ -127,58 +135,59 @@ namespace HydrateOrDiedrate.Patches
                 return true;
             }
         }
+
         [HarmonyPatch("UpdateStats")]
         [HarmonyPostfix]
         public static void UpdateStats_Postfix(object __instance)
         {
-                Type type = __instance.GetType();
-                FieldInfo capiField = type.GetField("capi", BindingFlags.NonPublic | BindingFlags.Instance);
-                ICoreClientAPI capi = (ICoreClientAPI)capiField.GetValue(__instance);
-                PropertyInfo composersProperty =
-                    type.GetProperty("Composers", BindingFlags.NonPublic | BindingFlags.Instance);
-                var composers = composersProperty.GetValue(__instance) as GuiDialog.DlgComposers;
-                MethodInfo isOpenedMethod = type.GetMethod("IsOpened", BindingFlags.NonPublic | BindingFlags.Instance);
-                bool isOpened = (bool)isOpenedMethod.Invoke(__instance, null);
+            Type type = __instance.GetType();
+            FieldInfo capiField = type.GetField("capi", BindingFlags.NonPublic | BindingFlags.Instance);
+            ICoreClientAPI capi = (ICoreClientAPI)capiField.GetValue(__instance);
+            PropertyInfo composersProperty =
+                type.GetProperty("Composers", BindingFlags.NonPublic | BindingFlags.Instance);
+            var composers = composersProperty.GetValue(__instance) as GuiDialog.DlgComposers;
+            MethodInfo isOpenedMethod = type.GetMethod("IsOpened", BindingFlags.NonPublic | BindingFlags.Instance);
+            bool isOpened = (bool)isOpenedMethod.Invoke(__instance, null);
 
-                if (!isOpened)
-                {
-                    return;
-                }
+            if (!isOpened)
+            {
+                return;
+            }
 
-                var entity = capi.World.Player.Entity;
-                var compo = composers?["playerstats"];
-                if (compo == null)
-                {
-                    return;
-                }
-                
-                float currentThirst = entity.WatchedAttributes.GetFloat("currentThirst", 0f);
-                float maxThirst = entity.WatchedAttributes.GetFloat("maxThirst", 1500f);
-                float thirstPenalty = entity.WatchedAttributes.GetFloat("thirstPenalty", 0f);
-                float currentThirstRate = entity.WatchedAttributes.GetFloat("thirstRate", 0.01f);
-                float normalThirstRate = entity.WatchedAttributes.GetFloat("normalThirstRate", 0.01f);
-                float thirstRatePercentage = (currentThirstRate / normalThirstRate) * 100;
-                thirstRatePercentage = Math.Max(0, thirstRatePercentage);
-                var thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst");
-                if (thirstDynamicText != null)
-                {
-                    thirstDynamicText.SetNewText($"{(int)currentThirst} / {(int)maxThirst}", false, false, false);
-                }
-                
-                var thirstRateDynamicText = compo.GetDynamicText("hydrateordiedrate_thirstrate");
-                if (thirstRateDynamicText != null)
-                {
-                    thirstRateDynamicText.SetNewText($"{(int)thirstRatePercentage}%", false, false, false);
-                }
-                
-                float walkSpeed = entity.Stats.GetBlended("walkspeed");
-                float effectiveWalkSpeed = walkSpeed - thirstPenalty;
-                var walkSpeedDynamicText = compo.GetDynamicText("walkspeed");
-                if (walkSpeedDynamicText != null)
-                {
-                    walkSpeedDynamicText.SetNewText($"{(int)Math.Round(effectiveWalkSpeed * 100)}%", false, false,
-                        false);
-                }
+            var entity = capi.World.Player.Entity;
+            var compo = composers?["playerstats"];
+            if (compo == null)
+            {
+                return;
+            }
+
+            float currentThirst = entity.WatchedAttributes.GetFloat("currentThirst", 0f);
+            float maxThirst = entity.WatchedAttributes.GetFloat("maxThirst", 1500f);
+            float thirstPenalty = entity.WatchedAttributes.GetFloat("thirstPenalty", 0f);
+            float currentThirstRate = entity.WatchedAttributes.GetFloat("thirstRate", 0.01f);
+            float normalThirstRate = entity.WatchedAttributes.GetFloat("normalThirstRate", 0.01f);
+            float thirstRatePercentage = (currentThirstRate / normalThirstRate) * 100;
+            thirstRatePercentage = Math.Max(0, thirstRatePercentage);
+            var thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst");
+            if (thirstDynamicText != null)
+            {
+                thirstDynamicText.SetNewText($"{(int)currentThirst} / {(int)maxThirst}", false, false, false);
+            }
+
+            var thirstRateDynamicText = compo.GetDynamicText("hydrateordiedrate_thirstrate");
+            if (thirstRateDynamicText != null)
+            {
+                thirstRateDynamicText.SetNewText($"{(int)thirstRatePercentage}%", false, false, false);
+            }
+
+            float walkSpeed = entity.Stats.GetBlended("walkspeed");
+            float effectiveWalkSpeed = walkSpeed - thirstPenalty;
+            var walkSpeedDynamicText = compo.GetDynamicText("walkspeed");
+            if (walkSpeedDynamicText != null)
+            {
+                walkSpeedDynamicText.SetNewText($"{(int)Math.Round(effectiveWalkSpeed * 100)}%", false, false,
+                    false);
+            }
         }
 
         private static void getHealthSat(EntityPlayer entity, out float? health, out float? maxHealth, out float? saturation, out float? maxSaturation)
