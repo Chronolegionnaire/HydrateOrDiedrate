@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Util;
@@ -48,7 +49,7 @@ namespace HydrateOrDiedrate
             if (string.IsNullOrEmpty(patchItemName)) return false;
             if (patchItemName.Contains("*"))
             {
-                string pattern = "^" + patchItemName.Replace("*", ".*") + "$";
+                string pattern = "^" + Regex.Escape(patchItemName).Replace("\\*", ".*") + "$";
                 return System.Text.RegularExpressions.Regex.IsMatch(itemName, pattern);
             }
             return itemName == patchItemName;

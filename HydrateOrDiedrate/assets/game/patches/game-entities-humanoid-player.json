@@ -16,5 +16,14 @@
     },
     "file": "game:entities/humanoid/player.json",
     "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/server/behaviors/12",
+    "value": {
+      "code": "liquidencumbrancee"
+    },
+    "file": "game:entities/humanoid/player.json",
+    "side": "Server"
   }
 ]

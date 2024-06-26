@@ -69,6 +69,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
         api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
         api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot));
+        api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
         _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
     }
 
@@ -81,7 +82,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.Event.PlayerRespawn += OnPlayerRespawn;
         api.Event.RegisterGameTickListener(OnServerTick, 1000);
         api.Event.RegisterGameTickListener(_waterInteractionHandler.CheckPlayerInteraction, 100);
-
         ThirstCommands.Register(api, LoadedConfig);
     }
 
@@ -98,6 +98,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         var entity = byPlayer.Entity;
         EnsureThirstBehavior(entity);
         EnsureBodyTemperatureHotBehavior(entity);
+        EnsureLiquidEncumbranceBehavior(entity);
     }
 
     private void OnPlayerRespawn(IServerPlayer byPlayer)
@@ -106,6 +107,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         var thirstBehavior = EnsureThirstBehavior(entity);
         thirstBehavior.ResetThirstOnRespawn();
         EnsureBodyTemperatureHotBehavior(entity);
+        EnsureLiquidEncumbranceBehavior(entity);
     }
 
     private EntityBehaviorThirst EnsureThirstBehavior(Entity entity)
@@ -136,6 +138,16 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             bodyTemperatureHotBehavior = new EntityBehaviorBodyTemperatureHot(entity, LoadedConfig);
             entity.AddBehavior(bodyTemperatureHotBehavior);
+        }
+    }
+
+    private void EnsureLiquidEncumbranceBehavior(Entity entity)
+    {
+        var liquidEncumbranceBehavior = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
+        if (liquidEncumbranceBehavior == null)
+        {
+            liquidEncumbranceBehavior = new EntityBehaviorLiquidEncumbrance(entity);
+            entity.AddBehavior(liquidEncumbranceBehavior);
         }
     }
 

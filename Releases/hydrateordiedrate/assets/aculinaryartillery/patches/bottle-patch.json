@@ -1,0 +1,11 @@
+﻿[
+  {
+    "op": "addmerge",
+    "path": "/attributes",
+    "value": {
+      "liquidcontainer": true
+    },
+    "file": "aculinaryartillery:blocktypes/bottle.json",
+    "side": "Server"
+  }
+]

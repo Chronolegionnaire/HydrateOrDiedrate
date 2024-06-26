@@ -39,43 +39,62 @@ namespace HydrateOrDiedrate.Configuration
             }
 
             Dictionary<string, JObject> mergedPatches = new Dictionary<string, JObject>();
-            List<KeyValuePair<string, JObject>> wildcardPatches = new List<KeyValuePair<string, JObject>>();
 
             foreach (var priorityLevel in sortedPatches.Keys.OrderByDescending(k => k))
             {
                 foreach (var patch in sortedPatches[priorityLevel])
                 {
                     string itemname = patch["itemname"].ToString();
-                    if (itemname.Contains("*"))
+                    mergedPatches[itemname] = patch;
+                }
+            }
+
+            // Detect items from all domains
+            var allItemCodes = api.World.Collectibles
+                .Where(c => c is Item || c is Block)
+                .Select(c => c.Code.ToString())
+                .ToList();
+
+            List<JObject> finalPatches = new List<JObject>();
+
+            foreach (var patch in mergedPatches.Values)
+            {
+                string itemname = patch["itemname"].ToString();
+                if (itemname.Contains("*"))
+                {
+                    string pattern = "^" + Regex.Escape(itemname).Replace("\\*", ".*") + "$";
+                    Regex regex = new Regex(pattern);
+
+                    foreach (var code in allItemCodes)
                     {
-                        wildcardPatches.Add(new KeyValuePair<string, JObject>(itemname, patch));
+                        if (regex.IsMatch(code))
+                        {
+                            JObject newPatch = new JObject(patch);
+                            newPatch["itemname"] = code;
+                            finalPatches.Add(newPatch);
+                        }
+                    }
+                }
+                else
+                {
+                    if (itemname == "eldritchcuteclothing:clothes-kosovorotka-blue")
+                    {
+                        if (allItemCodes.Contains(itemname))
+                        {
+                            finalPatches.Add(patch);
+                        }
                     }
                     else
                     {
-                        mergedPatches[itemname] = patch;
-                    }
-                }
-            }
-
-            // Handle wildcard patches
-            foreach (var wildcardPatch in wildcardPatches)
-            {
-                string pattern = "^" + Regex.Escape(wildcardPatch.Key).Replace("\\*", ".*") + "$";
-                Regex regex = new Regex(pattern);
-
-                foreach (var itemname in mergedPatches.Keys.ToList())
-                {
-                    if (regex.IsMatch(itemname))
-                    {
-                        mergedPatches[itemname].Merge(wildcardPatch.Value, new JsonMergeSettings
+                        if (allItemCodes.Contains(itemname))
                         {
-                            MergeArrayHandling = MergeArrayHandling.Union
-                        });
+                            finalPatches.Add(patch);
+                        }
                     }
                 }
             }
 
-            return mergedPatches.Values.ToList();
+            return finalPatches;
         }
 
         public static void GenerateDefaultCoolingConfig(ICoreAPI api)
@@ -86,12 +105,9 @@ namespace HydrateOrDiedrate.Configuration
                 var defaultConfig = new JObject
                 {
                     ["priority"] = 5,
-                    ["patches"] = new JArray
+                    ["patches"] = new JArray   
                     {
-                        new JObject
-                        {
-                            ["itemname"] = "game:clothes-upperbody-tattered-crimson-tunic", ["cooling"] = 1.5
-                        },
+                        new JObject { ["itemname"] = "game:clothes-upperbody-tattered-crimson-tunic", ["cooling"] = 1.5 },
                         new JObject { ["itemname"] = "game:clothes-upperbody-tattered-linen-shirt", ["cooling"] = 2 },
                         new JObject { ["itemname"] = "game:clothes-upperbody-peasent-shirt", ["cooling"] = 1.5 },
                         new JObject { ["itemname"] = "game:clothes-upperbody-pastoral-shirt", ["cooling"] = 2 },
@@ -365,7 +381,7 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject { ["itemname"] = "game:clothes-face-forgotten", ["cooling"] = 0.2 },
                         new JObject { ["itemname"] = "game:clothes-face-survivor", ["cooling"] = 0.2 },
                         new JObject { ["itemname"] = "game:clothes-face-snow-goggles", ["cooling"] = 0.4 }
-                    }
+                    },
                 };
                     File.WriteAllText(configPath, defaultConfig.ToString());
             }

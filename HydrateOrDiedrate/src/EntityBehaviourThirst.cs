@@ -4,6 +4,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using HydrateOrDiedrate.Configuration;
+using Vintagestory.API.Config;
 
 namespace HydrateOrDiedrate.EntityBehavior
 {
@@ -182,7 +183,9 @@ namespace HydrateOrDiedrate.EntityBehavior
             CurrentThirst = 0.5f * _config.MaxThirst;
             UpdateThirstAttributes();
             RemoveMovementSpeedPenalty();
+            InitializeCounters();
         }
+
 
         private void ApplyDamage()
         {
@@ -213,8 +216,16 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         private void UpdateWalkSpeed()
         {
+            var liquidEncumbrance = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
+            if (liquidEncumbrance != null && liquidEncumbrance.IsPenaltyApplied)
+            {
+                entity.Stats.Set("walkspeed", "thirstPenalty", -_currentPenaltyAmount, true);
+                return;
+            }
+
             entity.Stats.Set("walkspeed", "thirstPenalty", -_currentPenaltyAmount, true);
         }
+
 
         public void ApplyCustomThirstRate(float rate, int ticks)
         {
@@ -240,7 +251,20 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public static void UpdateThirstOnServerTick(IServerPlayer player, float deltaTime, Config config)
         {
-            player.Entity.GetBehavior<EntityBehaviorThirst>()?.OnGameTick(deltaTime);
+            var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
+            if (thirstBehavior != null)
+            {
+                thirstBehavior.OnGameTick(deltaTime);
+            }
+            else
+            {
+                // Attempt to re-add the thirst behavior
+                if (TryAddThirstBehavior(player.Entity, config))
+                {
+                    thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
+                    thirstBehavior?.OnGameTick(deltaTime);
+                }
+            }
         }
 
         public void UpdateThirstRate(float rate)
@@ -265,6 +289,21 @@ namespace HydrateOrDiedrate.EntityBehavior
             if (hydLossDelay > currentHydrationLossDelay)
             {
                 ApplyHydrationLossDelay(hydLossDelay);
+            }
+        }
+        private static bool TryAddThirstBehavior(Entity entity, Config config)
+        {
+            try
+            {
+                var thirstBehavior = new EntityBehaviorThirst(entity, config);
+                entity.AddBehavior(thirstBehavior);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging purposes
+                entity.Api.Logger.Error("Exception while trying to re-add thirst behavior: {0}", ex);
+                return false;
             }
         }
 
