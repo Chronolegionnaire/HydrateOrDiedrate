@@ -60,7 +60,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="assets\hydrateordiedrate\itemtypes\food\" />
       <Folder Include="assets\hydrateordiedrate\patches\" />
+      <Folder Include="assets\hydrateordiedrate\recipes\cooking\" />
     </ItemGroup>
 
 </Project>
