@@ -40,13 +40,17 @@ namespace HydrateOrDiedrate.EntityBehavior
         public EntityBehaviorThirst(Entity entity) : base(entity)
         {
             _config = ModConfig.ReadConfig<Config>(entity.Api, "HydrateOrDiedrateConfig.json");
+            if (_config == null)
+            {
+                _config = new Config();
+            }
             LoadThirst();
             InitializeCounters();
         }
 
         public EntityBehaviorThirst(Entity entity, Config config) : base(entity)
         {
-            _config = config;
+            _config = config ?? new Config();
             LoadThirst();
             InitializeCounters();
         }
@@ -62,13 +66,15 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public override void OnGameTick(float deltaTime)
         {
-            if (!entity.Alive) return;
+            if (entity == null || !entity.Alive) return;
 
             var player = entity as EntityPlayer;
-            if (player?.Player?.WorldData?.CurrentGameMode is EnumGameMode.Creative or EnumGameMode.Spectator)
+            if (player?.Player?.WorldData?.CurrentGameMode is EnumGameMode.Creative or EnumGameMode.Spectator or EnumGameMode.Guest)
             {
                 return;
             }
+
+            if (entity.GetBehavior<EntityBehaviorThirst>() == null) return;
 
             thirstCounter += deltaTime;
             if (thirstCounter > 10f)
@@ -186,7 +192,6 @@ namespace HydrateOrDiedrate.EntityBehavior
             InitializeCounters();
         }
 
-
         private void ApplyDamage()
         {
             entity.ReceiveDamage(new DamageSource
@@ -226,7 +231,6 @@ namespace HydrateOrDiedrate.EntityBehavior
             entity.Stats.Set("walkspeed", "thirstPenalty", -_currentPenaltyAmount, true);
         }
 
-
         public void ApplyCustomThirstRate(float rate, int ticks)
         {
             _customThirstRate = rate;
@@ -251,6 +255,11 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public static void UpdateThirstOnServerTick(IServerPlayer player, float deltaTime, Config config)
         {
+            if (player?.Entity == null || !player.Entity.WatchedAttributes.GetBool("isFullyInitialized") || !player.Entity.Alive) return;
+
+            var gameMode = player.WorldData.CurrentGameMode;
+            if (gameMode == EnumGameMode.Creative || gameMode == EnumGameMode.Spectator || gameMode == EnumGameMode.Guest) return;
+
             var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior != null)
             {
@@ -258,7 +267,6 @@ namespace HydrateOrDiedrate.EntityBehavior
             }
             else
             {
-                // Attempt to re-add the thirst behavior
                 if (TryAddThirstBehavior(player.Entity, config))
                 {
                     thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
@@ -291,6 +299,7 @@ namespace HydrateOrDiedrate.EntityBehavior
                 ApplyHydrationLossDelay(hydLossDelay);
             }
         }
+
         private static bool TryAddThirstBehavior(Entity entity, Config config)
         {
             try
@@ -299,10 +308,8 @@ namespace HydrateOrDiedrate.EntityBehavior
                 entity.AddBehavior(thirstBehavior);
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
-                // Log the exception for debugging purposes
-                entity.Api.Logger.Error("Exception while trying to re-add thirst behavior: {0}", ex);
                 return false;
             }
         }
