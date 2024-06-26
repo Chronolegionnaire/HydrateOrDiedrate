@@ -1,0 +1,11 @@
+﻿[
+  {
+    "op": "addmerge",
+    "path": "/attributes",
+    "value": {
+      "warmth": 0.1
+    },
+    "file": "simplefabric:itemtypes/wearable/foot.json",
+    "side": "Server"
+  }
+]

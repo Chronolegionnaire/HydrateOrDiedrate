@@ -96,18 +96,24 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private void OnPlayerJoinOrNowPlaying(IServerPlayer byPlayer)
     {
         var entity = byPlayer.Entity;
+        if (entity == null) return;
+
         EnsureThirstBehavior(entity);
         EnsureBodyTemperatureHotBehavior(entity);
         EnsureLiquidEncumbranceBehavior(entity);
+        entity.WatchedAttributes.SetBool("isFullyInitialized", true);
     }
 
     private void OnPlayerRespawn(IServerPlayer byPlayer)
     {
         var entity = byPlayer.Entity;
+        if (entity == null) return;
+
         var thirstBehavior = EnsureThirstBehavior(entity);
         thirstBehavior.ResetThirstOnRespawn();
         EnsureBodyTemperatureHotBehavior(entity);
         EnsureLiquidEncumbranceBehavior(entity);
+        entity.WatchedAttributes.SetBool("isFullyInitialized", true);
     }
 
     private EntityBehaviorThirst EnsureThirstBehavior(Entity entity)
@@ -155,7 +161,14 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
         {
-            EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, LoadedConfig);
+            if (player.Entity != null && player.Entity.Alive)
+            {
+                var gameMode = player.WorldData.CurrentGameMode;
+                if (gameMode != EnumGameMode.Creative && gameMode != EnumGameMode.Spectator && gameMode != EnumGameMode.Guest)
+                {
+                    EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, LoadedConfig);
+                }
+            }
         }
     }
 
