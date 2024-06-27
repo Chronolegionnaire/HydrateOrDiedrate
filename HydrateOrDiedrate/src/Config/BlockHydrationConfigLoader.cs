@@ -66,8 +66,8 @@ namespace HydrateOrDiedrate.Configuration
                             ["blockCode"] = "boilingwater*",
                             ["hydrationByType"] = new JObject
                             {
-                                ["boilingwater-*"] = 100,
-                                ["*"] = 100 // Ensure default wildcard entry
+                                ["boilingwater-*"] = 600,
+                                ["*"] = 600 // Ensure default wildcard entry
                             },
                             ["isBoiling"] = true,
                             ["hungerReduction"] = 0
@@ -77,8 +77,8 @@ namespace HydrateOrDiedrate.Configuration
                             ["blockCode"] = "water*",
                             ["hydrationByType"] = new JObject
                             {
-                                ["water-*"] = 100,
-                                ["*"] = 100
+                                ["water-*"] = 600,
+                                ["*"] = 600
                             },
                             ["isBoiling"] = false,
                             ["hungerReduction"] = 100
