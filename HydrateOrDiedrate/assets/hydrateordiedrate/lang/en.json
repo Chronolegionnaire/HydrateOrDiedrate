@@ -1,8 +1,0 @@
-{
-    "thirst-settings": "Thirst Settings",
-    "max-thirst-comment": "Maximum thirst value.",
-    "thirst-damage-comment": "Damage taken when thirst reaches zero.",
-    "movement-speed-penalty-comment": "Movement speed penalty when thirsty.",
-    "thirst-decay-rate-comment": "Rate at which thirst decreases.",
-    "sprint-thirst-multiplier-comment": "Thirst decay multiplier when sprinting."
-}

@@ -11,7 +11,6 @@ public class Config : IModConfig
     public float MovementSpeedPenaltyThreshold { get; set; } = 600.0f;
     public float BoilingWaterDamage { get; set; } = 5.0f;
     public bool EnableBoilingWaterDamage { get; set; } = true;
-    public float SourceBlockHungerDecrease { get; set; } = 100.0f; 
     public float TemperatureThreshold { get; set; } = 27.0f; 
     public float ThirstIncreasePerDegreeMultiplier { get; set; } = 5f;
     public bool HarshHeat { get; set; } = true;
