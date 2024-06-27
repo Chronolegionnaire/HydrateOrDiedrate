@@ -9,8 +9,16 @@ using Vintagestory.GameContent;
 [HarmonyPatch(typeof(CollectibleObject), "GetHeldItemInfo")]
 public static class CollectibleObjectGetHeldItemInfoPatch
 {
+    private static bool ShouldSkipPatch()
+    {
+        return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
+    }
     public static void Postfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
     {
+        if (ShouldSkipPatch())
+        {
+            return;
+        }
         string itemCode = inSlot.Itemstack.Collectible.Code.ToString();
         float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
         if (hydrationValue == 0 && inSlot.Itemstack.Block is BlockLiquidContainerBase block)

@@ -16,10 +16,10 @@ public class Config : IModConfig
     public float ThirstIncreasePerDegreeMultiplier { get; set; } = 5f;
     public bool HarshHeat { get; set; } = true;
     public float HydrationLossDelayMultiplier { get; set; } = 0.05f;
-    
     public bool EnableLiquidEncumbrance { get; set; } = true;
     public float EncumbranceLimit { get; set; } = 4.0f; 
     public float LiquidEncumbranceMovementSpeedDebuff { get; set; } = 0.4f;
+    public bool EnableThirstMechanics { get; set; } = true;
 
     public Config() { }
 
@@ -40,5 +40,6 @@ public class Config : IModConfig
         EnableLiquidEncumbrance = previousConfig?.EnableLiquidEncumbrance ?? true;
         EncumbranceLimit = previousConfig?.EncumbranceLimit ?? 4.0f;
         LiquidEncumbranceMovementSpeedDebuff = previousConfig?.LiquidEncumbranceMovementSpeedDebuff ?? 0.4f;
+        EnableThirstMechanics = previousConfig?.EnableThirstMechanics ?? true;
     }
 }

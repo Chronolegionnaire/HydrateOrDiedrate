@@ -13,9 +13,17 @@ namespace HydrateOrDiedrate
     [HarmonyPatch(typeof(BlockCookedContainer), "GetHeldItemInfo")]
     public static class BlockCookedContainerGetHeldItemInfoPatch
     {
+        private static bool ShouldSkipPatch()
+        {
+            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
+        }   
         [HarmonyPostfix]
         public static void Postfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
         {
+            if (ShouldSkipPatch())
+            {
+                return;
+            }
             try
             {
                 BlockCookedContainer blockCookedContainer = inSlot.Itemstack.Collectible as BlockCookedContainer;

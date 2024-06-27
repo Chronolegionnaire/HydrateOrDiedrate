@@ -40,21 +40,31 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void AssetsFinalize(ICoreAPI api)
     {
         base.AssetsFinalize(api);
-        LoadAndApplyHydrationPatches(api);
-        LoadAndApplyBlockHydrationPatches(api);
         LoadAndApplyCoolingPatches(api);
+
+        if (LoadedConfig.EnableThirstMechanics)
+        {
+            LoadAndApplyHydrationPatches(api);
+            LoadAndApplyBlockHydrationPatches(api);
+        }
     }
 
     private void LoadAndApplyHydrationPatches(ICoreAPI api)
     {
-        List<JObject> hydrationPatches = ItemHydrationConfigLoader.LoadHydrationPatches(api);
-        HydrationManager.ApplyHydrationPatches(api, hydrationPatches);
+        if (LoadedConfig.EnableThirstMechanics)
+        {
+            List<JObject> hydrationPatches = ItemHydrationConfigLoader.LoadHydrationPatches(api);
+            HydrationManager.ApplyHydrationPatches(api, hydrationPatches);
+        }
     }
 
     private void LoadAndApplyBlockHydrationPatches(ICoreAPI api)
     {
-        List<JObject> blockHydrationPatches = BlockHydrationConfigLoader.LoadBlockHydrationConfig(api);
-        BlockHydrationManager.ApplyBlockHydrationPatches(blockHydrationPatches);
+        if (LoadedConfig.EnableThirstMechanics)
+        {
+            List<JObject> blockHydrationPatches = BlockHydrationConfigLoader.LoadBlockHydrationConfig(api);
+            BlockHydrationManager.ApplyBlockHydrationPatches(blockHydrationPatches);
+        }
     }
 
     private void LoadAndApplyCoolingPatches(ICoreAPI api)
@@ -67,9 +77,14 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.Start(api);
         LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
-        api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
         api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot));
         api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
+
+        if (LoadedConfig.EnableThirstMechanics)
+        {
+            api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
+        }
+
         _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
     }
 
@@ -82,15 +97,23 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.Event.PlayerRespawn += OnPlayerRespawn;
         api.Event.RegisterGameTickListener(OnServerTick, 1000);
         api.Event.RegisterGameTickListener(_waterInteractionHandler.CheckPlayerInteraction, 100);
-        ThirstCommands.Register(api, LoadedConfig);
+
+        if (LoadedConfig.EnableThirstMechanics)
+        {
+            ThirstCommands.Register(api, LoadedConfig);
+        }
     }
 
     public override void StartClientSide(ICoreClientAPI api)
     {
         _clientApi = api;
-        _thirstHud = new HudElementThirstBar(api);
-        api.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
-        api.Gui.RegisterDialog(_thirstHud);
+
+        if (LoadedConfig.EnableThirstMechanics)
+        {
+            _thirstHud = new HudElementThirstBar(api);
+            api.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
+            api.Gui.RegisterDialog(_thirstHud);
+        }
     }
 
     private void OnPlayerJoinOrNowPlaying(IServerPlayer byPlayer)
@@ -98,9 +121,14 @@ public class HydrateOrDiedrateModSystem : ModSystem
         var entity = byPlayer.Entity;
         if (entity == null) return;
 
-        EnsureThirstBehavior(entity);
         EnsureBodyTemperatureHotBehavior(entity);
         EnsureLiquidEncumbranceBehavior(entity);
+
+        if (LoadedConfig.EnableThirstMechanics)
+        {
+            EnsureThirstBehavior(entity);
+        }
+
         entity.WatchedAttributes.SetBool("isFullyInitialized", true);
     }
 
@@ -109,10 +137,15 @@ public class HydrateOrDiedrateModSystem : ModSystem
         var entity = byPlayer.Entity;
         if (entity == null) return;
 
-        var thirstBehavior = EnsureThirstBehavior(entity);
-        thirstBehavior.ResetThirstOnRespawn();
         EnsureBodyTemperatureHotBehavior(entity);
         EnsureLiquidEncumbranceBehavior(entity);
+
+        if (LoadedConfig.EnableThirstMechanics)
+        {
+            var thirstBehavior = EnsureThirstBehavior(entity);
+            thirstBehavior.ResetThirstOnRespawn();
+        }
+
         entity.WatchedAttributes.SetBool("isFullyInitialized", true);
     }
 
@@ -159,14 +192,17 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private void OnServerTick(float dt)
     {
-        foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
+        if (LoadedConfig.EnableThirstMechanics)
         {
-            if (player.Entity != null && player.Entity.Alive)
+            foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
             {
-                var gameMode = player.WorldData.CurrentGameMode;
-                if (gameMode != EnumGameMode.Creative && gameMode != EnumGameMode.Spectator && gameMode != EnumGameMode.Guest)
+                if (player.Entity != null && player.Entity.Alive)
                 {
-                    EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, LoadedConfig);
+                    var gameMode = player.WorldData.CurrentGameMode;
+                    if (gameMode != EnumGameMode.Creative && gameMode != EnumGameMode.Spectator && gameMode != EnumGameMode.Guest)
+                    {
+                        EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, LoadedConfig);
+                    }
                 }
             }
         }

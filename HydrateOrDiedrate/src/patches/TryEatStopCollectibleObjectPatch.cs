@@ -10,6 +10,10 @@ using HydrateOrDiedrate.Configuration;
 [HarmonyPatch(typeof(CollectibleObject), "tryEatStop")]
 public class TryEatStopCollectibleObjectPatch
 {
+    private static bool ShouldSkipPatch()
+    {
+        return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
+    }
     static bool alreadyCalled = false;
     static float capturedHydrationAmount;
     static EntityPlayer capturedPlayer;
@@ -17,6 +21,10 @@ public class TryEatStopCollectibleObjectPatch
     [HarmonyPrefix]
     static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity)
     {
+        if (ShouldSkipPatch())
+        {
+            return;
+        }   
         alreadyCalled = false;
         capturedHydrationAmount = 0;
         capturedPlayer = null;
@@ -44,6 +52,10 @@ public class TryEatStopCollectibleObjectPatch
     [HarmonyPostfix]
     static void Postfix()
     {
+        if (ShouldSkipPatch())
+        {
+            return;
+        }
         if (alreadyCalled) return;
         alreadyCalled = true;
 

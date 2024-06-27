@@ -13,10 +13,18 @@ namespace HydrateOrDiedrate.Patches
     [HarmonyPatch(typeof(CharacterExtraDialogs))]
     public static class CharacterExtraDialogs_Patch
     {
+        private static bool ShouldSkipPatch()
+        {
+            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
+        }
         [HarmonyPatch("ComposeStatsGui")]
         [HarmonyPrefix]
         public static bool ComposeStatsGui_Prefix(object __instance)
         {
+            if (ShouldSkipPatch())
+            {
+                return true;
+            }
             try
             {
                 Type type = __instance.GetType();
@@ -140,6 +148,10 @@ namespace HydrateOrDiedrate.Patches
         [HarmonyPostfix]
         public static void UpdateStats_Postfix(object __instance)
         {
+            if (ShouldSkipPatch())
+            {
+                return;
+            }
             Type type = __instance.GetType();
             FieldInfo capiField = type.GetField("capi", BindingFlags.NonPublic | BindingFlags.Instance);
             ICoreClientAPI capi = (ICoreClientAPI)capiField.GetValue(__instance);

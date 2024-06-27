@@ -19,7 +19,7 @@ namespace HydrateOrDiedrate.Configuration
             {
                 GenerateDefaultCoolingConfig(api);
             }
-
+            
             configFiles.Insert(0, defaultConfigPath);
             var sortedPatches = new SortedDictionary<int, List<JObject>>();
 

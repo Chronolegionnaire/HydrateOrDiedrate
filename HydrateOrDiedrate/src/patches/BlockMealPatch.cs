@@ -15,6 +15,10 @@ namespace HydrateOrDiedrate.Patches
     [HarmonyPatch(typeof(BlockMeal))]
     public static class BlockMealPatches
     {
+        private static bool ShouldSkipPatch()
+        {
+            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
+        }
         static bool alreadyCalled = false;
         static float capturedTotalHydration;
         static float capturedHydLossDelay;
@@ -26,6 +30,10 @@ namespace HydrateOrDiedrate.Patches
         [HarmonyPrefix]
         public static void TryFinishEatMealPrefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity, bool handleAllServingsConsumed)
         {
+            if (ShouldSkipPatch())
+            {
+                return;
+            }
             alreadyCalled = false;
             capturedTotalHydration = 0;
             capturedHydLossDelay = 0;
@@ -58,6 +66,10 @@ namespace HydrateOrDiedrate.Patches
         [HarmonyPostfix]
         public static void TryFinishEatMealPostfix(float secondsUsed, ItemSlot slot, EntityAgent byEntity, bool handleAllServingsConsumed)
         {
+            if (ShouldSkipPatch())
+            {
+                return;
+            }
             if (alreadyCalled) return;
             alreadyCalled = true;
 
@@ -116,6 +128,10 @@ namespace HydrateOrDiedrate.Patches
         [HarmonyPostfix]
         public static void GetHeldItemInfoPostfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
         {
+            if (ShouldSkipPatch())
+            {
+                return;
+            }
             ItemStack[] contentStacks = (inSlot.Itemstack.Collectible as BlockMeal)?.GetNonEmptyContents(world, inSlot.Itemstack);
             if (contentStacks == null)
             {
