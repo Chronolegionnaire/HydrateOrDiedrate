@@ -19,6 +19,7 @@ public class Config : IModConfig
     public float EncumbranceLimit { get; set; } = 4.0f; 
     public float LiquidEncumbranceMovementSpeedDebuff { get; set; } = 0.4f;
     public bool EnableThirstMechanics { get; set; } = true;
+    public float ThirstDecayRateMax { get; set; } = 5.0f;
 
     public Config() { }
 
@@ -40,5 +41,6 @@ public class Config : IModConfig
         EncumbranceLimit = previousConfig?.EncumbranceLimit ?? 4.0f;
         LiquidEncumbranceMovementSpeedDebuff = previousConfig?.LiquidEncumbranceMovementSpeedDebuff ?? 0.4f;
         EnableThirstMechanics = previousConfig?.EnableThirstMechanics ?? true;
+        ThirstDecayRateMax = previousConfig?.ThirstDecayRateMax ?? 5.0f;
     }
 }
