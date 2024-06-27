@@ -13,9 +13,17 @@ namespace HydrateOrDiedrate.Patches
     [HarmonyPatch(typeof(BlockCrock), "GetHeldItemInfo")]
     public static class BlockCrockPatch
     {
+        private static bool ShouldSkipPatch()
+        {
+            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
+        }
         [HarmonyPostfix]
         public static void Postfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
         {
+            if (ShouldSkipPatch())
+            {
+                return;
+            }
             try
             {
                 BlockCrock blockCrock = inSlot.Itemstack.Collectible as BlockCrock;

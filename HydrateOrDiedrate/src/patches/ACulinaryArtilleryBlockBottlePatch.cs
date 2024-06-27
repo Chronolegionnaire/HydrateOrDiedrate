@@ -11,6 +11,10 @@ using Vintagestory.GameContent;
 [HarmonyPatch]
 public class TryEatStopBlockBottlePatch
 {
+    private static bool ShouldSkipPatch()
+    {
+        return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
+    }   
     static bool alreadyCalled = false;
     static float capturedHydrationAmount;
     static float capturedHydLossDelay;
@@ -35,6 +39,10 @@ public class TryEatStopBlockBottlePatch
     [HarmonyPrefix]
     static void Prefix(object __instance, float secondsUsed, ItemSlot slot, EntityAgent byEntity)
     {
+        if (ShouldSkipPatch())
+        {
+            return;
+        }
         alreadyCalled = false;
         capturedHydrationAmount = 0;
         capturedHydLossDelay = 0;
@@ -101,6 +109,10 @@ public class TryEatStopBlockBottlePatch
     [HarmonyPostfix]
     static void Postfix()
     {
+        if (ShouldSkipPatch())
+        {
+            return;
+        }
         if (alreadyCalled) return;
         alreadyCalled = true;
 
