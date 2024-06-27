@@ -40,7 +40,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             slowaccum = 0f;
             coolingCounter = 0f;
-            plrpos = entity.Pos.AsBlockPos.Copy(); // Use AsBlockPos and copy it
+            plrpos = entity.Pos.AsBlockPos.Copy();
             inEnclosedRoom = false;
             nearHeatSourceStrength = 0f;
             world = entity.World;
@@ -121,6 +121,16 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             coolingFactor -= nearHeatSourceStrength * 0.5f;
 
+            BlockPos entityPos = entity.SidedPos.AsBlockPos;
+            int sunlightLevel = world.BlockAccessor.GetLightLevel(entityPos, EnumLightLevelType.TimeOfDaySunLight);
+            double hourOfDay = world.Calendar?.HourOfDay ?? 0;
+
+            float sunlightCooling = (16 - sunlightLevel) / 16f; 
+            double distanceTo4AM = GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(4.0, hourOfDay, 24.0) / 12.0));
+            double distanceTo3PM = GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0));
+            double diurnalVariationAmplitude = 18f;
+            double diurnalCooling = (0.5 - distanceTo4AM) * diurnalVariationAmplitude;
+            coolingFactor += (float)(sunlightCooling + diurnalCooling);
             CurrentCooling = Math.Max(0, coolingFactor);
         }
 
