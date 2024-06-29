@@ -213,6 +213,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
+    public static bool XSkillActive(ICoreAPI api)
+    {
+        return api.ModLoader.IsModEnabled("xskills");
+    }
 
     public override void Dispose()
     {

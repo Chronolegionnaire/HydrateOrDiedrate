@@ -397,7 +397,6 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject { ["itemname"] = "hideandfabric:clothes-hand-*", ["cooling"] = 0.2 },
                         new JObject { ["itemname"] = "hideandfabric:clothes-foot-*", ["cooling"] = 0.2 },
                         new JObject { ["itemname"] = "simplecloth:clothes-face-*", ["cooling"] = 0.2 },
-                        new JObject { ["itemname"] = "simplecloth:clothes-face-*", ["cooling"] = 0.2 },
                         new JObject { ["itemname"] = "simplecloth:clothes-foot-*", ["cooling"] = 4 },
                         new JObject { ["itemname"] = "simplecloth:clothes-lowerbody-furl*", ["cooling"] = 1 },
                         new JObject { ["itemname"] = "simplecloth:clothes-upperbodyover-furt*", ["cooling"] = 0.5 },
