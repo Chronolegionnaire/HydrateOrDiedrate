@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.Util;
 
 namespace HydrateOrDiedrate
@@ -39,6 +40,28 @@ namespace HydrateOrDiedrate
                             float cooling = patch["cooling"].ToObject<float>();
                             SetCooling(api, itemName, cooling);
                         }
+                        
+                        var item = api.World.GetItem(new AssetLocation(itemName));
+                        if (item == null)
+                        {
+                            continue;
+                        }
+
+                        if (item.Attributes == null)
+                        {
+                            continue;
+                        }
+
+                        float currentWarmth = item.Attributes["warmth"]?.AsFloat(0f) ?? 0f;
+                        if (currentWarmth <= 0f)
+                        {
+                            var clonedAttributes = item.Attributes.Token.DeepClone() as JObject;
+                            if (clonedAttributes != null)
+                            {
+                                clonedAttributes["warmth"] = 0.01f;
+                                item.Attributes = new JsonObject(clonedAttributes);
+                            }
+                        }
                     }
                 }
             }
@@ -50,7 +73,7 @@ namespace HydrateOrDiedrate
             if (patchItemName.Contains("*"))
             {
                 string pattern = "^" + Regex.Escape(patchItemName).Replace("\\*", ".*") + "$";
-                return System.Text.RegularExpressions.Regex.IsMatch(itemName, pattern);
+                return Regex.IsMatch(itemName, pattern);
             }
             return itemName == patchItemName;
         }

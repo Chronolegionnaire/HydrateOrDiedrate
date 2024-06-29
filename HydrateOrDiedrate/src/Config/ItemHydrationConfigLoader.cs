@@ -319,9 +319,9 @@ namespace HydrateOrDiedrate.Configuration
                                 ["game:vegetable-onion"] = 6,
                                 ["game:vegetable-turnip"] = 8,
                                 ["game:vegetable-parsnip"] = 7,
-                                ["game:vegetable-cookedcattailroot"] = 5,
+                                ["game:vegetable-cookedcattailroot"] = 100,
                                 ["game:vegetable-pumpkin"] = 12,
-                                ["game:vegetable-cassava"] = 6,
+                                ["game:vegetable-cassava"] = 200,
                                 ["game:vegetable-cookedpapyrusroot"] = 5,
                                 ["game:vegetable-bellpepper"] = 12,
                                 ["game:vegetable-olive"] = 4,
@@ -338,7 +338,7 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject
                         {
                             ["itemname"] = "game:boilingwaterportion",
-                            ["hydration"] = 1500,
+                            ["hydration"] = 250,
                             ["IsLiquid"] = true
                         },
                         new JObject
@@ -414,7 +414,7 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject
                         {
                             ["itemname"] = "game:waterportion",
-                            ["hydration"] = 600,
+                            ["hydration"] = 250,
                             ["IsLiquid"] = true
                         },
                         new JObject
@@ -533,12 +533,12 @@ namespace HydrateOrDiedrate.Configuration
                             ["itemname"] = "alchemy:utilitypotionportion-*",
                             ["hydrationByType"] = new JObject
                             {
-                                ["alchemy:utilitypotionportion-recall"] = 200,
-                                ["alchemy:utilitypotionportion-glow"] = 200,
-                                ["alchemy:utilitypotionportion-waterbreathe"] = 200,
-                                ["alchemy:utilitypotionportion-nutrition"] = 200,
-                                ["alchemy:utilitypotionportion-temporal"] = 200,
-                                ["*"] = 200
+                                ["alchemy:utilitypotionportion-recall"] = -200,
+                                ["alchemy:utilitypotionportion-glow"] = -200,
+                                ["alchemy:utilitypotionportion-waterbreathe"] = -200,
+                                ["alchemy:utilitypotionportion-nutrition"] = -200,
+                                ["alchemy:utilitypotionportion-temporal"] = -200,
+                                ["*"] = -200
                             },
                             ["IsLiquid"] = true
                         },
@@ -1078,7 +1078,7 @@ namespace HydrateOrDiedrate.Configuration
                                 ["expandedfoods:choppedvegetable-pickledturnip"] = 6,
                                 ["expandedfoods:choppedvegetable-pickledpumpkin"] = 6,
                                 ["expandedfoods:choppedvegetable-papyrusroot"] = 7,
-                                ["expandedfoods:choppedvegetable-cattailroot"] = 7,
+                                ["expandedfoods:choppedvegetable-cattailroot"] = 100,
                                 ["expandedfoods:choppedvegetable-bellpepper"] = 7,
                                 ["*"] = 5
                             },

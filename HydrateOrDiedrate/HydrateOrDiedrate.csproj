@@ -48,6 +48,22 @@
             <HintPath>$(VINTAGE_STORY)/Lib/Microsoft.Data.Sqlite.dll</HintPath>
             <Private>False</Private>
         </Reference>
+        <Reference Include="configlib">
+            <HintPath>lib\configlib.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="VSImGui">
+            <HintPath>lib\dlls\VSImGui.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="ImGui.NET">
+            <HintPath>lib\dlls\VImGui.NET.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="xlib">
+            <HintPath>lib\dlls\xlib.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
@@ -57,14 +73,6 @@
         <Content Include="modinfo.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="assets\hydrateordiedrate\config\" />
-      <Folder Include="assets\hydrateordiedrate\itemtypes\food\" />
-      <Folder Include="assets\hydrateordiedrate\lang\" />
-      <Folder Include="assets\hydrateordiedrate\patches\" />
-      <Folder Include="assets\hydrateordiedrate\recipes\cooking\" />
     </ItemGroup>
 
 </Project>

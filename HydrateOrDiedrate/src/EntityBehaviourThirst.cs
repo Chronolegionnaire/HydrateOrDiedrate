@@ -132,13 +132,13 @@ namespace HydrateOrDiedrate.EntityBehavior
                 if (climate.Temperature > _config.TemperatureThreshold)
                 {
                     float thirstIncrease = _config.ThirstIncreasePerDegreeMultiplier *
-                                           (float)Math.Exp(0.1f * (climate.Temperature - _config.TemperatureThreshold));
+                                           (float)Math.Exp(_config.HarshHeatExponentialGainMultiplier * (climate.Temperature - _config.TemperatureThreshold));
                     thirstDecayRate += thirstIncrease;
 
                     float coolingFactor = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f);
                     float coolingEffect = coolingFactor * (1f / (1f + (float)Math.Exp(-0.5f * (climate.Temperature - _config.TemperatureThreshold))));
                     thirstDecayRate -= Math.Min(coolingEffect, thirstDecayRate - _config.ThirstDecayRate);
-                    
+
                     thirstDecayRate = Math.Min(thirstDecayRate, _config.ThirstDecayRateMax);
                 }
             }

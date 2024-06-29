@@ -106,17 +106,17 @@ namespace HydrateOrDiedrate.EntityBehavior
                     }
                 }
             }
-            
-            coolingFactor += unequippedSlots;
+
+            coolingFactor += unequippedSlots * _config.UnequippedSlotCooling;
 
             if (entity.WatchedAttributes.GetFloat("wetness", 0f) > 0)
             {
-                coolingFactor *= 1.5f;
+                coolingFactor *= _config.WetnessCoolingFactor;
             }
 
             if (inEnclosedRoom)
             {
-                coolingFactor *= 1.5f;
+                coolingFactor *= _config.ShelterCoolingFactor;
             }
 
             coolingFactor -= nearHeatSourceStrength * 0.5f;
@@ -125,11 +125,10 @@ namespace HydrateOrDiedrate.EntityBehavior
             int sunlightLevel = world.BlockAccessor.GetLightLevel(entityPos, EnumLightLevelType.TimeOfDaySunLight);
             double hourOfDay = world.Calendar?.HourOfDay ?? 0;
 
-            float sunlightCooling = (16 - sunlightLevel) / 16f; 
+            float sunlightCooling = (16 - sunlightLevel) / 16f * _config.SunlightCoolingFactor;
             double distanceTo4AM = GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(4.0, hourOfDay, 24.0) / 12.0));
             double distanceTo3PM = GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0));
-            double diurnalVariationAmplitude = 18f;
-            double diurnalCooling = (0.5 - distanceTo4AM) * diurnalVariationAmplitude;
+            double diurnalCooling = (0.5 - distanceTo4AM) * _config.DiurnalVariationAmplitude;
             coolingFactor += (float)(sunlightCooling + diurnalCooling);
             CurrentCooling = Math.Max(0, coolingFactor);
         }

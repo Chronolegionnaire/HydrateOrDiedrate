@@ -19,6 +19,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public static Config LoadedConfig;
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
+    private ConfigLibCompatibility _configLibCompatibility;
 
     public override void StartPre(ICoreAPI api)
     {
@@ -86,6 +87,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
 
         _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
+        
+        if (api.Side == EnumAppSide.Client)
+        {
+            _configLibCompatibility = new ConfigLibCompatibility((ICoreClientAPI)api);
+        }
     }
 
     public override void StartServerSide(ICoreServerAPI api)
