@@ -29,6 +29,7 @@ public class Config : IModConfig
     public float ShelterCoolingFactor { get; set; } = 1.5f;
     public float SunlightCoolingFactor { get; set; } = 1.0f;
     public float DiurnalVariationAmplitude { get; set; } = 18f;
+    public float RefrigerationCooling { get; set; } = 20.0f;
 
     // Other Settings
     public float SprintThirstMultiplier { get; set; } = 1.5f;
@@ -66,6 +67,7 @@ public class Config : IModConfig
         ShelterCoolingFactor = previousConfig?.ShelterCoolingFactor ?? 1.5f;
         SunlightCoolingFactor = previousConfig?.SunlightCoolingFactor ?? 1.0f;
         DiurnalVariationAmplitude = previousConfig?.DiurnalVariationAmplitude ?? 18f;
+        RefrigerationCooling = previousConfig?.RefrigerationCooling ?? 20.0f;
 
         // Other Settings
         SprintThirstMultiplier = previousConfig?.SprintThirstMultiplier ?? 1.5f;

@@ -29,6 +29,7 @@ namespace HydrateOrDiedrate
         private const string settingShelterCoolingFactor = "hydrateordiedrate:Config.Setting.ShelterCoolingFactor";
         private const string settingSunlightCoolingFactor = "hydrateordiedrate:Config.Setting.SunlightCoolingFactor";
         private const string settingDiurnalVariationAmplitude = "hydrateordiedrate:Config.Setting.DiurnalVariationAmplitude";
+        private const string settingRefrigerationCooling = "hydrateordiedrate:Config.Setting.RefrigerationCooling";
         private const string settingSprintThirstMultiplier = "hydrateordiedrate:Config.Setting.SprintThirstMultiplier";
         private const string settingEncumbranceLimit = "hydrateordiedrate:Config.Setting.EncumbranceLimit";
         private const string settingLiquidEncumbranceMovementSpeedDebuff = "hydrateordiedrate:Config.Setting.LiquidEncumbranceMovementSpeedDebuff";
@@ -89,7 +90,7 @@ namespace HydrateOrDiedrate
     config.ThirstIncreasePerDegreeMultiplier = thirstIncreasePerDegreeMultiplier;
 
     float thirstDecayRateMax = config.ThirstDecayRateMax;
-    ImGui.DragFloat(Lang.Get(settingThirstDecayRateMax) + $"##thirstDecayRateMax-{id}", ref thirstDecayRateMax, 0.1f, 0.0f, 10.0f);
+    ImGui.DragFloat(Lang.Get(settingThirstDecayRateMax) + $"##thirstDecayRateMax-{id}", ref thirstDecayRateMax, 0.1f, 0.0f, 50.0f);
     config.ThirstDecayRateMax = thirstDecayRateMax;
 
     float hydrationLossDelayMultiplier = config.HydrationLossDelayMultiplier;
@@ -135,6 +136,10 @@ namespace HydrateOrDiedrate
     float diurnalVariationAmplitude = config.DiurnalVariationAmplitude;
     ImGui.DragFloat(Lang.Get(settingDiurnalVariationAmplitude) + $"##diurnalVariationAmplitude-{id}", ref diurnalVariationAmplitude, 1.0f, 0.0f, 50.0f);
     config.DiurnalVariationAmplitude = diurnalVariationAmplitude;
+    
+    float refrigerationCooling = config.RefrigerationCooling;
+    ImGui.DragFloat(Lang.Get(settingRefrigerationCooling) + $"##refrigerationCooling-{id}", ref refrigerationCooling, 0.1f, 0.0f, 5.0f);
+    config.RefrigerationCooling = refrigerationCooling;
 
     float sprintThirstMultiplier = config.SprintThirstMultiplier;
     ImGui.DragFloat(Lang.Get(settingSprintThirstMultiplier) + $"##sprintThirstMultiplier-{id}", ref sprintThirstMultiplier, 0.1f, 0.0f, 5.0f);

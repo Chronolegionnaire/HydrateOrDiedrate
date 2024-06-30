@@ -19,6 +19,7 @@
   "hydrateordiedrate:Config.Setting.ShelterCoolingFactor": "Shelter Cooling Factor",
   "hydrateordiedrate:Config.Setting.SunlightCoolingFactor": "Sunlight Cooling Factor",
   "hydrateordiedrate:Config.Setting.DiurnalVariationAmplitude": "Diurnal Variation Amplitude",
+  "hydrateordiedrate:Config.Setting.RefrigerationCooling": "Refrigeration cooling amount for Medieval Expansion ice cooling. Does nothing if medieval expansion is not present.",
   "hydrateordiedrate:Config.Setting.SprintThirstMultiplier": "Sprint Thirst Multiplier",
   "hydrateordiedrate:Config.Setting.EncumbranceLimit": "Encumbrance Limit",
   "hydrateordiedrate:Config.Setting.LiquidEncumbranceMovementSpeedDebuff": "Liquid Encumbrance Movement Speed Debuff",

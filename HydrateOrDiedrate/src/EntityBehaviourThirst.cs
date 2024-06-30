@@ -128,21 +128,26 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             if (_config.HarshHeat)
             {
-                var climate = entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues);
+                var climate =
+                    entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues);
                 if (climate.Temperature > _config.TemperatureThreshold)
                 {
-                    float thirstIncrease = _config.ThirstIncreasePerDegreeMultiplier *
-                                           (float)Math.Exp(_config.HarshHeatExponentialGainMultiplier * (climate.Temperature - _config.TemperatureThreshold));
-                    thirstDecayRate += thirstIncrease;
+                    float temperatureDifference = climate.Temperature - _config.TemperatureThreshold;
+                    float temperatureFactor = _config.ThirstIncreasePerDegreeMultiplier *
+                                              (float)Math.Exp(_config.HarshHeatExponentialGainMultiplier *
+                                                              temperatureDifference);
+
+                    // Apply temperature factor to the thirst decay rate
+                    thirstDecayRate += temperatureFactor;
 
                     float coolingFactor = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f);
-                    float coolingEffect = coolingFactor * (1f / (1f + (float)Math.Exp(-0.5f * (climate.Temperature - _config.TemperatureThreshold))));
+                    float coolingEffect = coolingFactor * (1f / (1f + (float)Math.Exp(-0.5f * temperatureDifference)));
                     thirstDecayRate -= Math.Min(coolingEffect, thirstDecayRate - _config.ThirstDecayRate);
-
-                    thirstDecayRate = Math.Min(thirstDecayRate, _config.ThirstDecayRateMax);
                 }
             }
 
+            // Ensure the thirst decay rate does not exceed the maximum allowed value
+            thirstDecayRate = Math.Min(thirstDecayRate, _config.ThirstDecayRate * _config.ThirstDecayRateMax);
 
             if (currentSpeedOfTime > DefaultSpeedOfTime || currentCalendarSpeedMul > DefaultCalendarSpeedMul)
             {

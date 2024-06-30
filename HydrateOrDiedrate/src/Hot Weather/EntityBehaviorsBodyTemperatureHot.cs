@@ -4,6 +4,9 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using HydrateOrDiedrate.Configuration;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.EntityBehavior
@@ -19,6 +22,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         private float nearHeatSourceStrength;
         private IWorldAccessor world;
         private Vec3d tmpPos = new Vec3d();
+        private bool isMedievalExpansionInstalled;
 
         public EntityBehaviorBodyTemperatureHot(Entity entity) : base(entity)
         {
@@ -26,6 +30,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             _currentCooling = 0;
             LoadCooling();
             InitializeFields();
+            isMedievalExpansionInstalled = IsMedievalExpansionInstalled(entity.World.Api);
         }
 
         public EntityBehaviorBodyTemperatureHot(Entity entity, Config config) : base(entity)
@@ -34,6 +39,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             _currentCooling = 0;
             LoadCooling();
             InitializeFields();
+            isMedievalExpansionInstalled = IsMedievalExpansionInstalled(entity.World.Api);
         }
 
         private void InitializeFields()
@@ -60,7 +66,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         public override void OnGameTick(float deltaTime)
         {
             if (!entity.Alive || !_config.HarshHeat) return;
-            
+
             coolingCounter += deltaTime;
             if (coolingCounter > 10f)
             {
@@ -139,40 +145,116 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             plrpos.Set((int)entity.Pos.X, (int)entity.Pos.Y, (int)entity.Pos.Z);
             plrpos.SetDimension(entity.Pos.AsBlockPos.dimension);
-            Room room = entity.Api.ModLoader.GetModSystem<RoomRegistry>()?.GetRoomForPosition(plrpos);
+            var roomRegistry = entity.Api.ModLoader.GetModSystem<RoomRegistry>();
 
-            inEnclosedRoom = (room != null && (room.ExitCount == 0 || room.SkylightCount < room.NonSkylightCount));
+            if (roomRegistry == null) return;
+
+            Room room = roomRegistry.GetRoomForPosition(plrpos);
+
+            // Reset room state
+            inEnclosedRoom = false;
             nearHeatSourceStrength = 0f;
 
-            double px = entity.Pos.X;
-            double py = entity.Pos.Y + 0.9;
-            double pz = entity.Pos.Z;
-            double proximityPower = inEnclosedRoom ? 0.875 : 1.25;
+            if (room != null)
+            {
+                // Check if the player is in an enclosed room
+                inEnclosedRoom = room.ExitCount == 0 && room.SkylightCount < room.NonSkylightCount;
 
-            BlockPos min, max;
-            if (inEnclosedRoom && room.Location.SizeX >= 1 && room.Location.SizeY >= 1 && room.Location.SizeZ >= 1)
-            {
-                min = new BlockPos(room.Location.MinX, room.Location.MinY, room.Location.MinZ, plrpos.dimension);
-                max = new BlockPos(room.Location.MaxX, room.Location.MaxY, room.Location.MaxZ, plrpos.dimension);
-            }
-            else
-            {
-                min = plrpos.AddCopy(-3, -3, -3);
-                max = plrpos.AddCopy(3, 3, 3);
-            }
-
-            world.BlockAccessor.WalkBlocks(min, max, (block, x, y, z) =>
-            {
-                var blockEntity = world.BlockAccessor.GetBlockEntity(new BlockPos(x, y, z, plrpos.dimension));
-                if (blockEntity is Vintagestory.GameContent.IHeatSource heatSource)
+                if (inEnclosedRoom)
                 {
-                    tmpPos.Set(x, y, z);
-                    float factor = Math.Min(1f, 9f / (8f + (float)Math.Pow(tmpPos.DistanceTo(px, py, pz), proximityPower)));
-                    nearHeatSourceStrength += heatSource.GetHeatStrength(world, new BlockPos(x, y, z, plrpos.dimension), plrpos) * factor;
+                    bool isRefrigeratedRoom = false;
+                    if (IsMedievalExpansionInstalled(entity.Api) && inEnclosedRoom)
+                    {
+                        isRefrigeratedRoom = CheckRefrigeration(room);
+                    }
+
+                    double px = entity.Pos.X;
+                    double py = entity.Pos.Y + 0.9;
+                    double pz = entity.Pos.Z;
+                    double proximityPower = 0.875;
+
+                    BlockPos min = new BlockPos(room.Location.X1, room.Location.Y1, room.Location.Z1, plrpos.dimension);
+                    BlockPos max = new BlockPos(room.Location.X2, room.Location.Y2, room.Location.Z2, plrpos.dimension);
+
+                    world.BlockAccessor.WalkBlocks(min, max, (block, x, y, z) =>
+                    {
+                        var blockEntity = world.BlockAccessor.GetBlockEntity(new BlockPos(x, y, z, plrpos.dimension));
+                        if (blockEntity is Vintagestory.GameContent.IHeatSource heatSource)
+                        {
+                            tmpPos.Set(x, y, z);
+                            float factor = Math.Min(1f,
+                                9f / (8f + (float)Math.Pow(tmpPos.DistanceTo(px, py, pz), proximityPower)));
+                            nearHeatSourceStrength +=
+                                heatSource.GetHeatStrength(world, new BlockPos(x, y, z, plrpos.dimension), plrpos) *
+                                factor;
+                        }
+                    });
+
+                    if (isRefrigeratedRoom)
+                    {
+                        CurrentCooling += _config.RefrigerationCooling;
+                    }
                 }
-            });
+            }
 
             entity.WatchedAttributes.MarkPathDirty("bodyTemp");
+        }
+
+
+        private bool CheckRefrigeration(Room room)
+        {
+            if (room == null)
+            {
+                return false;
+            }
+
+            var assembly = AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(a => a.GetName().Name == "medievalexpansion");
+            if (assembly == null)
+            {
+                return false;
+            }
+
+            var managerType = assembly.GetType("medievalexpansion.src.busineslogic.RoomRefridgePositionManager");
+            if (managerType == null)
+            {
+                return false;
+            }
+
+            var instanceMethod = managerType.GetMethod("Instance",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            if (instanceMethod == null)
+            {
+                return false;
+            }
+
+            var instance = instanceMethod.Invoke(null, null);
+            if (instance == null)
+            {
+                return false;
+            }
+
+            var positionsProperty = managerType.GetProperty("RoomRefridgerPosition",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (positionsProperty == null)
+            {
+                return false;
+            }
+
+            var positions = positionsProperty.GetValue(instance) as IList<BlockPos>;
+            if (positions == null)
+            {
+                return false;
+            }
+
+            foreach (var pos in positions)
+            {
+                if (room.Location.Contains(pos))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void LoadCooling()
@@ -181,5 +263,10 @@ namespace HydrateOrDiedrate.EntityBehavior
         }
 
         public override string PropertyName() => "bodytemperaturehot";
+
+        private bool IsMedievalExpansionInstalled(ICoreAPI api)
+        {
+            return api.ModLoader.IsModEnabled("medievalexpansion");
+        }
     }
 }
