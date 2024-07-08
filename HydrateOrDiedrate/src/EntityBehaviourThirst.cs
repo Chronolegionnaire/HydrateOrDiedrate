@@ -118,12 +118,6 @@ namespace HydrateOrDiedrate.EntityBehavior
                 {
                     lastMoveMs = entity.World.ElapsedMilliseconds;
                 }
-
-                bool isIdle = entity.World.ElapsedMilliseconds - lastMoveMs > 3000L;
-                if (isIdle)
-                {
-                    thirstDecayRate /= 4f;
-                }
             }
 
             if (_config.HarshHeat)
@@ -154,10 +148,17 @@ namespace HydrateOrDiedrate.EntityBehavior
                 thirstDecayRate *= multiplierPerGameSec;
             }
 
+            bool isIdle = entity.World.ElapsedMilliseconds - lastMoveMs > 3000L;
+            if (isIdle)
+            {
+                thirstDecayRate /= 4f;
+            }
+
             if (_customThirstTicks > 0) _customThirstTicks--;
             ModifyThirst(-thirstDecayRate * deltaTime);
             UpdateThirstRate(thirstDecayRate);
         }
+
 
         private void ApplyThirstEffects()
         {
