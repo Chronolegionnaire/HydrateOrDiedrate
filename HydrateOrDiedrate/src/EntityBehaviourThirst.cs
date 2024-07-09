@@ -4,7 +4,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using HydrateOrDiedrate.Configuration;
-using Vintagestory.API.Config;
+
 
 namespace HydrateOrDiedrate.EntityBehavior
 {
@@ -29,13 +29,14 @@ namespace HydrateOrDiedrate.EntityBehavior
             get => _currentThirst;
             set
             {
-                _currentThirst = GameMath.Clamp(value, 0, _config.MaxThirst);
+                _currentThirst = GameMath.Clamp(value, 0, MaxThirst);
                 entity.WatchedAttributes.SetFloat("currentThirst", _currentThirst);
                 entity.WatchedAttributes.MarkPathDirty("currentThirst");
             }
         }
 
-        public float MaxThirst => _config.MaxThirst;
+        public float MaxThirst { get; set; }
+        public float BaseMaxThirst => _config.MaxThirst;
 
         public EntityBehaviorThirst(Entity entity) : base(entity)
         {
@@ -44,6 +45,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             {
                 _config = new Config();
             }
+            MaxThirst = BaseMaxThirst;
             LoadThirst();
             InitializeCounters();
         }
@@ -51,6 +53,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         public EntityBehaviorThirst(Entity entity, Config config) : base(entity)
         {
             _config = config ?? new Config();
+            MaxThirst = BaseMaxThirst;
             LoadThirst();
             InitializeCounters();
         }
@@ -187,14 +190,14 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public void SetInitialThirst()
         {
-            CurrentThirst = _config.MaxThirst;
+            CurrentThirst = MaxThirst;
             UpdateThirstAttributes();
             RemoveMovementSpeedPenalty();
         }
 
         public void ResetThirstOnRespawn()
         {
-            CurrentThirst = 0.5f * _config.MaxThirst;
+            CurrentThirst = 0.5f * MaxThirst;
             UpdateThirstAttributes();
             RemoveMovementSpeedPenalty();
             InitializeCounters();
@@ -247,14 +250,14 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public void LoadThirst()
         {
-            _currentThirst = entity.WatchedAttributes.GetFloat("currentThirst", _config.MaxThirst);
+            _currentThirst = entity.WatchedAttributes.GetFloat("currentThirst", MaxThirst);
             UpdateThirstAttributes();
         }
 
         public void UpdateThirstAttributes()
         {
             entity.WatchedAttributes.SetFloat("currentThirst", CurrentThirst);
-            entity.WatchedAttributes.SetFloat("maxThirst", _config.MaxThirst);
+            entity.WatchedAttributes.SetFloat("maxThirst", MaxThirst);
             entity.WatchedAttributes.SetFloat("normalThirstRate", _config.ThirstDecayRate);
             entity.WatchedAttributes.MarkPathDirty("currentThirst");
             entity.WatchedAttributes.MarkPathDirty("maxThirst");

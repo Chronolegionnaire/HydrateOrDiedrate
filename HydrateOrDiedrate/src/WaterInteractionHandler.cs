@@ -1,9 +1,7 @@
-﻿using HydrateOrDiedrate.Configuration;
-using HydrateOrDiedrate.EntityBehavior;
+﻿using HydrateOrDiedrate.EntityBehavior;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace HydrateOrDiedrate

@@ -1,13 +1,8 @@
 ﻿using HarmonyLib;
 using Vintagestory.API.Common;
-using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 using HydrateOrDiedrate.EntityBehavior;
-using HydrateOrDiedrate.Configuration;
-using Vintagestory.API.Datastructures;
-using Vintagestory.API.Client;
 using System.Text;
-using Vintagestory.API.Config;
 using System;
 
 namespace HydrateOrDiedrate.Patches

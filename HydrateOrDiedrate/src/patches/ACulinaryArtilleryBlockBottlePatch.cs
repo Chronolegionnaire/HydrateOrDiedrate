@@ -5,8 +5,6 @@ using HarmonyLib;
 using HydrateOrDiedrate;
 using HydrateOrDiedrate.EntityBehavior;
 using Vintagestory.API.Common;
-using Vintagestory.API.Server;
-using Vintagestory.GameContent;
 
 [HarmonyPatch]
 public class TryEatStopBlockBottlePatch

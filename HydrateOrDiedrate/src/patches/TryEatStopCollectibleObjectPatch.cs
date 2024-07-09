@@ -1,11 +1,7 @@
 ﻿using HarmonyLib;
 using HydrateOrDiedrate;
 using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Server;
-using Vintagestory.GameContent;
 using HydrateOrDiedrate.EntityBehavior;
-using HydrateOrDiedrate.Configuration;
 
 [HarmonyPatch(typeof(CollectibleObject), "tryEatStop")]
 public class TryEatStopCollectibleObjectPatch

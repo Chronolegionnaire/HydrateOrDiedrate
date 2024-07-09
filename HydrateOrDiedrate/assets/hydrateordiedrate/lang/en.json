@@ -23,6 +23,8 @@
   "hydrateordiedrate:Config.Setting.SprintThirstMultiplier": "Sprint Thirst Multiplier",
   "hydrateordiedrate:Config.Setting.EncumbranceLimit": "Encumbrance Limit",
   "hydrateordiedrate:Config.Setting.LiquidEncumbranceMovementSpeedDebuff": "Liquid Encumbrance Movement Speed Debuff",
+  "hydrateordiedrate:Config.Setting.DromedaryMultiplierPerLevel": "Dromedary Multiplier Per Level",
+  "hydrateordiedrate:Config.Setting.EquatidianCoolingMultipliers": "Equatidian Cooling Multipliers",
   "hydrateordiedrate:Config.Text.Icon": "Icon",
   "hydrateordiedrate:Config.Text.Markers": "Markers",
   "hydrateordiedrate:Config.Text.RefreshRate": "Refresh Rate",
@@ -38,5 +40,9 @@
   "hydrateordiedrate:Config.Setting.Size": "Size",
   "hydrateordiedrate:Config.Setting.Types": "Types",
   "hydrateordiedrate:Config.Setting.VerticalRadius": "Vertical Radius",
-  "hydrateordiedrate:Config.Setting.Visible": "Visible"
+  "hydrateordiedrate:Config.Setting.Visible": "Visible",
+  "hydrateordiedrate:ability-dromedary": "Dromedary",
+  "hydrateordiedrate:abilitydesc-dromedary": "Increases max thirst capacity.",
+  "hydrateordiedrate:ability-equatidian": "Equatidian",
+  "hydrateordiedrate:abilitydesc-equatidian": "Provides a cooling multiplier."
 }

@@ -1,8 +1,6 @@
 ﻿using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Server;
-using HydrateOrDiedrate.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,10 +22,24 @@ namespace HydrateOrDiedrate.EntityBehavior
         private Vec3d tmpPos = new Vec3d();
         private bool isMedievalExpansionInstalled;
 
+        public float CurrentCooling
+        {
+            get => _currentCooling;
+            set
+            {
+                _currentCooling = GameMath.Clamp(value, 0, float.MaxValue);
+                entity.WatchedAttributes.SetFloat("currentCoolingHot", _currentCooling);
+                entity.WatchedAttributes.MarkPathDirty("currentCoolingHot");
+            }
+        }
+
+        public float CoolingMultiplier { get; set; } = 1.0f;
+
         public EntityBehaviorBodyTemperatureHot(Entity entity) : base(entity)
         {
             _config = new Config();
             _currentCooling = 0;
+            CoolingMultiplier = 1.0f;
             LoadCooling();
             InitializeFields();
             isMedievalExpansionInstalled = IsMedievalExpansionInstalled(entity.World.Api);
@@ -37,6 +49,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             _config = config;
             _currentCooling = 0;
+            CoolingMultiplier = 1.0f;
             LoadCooling();
             InitializeFields();
             isMedievalExpansionInstalled = IsMedievalExpansionInstalled(entity.World.Api);
@@ -50,17 +63,6 @@ namespace HydrateOrDiedrate.EntityBehavior
             inEnclosedRoom = false;
             nearHeatSourceStrength = 0f;
             world = entity.World;
-        }
-
-        public float CurrentCooling
-        {
-            get => _currentCooling;
-            set
-            {
-                _currentCooling = GameMath.Clamp(value, 0, float.MaxValue);
-                entity.WatchedAttributes.SetFloat("currentCoolingHot", _currentCooling);
-                entity.WatchedAttributes.MarkPathDirty("currentCoolingHot");
-            }
         }
 
         public override void OnGameTick(float deltaTime)
@@ -82,7 +84,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             }
         }
 
-        private void UpdateCoolingFactor()
+        public void UpdateCoolingFactor()
         {
             float coolingFactor = 0f;
             var entityAgent = entity as EntityAgent;
@@ -136,13 +138,12 @@ namespace HydrateOrDiedrate.EntityBehavior
             double distanceTo3PM = GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0));
             double diurnalCooling = (0.5 - distanceTo4AM) * _config.DiurnalVariationAmplitude;
             coolingFactor += (float)(sunlightCooling + diurnalCooling);
+            coolingFactor *= CoolingMultiplier;
             CurrentCooling = Math.Max(0, coolingFactor);
         }
 
         private void CheckRoom()
         {
-            if (entity.Api.Side != EnumAppSide.Server) return;
-
             plrpos.Set((int)entity.Pos.X, (int)entity.Pos.Y, (int)entity.Pos.Z);
             plrpos.SetDimension(entity.Pos.AsBlockPos.dimension);
             var roomRegistry = entity.Api.ModLoader.GetModSystem<RoomRegistry>();
@@ -200,7 +201,6 @@ namespace HydrateOrDiedrate.EntityBehavior
             entity.WatchedAttributes.MarkPathDirty("bodyTemp");
         }
 
-
         private bool CheckRefrigeration(Room room)
         {
             if (room == null)
@@ -254,6 +254,7 @@ namespace HydrateOrDiedrate.EntityBehavior
                     return true;
                 }
             }
+
             return false;
         }
 

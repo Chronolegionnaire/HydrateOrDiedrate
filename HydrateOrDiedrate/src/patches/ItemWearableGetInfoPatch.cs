@@ -4,7 +4,6 @@ using Vintagestory.API.Common;
 using System.Text;
 using HydrateOrDiedrate;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 using System.Reflection;
 using Vintagestory.API.Client;

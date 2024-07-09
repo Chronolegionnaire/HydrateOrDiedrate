@@ -36,6 +36,11 @@ public class Config : IModConfig
     public bool EnableLiquidEncumbrance { get; set; } = true;
     public float EncumbranceLimit { get; set; } = 4.0f;
     public float LiquidEncumbranceMovementSpeedDebuff { get; set; } = 0.4f;
+    
+    // New Ability Settings
+    public float DromedaryMultiplierPerLevel { get; set; } = 0.3f;
+    public float[] EquatidianCoolingMultipliers { get; set; } = { 1.25f, 1.5f, 2.0f };
+
 
     public Config() { }
 
@@ -74,5 +79,8 @@ public class Config : IModConfig
         EnableLiquidEncumbrance = previousConfig?.EnableLiquidEncumbrance ?? true;
         EncumbranceLimit = previousConfig?.EncumbranceLimit ?? 4.0f;
         LiquidEncumbranceMovementSpeedDebuff = previousConfig?.LiquidEncumbranceMovementSpeedDebuff ?? 0.4f;
+        
+        DromedaryMultiplierPerLevel = previousConfig?.DromedaryMultiplierPerLevel ?? 0.3f;
+        EquatidianCoolingMultipliers = previousConfig?.EquatidianCoolingMultipliers ?? new float[] { 1.25f, 1.5f, 2.0f };
     }
 }

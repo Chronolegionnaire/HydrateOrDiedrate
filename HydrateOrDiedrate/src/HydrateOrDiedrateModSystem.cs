@@ -2,6 +2,7 @@
 using HarmonyLib;
 using HydrateOrDiedrate;
 using HydrateOrDiedrate.Commands;
+using HydrateOrDiedrate.Compatibility;
 using HydrateOrDiedrate.Configuration;
 using HydrateOrDiedrate.EntityBehavior;
 using HydrateOrDiedrate.Gui;
@@ -20,6 +21,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
     private ConfigLibCompatibility _configLibCompatibility;
+    private XLibSkills xLibSkills;
 
     public override void StartPre(ICoreAPI api)
     {
@@ -78,6 +80,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.Start(api);
         LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+
         api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot));
         api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
 
@@ -87,10 +90,17 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
 
         _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
-        
+    
         if (api.Side == EnumAppSide.Client)
         {
             _configLibCompatibility = new ConfigLibCompatibility((ICoreClientAPI)api);
+        }
+
+        // Initialize XLibSkills if XLib is installed
+        if (api.ModLoader.IsModEnabled("xlib"))
+        {
+            xLibSkills = new XLibSkills();
+            xLibSkills.Initialize(api);
         }
     }
 
@@ -213,6 +223,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
+
     public static bool XSkillActive(ICoreAPI api)
     {
         return api.ModLoader.IsModEnabled("xskills");

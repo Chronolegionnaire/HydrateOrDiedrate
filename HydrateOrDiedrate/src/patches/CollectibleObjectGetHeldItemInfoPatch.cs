@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using Vintagestory.API.Common;
-using Vintagestory.API.Client;
 using System.Text;
 using HydrateOrDiedrate;
 using Vintagestory.API.Config;

@@ -2,11 +2,8 @@
 using System.Text;
 using HarmonyLib;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
-using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
-using HydrateOrDiedrate;
 
 namespace HydrateOrDiedrate.Patches
 {
