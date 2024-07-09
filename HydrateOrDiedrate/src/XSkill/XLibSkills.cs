@@ -31,14 +31,14 @@ namespace HydrateOrDiedrate.Compatibility
 
             if (HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics)
             {
-                int[] dromedaryValues = new int[] { 0 }; // Example values array, replace with appropriate values
+                int[] dromedaryValues = new int[] { 0 };
                 Ability dromedaryAbility = new Ability("dromedary", "hydrateordiedrate:ability-dromedary",
                     "hydrateordiedrate:abilitydesc-dromedary", 1, 3, dromedaryValues, false);
                 dromedaryAbility.OnPlayerAbilityTierChanged += OnDromedary;
                 skill.AddAbility(dromedaryAbility);
             }
 
-            int[] equatidianValues = new int[] { 0 }; // Example values array, replace with appropriate values
+            int[] equatidianValues = new int[] { 0 };
             Ability equatidianAbility = new Ability("equatidian", "hydrateordiedrate:ability-equatidian",
                 "hydrateordiedrate:abilitydesc-equatidian", 1, 3, equatidianValues, false);
             equatidianAbility.OnPlayerAbilityTierChanged += OnEquatidian;
