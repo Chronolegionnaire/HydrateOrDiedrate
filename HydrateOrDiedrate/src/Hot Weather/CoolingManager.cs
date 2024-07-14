@@ -38,27 +38,27 @@ namespace HydrateOrDiedrate
                         {
                             float cooling = patch["cooling"].ToObject<float>();
                             SetCooling(api, itemName, cooling);
-                        }
-                        
-                        var item = api.World.GetItem(new AssetLocation(itemName));
-                        if (item == null)
-                        {
-                            continue;
-                        }
 
-                        if (item.Attributes == null)
-                        {
-                            continue;
-                        }
-
-                        float currentWarmth = item.Attributes["warmth"]?.AsFloat(0f) ?? 0f;
-                        if (currentWarmth <= 0f)
-                        {
-                            var clonedAttributes = item.Attributes.Token.DeepClone() as JObject;
-                            if (clonedAttributes != null)
+                            var item = api.World.GetItem(new AssetLocation(itemName));
+                            if (item == null)
                             {
-                                clonedAttributes["warmth"] = 0.01f;
-                                item.Attributes = new JsonObject(clonedAttributes);
+                                continue;
+                            }
+
+                            if (item.Attributes == null)
+                            {
+                                continue;
+                            }
+
+                            float currentWarmth = item.Attributes["warmth"]?.AsFloat(0f) ?? 0f;
+                            if (currentWarmth <= 0f)
+                            {
+                                var clonedAttributes = item.Attributes.Token.DeepClone() as JObject;
+                                if (clonedAttributes != null)
+                                {
+                                    clonedAttributes["warmth"] = 0.01f;
+                                    item.Attributes = new JsonObject(clonedAttributes);
+                                }
                             }
                         }
                     }
