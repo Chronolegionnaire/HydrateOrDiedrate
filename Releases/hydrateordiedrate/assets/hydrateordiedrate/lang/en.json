@@ -44,5 +44,7 @@
   "hydrateordiedrate:ability-dromedary": "Dromedary",
   "hydrateordiedrate:abilitydesc-dromedary": "Increases max thirst capacity.",
   "hydrateordiedrate:ability-equatidian": "Equatidian",
-  "hydrateordiedrate:abilitydesc-equatidian": "Provides a cooling multiplier."
+  "hydrateordiedrate:abilitydesc-equatidian": "Provides a cooling multiplier.",
+  "hydrateordiedrate:item-distilledwaterportion": "Distilled Water",
+  "hydrateordiedrate:incontainer-item-distilledwaterportion": "Distilled Water"
 }
