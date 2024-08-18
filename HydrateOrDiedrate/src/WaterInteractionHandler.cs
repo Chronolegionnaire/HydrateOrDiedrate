@@ -200,13 +200,15 @@ namespace HydrateOrDiedrate
             if (thirstBehavior != null)
             {
                 thirstBehavior.ModifyThirst(hydrationValue);
-            }
 
-            if (hungerBehavior != null)
-            {
-                hungerBehavior.Saturation -= hungerReduction;
+                if (hungerBehavior != null)
+                {
+                    hungerBehavior.Saturation -= hungerReduction;
+                    thirstBehavior.HungerReductionAmount += hungerReduction;
+                }
             }
         }
+
 
         private void ApplyHeatDamage(IPlayer player)
         {

@@ -12,7 +12,9 @@ namespace HydrateOrDiedrate.EntityBehavior
     {
         private const float DefaultSpeedOfTime = 60f;
         private const float DefaultCalendarSpeedMul = 0.5f;
-
+        private ICoreAPI api;
+        private float hungerReductionAmount;
+        private long lastProcessedTime = 0;
         private float _currentThirst;
         private float _customThirstRate;
         private int _customThirstTicks;
@@ -23,7 +25,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         private float thirstCounter;
         private int sprintCounter;
         private long lastMoveMs;
-
+        private bool hasProcessedSaturation = false;
         public float CurrentThirst
         {
             get => _currentThirst;
@@ -133,8 +135,7 @@ namespace HydrateOrDiedrate.EntityBehavior
                     float temperatureFactor = _config.ThirstIncreasePerDegreeMultiplier *
                                               (float)Math.Exp(_config.HarshHeatExponentialGainMultiplier *
                                                               temperatureDifference);
-
-                    // Apply temperature factor to the thirst decay rate
+                    
                     thirstDecayRate += temperatureFactor;
 
                     float coolingFactor = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f);
@@ -142,8 +143,6 @@ namespace HydrateOrDiedrate.EntityBehavior
                     thirstDecayRate -= Math.Min(coolingEffect, thirstDecayRate - _config.ThirstDecayRate);
                 }
             }
-
-            // Ensure the thirst decay rate does not exceed the maximum allowed value
             thirstDecayRate = Math.Min(thirstDecayRate, _config.ThirstDecayRate * _config.ThirstDecayRateMax);
 
             if (currentSpeedOfTime > DefaultSpeedOfTime || currentCalendarSpeedMul > DefaultCalendarSpeedMul)
@@ -251,8 +250,17 @@ namespace HydrateOrDiedrate.EntityBehavior
         public void LoadThirst()
         {
             _currentThirst = entity.WatchedAttributes.GetFloat("currentThirst", MaxThirst);
+            hungerReductionAmount = entity.WatchedAttributes.GetFloat("hungerReductionAmount", 0);
+            if (hungerReductionAmount < 0)
+            {
+                hungerReductionAmount = 0;
+                entity.WatchedAttributes.SetFloat("hungerReductionAmount", hungerReductionAmount);
+                entity.WatchedAttributes.MarkPathDirty("hungerReductionAmount");
+            }
+
             UpdateThirstAttributes();
         }
+
 
         public void UpdateThirstAttributes()
         {
@@ -324,6 +332,41 @@ namespace HydrateOrDiedrate.EntityBehavior
                 return false;
             }
         }
+
+        public float HungerReductionAmount
+        {
+            get => hungerReductionAmount;
+            set
+            {
+                hungerReductionAmount = value;
+                entity.WatchedAttributes.SetFloat("hungerReductionAmount", hungerReductionAmount);
+                entity.WatchedAttributes.MarkPathDirty("hungerReductionAmount");
+            }
+        }
+        public bool HasProcessedSaturation
+        {
+            get => hasProcessedSaturation;
+            set
+            {
+                hasProcessedSaturation = value;
+                if (value)
+                {
+                    lastProcessedTime = entity.World.ElapsedMilliseconds;
+                }
+                entity.WatchedAttributes.SetBool("hasProcessedSaturation", hasProcessedSaturation);
+                entity.WatchedAttributes.MarkPathDirty("hasProcessedSaturation");
+            }
+        }
+
+        public void CheckAndResetFlag()
+        {
+            long currentTime = entity.World.ElapsedMilliseconds;
+            if (currentTime - lastProcessedTime > 100)
+            {
+                HasProcessedSaturation = false;
+            }
+        }
+
 
         public override string PropertyName() => "thirst";
     }

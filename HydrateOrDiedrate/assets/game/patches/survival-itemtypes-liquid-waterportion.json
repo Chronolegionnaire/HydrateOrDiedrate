@@ -1,6 +1,16 @@
 [
   {
-    "op": "add",
+    "op": "addmerge",
+    "path": "/attributes/distillationProps",
+    "value": {
+      distilledStack: { type: "item", code: "hydrateordiedrate:distilledwaterportion" },
+      ratio: 0.9
+    },
+    "file": "game:itemtypes/liquid/waterportion.json",
+    "side": "Server"
+  },
+  {
+    "op": "addmerge",
     "path": "/attributes/waterTightContainerProps/nutritionPropsPerLitre",
     "value": {
       "satiety": -100,

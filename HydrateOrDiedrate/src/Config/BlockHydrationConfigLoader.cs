@@ -93,6 +93,17 @@ namespace HydrateOrDiedrate.Configuration
                             },
                             ["isBoiling"] = false,
                             ["hungerReduction"] = 100
+                        },
+                        new JObject
+                        {
+                            ["blockCode"] = "distilledwater*",
+                            ["hydrationByType"] = new JObject
+                            {
+                                ["distilledwater-*"] = 600,
+                                ["*"] = 600 
+                            },
+                            ["isBoiling"] = false,
+                            ["hungerReduction"] = 0
                         }
                     }
                 };
