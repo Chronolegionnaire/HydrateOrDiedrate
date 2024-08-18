@@ -17,6 +17,7 @@ namespace HydrateOrDiedrate.Patches
         {
             return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
         }
+
         [HarmonyPatch("ComposeStatsGui")]
         [HarmonyPrefix]
         public static bool ComposeStatsGui_Prefix(object __instance)
@@ -100,6 +101,7 @@ namespace HydrateOrDiedrate.Patches
                 });
 
                 addPhysicalStats(composers["playerstats"], entity, health, maxhealth, saturation, maxsaturation, tempTree, wetnessString, walkspeed, healingEffectivness, hungerRate, rangedWeaponAcc, rangedWeaponSpeed, ref leftColumnBoundsW, ref rightColumnBoundsW);
+                
                 if (saturation != null)
                 {
                     var hydrationStaticBounds = leftColumnBoundsW.BelowCopy(fixedDeltaY: 0.0);
@@ -115,8 +117,8 @@ namespace HydrateOrDiedrate.Patches
                         "hydrateordiedrate_thirst");
 
                     leftColumnBoundsW = hydrationStaticBounds.BelowCopy(fixedDeltaY: 0.0);
-
                 }
+
                 if (saturation != null)
                 {
                     var thirstRateStaticBounds = leftColumnBoundsW.BelowCopy(fixedDeltaY: -20.0); 
@@ -131,7 +133,18 @@ namespace HydrateOrDiedrate.Patches
                         thirstRateBounds, 
                         "hydrateordiedrate_thirstrate");
                 }
+                var nutritionDeficitStaticBounds = leftColumnBoundsW.BelowCopy(fixedDeltaY: 1.0);
+                var nutritionDeficitBounds = rightColumnBoundsW.FlatCopy().WithFixedPosition(rightColumnBoundsW.fixedX, nutritionDeficitStaticBounds.fixedY);
 
+                composers["playerstats"].AddStaticText(Lang.Get("Nutrition Deficit"), 
+                        CairoFont.WhiteDetailText(), 
+                        nutritionDeficitStaticBounds, 
+                        "nutritionDeficitStaticText")
+                    .AddDynamicText("0", 
+                        CairoFont.WhiteDetailText(), 
+                        nutritionDeficitBounds, 
+                        "nutritionDeficit");
+                
                 composers["playerstats"].EndChildElements().Compose(true);
                 MethodInfo updateStatBarsMethod = type.GetMethod("UpdateStatBars", BindingFlags.NonPublic | BindingFlags.Instance);
                 updateStatBarsMethod.Invoke(__instance, null);
@@ -190,6 +203,12 @@ namespace HydrateOrDiedrate.Patches
             if (thirstRateDynamicText != null)
             {
                 thirstRateDynamicText.SetNewText($"{(int)thirstRatePercentage}%", false, false, false);
+            }
+            float hungerReductionAmount = entity.WatchedAttributes.GetFloat("hungerReductionAmount", 0f);
+            var nutritionDeficitDynamicText = compo.GetDynamicText("nutritionDeficit");
+            if (nutritionDeficitDynamicText != null)
+            {
+                nutritionDeficitDynamicText.SetNewText($"{hungerReductionAmount}", false, false, false);
             }
 
             float walkSpeed = entity.Stats.GetBlended("walkspeed");

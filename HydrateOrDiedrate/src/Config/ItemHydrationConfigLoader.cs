@@ -343,6 +343,12 @@ namespace HydrateOrDiedrate.Configuration
                         },
                         new JObject
                         {
+                            ["itemname"] = "hydrateordiedrate:distilledwaterportion",
+                            ["hydration"] = 600,
+                            ["IsLiquid"] = true
+                        },
+                        new JObject
+                        {
                             ["itemname"] = "game:ciderportion-*",
                             ["hydrationByType"] = new JObject
                             {
@@ -838,7 +844,7 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject
                         {
                             ["itemname"] = "expandedfoods:yeastwaterportion",
-                            ["hydration"] = 600,
+                            ["hydration"] = 50,
                             ["IsLiquid"] = true
                         },
                         new JObject

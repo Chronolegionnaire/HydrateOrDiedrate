@@ -1,6 +1,6 @@
 ﻿[
   {
-    "op": "add",
+    "op": "addmerge",
     "path": "/server/behaviors/6",
     "value": {
       "code": "thirst"
@@ -9,7 +9,7 @@
     "side": "Server"
   },
   {
-    "op": "add",
+    "op": "addmerge",
     "path": "/server/behaviors/11",
     "value": {
       "code": "bodytemperaturehot"
@@ -18,7 +18,7 @@
     "side": "Server"
   },
   {
-    "op": "add",
+    "op": "addmerge",
     "path": "/server/behaviors/12",
     "value": {
       "code": "liquidencumbrancee"
