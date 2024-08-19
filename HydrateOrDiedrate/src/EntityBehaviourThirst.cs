@@ -197,10 +197,15 @@ namespace HydrateOrDiedrate.EntityBehavior
         public void ResetThirstOnRespawn()
         {
             CurrentThirst = 0.5f * MaxThirst;
+            hungerReductionAmount = 0;
+            entity.WatchedAttributes.SetFloat("hungerReductionAmount", hungerReductionAmount);
+            entity.WatchedAttributes.MarkPathDirty("hungerReductionAmount");
+
             UpdateThirstAttributes();
             RemoveMovementSpeedPenalty();
             InitializeCounters();
         }
+
 
         private void ApplyDamage()
         {
