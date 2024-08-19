@@ -5,6 +5,7 @@ using HarmonyLib;
 using HydrateOrDiedrate;
 using HydrateOrDiedrate.EntityBehavior;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 
 [HarmonyPatch]
 public class TryEatStopBlockBottlePatch
@@ -16,6 +17,7 @@ public class TryEatStopBlockBottlePatch
     static bool alreadyCalled = false;
     static float capturedHydrationAmount;
     static float capturedHydLossDelay;
+    static float capturedHungerReduction;
     static EntityPlayer capturedPlayer;
 
     static bool Prepare()
@@ -44,6 +46,7 @@ public class TryEatStopBlockBottlePatch
         alreadyCalled = false;
         capturedHydrationAmount = 0;
         capturedHydLossDelay = 0;
+        capturedHungerReduction = 0;
         capturedPlayer = null;
 
         var api = byEntity?.World?.Api;
@@ -100,6 +103,7 @@ public class TryEatStopBlockBottlePatch
                     capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier * blendedValue;
                 }
                 capturedPlayer = player;
+                capturedHungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
             }
         }
     }
@@ -122,11 +126,20 @@ public class TryEatStopBlockBottlePatch
         var thirstBehavior = capturedPlayer.GetBehavior<EntityBehaviorThirst>();
         if (thirstBehavior != null)
         {
+            if (thirstBehavior.HungerReductionAmount < 0)
+            {
+                thirstBehavior.HungerReductionAmount = 0;
+            }
             thirstBehavior.ModifyThirst(capturedHydrationAmount, capturedHydLossDelay);
+            if (capturedHungerReduction > 0)
+            {
+                thirstBehavior.HungerReductionAmount += capturedHungerReduction;
+            }
         }
 
         capturedHydrationAmount = 0;
         capturedHydLossDelay = 0;
+        capturedHungerReduction = 0;
         capturedPlayer = null;
     }
 }
