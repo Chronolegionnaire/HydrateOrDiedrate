@@ -338,11 +338,12 @@ namespace HydrateOrDiedrate.EntityBehavior
             get => hungerReductionAmount;
             set
             {
-                hungerReductionAmount = value;
+                hungerReductionAmount = (float)Math.Ceiling(value);  // Round up to the nearest whole number
                 entity.WatchedAttributes.SetFloat("hungerReductionAmount", hungerReductionAmount);
                 entity.WatchedAttributes.MarkPathDirty("hungerReductionAmount");
             }
         }
+
         public bool HasProcessedSaturation
         {
             get => hasProcessedSaturation;
