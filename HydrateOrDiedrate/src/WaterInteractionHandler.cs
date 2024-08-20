@@ -64,7 +64,13 @@ namespace HydrateOrDiedrate
 
                 if (player.Entity.Controls.Sneak && player.Entity.Controls.RightMouseDown)
                 {
-                    if (!_isShiftHeld && player.Entity.RightHandItemSlot.Empty && !player.Entity.Swimming && !IsHeadInWater(player))
+                    var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
+            
+                    if (!_isShiftHeld 
+                        && player.Entity.RightHandItemSlot.Empty 
+                        && !player.Entity.Swimming 
+                        && !IsHeadInWater(player)
+                        && (thirstBehavior == null || thirstBehavior.CurrentThirst < thirstBehavior.MaxThirst))
                     {
                         _isShiftHeld = true;
                         _lastInteractionTime = currentTime;
