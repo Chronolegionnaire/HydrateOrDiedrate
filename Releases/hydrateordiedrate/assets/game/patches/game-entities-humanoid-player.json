@@ -21,7 +21,7 @@
     "op": "addmerge",
     "path": "/server/behaviors/12",
     "value": {
-      "code": "liquidencumbrancee"
+      "code": "liquidencumbrance"
     },
     "file": "game:entities/humanoid/player.json",
     "side": "Server"
