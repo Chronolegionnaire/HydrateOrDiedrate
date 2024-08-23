@@ -14,7 +14,7 @@ private bool isFlashing;
     {
         ComposeGuis();
         capi.Event.RegisterGameTickListener(OnGameTick, 100);
-        capi.Event.RegisterGameTickListener(OnFlashStatbars, 2500);
+        capi.Event.RegisterGameTickListener(OnFlashStatbars, 1200);
     }
 
     public void OnGameTick(float dt)
