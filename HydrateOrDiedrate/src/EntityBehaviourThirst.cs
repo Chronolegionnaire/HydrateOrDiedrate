@@ -343,7 +343,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             get => hungerReductionAmount;
             set
             {
-                hungerReductionAmount = (float)Math.Ceiling(value);  // Round up to the nearest whole number
+                hungerReductionAmount = (float)Math.Ceiling(value);
                 entity.WatchedAttributes.SetFloat("hungerReductionAmount", hungerReductionAmount);
                 entity.WatchedAttributes.MarkPathDirty("hungerReductionAmount");
             }

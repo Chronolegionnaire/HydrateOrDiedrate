@@ -11,12 +11,14 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
+using Vintagestory.Client.NoObf;
 
 public class HydrateOrDiedrateModSystem : ModSystem
 {
     private ICoreServerAPI _serverApi;
     private ICoreClientAPI _clientApi;
     private HudElementThirstBar _thirstHud;
+    private HudElementHungerReductionBar _hungerReductionHud;
     public static Config LoadedConfig;
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
@@ -95,8 +97,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             _configLibCompatibility = new ConfigLibCompatibility((ICoreClientAPI)api);
         }
-
-        // Initialize XLibSkills if XLib is installed
         if (api.ModLoader.IsModEnabled("xlib"))
         {
             xLibSkills = new XLibSkills();
@@ -120,16 +120,45 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
     }
 
+    private long customHudListenerId;
+
     public override void StartClientSide(ICoreClientAPI api)
     {
         _clientApi = api;
 
         if (LoadedConfig.EnableThirstMechanics)
         {
-            _thirstHud = new HudElementThirstBar(api);
-            api.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
-            api.Gui.RegisterDialog(_thirstHud);
+            customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
         }
+    }
+
+    private void CheckAndInitializeCustomHud(float dt)
+    {
+        var vanillaHudStatbar = GetVanillaStatbarHud();
+
+        if (vanillaHudStatbar != null && vanillaHudStatbar.IsOpened())
+        {
+            _thirstHud = new HudElementThirstBar(_clientApi);
+            _clientApi.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
+            _clientApi.Gui.RegisterDialog(_thirstHud);
+            _hungerReductionHud = new HudElementHungerReductionBar(_clientApi);
+            _clientApi.Event.RegisterGameTickListener(_hungerReductionHud.OnGameTick, 1000);
+            _clientApi.Gui.RegisterDialog(_hungerReductionHud);
+            _clientApi.Event.UnregisterGameTickListener(customHudListenerId);
+        }
+    }
+
+    private HudStatbar GetVanillaStatbarHud()
+    {
+        foreach (var hud in _clientApi.Gui.OpenedGuis)
+        {
+            if (hud is HudStatbar statbar)
+            {
+                return statbar;
+            }
+        }
+
+        return null;
     }
 
     private void OnPlayerJoinOrNowPlaying(IServerPlayer byPlayer)
