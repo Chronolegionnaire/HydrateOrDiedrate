@@ -349,6 +349,12 @@ namespace HydrateOrDiedrate.Configuration
                         },
                         new JObject
                         {
+                            ["itemname"] = "hydrateordiedrate:rainwaterportion",
+                            ["hydration"] = 600,
+                            ["IsLiquid"] = true
+                        },
+                        new JObject
+                        {
                             ["itemname"] = "game:ciderportion-*",
                             ["hydrationByType"] = new JObject
                             {
