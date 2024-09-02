@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate;
 using HydrateOrDiedrate.Commands;
@@ -12,6 +13,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
+using Vintagestory.GameContent;
 
 public class HydrateOrDiedrateModSystem : ModSystem
 {
@@ -51,6 +53,15 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             LoadAndApplyHydrationPatches(api);
             LoadAndApplyBlockHydrationPatches(api);
+        }
+
+        // Apply the behavior to all relevant blocks during assets finalization
+        foreach (var block in api.World.Blocks)
+        {
+            if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
+            {
+                AddBehaviorToBlock(block, api);
+            }
         }
     }
 
@@ -101,6 +112,16 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             xLibSkills = new XLibSkills();
             xLibSkills.Initialize(api);
+        }
+
+        api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RainHarvester));
+        api.World.Logger.Event("Rain Harvester behavior registered.");
+        foreach (var block in api.World.Blocks)
+        {
+            if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
+            {
+                AddBehaviorToBlock(block, api);
+            }
         }
     }
 
@@ -256,6 +277,25 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public static bool XSkillActive(ICoreAPI api)
     {
         return api.ModLoader.IsModEnabled("xskills");
+    }
+    private void AddBehaviorToBlock(Block block, ICoreAPI api)
+    {
+        if (block.BlockEntityBehaviors == null)
+        {
+            block.BlockEntityBehaviors = new BlockEntityBehaviorType[0];
+        }
+
+        if (block.BlockEntityBehaviors.All(b => b.Name != "RainHarvester"))
+        {
+            var behaviorsList = block.BlockEntityBehaviors.ToList();
+            behaviorsList.Add(new BlockEntityBehaviorType()
+            {
+                Name = "RainHarvester",
+                properties = null
+            });
+            block.BlockEntityBehaviors = behaviorsList.ToArray();
+            api.World.Logger.Event("Added RainHarvester behavior to block: {0}", block.Code);
+        }
     }
 
     public override void Dispose()

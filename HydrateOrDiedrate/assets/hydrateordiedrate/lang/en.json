@@ -46,5 +46,7 @@
   "hydrateordiedrate:ability-equatidian": "Equatidian",
   "hydrateordiedrate:abilitydesc-equatidian": "Provides a cooling multiplier.",
   "hydrateordiedrate:item-distilledwaterportion": "Distilled Water",
-  "hydrateordiedrate:incontainer-item-distilledwaterportion": "Distilled Water"
+  "hydrateordiedrate:incontainer-item-distilledwaterportion": "Distilled Water",
+  "hydrateordiedrate:item-rainwaterportion": "Rain Water",
+  "hydrateordiedrate:incontainer-item-rainwaterportion": "Rain Water"
 }
