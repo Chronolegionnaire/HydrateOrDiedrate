@@ -35,6 +35,9 @@ namespace HydrateOrDiedrate
 
         private const string settingDromedaryMultiplierPerLevel = "hydrateordiedrate:Config.Setting.DromedaryMultiplierPerLevel";
         private const string settingEquatidianCoolingMultipliers = "hydrateordiedrate:Config.Setting.EquatidianCoolingMultipliers";
+        
+        private const string settingEnableRainGathering = "hydrateordiedrate:Config.Setting.EnableRainGathering";
+        private const string settingRainMultiplier = "hydrateordiedrate:Config.Setting.RainMultiplier";
 
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
@@ -183,6 +186,16 @@ namespace HydrateOrDiedrate
             float equatidianLevel3 = config.EquatidianCoolingMultipliers[2];
             ImGui.DragFloat($"Level 3##equatidianLevel3-{id}", ref equatidianLevel3, 0.01f, 1.0f, 5.0f);
             config.EquatidianCoolingMultipliers[2] = equatidianLevel3;
+            
+            ImGui.SeparatorText("Rain Gathering Settings");
+            
+            bool enableRainGathering = config.EnableRainGathering;
+            ImGui.Checkbox(Lang.Get(settingEnableRainGathering) + $"##enableRainGathering-{id}", ref enableRainGathering);
+            config.EnableRainGathering = enableRainGathering;
+
+            float rainMultiplier = config.RainMultiplier;
+            ImGui.DragFloat(Lang.Get(settingRainMultiplier) + $"##rainMultiplier-{id}", ref rainMultiplier, 0.1f, 0.1f, 10.0f);
+            config.RainMultiplier = rainMultiplier;
         }
     }
 }

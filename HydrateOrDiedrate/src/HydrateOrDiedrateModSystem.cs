@@ -115,7 +115,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
 
         api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RainHarvester));
-        api.World.Logger.Event("Rain Harvester behavior registered.");
         foreach (var block in api.World.Blocks)
         {
             if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
@@ -294,7 +293,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 properties = null
             });
             block.BlockEntityBehaviors = behaviorsList.ToArray();
-            api.World.Logger.Event("Added RainHarvester behavior to block: {0}", block.Code);
         }
     }
 

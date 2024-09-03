@@ -163,11 +163,6 @@ public class GuiElementCustomStatbar : GuiElementTextBase
     public override void Dispose()
     {
         base.Dispose();
-        LoadedTexture customLoadedTexture = this.customBaseTexture;
-        if (customLoadedTexture != null)
-        {
-            customLoadedTexture.Dispose();
-        }
         this.customBarTexture.Dispose();
         this.customFlashTexture.Dispose();
         this.customValueTexture.Dispose();
@@ -179,7 +174,6 @@ public class GuiElementCustomStatbar : GuiElementTextBase
     private float customLineInterval = 10f;
     private double[] customColor;
     private bool customRightToLeft;
-    private LoadedTexture customBaseTexture;
     private LoadedTexture customBarTexture;
     private LoadedTexture customFlashTexture;
     private LoadedTexture customValueTexture;

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using HydrateOrDiedrate.Configuration;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -14,11 +16,15 @@ namespace HydrateOrDiedrate.EntityBehavior
         private long particleTickListenerHandle;
         private ItemStack rainWaterStack;
         private static SimpleParticleProperties rainParticlesBlue;
-        private static SimpleParticleProperties rainParticlesWhite;
-        private int currentTickInterval = 10000;
         private int particleTickInterval = 200;
         private bool initialized = false;
         private bool hasHarvestedSuccessfully = false;
+        private int tickCounter = 0;
+        private const float DefaultSpeedOfTime = 60f;
+        private const float DefaultCalendarSpeedMul = 24f;
+        private int calculatedTickInterval = 10000;
+        private bool enableRainGathering;
+        private float rainMultiplier;
 
         public RainHarvester(BlockEntity blockentity) : base(blockentity)
         {
@@ -32,86 +38,68 @@ namespace HydrateOrDiedrate.EntityBehavior
             {
                 positionBuffer.Set(blockentity.Pos.X + 0.5, blockentity.Pos.Y + 0.5, blockentity.Pos.Z + 0.5);
             }
-            else
-            {
-                blockentity.Api?.World.Logger.Warning("RainHarvester: Block entity position is null during construction. Will use default position until corrected.");
-            }
         }
 
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
             base.Initialize(api, properties);
-
-            api.Event.RegisterCallback((dt) =>
+            var config = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+            if (config == null)
             {
-                InitializeBehavior(api);
-            }, 1000);
-        }
+                config = new Config();
+            }
+            enableRainGathering = config.EnableRainGathering;
+            rainMultiplier = config.RainMultiplier;
 
+            if (enableRainGathering)
+            {
+                api.Event.RegisterCallback((dt) =>
+                {
+                    InitializeBehavior(api);
+                }, 1000);
+            }
+        }
         private void InitializeBehavior(ICoreAPI api)
         {
             if (initialized) return;
-
-            try
+            Block blockAtPosition = api.World.BlockAccessor.GetBlock(Blockentity.Pos);
+            if (blockAtPosition == null || blockAtPosition.BlockId != Blockentity.Block.BlockId)
             {
-                TryUpdatePosition(Blockentity);
-
-                var item = api.World.GetItem(new AssetLocation("hydrateordiedrate:rainwaterportion"));
-                if (item != null)
-                {
-                    rainWaterStack = new ItemStack(item);
-                }
-                else
-                {
-                    api.World.Logger.Error("RainHarvester: Could not find item 'hydrateordiedrate:rainwaterportion'. Initialization failed.");
-                    return;
-                }
-
-                // Create particles using the same approach as WaterInteractionHandler
-                rainParticlesBlue = CreateParticleProperties(
-                    ColorUtil.ColorFromRgba(255, 200, 150, 255), // Pure blue
-                    new Vec3f(0, 0, 0), // No velocity
-                    new Vec3f(0, 0, 0)  // No velocity
-                );
-                rainParticlesWhite = CreateParticleProperties(
-                    ColorUtil.ColorFromRgba(255, 255, 255, 255),
-                    new Vec3f(-0.05f, 0, -0.05f),
-                    new Vec3f(0.05f, 0.1f, 0.05f)
-                );
-
-                if (api.Side == EnumAppSide.Server)
-                {
-                    weatherSysServer = api.ModLoader.GetModSystem<WeatherSystemServer>();
-
-                    if (weatherSysServer != null)
-                    {
-                        tickListenerHandle = api.Event.RegisterGameTickListener(OnTickUpdateServer, currentTickInterval);
-
-                        // Immediate harvest attempt after initialization
-                        float rainIntensity = GetRainIntensity();
-                        if (rainIntensity > 0)
-                        {
-                            float fillRate = CalculateFillRate(rainIntensity);
-                            HarvestRainwater(Blockentity, fillRate);
-                        }
-
-                        api.World.Logger.Event("RainHarvester: Successfully initialized WeatherSystemServer.");
-                    }
-                    else
-                    {
-                        api.World.Logger.Error("RainHarvester: WeatherSystemServer not found during initialization.");
-                    }
-
-                    Blockentity.MarkDirty(true);
-                }
-
-                initialized = true;
+                return;
             }
-            catch (Exception ex)
+            TryUpdatePosition(Blockentity);
+
+            var item = api.World.GetItem(new AssetLocation("hydrateordiedrate:rainwaterportion"));
+            if (item != null)
             {
-                api.World.Logger.Error("Error initializing RainHarvester: {0}", ex.Message);
-                throw;
+                rainWaterStack = new ItemStack(item);
             }
+            else
+            {   
+                return;
+            }
+
+            rainParticlesBlue = CreateParticleProperties(
+                ColorUtil.ColorFromRgba(255, 200, 150, 255),
+                new Vec3f(0, 0, 0),
+                new Vec3f(0, 0, 0)
+            );
+
+            if (api.Side == EnumAppSide.Server)
+            {
+                weatherSysServer = api.ModLoader.GetModSystem<WeatherSystemServer>();
+
+                if (weatherSysServer != null)
+                {
+                    tickListenerHandle = api.Event.RegisterGameTickListener(UpdateCalculatedTickInterval, 100); 
+                    particleTickListenerHandle = api.Event.RegisterGameTickListener(OnParticleTickUpdate, particleTickInterval);
+                    api.Event.RegisterGameTickListener(OnTickUpdateServer, 50);
+                }
+
+                Blockentity.MarkDirty(true);
+            }
+
+            initialized = true;
         }
 
         public override void OnBlockRemoved()
@@ -125,7 +113,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             var particles = new SimpleParticleProperties(
                 1, 1, color, new Vec3d(), new Vec3d(),
-                minVelocity, maxVelocity, 0.05f, 0.05f, 0.25f, 0.5f, EnumParticleModel.Cube // Adjusted sizes here
+                minVelocity, maxVelocity, 0.05f, 0.05f, 0.25f, 0.5f, EnumParticleModel.Cube
             );
             particles.AddPos = new Vec3d(0.125 / 2, 2 / 16f, 0.125 / 2);
             particles.SizeEvolve = new EvolvingNatFloat(EnumTransformFunction.LINEAR, -0.1f);
@@ -143,28 +131,37 @@ namespace HydrateOrDiedrate.EntityBehavior
             return particles;
         }
 
-        private void OnTickUpdateServer(float deltaTime)
+        private void UpdateCalculatedTickInterval(float deltaTime)
         {
-            if (weatherSysServer == null) return;
-
+            float currentSpeedOfTime = Blockentity.Api.World.Calendar.SpeedOfTime;
+            float currentCalendarSpeedMul = Blockentity.Api.World.Calendar.CalendarSpeedMul;
+            float speedOfTimeRatio = currentSpeedOfTime / DefaultSpeedOfTime;
+            float calendarSpeedRatio = currentCalendarSpeedMul / DefaultCalendarSpeedMul;
+            float gameSpeedMultiplier = speedOfTimeRatio * calendarSpeedRatio;
+            gameSpeedMultiplier = (float)Math.Pow(gameSpeedMultiplier, 8.0);
+            if (gameSpeedMultiplier < 1f) gameSpeedMultiplier = 1f;
             float rainIntensity = GetRainIntensity();
-
             if (rainIntensity > 0)
             {
-                float fillRate = CalculateFillRate(rainIntensity);
-                HarvestRainwater(Blockentity, fillRate);
+                float baseTickInterval = 10000f;
+                float tickInterval = baseTickInterval / gameSpeedMultiplier;
 
-                // Calculate tick interval based on rain intensity
-                float tickInterval = 20000 - ((rainIntensity - 0.1f) * 11111.11f);
-
-                // Round to the nearest 100 and cast to float
-                tickInterval = (float)Math.Round(tickInterval / 100f) * 100f;
-
-                UpdateTickInterval((int)tickInterval);
+                calculatedTickInterval = (int)(Math.Round(tickInterval / 100f) * 100f);
             }
             else
             {
-                UpdateTickInterval(30000);
+                calculatedTickInterval = 30000;
+            }
+        }
+
+        private void OnTickUpdateServer(float deltaTime)
+        {
+            tickCounter++;
+            if (tickCounter >= calculatedTickInterval / 50)
+            {
+                tickCounter = 0;
+                float fillRate = CalculateFillRate(GetRainIntensity());
+                HarvestRainwater(Blockentity, fillRate);
             }
         }
 
@@ -175,8 +172,19 @@ namespace HydrateOrDiedrate.EntityBehavior
             float rainIntensity = GetRainIntensity();
             if (rainIntensity > 0)
             {
-                var adjustedPos = GetAdjustedPosition(Blockentity);
-                SpawnRainParticles(adjustedPos, rainIntensity);
+                if (Blockentity is BlockEntityGroundStorage groundStorage)
+                {
+                    var positions = GetGroundStoragePositions(groundStorage);
+                    foreach (var pos in positions)
+                    {
+                        SpawnRainParticles(pos, rainIntensity);
+                    }
+                }
+                else
+                {
+                    var adjustedPos = GetAdjustedPosition(Blockentity);
+                    SpawnRainParticles(adjustedPos, rainIntensity);
+                }
             }
         }
 
@@ -187,58 +195,70 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         private float CalculateFillRate(float rainIntensity)
         {
-            return rainIntensity * 0.1f;
+            return rainIntensity * 0.1f * rainMultiplier;
         }
 
         private void HarvestRainwater(BlockEntity blockEntity, float rainIntensity)
         {
             if (rainWaterStack == null)
             {
-                Api.World.Logger.Error("RainHarvester: rainWaterStack is null. Aborting rainwater harvest.");
                 StopParticleTicking();
                 return;
             }
-
-            // Set the stack size to 100 items (1 liter)
             rainWaterStack.StackSize = 100;
-
             bool collected = false;
-
-            // Calculate the desired liters based on rain intensity and round to the nearest hundredth
-            float desiredLiters = (float)Math.Round(rainIntensity, 2); // Round to 2 decimal places
-            float desiredFillAmount = desiredLiters * 100; // Convert to water items (100 items = 1 liter)
-
-            Api.World.Logger.Notification($"RainHarvester: Calculating based on rain intensity - Attempting to add {desiredFillAmount} water items ({desiredLiters} liters).");
-
-            if (blockEntity.Block is BlockLiquidContainerBase blockContainer)
+            float desiredLiters = (float)Math.Round(rainIntensity, 2);
+            float desiredFillAmount = desiredLiters * 100;
+            if (blockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
             {
-                // Use the correct TryPutLiquid signature with BlockPos
-                float addedAmount = blockContainer.TryPutLiquid(blockEntity.Pos, rainWaterStack, desiredLiters);
-                Api.World.Logger.Notification($"RainHarvester: blockContainer.TryPutLiquid returned {addedAmount} water items. DesiredItems: {desiredFillAmount}, AvailableItems: {rainWaterStack.StackSize}, PlaceableItems: {blockContainer.CapacityLitres * 100}");
+                for (int i = 0; i < groundStorage.Inventory.Count; i++)
+                {
+                    var slot = groundStorage.Inventory[i];
+                    if (slot != null && i >= 0 && i < groundStorage.Inventory.Count && !slot.Empty &&
+                        slot.Itemstack != null &&
+                        slot.Itemstack.Collectible is BlockLiquidContainerBase blockContainer &&
+                        blockContainer.IsTopOpened)
+                    {
+                        float addedAmount = blockContainer.TryPutLiquid(slot.Itemstack, rainWaterStack, desiredLiters);
+
+                        if (addedAmount > 0)
+                        {
+                            collected = true;
+                            if (!hasHarvestedSuccessfully)
+                            {
+                                hasHarvestedSuccessfully = true;
+                                StartParticleTicking();
+                            }
+                        }
+                    }
+                }
+
+                groundStorage.MarkDirty(true);
+            }
+            if (blockEntity?.Block is BlockLiquidContainerBase blockContainerBase && rainWaterStack != null)
+            {
+                float addedAmount = blockContainerBase.TryPutLiquid(blockEntity.Pos, rainWaterStack, desiredLiters);
 
                 if (addedAmount > 0)
                 {
                     collected = true;
-
-                    Api.World.Logger.Notification($"RainHarvester: Added {addedAmount / 100.0f} liters of water to {blockEntity.Block.Code}.");
-
                     if (!hasHarvestedSuccessfully)
                     {
                         hasHarvestedSuccessfully = true;
-                        StartParticleTicking(); // Start ticking particles on first success
+                        StartParticleTicking();
                     }
                 }
             }
 
             if (!collected)
             {
-                StopParticleTicking(); // Stop ticking particles on failure
+                StopParticleTicking();
             }
         }
 
         private void StartParticleTicking()
         {
-            if (particleTickListenerHandle == 0 && hasHarvestedSuccessfully) // Ensure ticking starts only after the first success
+            if (particleTickListenerHandle == 0 && hasHarvestedSuccessfully)
             {
                 particleTickListenerHandle = Api.Event.RegisterGameTickListener(OnParticleTickUpdate, particleTickInterval);
             }
@@ -249,19 +269,19 @@ namespace HydrateOrDiedrate.EntityBehavior
             if (particleTickListenerHandle != 0)
             {
                 Api.Event.UnregisterGameTickListener(particleTickListenerHandle);
-                particleTickListenerHandle = 0; // Reset the handle to indicate it's stopped
+                particleTickListenerHandle = 0;
             }
         }
 
         private void SpawnRainParticles(Vec3d pos, float rainIntensity)
         {
-            int baseQuantity = 10; // Set the base number of particles for intensity 1
+            int baseQuantity = 10;
             int quantity = (int)(baseQuantity * (rainIntensity / 2));
-
-            SetParticleProperties(rainParticlesBlue, pos, 0.4, quantity, 1.5f, new Vec3f(0, 0.8f, 0));
-            SetParticleProperties(rainParticlesWhite, pos, 0.4, quantity, 1.5f, new Vec3f(0, 0.8f, 0));
+            Vec3d lowerPosition = pos.AddCopy(-0.10, -0.6, -0.1);
+            Vec3d spawnAreaRadius = new Vec3d(0.3, 0, 0.3);
+            Vec3f upwardsVelocity = new Vec3f(0, 1.8f, 0);
+            SetParticleProperties(rainParticlesBlue, lowerPosition, 0.6, quantity, 1.5f, upwardsVelocity);
         }
-
 
         private void SetParticleProperties(SimpleParticleProperties particles, Vec3d pos, double addPos, int quantity, float gravityEffect, Vec3f velocity)
         {
@@ -291,19 +311,111 @@ namespace HydrateOrDiedrate.EntityBehavior
             return adjustedPos;
         }
 
-        private void UpdateTickInterval(int newInterval)
-        {
-            if (newInterval != currentTickInterval)
-            {
-                Api.Event.UnregisterGameTickListener(tickListenerHandle);
-                currentTickInterval = newInterval;
-                tickListenerHandle = Api.Event.RegisterGameTickListener(OnTickUpdateServer, currentTickInterval);
-            }
-        }
-
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolve)
         {
             base.FromTreeAttributes(tree, worldForResolve);
+        }
+
+        private List<Vec3d> GetGroundStoragePositions(BlockEntityGroundStorage groundStorage)
+        {
+            List<Vec3d> positions = new List<Vec3d>();
+            Vec3d basePos = Blockentity.Pos.ToVec3d();
+            for (int i = 0; i < groundStorage.Inventory.Count; i++)
+            {
+                var slot = groundStorage.Inventory[i];
+
+                if (!slot.Empty)
+                {
+                    Vec3d itemPosition = GetItemPositionInStorage(groundStorage, i);
+                    positions.Add(itemPosition);
+                }
+            }
+
+            return positions;
+        }
+
+        private Vec3d GetItemPositionInStorage(BlockEntityGroundStorage groundStorage, int slotIndex)
+        {
+            Vec3d basePos = Blockentity.Pos.ToVec3d();
+            Vec3d[] quadrantOffsets =
+            {
+                new Vec3d(0.2, 0.5, 0.2),
+                new Vec3d(0.2, 0.5, 0.8),
+                new Vec3d(0.8, 0.5, 0.2),
+                new Vec3d(0.8, 0.5, 0.8)
+            };
+            float meshAngle = groundStorage.MeshAngle;
+            float tolerance = 0.0001f;
+            Vec3d adjustedOffset = quadrantOffsets[slotIndex];
+            if (groundStorage.StorageProps.Layout == EnumGroundStorageLayout.SingleCenter)
+            {
+                adjustedOffset = new Vec3d(0.5, 0.5, 0.5);
+            }
+            else
+            {
+                if (Math.Abs(meshAngle) < tolerance)
+                {
+                    adjustedOffset = quadrantOffsets[slotIndex];
+                }
+                else if (Math.Abs(meshAngle + 1.5707964f) < tolerance)
+                {
+                    switch (slotIndex)
+                    {
+                        case 0:
+                            adjustedOffset = quadrantOffsets[2];
+                            break;
+                        case 1:
+                            adjustedOffset = quadrantOffsets[0];
+                            break;
+                        case 2:
+                            adjustedOffset = quadrantOffsets[3];
+                            break;
+                        case 3:
+                            adjustedOffset = quadrantOffsets[1];
+                            break;
+                    }
+                }
+                else if (Math.Abs(meshAngle - 3.1415927f) < tolerance ||
+                         Math.Abs(meshAngle + 3.1415927f) < tolerance)
+                {
+                    switch (slotIndex)
+                    {
+                        case 0:
+                            adjustedOffset = quadrantOffsets[3];
+                            break;
+                        case 1:
+                            adjustedOffset = quadrantOffsets[2];
+                            break;
+                        case 2:
+                            adjustedOffset = quadrantOffsets[1];
+                            break;
+                        case 3:
+                            adjustedOffset = quadrantOffsets[0];
+                            break;
+                    }
+                }
+                else if (Math.Abs(meshAngle - 1.5707964f) < tolerance)
+                {
+                    switch (slotIndex)
+                    {
+                        case 0:
+                            adjustedOffset = quadrantOffsets[1];
+                            break;
+                        case 1:
+                            adjustedOffset = quadrantOffsets[3];
+                            break;
+                        case 2:
+                            adjustedOffset = quadrantOffsets[0];
+                            break;
+                        case 3:
+                            adjustedOffset = quadrantOffsets[2];
+                            break;
+                    }
+                }
+            }
+
+            Vec3d position = basePos.AddCopy(adjustedOffset);
+            return position;
         }
     }
 }
