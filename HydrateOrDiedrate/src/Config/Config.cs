@@ -40,7 +40,10 @@ public class Config : IModConfig
     // New Ability Settings
     public float DromedaryMultiplierPerLevel { get; set; } = 0.3f;
     public float[] EquatidianCoolingMultipliers { get; set; } = { 1.25f, 1.5f, 2.0f };
-
+    
+    // Rain Gathering Settings
+    public bool EnableRainGathering { get; set; } = true;
+    public float RainMultiplier { get; set; } = 1.0f;
 
     public Config() { }
 
@@ -82,5 +85,9 @@ public class Config : IModConfig
         
         DromedaryMultiplierPerLevel = previousConfig?.DromedaryMultiplierPerLevel ?? 0.3f;
         EquatidianCoolingMultipliers = previousConfig?.EquatidianCoolingMultipliers ?? new float[] { 1.25f, 1.5f, 2.0f };
+        
+        // Rain Gathering Settings
+        EnableRainGathering = previousConfig?.EnableRainGathering ?? true;
+        RainMultiplier = previousConfig?.RainMultiplier ?? 1.0f;
     }
 }
