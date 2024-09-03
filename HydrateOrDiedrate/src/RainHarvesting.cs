@@ -45,7 +45,6 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             if (combinedListenerHandle != 0)
             {
-                Api.Logger.Notification($"RainHarvester: Unregistering combinedListenerHandle for BlockEntity at {Blockentity.Pos} with handle {combinedListenerHandle}");
                 Api.Event.UnregisterGameTickListener(combinedListenerHandle);
                 combinedListenerHandle = 0;
             }
@@ -113,11 +112,7 @@ namespace HydrateOrDiedrate.EntityBehavior
 
                 if (weatherSysServer != null)
                 {
-                    // Combine the listeners into a single handler
                     combinedListenerHandle = api.Event.RegisterGameTickListener(CombinedTickUpdate, 50);
-
-                    // Logging to identify the unique listener
-                    api.Logger.Notification($"RainHarvester: Registered combinedListenerHandle for BlockEntity at {Blockentity.Pos} with handle {combinedListenerHandle}");
                 }
 
                 Blockentity.MarkDirty(true);
@@ -129,21 +124,17 @@ namespace HydrateOrDiedrate.EntityBehavior
         private void CombinedTickUpdate(float deltaTime)
         {
             if (!IsBlockEntityValid()) return;
-
-            // Update the calculated tick interval
             UpdateCalculatedTickInterval(deltaTime);
-
-            // Particle ticking logic
+            
             if (particleTickCounter >= particleTickInterval / 50)
             {
                 OnParticleTickUpdate(deltaTime);
-                particleTickCounter = 0; // Reset the counter for the next particle tick interval
+                particleTickCounter = 0;
             }
 
-            // Server tick (rain harvesting) logic
             if (tickCounter >= calculatedTickInterval / 50)
             {
-                tickCounter = 0;  // Reset the counter for the next harvesting interval
+                tickCounter = 0;
                 float fillRate = CalculateFillRate(GetRainIntensity());
                 HarvestRainwater(Blockentity, fillRate);
             }
@@ -195,23 +186,15 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             if (rainIntensity > 0)
             {
-                // Desired tick intervals in milliseconds
-                float tickIntervalAtMaxRain = 10000f;  // 10 seconds at rainIntensity = 1
-                float tickIntervalAtMinRain = 20000f;  // 20 seconds at rainIntensity = 0.1
-
-                // Linear interpolation between the two based on rain intensity
+                float tickIntervalAtMaxRain = 10000f; 
+                float tickIntervalAtMinRain = 20000f; 
                 float tickInterval = tickIntervalAtMinRain - (rainIntensity * (tickIntervalAtMinRain - tickIntervalAtMaxRain));
-
-                // Apply game speed multiplier
                 tickInterval /= gameSpeedMultiplier;
-
-                // Round to nearest 100ms
                 calculatedTickInterval = (int)(Math.Round(tickInterval / 100f) * 100f);
             }
             else
             {
-                // If no rain, set a default high interval
-                calculatedTickInterval = 30000;  // e.g., 30 seconds if no rain
+                calculatedTickInterval = 30000;
             }
         }
 
