@@ -43,13 +43,19 @@ namespace HydrateOrDiedrate.EntityBehavior
         
         private void StopAllBehaviors()
         {
-            if (combinedListenerHandle != 0)
+            try
             {
-                Api.Event.UnregisterGameTickListener(combinedListenerHandle);
-                combinedListenerHandle = 0;
-            }
+                if (combinedListenerHandle != 0)
+                {
+                    Api.Event.UnregisterGameTickListener(combinedListenerHandle);
+                    combinedListenerHandle = 0;
+                }
 
-            initialized = false;
+                initialized = false;
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         private void TryUpdatePosition(BlockEntity blockentity)
@@ -62,88 +68,93 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public override void Initialize(ICoreAPI api, JsonObject properties)
         {
-            base.Initialize(api, properties);
-            var config = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
-            if (config == null)
+            try
             {
-                config = new Config();
-            }
-            enableRainGathering = config.EnableRainGathering;
-            rainMultiplier = config.RainMultiplier;
-
-            if (enableRainGathering)
-            {
-                api.Event.RegisterCallback((dt) =>
+                base.Initialize(api, properties);
+                weatherSysServer = api.ModLoader.GetModSystem<WeatherSystemServer>();
+                var config = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+                if (config == null)
                 {
-                    InitializeBehavior(api);
-                }, 1000);
+                    config = new Config();
+                }
+                enableRainGathering = config.EnableRainGathering;
+                rainMultiplier = config.RainMultiplier;
+                if (enableRainGathering)
+                {
+                    api.Event.RegisterCallback((dt) =>
+                    {
+                        InitializeBehavior(api);
+                    }, 1000);
+                }
+            }
+            catch (System.Exception ex)
+            {
             }
         }
         private void InitializeBehavior(ICoreAPI api)
         {
             if (initialized) return;
 
-            Block blockAtPosition = api.World.BlockAccessor.GetBlock(Blockentity.Pos);
-            if (blockAtPosition == null || blockAtPosition.BlockId != Blockentity.Block.BlockId)
+            try
             {
-                return;
-            }
-            TryUpdatePosition(Blockentity);
-
-            var item = api.World.GetItem(new AssetLocation("hydrateordiedrate:rainwaterportion"));
-            if (item != null)
-            {
-                rainWaterStack = new ItemStack(item);
-            }
-            else
-            {
-                return;
-            }
-
-            rainParticlesBlue = CreateParticleProperties(
-                ColorUtil.ColorFromRgba(255, 200, 150, 255),
-                new Vec3f(0, 0, 0),
-                new Vec3f(0, 0, 0)
-            );
-
-            if (api.Side == EnumAppSide.Server)
-            {
-                weatherSysServer = api.ModLoader.GetModSystem<WeatherSystemServer>();
-
-                if (weatherSysServer != null)
+                Block blockAtPosition = api.World.BlockAccessor.GetBlock(Blockentity.Pos);
+                if (blockAtPosition == null || blockAtPosition.BlockId != Blockentity.Block.BlockId)
                 {
-                    combinedListenerHandle = api.Event.RegisterGameTickListener(CombinedTickUpdate, 50);
+                    return;
+                }
+                TryUpdatePosition(Blockentity);
+
+                var item = api.World.GetItem(new AssetLocation("hydrateordiedrate:rainwaterportion"));
+                if (item != null)
+                {
+                    rainWaterStack = new ItemStack(item);
+                }
+                else
+                {
+                    return;
                 }
 
-                Blockentity.MarkDirty(true);
-            }
+                rainParticlesBlue = CreateParticleProperties(
+                    ColorUtil.ColorFromRgba(255, 200, 150, 255),
+                    new Vec3f(0, 0, 0),
+                    new Vec3f(0, 0, 0)
+                );
 
-            initialized = true;
+                if (api.Side == EnumAppSide.Server)
+                {
+                    weatherSysServer = api.ModLoader.GetModSystem<WeatherSystemServer>();
+                    if (combinedListenerHandle == 0)
+                    {
+                        combinedListenerHandle = api.Event.RegisterGameTickListener(CombinedTickUpdate, 500);
+                    }
+
+                    Blockentity.MarkDirty(true);
+                }
+
+                initialized = true;
+            }
+            catch (Exception ex)
+            {
+            }
         }
         
         private void CombinedTickUpdate(float deltaTime)
         {
-            if (!IsBlockEntityValid()) return;
-            UpdateCalculatedTickInterval(deltaTime);
-            
-            if (particleTickCounter >= particleTickInterval / 50)
-            {
-                OnParticleTickUpdate(deltaTime);
-                particleTickCounter = 0;
-            }
+            if (Api.Side != EnumAppSide.Server) return;
 
-            if (tickCounter >= calculatedTickInterval / 50)
+            if (!IsBlockEntityValid()) return;
+
+            UpdateCalculatedTickInterval(deltaTime);
+            OnParticleTickUpdate(deltaTime);
+            tickCounter++;
+            if (tickCounter >= calculatedTickInterval)
             {
                 tickCounter = 0;
                 float fillRate = CalculateFillRate(GetRainIntensity());
                 HarvestRainwater(Blockentity, fillRate);
             }
-
-            particleTickCounter++;
-            tickCounter++;
         }
-
-
+        
         public override void OnBlockRemoved()
         {
             StopAllBehaviors(); 
@@ -176,38 +187,30 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             float currentSpeedOfTime = Blockentity.Api.World.Calendar.SpeedOfTime;
             float currentCalendarSpeedMul = Blockentity.Api.World.Calendar.CalendarSpeedMul;
-            float speedOfTimeRatio = currentSpeedOfTime / DefaultSpeedOfTime;
-            float calendarSpeedRatio = currentCalendarSpeedMul / DefaultCalendarSpeedMul;
-            float gameSpeedMultiplier = speedOfTimeRatio * calendarSpeedRatio;
-            gameSpeedMultiplier = (float)Math.Pow(gameSpeedMultiplier, 8.0);
+            float gameSpeedMultiplier = (currentSpeedOfTime / DefaultSpeedOfTime) * (currentCalendarSpeedMul / DefaultCalendarSpeedMul);
+
             if (gameSpeedMultiplier < 1f) gameSpeedMultiplier = 1f;
 
             float rainIntensity = GetRainIntensity();
+            float intervalAtMaxRain = 20f;
+            float intervalAtMinRain = 40f; 
 
-            if (rainIntensity > 0)
+            if (rainIntensity >= 1)
             {
-                float tickIntervalAtMaxRain = 10000f; 
-                float tickIntervalAtMinRain = 20000f; 
-                float tickInterval = tickIntervalAtMinRain - (rainIntensity * (tickIntervalAtMinRain - tickIntervalAtMaxRain));
-                tickInterval /= gameSpeedMultiplier;
-                calculatedTickInterval = (int)(Math.Round(tickInterval / 100f) * 100f);
+                calculatedTickInterval = (int)(intervalAtMaxRain / gameSpeedMultiplier);
+            }
+            else if (rainIntensity <= 0.1)
+            {
+                calculatedTickInterval = (int)(intervalAtMinRain / gameSpeedMultiplier);
             }
             else
             {
-                calculatedTickInterval = 30000;
+                float interpolatedInterval = intervalAtMinRain + (intervalAtMaxRain - intervalAtMinRain) * (rainIntensity - 0.1f) / 0.9f;
+                calculatedTickInterval = (int)(interpolatedInterval / gameSpeedMultiplier);
             }
-        }
-
-        private void OnTickUpdateServer(float deltaTime)
-        {
-            if (!IsBlockEntityValid()) return;
-
-            tickCounter++;
-            if (tickCounter >= calculatedTickInterval / 50)
+            if (calculatedTickInterval < 4)
             {
-                tickCounter = 0;
-                float fillRate = CalculateFillRate(GetRainIntensity());
-                HarvestRainwater(Blockentity, fillRate);
+                calculatedTickInterval = 4;
             }
         }
 
@@ -240,12 +243,21 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         private float GetRainIntensity()
         {
+            if (weatherSysServer == null)
+            {
+                return 0f;
+            }
             return weatherSysServer.GetPrecipitation(positionBuffer);
         }
 
         private float CalculateFillRate(float rainIntensity)
         {
-            return rainIntensity * 0.1f * rainMultiplier;
+            float fillRate = 0.2f * rainIntensity;
+            float currentSpeedOfTime = Blockentity.Api.World.Calendar.SpeedOfTime;
+            float currentCalendarSpeedMul = Blockentity.Api.World.Calendar.CalendarSpeedMul;
+            float gameSpeedMultiplier = (currentSpeedOfTime / DefaultSpeedOfTime) * (currentCalendarSpeedMul / DefaultCalendarSpeedMul);
+            float finalFillRate = fillRate * gameSpeedMultiplier * rainMultiplier;
+            return finalFillRate;
         }
 
         private void HarvestRainwater(BlockEntity blockEntity, float fillRate)
@@ -267,6 +279,7 @@ namespace HydrateOrDiedrate.EntityBehavior
                         slot.Itemstack.Collectible is BlockLiquidContainerBase blockContainer &&
                         blockContainer.IsTopOpened)
                     {
+
                         float addedAmount = blockContainer.TryPutLiquid(slot.Itemstack, rainWaterStack, desiredLiters);
 
                         if (addedAmount > 0)
