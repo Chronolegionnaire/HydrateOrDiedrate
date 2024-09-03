@@ -46,5 +46,7 @@
   "hydrateordiedrate:ability-equatidian": "Equatidian",
   "hydrateordiedrate:abilitydesc-equatidian": "Fornece um multiplicador de resfriamento.",
   "hydrateordiedrate:item-distilledwaterportion": "Água destilada",
-  "hydrateordiedrate:incontainer-item-distilledwaterportion": "Água destilada"
+  "hydrateordiedrate:incontainer-item-distilledwaterportion": "Água destilada",
+  "hydrateordiedrate:item-rainwaterportion": "Água da chuva",
+  "hydrateordiedrate:incontainer-item-rainwaterportion": "Água da chuva"
 }

@@ -5,14 +5,12 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using HydrateOrDiedrate.Configuration;
 
-
 namespace HydrateOrDiedrate.EntityBehavior
 {
     public class EntityBehaviorThirst : Vintagestory.API.Common.Entities.EntityBehavior
     {
         private const float DefaultSpeedOfTime = 60f;
         private const float DefaultCalendarSpeedMul = 0.5f;
-        private ICoreAPI api;
         private float hungerReductionAmount;
         private long lastProcessedTime = 0;
         private float _currentThirst;
@@ -26,6 +24,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         private int sprintCounter;
         private long lastMoveMs;
         private bool hasProcessedSaturation = false;
+
         public float CurrentThirst
         {
             get => _currentThirst;
