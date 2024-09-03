@@ -12,17 +12,17 @@ namespace HydrateOrDiedrate.EntityBehavior
     {
         private WeatherSystemServer weatherSysServer;
         private Vec3d positionBuffer;
-        private long tickListenerHandle;
-        private long particleTickListenerHandle;
+        private long combinedListenerHandle;
         private ItemStack rainWaterStack;
         private static SimpleParticleProperties rainParticlesBlue;
         private int particleTickInterval = 200;
         private bool initialized = false;
         private bool hasHarvestedSuccessfully = false;
         private int tickCounter = 0;
+        private int particleTickCounter = 0;
         private const float DefaultSpeedOfTime = 60f;
-        private const float DefaultCalendarSpeedMul = 24f;
-        private int calculatedTickInterval = 10000;
+        private const float DefaultCalendarSpeedMul = 0.5f;
+        private int calculatedTickInterval = 20000;
         private bool enableRainGathering;
         private float rainMultiplier;
 
@@ -30,6 +30,27 @@ namespace HydrateOrDiedrate.EntityBehavior
         {
             positionBuffer = new Vec3d(0.5, 0.5, 0.5);
             TryUpdatePosition(blockentity);
+        }
+        private bool IsBlockEntityValid()
+        {
+            if (Blockentity == null || Blockentity.Api == null || Blockentity.Block == null || Blockentity.Block.Id == 0)
+            {
+                StopAllBehaviors();
+                return false;
+            }
+            return true;
+        }
+        
+        private void StopAllBehaviors()
+        {
+            if (combinedListenerHandle != 0)
+            {
+                Api.Logger.Notification($"RainHarvester: Unregistering combinedListenerHandle for BlockEntity at {Blockentity.Pos} with handle {combinedListenerHandle}");
+                Api.Event.UnregisterGameTickListener(combinedListenerHandle);
+                combinedListenerHandle = 0;
+            }
+
+            initialized = false;
         }
 
         private void TryUpdatePosition(BlockEntity blockentity)
@@ -62,6 +83,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         private void InitializeBehavior(ICoreAPI api)
         {
             if (initialized) return;
+
             Block blockAtPosition = api.World.BlockAccessor.GetBlock(Blockentity.Pos);
             if (blockAtPosition == null || blockAtPosition.BlockId != Blockentity.Block.BlockId)
             {
@@ -75,7 +97,7 @@ namespace HydrateOrDiedrate.EntityBehavior
                 rainWaterStack = new ItemStack(item);
             }
             else
-            {   
+            {
                 return;
             }
 
@@ -91,9 +113,11 @@ namespace HydrateOrDiedrate.EntityBehavior
 
                 if (weatherSysServer != null)
                 {
-                    tickListenerHandle = api.Event.RegisterGameTickListener(UpdateCalculatedTickInterval, 100); 
-                    particleTickListenerHandle = api.Event.RegisterGameTickListener(OnParticleTickUpdate, particleTickInterval);
-                    api.Event.RegisterGameTickListener(OnTickUpdateServer, 50);
+                    // Combine the listeners into a single handler
+                    combinedListenerHandle = api.Event.RegisterGameTickListener(CombinedTickUpdate, 50);
+
+                    // Logging to identify the unique listener
+                    api.Logger.Notification($"RainHarvester: Registered combinedListenerHandle for BlockEntity at {Blockentity.Pos} with handle {combinedListenerHandle}");
                 }
 
                 Blockentity.MarkDirty(true);
@@ -101,12 +125,38 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             initialized = true;
         }
+        
+        private void CombinedTickUpdate(float deltaTime)
+        {
+            if (!IsBlockEntityValid()) return;
+
+            // Update the calculated tick interval
+            UpdateCalculatedTickInterval(deltaTime);
+
+            // Particle ticking logic
+            if (particleTickCounter >= particleTickInterval / 50)
+            {
+                OnParticleTickUpdate(deltaTime);
+                particleTickCounter = 0; // Reset the counter for the next particle tick interval
+            }
+
+            // Server tick (rain harvesting) logic
+            if (tickCounter >= calculatedTickInterval / 50)
+            {
+                tickCounter = 0;  // Reset the counter for the next harvesting interval
+                float fillRate = CalculateFillRate(GetRainIntensity());
+                HarvestRainwater(Blockentity, fillRate);
+            }
+
+            particleTickCounter++;
+            tickCounter++;
+        }
+
 
         public override void OnBlockRemoved()
         {
+            StopAllBehaviors(); 
             base.OnBlockRemoved();
-            Blockentity.UnregisterGameTickListener(tickListenerHandle);
-            Blockentity.UnregisterGameTickListener(particleTickListenerHandle);
         }
 
         private SimpleParticleProperties CreateParticleProperties(int color, Vec3f minVelocity, Vec3f maxVelocity, string climateColorMap = null)
@@ -140,22 +190,35 @@ namespace HydrateOrDiedrate.EntityBehavior
             float gameSpeedMultiplier = speedOfTimeRatio * calendarSpeedRatio;
             gameSpeedMultiplier = (float)Math.Pow(gameSpeedMultiplier, 8.0);
             if (gameSpeedMultiplier < 1f) gameSpeedMultiplier = 1f;
+
             float rainIntensity = GetRainIntensity();
+
             if (rainIntensity > 0)
             {
-                float baseTickInterval = 10000f;
-                float tickInterval = baseTickInterval / gameSpeedMultiplier;
+                // Desired tick intervals in milliseconds
+                float tickIntervalAtMaxRain = 10000f;  // 10 seconds at rainIntensity = 1
+                float tickIntervalAtMinRain = 20000f;  // 20 seconds at rainIntensity = 0.1
 
+                // Linear interpolation between the two based on rain intensity
+                float tickInterval = tickIntervalAtMinRain - (rainIntensity * (tickIntervalAtMinRain - tickIntervalAtMaxRain));
+
+                // Apply game speed multiplier
+                tickInterval /= gameSpeedMultiplier;
+
+                // Round to nearest 100ms
                 calculatedTickInterval = (int)(Math.Round(tickInterval / 100f) * 100f);
             }
             else
             {
-                calculatedTickInterval = 30000;
+                // If no rain, set a default high interval
+                calculatedTickInterval = 30000;  // e.g., 30 seconds if no rain
             }
         }
 
         private void OnTickUpdateServer(float deltaTime)
         {
+            if (!IsBlockEntityValid()) return;
+
             tickCounter++;
             if (tickCounter >= calculatedTickInterval / 50)
             {
@@ -167,6 +230,10 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         private void OnParticleTickUpdate(float deltaTime)
         {
+            if (!IsBlockEntityValid()) return;
+
+            if (!IsBlockOpenToSky(Blockentity.Pos)) return;
+
             if (weatherSysServer == null) return;
 
             float rainIntensity = GetRainIntensity();
@@ -198,17 +265,15 @@ namespace HydrateOrDiedrate.EntityBehavior
             return rainIntensity * 0.1f * rainMultiplier;
         }
 
-        private void HarvestRainwater(BlockEntity blockEntity, float rainIntensity)
+        private void HarvestRainwater(BlockEntity blockEntity, float fillRate)
         {
-            if (rainWaterStack == null)
-            {
-                StopParticleTicking();
-                return;
-            }
+            if (rainWaterStack == null || !IsBlockOpenToSky(blockEntity.Pos)) return;
+
             rainWaterStack.StackSize = 100;
             bool collected = false;
-            float desiredLiters = (float)Math.Round(rainIntensity, 2);
+            float desiredLiters = (float)Math.Round(fillRate, 2);
             float desiredFillAmount = desiredLiters * 100;
+
             if (blockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
             {
                 for (int i = 0; i < groundStorage.Inventory.Count; i++)
@@ -224,17 +289,14 @@ namespace HydrateOrDiedrate.EntityBehavior
                         if (addedAmount > 0)
                         {
                             collected = true;
-                            if (!hasHarvestedSuccessfully)
-                            {
-                                hasHarvestedSuccessfully = true;
-                                StartParticleTicking();
-                            }
+                            hasHarvestedSuccessfully = true;
                         }
                     }
                 }
 
                 groundStorage.MarkDirty(true);
             }
+
             if (blockEntity?.Block is BlockLiquidContainerBase blockContainerBase && rainWaterStack != null)
             {
                 float addedAmount = blockContainerBase.TryPutLiquid(blockEntity.Pos, rainWaterStack, desiredLiters);
@@ -242,35 +304,19 @@ namespace HydrateOrDiedrate.EntityBehavior
                 if (addedAmount > 0)
                 {
                     collected = true;
-                    if (!hasHarvestedSuccessfully)
-                    {
-                        hasHarvestedSuccessfully = true;
-                        StartParticleTicking();
-                    }
+                    hasHarvestedSuccessfully = true;
                 }
             }
 
             if (!collected)
             {
-                StopParticleTicking();
+                hasHarvestedSuccessfully = false;
             }
         }
 
-        private void StartParticleTicking()
+        private bool IsBlockOpenToSky(BlockPos pos)
         {
-            if (particleTickListenerHandle == 0 && hasHarvestedSuccessfully)
-            {
-                particleTickListenerHandle = Api.Event.RegisterGameTickListener(OnParticleTickUpdate, particleTickInterval);
-            }
-        }
-
-        private void StopParticleTicking()
-        {
-            if (particleTickListenerHandle != 0)
-            {
-                Api.Event.UnregisterGameTickListener(particleTickListenerHandle);
-                particleTickListenerHandle = 0;
-            }
+            return Api.World.BlockAccessor.GetRainMapHeightAt(pos.X, pos.Z) <= pos.Y;
         }
 
         private void SpawnRainParticles(Vec3d pos, float rainIntensity)
@@ -419,3 +465,4 @@ namespace HydrateOrDiedrate.EntityBehavior
         }
     }
 }
+

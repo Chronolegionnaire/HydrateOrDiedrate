@@ -344,13 +344,13 @@ namespace HydrateOrDiedrate.Configuration
                         new JObject
                         {
                             ["itemname"] = "hydrateordiedrate:distilledwaterportion",
-                            ["hydration"] = 600,
+                            ["hydration"] = 900,
                             ["IsLiquid"] = true
                         },
                         new JObject
                         {
                             ["itemname"] = "hydrateordiedrate:rainwaterportion",
-                            ["hydration"] = 600,
+                            ["hydration"] = 750,
                             ["IsLiquid"] = true
                         },
                         new JObject
