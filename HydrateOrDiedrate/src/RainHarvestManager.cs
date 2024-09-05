@@ -31,6 +31,7 @@ public class RainHarvesterManager
             {
                 newAdaptiveTickInterval -= 40;
             }
+
             data.adaptiveTickInterval = newAdaptiveTickInterval;
             registeredHarvesters.Add(position, data);
             var config = ModConfig.ReadConfig<Config>(serverAPI, "HydrateOrDiedrateConfig.json");
@@ -71,10 +72,12 @@ public class RainHarvesterManager
             {
                 harvesterData.adaptiveTickInterval = globalTickCounter + 2;
             }
+
             if (harvesterData.adaptiveTickInterval > 40)
             {
                 harvesterData.adaptiveTickInterval -= 40;
             }
+
             if (globalTickCounter == harvesterData.adaptiveTickInterval)
             {
                 int newAdaptiveTickInterval = harvesterData.adaptiveTickInterval + harvesterData.calculatedTickInterval;
@@ -82,13 +85,16 @@ public class RainHarvesterManager
                 {
                     newAdaptiveTickInterval -= 40;
                 }
+
                 harvesterData.adaptiveTickInterval = newAdaptiveTickInterval;
                 registeredHarvesters[position] = harvesterData;
                 harvesterData.OnHarvest(rainIntensity);
             }
+
             harvesterData.OnParticleTickUpdate(deltaTime);
         }
     }
+
     private void MarkDictionaryDirty()
     {
         foreach (var data in registeredHarvesters.Values)

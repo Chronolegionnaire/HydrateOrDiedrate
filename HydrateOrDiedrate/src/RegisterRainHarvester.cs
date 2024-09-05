@@ -5,7 +5,9 @@ public class RegisterRainHarvester : BlockEntityBehavior
 {
     private RainHarvesterManager harvesterManager;
     private RainHarvesterData harvesterData;
+
     public RegisterRainHarvester(BlockEntity blockEntity) : base(blockEntity) { }
+
     public override void Initialize(ICoreAPI api, JsonObject properties)
     {
         base.Initialize(api, properties);
@@ -17,6 +19,7 @@ public class RegisterRainHarvester : BlockEntityBehavior
             harvesterManager.RegisterHarvester(Blockentity.Pos, harvesterData);
         }
     }
+
     public override void OnBlockRemoved()
     {
         if (harvesterManager != null && harvesterData != null)
@@ -24,5 +27,15 @@ public class RegisterRainHarvester : BlockEntityBehavior
             harvesterManager.UnregisterHarvester(Blockentity.Pos);
         }
         base.OnBlockRemoved();
+    }
+
+    // This method is called when the block is unloaded from memory (e.g., when a chunk is unloaded)
+    public override void OnBlockUnloaded()
+    {
+        if (harvesterManager != null && harvesterData != null)
+        {
+            harvesterManager.UnregisterHarvester(Blockentity.Pos);
+        }
+        base.OnBlockUnloaded();
     }
 }
