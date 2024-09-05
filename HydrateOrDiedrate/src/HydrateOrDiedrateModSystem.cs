@@ -27,6 +27,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private ConfigLibCompatibility _configLibCompatibility;
     private XLibSkills xLibSkills;
 
+    private RainHarvesterManager rainHarvesterManager;
+
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
@@ -54,8 +56,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             LoadAndApplyHydrationPatches(api);
             LoadAndApplyBlockHydrationPatches(api);
         }
-
-        // Apply the behavior to all relevant blocks during assets finalization
         foreach (var block in api.World.Blocks)
         {
             if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
@@ -114,7 +114,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             xLibSkills.Initialize(api);
         }
 
-        api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RainHarvester));
+        api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RegisterRainHarvester));
         foreach (var block in api.World.Blocks)
         {
             if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
@@ -127,6 +127,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void StartServerSide(ICoreServerAPI api)
     {
         _serverApi = api;
+        rainHarvesterManager = new RainHarvesterManager(_serverApi);
 
         api.Event.PlayerJoin += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerNowPlaying += OnPlayerJoinOrNowPlaying;
@@ -138,6 +139,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             ThirstCommands.Register(api, LoadedConfig);
         }
+    }
+
+    public RainHarvesterManager GetRainHarvesterManager()
+    {
+        return rainHarvesterManager;
     }
 
     private long customHudListenerId;
@@ -277,6 +283,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         return api.ModLoader.IsModEnabled("xskills");
     }
+
     private void AddBehaviorToBlock(Block block, ICoreAPI api)
     {
         if (block.BlockEntityBehaviors == null)
