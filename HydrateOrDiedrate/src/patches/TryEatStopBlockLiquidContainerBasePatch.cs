@@ -91,8 +91,12 @@ public class TryEatStopBlockLiquidContainerBasePatch
                     float blendedValue = logValue_0_2 * (1 - blendRatio) + expValue_0_7 * blendRatio;
                     capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier * blendedValue;
                 }
+
                 capturedPlayer = player;
-                capturedHungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
+                if (nutriProps.Satiety < 0)
+                {
+                    capturedHungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
+                }
             }
         }
     }
@@ -109,13 +113,6 @@ public class TryEatStopBlockLiquidContainerBasePatch
 
         if (capturedPlayer == null || capturedHydrationAmount == 0) return;
 
-        var api = capturedPlayer?.World?.Api;
-
-        if (api == null || api.Side != EnumAppSide.Server)
-        {
-            return;
-        }
-
         var thirstBehavior = capturedPlayer.GetBehavior<EntityBehaviorThirst>();
 
         if (thirstBehavior != null)
@@ -124,7 +121,9 @@ public class TryEatStopBlockLiquidContainerBasePatch
             {
                 thirstBehavior.HungerReductionAmount = 0;
             }
+            
             thirstBehavior.ModifyThirst(capturedHydrationAmount, capturedHydLossDelay);
+
             if (capturedHungerReduction > 0)
             {
                 thirstBehavior.HungerReductionAmount += capturedHungerReduction;
@@ -135,5 +134,4 @@ public class TryEatStopBlockLiquidContainerBasePatch
         capturedHungerReduction = 0;
         capturedPlayer = null;
     }
-
 }
