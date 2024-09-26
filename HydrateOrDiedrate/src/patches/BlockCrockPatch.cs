@@ -14,6 +14,7 @@ namespace HydrateOrDiedrate.Patches
         {
             return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
         }
+
         [HarmonyPostfix]
         public static void Postfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
         {
@@ -27,7 +28,7 @@ namespace HydrateOrDiedrate.Patches
                 ItemStack[] contentStacks = blockCrock?.GetNonEmptyContents(world, inSlot.Itemstack);
                 if (contentStacks == null) return;
 
-                float totalHydration = CalculateTotalHydration(world, contentStacks);
+                float totalHydration = HydrationCalculator.GetTotalHydration(world, contentStacks);
 
                 if (totalHydration != 0)
                 {
@@ -42,36 +43,6 @@ namespace HydrateOrDiedrate.Patches
             {
                 world.Logger.Error($"[HydrateOrDiedrate] Error in BlockCrockPatch: {ex}");
             }
-        }
-
-        private static float CalculateTotalHydration(IWorldAccessor world, ItemStack[] contentStacks)
-        {
-            float totalHydration = 0f;
-
-            foreach (var stack in contentStacks)
-            {
-                if (stack != null)
-                {
-                    string itemCode = stack.Collectible.Code.ToString();
-                    float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
-                    if (IsLiquidPortion(stack))
-                    {
-                        hydrationValue *= stack.StackSize * 0.01f;
-                    }
-                    else
-                    {
-                        hydrationValue *= stack.StackSize;
-                    }
-                    totalHydration += hydrationValue;
-                }
-            }
-
-            return totalHydration;
-        }
-
-        private static bool IsLiquidPortion(ItemStack itemStack)
-        {
-            return itemStack?.Collectible?.GetType()?.Name == "ItemLiquidPortion";
         }
     }
 }
