@@ -68,7 +68,8 @@ namespace HydrateOrDiedrate
             {
                 if (player == null || player.Entity == null) continue;
 
-                if (player.Entity.RightHandItemSlot?.Itemstack != null || player.Entity.LeftHandItemSlot?.Itemstack != null)
+                if ((player.Entity.RightHandItemSlot != null && player.Entity.RightHandItemSlot.Itemstack != null) ||
+                    (player.Entity.LeftHandItemSlot != null && player.Entity.LeftHandItemSlot.Itemstack != null))
                 {
                     continue;
                 }
