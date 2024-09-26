@@ -48,5 +48,9 @@
   "hydrateordiedrate:item-distilledwaterportion": "Distilled Water",
   "hydrateordiedrate:incontainer-item-distilledwaterportion": "Distilled Water",
   "hydrateordiedrate:item-rainwaterportion": "Rain Water",
-  "hydrateordiedrate:incontainer-item-rainwaterportion": "Rain Water"
+  "hydrateordiedrate:incontainer-item-rainwaterportion": "Rain Water",
+  "hydrateordiedrate:water-dirty-message": "This water doesn't look very clean, are you sure you want to drink this?",
+  "hydrateordiedrate:water-salt-message": "Blegh! Salt water! Are you sure you want to drink this?",
+  "hydrateordiedrate:water-boiling-message": "This water looks really hot, it will probably burn you! Are you sure you want to drink this?"
+
 }
