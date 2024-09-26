@@ -1,15 +1,12 @@
 ﻿using System;
-using HydrateOrDiedrate.Configuration;
-using Vintagestory.API.Server;
-using HydrateOrDiedrate.EntityBehavior;
 using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Server;
 
-namespace HydrateOrDiedrate.Commands
+namespace HydrateOrDiedrate
 {
     public static class ThirstCommands
     {
-        public static void Register(ICoreServerAPI api, Config loadedConfig)
+        public static void Register(ICoreServerAPI api, Config.Config loadedConfig)
         {
             api.ChatCommands
                 .Create("setthirst")
@@ -26,7 +23,7 @@ namespace HydrateOrDiedrate.Commands
                 .HandleWith((args) => OnSetNutriDefCommand(api, loadedConfig, args));
         }
 
-        private static TextCommandResult OnSetThirstCommand(ICoreServerAPI api, Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnSetThirstCommand(ICoreServerAPI api, Config.Config loadedConfig, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
             float thirstValue = (float)args[1];
@@ -55,7 +52,7 @@ namespace HydrateOrDiedrate.Commands
             return TextCommandResult.Success($"Thirst set to {thirstValue} for player '{targetPlayer.PlayerName}'.");
         }
 
-        private static TextCommandResult OnSetNutriDefCommand(ICoreServerAPI api, Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnSetNutriDefCommand(ICoreServerAPI api, Config.Config loadedConfig, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
             float nutriDeficitValue = (float)args[1];

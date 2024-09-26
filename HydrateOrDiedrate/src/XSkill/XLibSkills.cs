@@ -1,9 +1,8 @@
-﻿using System;
-using HydrateOrDiedrate.EntityBehavior;
+﻿using HydrateOrDiedrate.Hot_Weather;
 using Vintagestory.API.Common;
 using XLib.XLeveling;
 
-namespace HydrateOrDiedrate.Compatibility
+namespace HydrateOrDiedrate.XSkill
 {
     public class XLibSkills
     {

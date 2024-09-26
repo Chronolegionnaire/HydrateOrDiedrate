@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using HydrateOrDiedrate;
-using HydrateOrDiedrate.Commands;
-using HydrateOrDiedrate.Compatibility;
-using HydrateOrDiedrate.Configuration;
-using HydrateOrDiedrate.EntityBehavior;
-using HydrateOrDiedrate.Gui;
+using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.encumbrance;
+using HydrateOrDiedrate.Hot_Weather;
+using HydrateOrDiedrate.HUD;
+using HydrateOrDiedrate.XSkill;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -15,13 +14,15 @@ using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
 
+namespace HydrateOrDiedrate;
+
 public class HydrateOrDiedrateModSystem : ModSystem
 {
     private ICoreServerAPI _serverApi;
     private ICoreClientAPI _clientApi;
     private HudElementThirstBar _thirstHud;
     private HudElementHungerReductionBar _hungerReductionHud;
-    public static Config LoadedConfig;
+    public static Config.Config LoadedConfig;
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
     private ConfigLibCompatibility _configLibCompatibility;
@@ -42,7 +43,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private void LoadConfig(ICoreAPI api)
     {
-        LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json") ?? new Config(api);
+        LoadedConfig = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json") ?? new Config.Config(api);
         ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
     }
 
@@ -92,7 +93,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void Start(ICoreAPI api)
     {
         base.Start(api);
-        LoadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+        LoadedConfig = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
 
         api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot));
         api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));

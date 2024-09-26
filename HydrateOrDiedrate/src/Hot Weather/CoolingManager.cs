@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
-namespace HydrateOrDiedrate
+namespace HydrateOrDiedrate.Hot_Weather
 {
     public static class CoolingManager
     {

@@ -1,5 +1,6 @@
-﻿using HydrateOrDiedrate.Configuration;
-using Vintagestory.API.Common;
+﻿using Vintagestory.API.Common;
+
+namespace HydrateOrDiedrate.Config;
 
 public class Config : IModConfig
 {

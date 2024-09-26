@@ -1,10 +1,9 @@
 ﻿using ConfigLib;
 using ImGuiNET;
-using HydrateOrDiedrate.Configuration;
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 
-namespace HydrateOrDiedrate
+namespace HydrateOrDiedrate.Config
 {
     public class ConfigLibCompatibility
     {

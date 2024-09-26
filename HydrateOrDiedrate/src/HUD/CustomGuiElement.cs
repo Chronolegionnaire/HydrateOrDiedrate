@@ -4,6 +4,8 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
+namespace HydrateOrDiedrate.HUD;
+
 public class GuiElementCustomStatbar : GuiElementTextBase
 {
     public bool CustomHideWhenFull { get; set; }

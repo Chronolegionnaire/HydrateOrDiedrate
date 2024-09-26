@@ -2,10 +2,10 @@
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using HydrateOrDiedrate;
-using HydrateOrDiedrate.EntityBehavior;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+
+namespace HydrateOrDiedrate.patches;
 
 [HarmonyPatch]
 public class TryEatStopBlockBottlePatch

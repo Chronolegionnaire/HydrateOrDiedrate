@@ -4,6 +4,8 @@ using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
+namespace HydrateOrDiedrate;
+
 public class RainHarvesterData
 {
     public BlockEntity BlockEntity { get; }

@@ -1,8 +1,9 @@
 ﻿using System;
 using HarmonyLib;
-using HydrateOrDiedrate.EntityBehavior;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+
+namespace HydrateOrDiedrate.patches;
 
 [HarmonyPatch(typeof(EntityBehavior), "OnEntityReceiveSaturation")]
 public class OnEntityReceiveSaturationPatch

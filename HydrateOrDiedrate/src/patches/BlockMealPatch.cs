@@ -1,11 +1,10 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Text;
+using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
-using HydrateOrDiedrate.EntityBehavior;
-using System.Text;
-using System;
 
-namespace HydrateOrDiedrate.Patches
+namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch(typeof(BlockMeal))]
     public static class BlockMealPatches
@@ -14,6 +13,7 @@ namespace HydrateOrDiedrate.Patches
         {
             return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
         }
+
         static bool alreadyCalled = false;
         static float capturedTotalHydration;
         static float capturedHydLossDelay;
@@ -39,7 +39,7 @@ namespace HydrateOrDiedrate.Patches
             var api = byEntity?.World?.Api;
             if (api == null || api.Side != EnumAppSide.Server) return;
 
-            float totalHydration = CalculateTotalHydration(byEntity.World, (slot.Itemstack.Collectible as BlockMeal).GetNonEmptyContents(byEntity.World, slot.Itemstack));
+            float totalHydration = HydrationCalculator.GetTotalHydration(byEntity.World, (slot.Itemstack.Collectible as BlockMeal).GetNonEmptyContents(byEntity.World, slot.Itemstack));
             if (totalHydration != 0)
             {
                 capturedTotalHydration = totalHydration;
@@ -53,7 +53,7 @@ namespace HydrateOrDiedrate.Patches
                 float configHydrationLossDelayMultiplier = config.HydrationLossDelayMultiplier;
 
                 float capturedHydrationAmount = totalHydration / capturedServingsInMeal;
-                capturedHydLossDelay = (capturedHydrationAmount/2) * configHydrationLossDelayMultiplier;
+                capturedHydLossDelay = (capturedHydrationAmount / 2) * configHydrationLossDelayMultiplier;
             }
         }
 
@@ -73,39 +73,21 @@ namespace HydrateOrDiedrate.Patches
 
             try
             {
-                if (capturedPlayer == null)
-                {
-                    return;
-                }
-                if (capturedTotalHydration == 0 || capturedServingsInMeal == 0)
-                {
-                    return;
-                }
+                if (capturedPlayer == null || capturedTotalHydration == 0 || capturedServingsInMeal == 0) return;
 
                 float servingsAfterConsume = (slot.Itemstack.Collectible as BlockMeal)?.GetQuantityServings(byEntity.World, slot.Itemstack) ?? 0;
                 float servingsConsumed = servingsBeforeConsume - servingsAfterConsume;
 
-                if (servingsConsumed <= 0)
-                {
-                    return;
-                }
+                if (servingsConsumed <= 0) return;
 
                 float hydrationPerServing = capturedTotalHydration / capturedServingsInMeal;
                 float totalHydrationConsumed = hydrationPerServing * servingsConsumed;
 
                 var config = HydrateOrDiedrateModSystem.LoadedConfig;
-                float configHydrationLossDelayMultiplier = config.HydrationLossDelayMultiplier;
+                float capturedHydLossDelay = (float)Math.Floor(totalHydrationConsumed * config.HydrationLossDelayMultiplier);
 
-                float capturedHydLossDelay = (float)Math.Floor(totalHydrationConsumed * configHydrationLossDelayMultiplier);
-
-                if (capturedPlayer != null)
-                {
-                    var thirstBehavior = capturedPlayer.GetBehavior<EntityBehaviorThirst>();
-                    if (thirstBehavior != null)
-                    {
-                        thirstBehavior.ModifyThirst(totalHydrationConsumed, capturedHydLossDelay);
-                    }
-                }
+                var thirstBehavior = capturedPlayer.GetBehavior<EntityBehaviorThirst>();
+                thirstBehavior?.ModifyThirst(totalHydrationConsumed, capturedHydLossDelay);
 
                 capturedTotalHydration = 0;
                 capturedHydLossDelay = 0;
@@ -133,7 +115,7 @@ namespace HydrateOrDiedrate.Patches
                 return;
             }
 
-            float totalHydration = CalculateTotalHydration(world, contentStacks);
+            float totalHydration = HydrationCalculator.GetTotalHydration(world, contentStacks);
             if (totalHydration != 0)
             {
                 float servings = (inSlot.Itemstack.Collectible as BlockMeal).GetQuantityServings(world, inSlot.Itemstack);
@@ -145,36 +127,6 @@ namespace HydrateOrDiedrate.Patches
                     dsc.AppendLine(hydrationText);
                 }
             }
-        }
-
-        private static float CalculateTotalHydration(IWorldAccessor world, ItemStack[] contentStacks)
-        {
-            float totalHydration = 0f;
-
-            foreach (ItemStack contentStack in contentStacks)
-            {
-                if (contentStack != null)
-                {
-                    string itemCode = contentStack.Collectible.Code.ToString();
-                    float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
-
-                    if (itemCode.ToLower().Contains("portion"))
-                    {
-                        WaterTightContainableProps props = BlockLiquidContainerBase.GetContainableProps(contentStack);
-                        if (props != null && props.ItemsPerLitre > 0)
-                        {
-                            float litres = (float)contentStack.StackSize / props.ItemsPerLitre;
-                            hydrationValue *= litres;
-                        }
-                    }
-
-                    if (hydrationValue != 0)
-                    {
-                        totalHydration += hydrationValue;
-                    }
-                }
-            }
-            return totalHydration;
         }
     }
 }

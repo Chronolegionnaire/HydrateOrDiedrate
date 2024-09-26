@@ -5,7 +5,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate
+namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch(typeof(BlockCookedContainer), "GetHeldItemInfo")]
     public static class BlockCookedContainerGetHeldItemInfoPatch
@@ -13,7 +13,8 @@ namespace HydrateOrDiedrate
         private static bool ShouldSkipPatch()
         {
             return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
-        }   
+        }
+
         [HarmonyPostfix]
         public static void Postfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
         {
@@ -27,7 +28,7 @@ namespace HydrateOrDiedrate
                 ItemStack[] contentStacks = blockCookedContainer?.GetNonEmptyContents(world, inSlot.Itemstack);
                 if (contentStacks == null) return;
 
-                float totalHydration = CalculateTotalHydration(world, contentStacks);
+                float totalHydration = HydrationCalculator.GetTotalHydration(world, contentStacks);
 
                 string hydrationText = Lang.Get("Hydration Per Serving: {0}", totalHydration);
                 if (!dsc.ToString().Contains(hydrationText))
@@ -39,36 +40,6 @@ namespace HydrateOrDiedrate
             {
                 world.Logger.Error($"[HydrateOrDiedrate] Error in BlockCookedContainerGetHeldItemInfoPatch: {ex}");
             }
-        }
-
-        private static float CalculateTotalHydration(IWorldAccessor world, ItemStack[] contentStacks)
-        {
-            float totalHydration = 0f;
-
-            foreach (var stack in contentStacks)
-            {
-                if (stack != null)
-                {
-                    string itemCode = stack.Collectible.Code.ToString();
-                    float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
-                    if (IsLiquidPortion(stack))
-                    {
-                        hydrationValue *= stack.StackSize * 0.01f;
-                    }
-                    else
-                    {
-                        hydrationValue *= stack.StackSize;
-                    }
-                    totalHydration += hydrationValue;
-                }
-            }
-
-            return totalHydration;
-        }
-
-        private static bool IsLiquidPortion(ItemStack itemStack)
-        {
-            return itemStack?.Collectible?.GetType()?.Name == "ItemLiquidPortion";
         }
     }
 }
