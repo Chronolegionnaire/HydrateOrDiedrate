@@ -1,11 +1,10 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Text;
+using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
-using HydrateOrDiedrate.EntityBehavior;
-using System.Text;
-using System;
 
-namespace HydrateOrDiedrate.Patches
+namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch(typeof(BlockMeal))]
     public static class BlockMealPatches

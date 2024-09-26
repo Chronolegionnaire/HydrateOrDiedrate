@@ -1,11 +1,12 @@
 ﻿using System;
+using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.encumbrance;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using HydrateOrDiedrate.Configuration;
 
-namespace HydrateOrDiedrate.EntityBehavior
+namespace HydrateOrDiedrate
 {
     public class EntityBehaviorThirst : Vintagestory.API.Common.Entities.EntityBehavior
     {
@@ -16,7 +17,7 @@ namespace HydrateOrDiedrate.EntityBehavior
         private float _currentThirst;
         private float _customThirstRate;
         private int _customThirstTicks;
-        private Config _config;
+        private Config.Config _config;
         private float _currentPenaltyAmount;
         private int _thirstTickCounter;
         private bool _isPenaltyApplied;
@@ -41,19 +42,19 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public EntityBehaviorThirst(Entity entity) : base(entity)
         {
-            _config = ModConfig.ReadConfig<Config>(entity.Api, "HydrateOrDiedrateConfig.json");
+            _config = ModConfig.ReadConfig<Config.Config>(entity.Api, "HydrateOrDiedrateConfig.json");
             if (_config == null)
             {
-                _config = new Config();
+                _config = new Config.Config();
             }
             MaxThirst = BaseMaxThirst;
             LoadThirst();
             InitializeCounters();
         }
 
-        public EntityBehaviorThirst(Entity entity, Config config) : base(entity)
+        public EntityBehaviorThirst(Entity entity, Config.Config config) : base(entity)
         {
-            _config = config ?? new Config();
+            _config = config ?? new Config.Config();
             MaxThirst = BaseMaxThirst;
             LoadThirst();
             InitializeCounters();
@@ -276,7 +277,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             entity.WatchedAttributes.MarkPathDirty("normalThirstRate");
         }
 
-        public static void UpdateThirstOnServerTick(IServerPlayer player, float deltaTime, Config config)
+        public static void UpdateThirstOnServerTick(IServerPlayer player, float deltaTime, Config.Config config)
         {
             if (player?.Entity == null || !player.Entity.WatchedAttributes.GetBool("isFullyInitialized") || !player.Entity.Alive) return;
 
@@ -323,7 +324,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             }
         }
 
-        private static bool TryAddThirstBehavior(Entity entity, Config config)
+        private static bool TryAddThirstBehavior(Entity entity, Config.Config config)
         {
             try
             {

@@ -1,9 +1,10 @@
-﻿using HarmonyLib;
+﻿using System.Text;
+using HarmonyLib;
 using Vintagestory.API.Common;
-using System.Text;
-using HydrateOrDiedrate;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
+
+namespace HydrateOrDiedrate.patches;
 
 [HarmonyPatch(typeof(CollectibleObject), "GetHeldItemInfo")]
 public static class CollectibleObjectGetHeldItemInfoPatch

@@ -1,34 +1,30 @@
-﻿using HydrateOrDiedrate.EntityBehavior;
-using Vintagestory.API.Common;
+﻿using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using System.Linq;
-using Vintagestory.GameContent;
-using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
-
+using System.Linq;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate
 {
     public class WaterInteractionHandler
     {
         private readonly ICoreAPI _api;
-        private readonly Config _config;
-        private bool _isShiftHeld = false;
+        private readonly Config.Config _config;
+        private bool _isDrinking = false;
+        private long _drinkStartTime = 0;
+        private long _lastStepTime = 0;
+        private const double drinkDuration = 3000; 
+        private const double stepInterval = 500;
         private static SimpleParticleProperties _waterParticles;
         private static SimpleParticleProperties _whiteParticles;
-        private double _lastInteractionTime = 0;
-        private const double handCooldownTime = 1.0; // Cooldown in seconds after hand becomes empty
-        private double handEmptyTime = -1; // Time when the hand becomes empty
 
-        // Add a dictionary to track warnings per player and per liquid type
-        private readonly Dictionary<string, Dictionary<string, double>> _playerWarnings = new();
-
-        public WaterInteractionHandler(ICoreAPI api, Config config)
+        public WaterInteractionHandler(ICoreAPI api, Config.Config config)
         {
             _api = api;
             _config = config;
+
             _waterParticles = CreateParticleProperties(
                 ColorUtil.WhiteArgb,
                 new Vec3f(-0.25f, 0, -0.25f),
@@ -63,84 +59,55 @@ namespace HydrateOrDiedrate
 
             return particles;
         }
-        
-        private bool IsLookingAtInteractable(IClientPlayer clientPlayer)
-        {
-            // Check if clientPlayer or clientPlayer.CurrentBlockSelection is null
-            if (clientPlayer == null || clientPlayer.CurrentBlockSelection == null) return false;
-
-            // Check if the player is looking at a block that can be interacted with
-            if (clientPlayer.CurrentBlockSelection.Block?.HasBehavior<BlockBehaviorBlockEntityInteract>() ?? 
-                clientPlayer.CurrentBlockSelection.Block is BlockGroundStorage) return true;
-
-            // Check if the player is looking at an entity that is interactable
-            if (clientPlayer.Entity.EntitySelection?.Entity?.IsInteractable ?? false) return true;
-
-            return false;
-        }
 
         public void CheckPlayerInteraction(float dt)
         {
-            double currentTime = _api.World.Calendar.TotalHours * 3600;
+            long currentTime = _api.World.ElapsedMilliseconds;
 
             foreach (IServerPlayer player in _api.World.AllOnlinePlayers)
             {
-                // Ensure player and player.Entity are valid
                 if (player == null || player.Entity == null) continue;
 
-                // Check if the player's right hand is holding any item (item slot is not empty)
-                if (player.Entity.RightHandItemSlot?.Itemstack != null)
+                if (player.Entity.RightHandItemSlot?.Itemstack != null || player.Entity.LeftHandItemSlot?.Itemstack != null)
                 {
-                    // If the player is holding an item, reset the empty-hand timer
-                    handEmptyTime = -1; // Reset hand empty time when holding an item
-                    _lastInteractionTime = currentTime; // Update the last interaction time
                     continue;
                 }
 
-                // If the player's hand just became empty, store the time
-                if (handEmptyTime < 0)
+                if (IsHeadInWater(player))
                 {
-                    handEmptyTime = currentTime;
-                }
-
-                // Ensure at least handCooldownTime has passed since the hand became empty
-                if (currentTime - handEmptyTime < handCooldownTime)
-                {
-                    // Skip the drinking logic if the hand was recently emptied (within the cooldown)
                     continue;
                 }
 
-                // Skip if the player is looking at an interactable block or entity
-                if (player is IClientPlayer clientPlayer && IsLookingAtInteractable(clientPlayer))
-                {
-                    _lastInteractionTime = currentTime;
-                    continue;
-                }
-
-                // Continue with drinking logic only if hand is empty and not looking at an interactable entity
                 if (player.Entity.Controls.Sneak && player.Entity.Controls.RightMouseDown)
                 {
                     var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
-
-                    // Raycast to check if the player is looking at water
                     var blockSel = RayCastForFluidBlocks(player);
 
-                    if (blockSel == null) continue; // No fluid block found, skip
+                    if (blockSel == null || thirstBehavior == null || thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
+                    {
+                        _isDrinking = false;
+                        continue;
+                    }
 
                     var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
 
-                    // Only proceed if the block is a liquid and the player can drink
-                    if (!_isShiftHeld && !player.Entity.Swimming && !IsHeadInWater(player) &&
-                        (thirstBehavior == null || thirstBehavior.CurrentThirst < thirstBehavior.MaxThirst))
+                    if (block.BlockMaterial == EnumBlockMaterial.Liquid && !_isDrinking)
                     {
-                        _isShiftHeld = true;
-                        _lastInteractionTime = currentTime;
-                        HandleWaterInteraction(player);
+                        _isDrinking = true;
+                        _drinkStartTime = currentTime;
+                        _lastStepTime = currentTime;
+
+                        HandleDrinkingStep(player, blockSel, currentTime, block);
                     }
                 }
                 else
                 {
-                    _isShiftHeld = false;
+                    _isDrinking = false;
+                }
+
+                if (_isDrinking)
+                {
+                    HandleDrinkingStep(player, null, currentTime, null);
                 }
             }
         }
@@ -148,148 +115,79 @@ namespace HydrateOrDiedrate
         private bool IsHeadInWater(IServerPlayer player)
         {
             var headPos = player.Entity.ServerPos.XYZ.Add(0, player.Entity.LocalEyePos.Y, 0);
-            int dimensionId = (int)(player.Entity.ServerPos.Y / BlockPos.DimensionBoundary);
-            var headBlockPos = new BlockPos((int)headPos.X, (int)headPos.Y, (int)headPos.Z, dimensionId);
+            var headBlockPos = new BlockPos((int)headPos.X, (int)headPos.Y, (int)headPos.Z);
             var block = _api.World.BlockAccessor.GetBlock(headBlockPos);
             return block.BlockMaterial == EnumBlockMaterial.Liquid;
         }
 
-        private void HandleWaterInteraction(IServerPlayer player)
+        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime, Block block)
         {
-            var blockSel = RayCastForFluidBlocks(player);
-            if (blockSel == null) return;
-            var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
-            if (block.BlockMaterial != EnumBlockMaterial.Liquid) return;
+            if (!_isDrinking) return;
 
-            var blockHydrationConfig = BlockHydrationManager.GetBlockHydration(block.Code.Path);
-
-            if (blockHydrationConfig == null)
+            if (blockSel == null)
             {
-                // If the liquid doesn't have a hydration config, allow drinking without warning
-                ProceedToDrink(player, 0, 0, false);
-                return;
-            }
-
-            string liquidCode = block.Code.Path;
-            var adjustedPos = blockSel.HitPosition;
-            _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), adjustedPos.X, adjustedPos.Y, adjustedPos.Z, null, true, 32f, 1f);
-            SpawnWaterParticles(adjustedPos);
-
-            bool isBoiling = blockHydrationConfig.IsBoiling;
-            float hungerReduction = blockHydrationConfig.HungerReduction;
-            var hydrationByType = blockHydrationConfig.HydrationByType;
-
-            if (hydrationByType == null || !hydrationByType.Any())
-            {
-                return;
-            }
-
-            float hydrationValue = hydrationByType.ContainsKey("*") ? hydrationByType["*"] : 0f;
-
-            var hungerBehavior = player.Entity.GetBehavior<Vintagestory.GameContent.EntityBehaviorHunger>();
-            if (hungerBehavior != null && hungerBehavior.Saturation < hungerReduction)
-            {
-                return;
-            }
-
-            // Get current time in seconds
-            double currentTime = _api.World.Calendar.TotalHours * 3600;
-
-            // Get player UID
-            string playerUID = player.PlayerUID;
-
-            // Determine the liquid type
-            string liquidType = GetLiquidType(block, blockHydrationConfig);
-
-            if (liquidType == "regular" || liquidType == "saltwater" || liquidType == "boiling")
-            {
-                // Get or create the player's warning dictionary
-                if (!_playerWarnings.TryGetValue(playerUID, out var playerWarningDict))
+                blockSel = RayCastForFluidBlocks(player);
+                if (blockSel == null)
                 {
-                    playerWarningDict = new Dictionary<string, double>();
-                    _playerWarnings[playerUID] = playerWarningDict;
+                    _isDrinking = false;
+                    return;
                 }
 
-                // Check if the player has been warned about this liquid type recently
-                if (playerWarningDict.TryGetValue(liquidType, out double lastWarningTime))
+                block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
+            }
+
+            if (currentTime - _lastStepTime >= stepInterval)
+            {
+                _lastStepTime = currentTime;
+
+                var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
+                var hungerBehavior = player.Entity.GetBehavior<Vintagestory.GameContent.EntityBehaviorHunger>();
+
+                if (thirstBehavior == null || thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
                 {
-                    // If the last warning was less than 600 seconds ago (10 minutes), allow the drink
-                    if (currentTime - lastWarningTime < 300)
+                    _isDrinking = false;
+                    return;
+                }
+
+                var blockHydrationConfig = BlockHydrationManager.GetBlockHydration(block.Code.Path);
+
+                if (blockHydrationConfig != null)
+                {
+                    bool isBoiling = blockHydrationConfig.IsBoiling;
+                    float hydrationValue = blockHydrationConfig.HydrationByType.ContainsKey("*") ? blockHydrationConfig.HydrationByType["*"] : 0f;
+                    float hungerReduction = blockHydrationConfig.HungerReduction;
+
+                    thirstBehavior.ModifyThirst(hydrationValue);
+
+                    if (hungerBehavior != null && hungerBehavior.Saturation > hungerReduction)
                     {
-                        // Proceed to handle the drink
-                        ProceedToDrink(player, hydrationValue, hungerReduction, isBoiling);
-                        return;
+                        hungerBehavior.Saturation -= hungerReduction;
+                        thirstBehavior.HungerReductionAmount += hungerReduction;
+                    }
+
+                    if (isBoiling && _config.EnableBoilingWaterDamage)
+                    {
+                        ApplyHeatDamage(player);
                     }
                 }
 
-                // Send the appropriate warning message from the lang file
-                SendWarningMessage(player, liquidType);
+                _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), blockSel.HitPosition.X, blockSel.HitPosition.Y, blockSel.HitPosition.Z, null, true, 32f, 1f);
+                SpawnWaterParticles(blockSel.HitPosition);
 
-                // Update the warning time
-                playerWarningDict[liquidType] = currentTime;
-
-                // Disallow the drink on first attempt
-                return;
-            }
-            else
-            {
-                // For other liquids, proceed normally
-                ProceedToDrink(player, hydrationValue, hungerReduction, isBoiling);
-                return;
+                if (currentTime - _drinkStartTime >= drinkDuration)
+                {
+                    _isDrinking = false;
+                }
             }
         }
 
-        private string GetLiquidType(Block block, BlockHydrationConfig config)
+        private void ApplyHeatDamage(IServerPlayer player)
         {
-            if (config.IsBoiling)
+            player.Entity.ReceiveDamage(new DamageSource
             {
-                return "boiling";
-            }
-            else if (block.Code.Path.Contains("saltwater"))
-            {
-                return "saltwater";
-            }
-            else if (block.Code.Path.Contains("water"))
-            {
-                return "regular";
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        private void SendWarningMessage(IServerPlayer player, string liquidType)
-        {
-            string messageKey = liquidType switch
-            {
-                "boiling" => "hydrateordiedrate:water-boiling-message",
-                "saltwater" => "hydrateordiedrate:water-salt-message",
-                "regular" => "hydrateordiedrate:water-dirty-message",
-                _ => null
-            };
-
-            if (messageKey != null)
-            {
-                // Use Lang.Get() to fetch the localized message from the provided key
-                string localizedMessage = Lang.Get(messageKey);
-                player.SendMessage(GlobalConstants.InfoLogChatGroup, localizedMessage, EnumChatType.Notification);
-            }
-        }
-
-        private void ProceedToDrink(IServerPlayer player, float hydrationValue, float hungerReduction, bool isBoiling)
-        {
-            if (isBoiling)
-            {
-                if (_config.EnableBoilingWaterDamage)
-                    ApplyHeatDamage(player);
-                else
-                    QuenchThirst(player, hydrationValue, hungerReduction);
-            }
-            else
-            {
-                QuenchThirst(player, hydrationValue, hungerReduction);
-            }
+                Source = EnumDamageSource.Internal,
+                Type = EnumDamageType.Heat
+            }, _config.BoilingWaterDamage);
         }
 
         private BlockSelection RayCastForFluidBlocks(IServerPlayer player)
@@ -298,20 +196,16 @@ namespace HydrateOrDiedrate
             var toPos = fromPos.AheadCopy(5, player.Entity.ServerPos.Pitch, player.Entity.ServerPos.Yaw);
             var step = toPos.Sub(fromPos).Normalize().Mul(0.1);
             var currentPos = fromPos.Clone();
-            int dimensionId = (int)(player.Entity.ServerPos.Y / BlockPos.DimensionBoundary);
 
             while (currentPos.SquareDistanceTo(fromPos) <= 5 * 5)
             {
-                var blockPos = new BlockPos((int)currentPos.X, (int)currentPos.Y, (int)currentPos.Z, dimensionId);
+                var blockPos = new BlockPos((int)currentPos.X, (int)currentPos.Y, (int)currentPos.Z);
                 var block = _api.World.BlockAccessor.GetBlock(blockPos);
 
-                // Prevent drinking if looking at an interactable entity
                 if (player is IClientPlayer clientPlayer && IsLookingAtInteractable(clientPlayer))
                 {
-                    // Logic if player is looking at an interactable object
                     return null;
                 }
-
 
                 if (block.BlockMaterial == EnumBlockMaterial.Liquid)
                 {
@@ -325,8 +219,17 @@ namespace HydrateOrDiedrate
             }
             return null;
         }
-        
-        
+
+        private bool IsLookingAtInteractable(IClientPlayer clientPlayer)
+        {
+            if (clientPlayer == null || clientPlayer.CurrentBlockSelection == null) return false;
+
+            if (clientPlayer.CurrentBlockSelection.Block?.HasBehavior<BlockBehaviorBlockEntityInteract>() ??
+                clientPlayer.CurrentBlockSelection.Block is BlockGroundStorage)
+                return true;
+
+            return clientPlayer.Entity.EntitySelection?.Entity?.IsInteractable ?? false;
+        }
 
         private void SpawnWaterParticles(Vec3d pos)
         {
@@ -356,32 +259,6 @@ namespace HydrateOrDiedrate
                 }
                 _api.World.SpawnParticles(particles, null);
             }
-        }
-
-        private void QuenchThirst(IPlayer player, float hydrationValue, float hungerReduction)
-        {
-            var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
-            var hungerBehavior = player.Entity.GetBehavior<Vintagestory.GameContent.EntityBehaviorHunger>();
-
-            if (thirstBehavior != null)
-            {
-                thirstBehavior.ModifyThirst(hydrationValue);
-
-                if (hungerBehavior != null)
-                {
-                    hungerBehavior.Saturation -= hungerReduction;
-                    thirstBehavior.HungerReductionAmount += hungerReduction;
-                }
-            }
-        }
-
-        private void ApplyHeatDamage(IPlayer player)
-        {
-            player.Entity.ReceiveDamage(new DamageSource
-            {
-                Source = EnumDamageSource.Internal,
-                Type = EnumDamageType.Heat
-            }, _config.BoilingWaterDamage);
         }
     }
 }

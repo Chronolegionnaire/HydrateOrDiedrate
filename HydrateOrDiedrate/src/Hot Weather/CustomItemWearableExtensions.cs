@@ -1,8 +1,9 @@
 ﻿using System;
-using HydrateOrDiedrate;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
+
+namespace HydrateOrDiedrate.Hot_Weather;
 
 public static class CustomItemWearableExtensions
 {

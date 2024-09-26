@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 
-namespace HydrateOrDiedrate.Configuration
+namespace HydrateOrDiedrate.Config
 {
     public static class ItemHydrationConfigLoader
     {

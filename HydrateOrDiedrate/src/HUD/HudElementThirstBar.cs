@@ -1,7 +1,7 @@
 ﻿using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
-namespace HydrateOrDiedrate.Gui
+namespace HydrateOrDiedrate.HUD
 {
 public class HudElementThirstBar : HudElement
 {

@@ -1,6 +1,8 @@
 ﻿using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
+namespace HydrateOrDiedrate;
+
 public class RegisterRainHarvester : BlockEntityBehavior
 {
     private RainHarvesterManager harvesterManager;

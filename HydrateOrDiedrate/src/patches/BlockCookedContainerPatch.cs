@@ -5,7 +5,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate
+namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch(typeof(BlockCookedContainer), "GetHeldItemInfo")]
     public static class BlockCookedContainerGetHeldItemInfoPatch

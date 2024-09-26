@@ -1,13 +1,15 @@
 ﻿using System;
-using HarmonyLib;
-using Vintagestory.API.Common;
-using System.Text;
-using HydrateOrDiedrate;
-using Vintagestory.API.Config;
-using Vintagestory.GameContent;
 using System.Reflection;
+using System.Text;
+using HarmonyLib;
+using HydrateOrDiedrate.Hot_Weather;
 using Vintagestory.API.Client;
+using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
+
+namespace HydrateOrDiedrate.patches;
 
 [HarmonyPatch(typeof(ItemWearable), "GetHeldItemInfo")]
 public static class ItemWearableGetHeldItemInfoPatch

@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
-using HydrateOrDiedrate.Configuration;
+using HydrateOrDiedrate.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+
+namespace HydrateOrDiedrate;
 
 public class RainHarvesterManager
 {
@@ -15,7 +17,7 @@ public class RainHarvesterManager
         serverAPI = api;
         registeredHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
 
-        var config = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+        var config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
         if (config.EnableRainGathering)
         {
             tickListenerId = api.Event.RegisterGameTickListener(OnTick, 500);
@@ -34,7 +36,7 @@ public class RainHarvesterManager
 
             data.adaptiveTickInterval = newAdaptiveTickInterval;
             registeredHarvesters.Add(position, data);
-            var config = ModConfig.ReadConfig<Config>(serverAPI, "HydrateOrDiedrateConfig.json");
+            var config = ModConfig.ReadConfig<Config.Config>(serverAPI, "HydrateOrDiedrateConfig.json");
             if (config != null)
             {
                 data.SetRainMultiplier(config.RainMultiplier);

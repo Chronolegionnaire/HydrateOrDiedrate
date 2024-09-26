@@ -2,9 +2,8 @@
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
-using HydrateOrDiedrate.EntityBehavior;
 
-namespace HydrateOrDiedrate.Gui
+namespace HydrateOrDiedrate.HUD
 {
     public class HudElementHungerReductionBar : HudElement
     {

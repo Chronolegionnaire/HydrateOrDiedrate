@@ -1,17 +1,17 @@
-﻿using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
-using Vintagestory.API.MathTools;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.EntityBehavior
+namespace HydrateOrDiedrate.Hot_Weather
 {
     public class EntityBehaviorBodyTemperatureHot : Vintagestory.API.Common.Entities.EntityBehavior
     {
-        private readonly Config _config;
+        private readonly Config.Config _config;
         private float _currentCooling;
         private float slowaccum;
         private float coolingCounter;
@@ -37,7 +37,7 @@ namespace HydrateOrDiedrate.EntityBehavior
 
         public EntityBehaviorBodyTemperatureHot(Entity entity) : base(entity)
         {
-            _config = new Config();
+            _config = new Config.Config();
             _currentCooling = 0;
             CoolingMultiplier = 1.0f;
             LoadCooling();
@@ -45,7 +45,7 @@ namespace HydrateOrDiedrate.EntityBehavior
             isMedievalExpansionInstalled = IsMedievalExpansionInstalled(entity.World.Api);
         }
 
-        public EntityBehaviorBodyTemperatureHot(Entity entity, Config config) : base(entity)
+        public EntityBehaviorBodyTemperatureHot(Entity entity, Config.Config config) : base(entity)
         {
             _config = config;
             _currentCooling = 0;

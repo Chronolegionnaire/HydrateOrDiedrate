@@ -1,5 +1,6 @@
-﻿using HydrateOrDiedrate;
-using Vintagestory.API.Common;
+﻿using Vintagestory.API.Common;
+
+namespace HydrateOrDiedrate;
 
 public static class HydrationCalculator
 {
@@ -13,8 +14,6 @@ public static class HydrationCalculator
             {
                 string itemCode = contentStack.Collectible.Code.ToString();
                 float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
-
-                // Ignore stack size and only use 1 of each item for hydration calculation
                 totalHydration += hydrationValue;
             }
         }

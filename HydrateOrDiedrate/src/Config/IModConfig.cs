@@ -1,4 +1,4 @@
-﻿namespace HydrateOrDiedrate.Configuration
+﻿namespace HydrateOrDiedrate.Config
 {
     public interface IModConfig
     {

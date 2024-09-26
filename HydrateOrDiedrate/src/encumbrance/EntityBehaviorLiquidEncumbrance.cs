@@ -1,14 +1,14 @@
-﻿using Vintagestory.API.Common;
+﻿using HydrateOrDiedrate.Config;
+using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
-using HydrateOrDiedrate.Configuration;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.EntityBehavior
+namespace HydrateOrDiedrate.encumbrance
 {
     public class EntityBehaviorLiquidEncumbrance : Vintagestory.API.Common.Entities.EntityBehavior
     {
-        private Config _config;
+        private Config.Config _config;
         private int _tickCounter;
         private float _currentPenaltyAmount;
         private bool _isPenaltyApplied;
@@ -22,7 +22,7 @@ namespace HydrateOrDiedrate.EntityBehavior
 
             if (_serverApi != null)
             {
-                _config = ModConfig.ReadConfig<Config>(_serverApi, "HydrateOrDiedrateConfig.json");
+                _config = ModConfig.ReadConfig<Config.Config>(_serverApi, "HydrateOrDiedrateConfig.json");
             }
             _tickCounter = 0;
             _currentPenaltyAmount = 0f;

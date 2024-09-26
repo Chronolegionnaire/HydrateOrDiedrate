@@ -2,7 +2,7 @@
 using System.IO;
 using Vintagestory.API.Common;
 
-namespace HydrateOrDiedrate.Configuration
+namespace HydrateOrDiedrate.Config
 {
     public static class ModConfig
     {

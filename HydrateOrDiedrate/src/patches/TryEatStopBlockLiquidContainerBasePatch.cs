@@ -1,10 +1,10 @@
 ﻿using System;
 using HarmonyLib;
-using HydrateOrDiedrate;
-using HydrateOrDiedrate.EntityBehavior;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
+
+namespace HydrateOrDiedrate.patches;
 
 [HarmonyPatch(typeof(BlockLiquidContainerBase), "tryEatStop")]
 public class TryEatStopBlockLiquidContainerBasePatch
