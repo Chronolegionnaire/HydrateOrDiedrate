@@ -44,7 +44,8 @@ namespace HydrateOrDiedrate.Config
         private const string settingKegCapacityLitres = "hydrateordiedrate:Config.Setting.KegCapacityLitres";
         private const string settingSpoilRateUntapped = "hydrateordiedrate:Config.Setting.SpoilRateUntapped";
         private const string settingSpoilRateTapped = "hydrateordiedrate:Config.Setting.SpoilRateTapped";
-
+        private const string settingKegIronHoopDropChance = "hydrateordiedrate:Config.Setting.KegIronHoopDropChance";
+        private const string settingKegTapDropChance = "hydrateordiedrate:Config.Setting.KegTapDropChance";
 
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
@@ -229,6 +230,14 @@ namespace HydrateOrDiedrate.Config
             float spoilRateTapped = config.SpoilRateTapped;
             ImGui.DragFloat(Lang.Get(settingSpoilRateTapped) + $"##spoilRateTapped-{id}", ref spoilRateTapped, 0.01f, 0.1f, 1.0f);
             config.SpoilRateTapped = spoilRateTapped;
+            
+            float kegIronHoopDropChance = config.KegIronHoopDropChance;
+            ImGui.DragFloat(Lang.Get(settingKegIronHoopDropChance) + $"##kegIronHoopDropChance-{id}", ref kegIronHoopDropChance, 0.01f, 0.0f, 1.0f);
+            config.KegIronHoopDropChance = kegIronHoopDropChance;
+
+            float kegTapDropChance = config.KegTapDropChance;
+            ImGui.DragFloat(Lang.Get(settingKegTapDropChance) + $"##kegTapDropChance-{id}", ref kegTapDropChance, 0.01f, 0.0f, 1.0f);
+            config.KegTapDropChance = kegTapDropChance;
         }
     }
 }

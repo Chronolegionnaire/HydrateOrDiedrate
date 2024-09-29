@@ -28,6 +28,8 @@
   "hydrateordiedrate:Config.Setting.KegCapacityLitres": "Keg Capacity (Litres)",
   "hydrateordiedrate:Config.Setting.SpoilRateUntapped": "Spoil Rate (Untapped)",
   "hydrateordiedrate:Config.Setting.SpoilRateTapped": "Spoil Rate (Tapped)",
+  "hydrateordiedrate:Config.Setting.KegIronHoopDropChance": "Keg Iron Hoop Drop Chance",
+  "hydrateordiedrate:Config.Setting.KegTapDropChance": "Keg Tap Drop Chance",
   "hydrateordiedrate:Config.Setting.WaterSatiety": "Water Satiety",
   "hydrateordiedrate:Config.Setting.SaltWaterSatiety": "Salt Water Satiety",
   "hydrateordiedrate:Config.Setting.BoilingWaterSatiety": "Boiling Water Satiety",

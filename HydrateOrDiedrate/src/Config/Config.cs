@@ -53,6 +53,9 @@ public class Config : IModConfig
     public float KegCapacityLitres { get; set; } = 100.0f;  // Default to 100 liters
     public float SpoilRateUntapped { get; set; } = 0.5f;    // Default spoil rate for untapped kegs
     public float SpoilRateTapped { get; set; } = 0.85f;      // Default spoil rate for tapped kegs
+    public float KegIronHoopDropChance { get; set; } = 0.8f;  // Default 80% chance to drop an iron hoop
+    public float KegTapDropChance { get; set; } = 0.9f;       // Default 90% chance to drop a keg tap (when tapped)
+
 
 
     public Config() { }
@@ -107,5 +110,7 @@ public class Config : IModConfig
         KegCapacityLitres = previousConfig?.KegCapacityLitres ?? 100.0f;
         SpoilRateUntapped = previousConfig?.SpoilRateUntapped ?? 0.5f;
         SpoilRateTapped = previousConfig?.SpoilRateTapped ?? 0.85f;
+        KegIronHoopDropChance = previousConfig?.KegIronHoopDropChance ?? 0.8f;
+        KegTapDropChance = previousConfig?.KegTapDropChance ?? 0.9f;
     }
 }

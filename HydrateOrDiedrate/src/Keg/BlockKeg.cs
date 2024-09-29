@@ -220,13 +220,12 @@ namespace HydrateOrDiedrate.Keg
             Random random = new Random();
             for (int i = 0; i < 2; i++)
             {
-                if (random.NextDouble() > 0.2)
+                if (random.NextDouble() < config.KegIronHoopDropChance)
                 {
                     world.SpawnItemEntity(new ItemStack(world.GetItem(new AssetLocation("game:hoop-iron"))), position.ToVec3d());
                 }
             }
-
-            if (isTappedKeg && random.NextDouble() > 0.1)
+            if (isTappedKeg && random.NextDouble() < config.KegTapDropChance)
             {
                 world.SpawnItemEntity(new ItemStack(world.GetItem(new AssetLocation("hydrateordiedrate:kegtap"))), position.ToVec3d());
             }

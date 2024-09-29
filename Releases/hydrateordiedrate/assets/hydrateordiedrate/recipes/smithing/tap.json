@@ -1,0 +1,13 @@
+﻿{
+  "ingredient": { "type": "item", "code": "game:ingot-*", "name": "metal", "allowedVariants": ["brass"] },
+  "pattern": [[
+    "__#____________",
+    "_###___#####___",
+    "__#____#_______"
+  ]],
+  "name": "tap",
+  "output": {
+    "type": "item",
+    "code": "hydrateordiedrate:kegtap"
+  }
+}
