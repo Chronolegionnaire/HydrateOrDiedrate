@@ -1,18 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.encumbrance;
 using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
+using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.XSkill;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
+using Vintagestory.ServerMods.NoObf;
 
 namespace HydrateOrDiedrate;
 
@@ -27,7 +32,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private Harmony harmony;
     private ConfigLibCompatibility _configLibCompatibility;
     private XLibSkills xLibSkills;
-
     private RainHarvesterManager rainHarvesterManager;
 
     public override void StartPre(ICoreAPI api)
@@ -45,6 +49,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         LoadedConfig = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json") ?? new Config.Config(api);
         ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
+    }
+    
+    public override void AssetsLoaded(ICoreAPI api)
+    {
+        base.AssetsLoaded(api);
+        ApplyWaterSatietyPatches(api);
     }
 
     public override void AssetsFinalize(ICoreAPI api)
@@ -65,6 +75,39 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
+
+    public void ApplyWaterSatietyPatches(ICoreAPI api)
+    {
+
+        float waterSatiety = LoadedConfig.WaterSatiety;
+        float saltWaterSatiety = LoadedConfig.SaltWaterSatiety;
+        float boilingWaterSatiety = LoadedConfig.BoilingWaterSatiety;
+
+        ApplySatietyPatch(api, "game:itemtypes/liquid/waterportion.json", waterSatiety);
+        ApplySatietyPatch(api, "game:itemtypes/liquid/saltwaterportion.json", saltWaterSatiety);
+        ApplySatietyPatch(api, "game:itemtypes/liquid/boilingwaterportion.json", boilingWaterSatiety);
+    }
+    private void ApplySatietyPatch(ICoreAPI api, string jsonFilePath, float satietyValue)
+    {
+        JsonPatch patch = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre",
+            Value = new JsonObject(JObject.FromObject(new
+            {
+                satiety = satietyValue,
+                foodcategory = "NoNutrition"
+            })),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+        int applied = 0;
+        int notFound = 0;
+        int errorCount = 0;
+        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicwaterpatch"), patch, ref applied, ref notFound, ref errorCount);
+    }
+
 
     private void LoadAndApplyHydrationPatches(ICoreAPI api)
     {
@@ -97,6 +140,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot));
         api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
+        
+        api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
+        api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
+        api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
+
 
         if (LoadedConfig.EnableThirstMechanics)
         {

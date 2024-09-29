@@ -12,6 +12,9 @@ public class Config : IModConfig
     public float ThirstDecayRateMax { get; set; } = 5.0f;
     public float HydrationLossDelayMultiplier { get; set; } = 0.05f;
     public bool EnableThirstMechanics { get; set; } = true;
+    public float WaterSatiety { get; set; } = -100f;
+    public float SaltWaterSatiety { get; set; } = -100f;
+    public float BoilingWaterSatiety { get; set; } = 0f;
 
     // Movement Speed Penalty Settings
     public float MaxMovementSpeedPenalty { get; set; } = 0.3f;
@@ -45,6 +48,12 @@ public class Config : IModConfig
     // Rain Gathering Settings
     public bool EnableRainGathering { get; set; } = true;
     public float RainMultiplier { get; set; } = 1.0f;
+    
+    // Keg Settings
+    public float KegCapacityLitres { get; set; } = 100.0f;  // Default to 100 liters
+    public float SpoilRateUntapped { get; set; } = 0.5f;    // Default spoil rate for untapped kegs
+    public float SpoilRateTapped { get; set; } = 0.85f;      // Default spoil rate for tapped kegs
+
 
     public Config() { }
 
@@ -58,6 +67,9 @@ public class Config : IModConfig
         ThirstDecayRateMax = previousConfig?.ThirstDecayRateMax ?? 5.0f;
         HydrationLossDelayMultiplier = previousConfig?.HydrationLossDelayMultiplier ?? 0.05f;
         EnableThirstMechanics = previousConfig?.EnableThirstMechanics ?? true;
+        WaterSatiety = previousConfig?.WaterSatiety ?? -100f;
+        SaltWaterSatiety = previousConfig?.SaltWaterSatiety ?? -100f;
+        BoilingWaterSatiety = previousConfig?.BoilingWaterSatiety ?? 0f;
 
         // Movement Speed Penalty Settings
         MaxMovementSpeedPenalty = previousConfig?.MaxMovementSpeedPenalty ?? 0.3f;
@@ -90,5 +102,10 @@ public class Config : IModConfig
         // Rain Gathering Settings
         EnableRainGathering = previousConfig?.EnableRainGathering ?? true;
         RainMultiplier = previousConfig?.RainMultiplier ?? 1.0f;
+        
+        // Keg settings
+        KegCapacityLitres = previousConfig?.KegCapacityLitres ?? 100.0f;
+        SpoilRateUntapped = previousConfig?.SpoilRateUntapped ?? 0.5f;
+        SpoilRateTapped = previousConfig?.SpoilRateTapped ?? 0.85f;
     }
 }

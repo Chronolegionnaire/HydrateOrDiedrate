@@ -16,6 +16,9 @@ namespace HydrateOrDiedrate.Config
         private const string settingThirstDecayRate = "hydrateordiedrate:Config.Setting.ThirstDecayRate";
         private const string settingThirstIncreasePerDegreeMultiplier = "hydrateordiedrate:Config.Setting.ThirstIncreasePerDegreeMultiplier";
         private const string settingThirstDecayRateMax = "hydrateordiedrate:Config.Setting.ThirstDecayRateMax";
+        private const string settingWaterSatiety = "hydrateordiedrate:Config.Setting.WaterSatiety";
+        private const string settingSaltWaterSatiety = "hydrateordiedrate:Config.Setting.SaltWaterSatiety";
+        private const string settingBoilingWaterSatiety = "hydrateordiedrate:Config.Setting.BoilingWaterSatiety";
         private const string settingHydrationLossDelayMultiplier = "hydrateordiedrate:Config.Setting.HydrationLossDelayMultiplier";
         private const string settingMaxMovementSpeedPenalty = "hydrateordiedrate:Config.Setting.MaxMovementSpeedPenalty";
         private const string settingMovementSpeedPenaltyThreshold = "hydrateordiedrate:Config.Setting.MovementSpeedPenaltyThreshold";
@@ -37,6 +40,11 @@ namespace HydrateOrDiedrate.Config
         
         private const string settingEnableRainGathering = "hydrateordiedrate:Config.Setting.EnableRainGathering";
         private const string settingRainMultiplier = "hydrateordiedrate:Config.Setting.RainMultiplier";
+
+        private const string settingKegCapacityLitres = "hydrateordiedrate:Config.Setting.KegCapacityLitres";
+        private const string settingSpoilRateUntapped = "hydrateordiedrate:Config.Setting.SpoilRateUntapped";
+        private const string settingSpoilRateTapped = "hydrateordiedrate:Config.Setting.SpoilRateTapped";
+
 
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
@@ -84,6 +92,18 @@ namespace HydrateOrDiedrate.Config
             bool enableLiquidEncumbrance = config.EnableLiquidEncumbrance;
             ImGui.Checkbox(Lang.Get(settingEnableLiquidEncumbrance) + $"##enableLiquidEncumbrance-{id}", ref enableLiquidEncumbrance);
             config.EnableLiquidEncumbrance = enableLiquidEncumbrance;
+            
+            float waterSatiety = config.WaterSatiety;
+            ImGui.DragFloat(Lang.Get(settingWaterSatiety) + $"##waterSatiety-{id}", ref waterSatiety, 1.0f, -200.0f, 100.0f);
+            config.WaterSatiety = waterSatiety;
+
+            float saltWaterSatiety = config.SaltWaterSatiety;
+            ImGui.DragFloat(Lang.Get(settingSaltWaterSatiety) + $"##saltWaterSatiety-{id}", ref saltWaterSatiety, 1.0f, -200.0f, 100.0f);
+            config.SaltWaterSatiety = saltWaterSatiety;
+
+            float boilingWaterSatiety = config.BoilingWaterSatiety;
+            ImGui.DragFloat(Lang.Get(settingBoilingWaterSatiety) + $"##boilingWaterSatiety-{id}", ref boilingWaterSatiety, 1.0f, -100.0f, 100.0f);
+            config.BoilingWaterSatiety = boilingWaterSatiety;
 
             ImGui.SeparatorText("Thirst Settings");
 
@@ -195,6 +215,20 @@ namespace HydrateOrDiedrate.Config
             float rainMultiplier = config.RainMultiplier;
             ImGui.DragFloat(Lang.Get(settingRainMultiplier) + $"##rainMultiplier-{id}", ref rainMultiplier, 0.1f, 0.1f, 10.0f);
             config.RainMultiplier = rainMultiplier;
+            
+            ImGui.SeparatorText("Keg Settings");
+            
+            float kegCapacityLitres = config.KegCapacityLitres;
+            ImGui.DragFloat(Lang.Get(settingKegCapacityLitres) + $"##kegCapacityLitres-{id}", ref kegCapacityLitres, 1.0f, 10.0f, 500.0f);
+            config.KegCapacityLitres = kegCapacityLitres;
+            
+            float spoilRateUntapped = config.SpoilRateUntapped;
+            ImGui.DragFloat(Lang.Get(settingSpoilRateUntapped) + $"##spoilRateUntapped-{id}", ref spoilRateUntapped, 0.01f, 0.1f, 1.0f);
+            config.SpoilRateUntapped = spoilRateUntapped;
+            
+            float spoilRateTapped = config.SpoilRateTapped;
+            ImGui.DragFloat(Lang.Get(settingSpoilRateTapped) + $"##spoilRateTapped-{id}", ref spoilRateTapped, 0.01f, 0.1f, 1.0f);
+            config.SpoilRateTapped = spoilRateTapped;
         }
     }
 }

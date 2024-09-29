@@ -1,0 +1,111 @@
+{
+	"editor": {
+		"collapsedPaths": "Root/Keg/Back Band2,Root/Keg/Body,Root/Keg/Back Band,Root/Keg/Front Band2,Root/Keg/Front Band,Root/Keg/Middle Band,Root/Front Leg,Root/Back Leg",
+		"allAngles": false,
+		"entityTextureMode": false
+	},
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textureSizes": {
+		"bottom": [16,16],
+		"aged": [16,16],
+		"blackbronze4": [16,16],
+		"electrum1": [16,16]
+	},
+	"textures": {
+		"electrum1": "game:block/metal/sheet/electrum1"
+	},
+	"elements": [
+		{
+			"name": "Tap",
+			"from": [ 0.0, -3.0, -6.0 ],
+			"to": [ 0.0, -3.0, -6.0 ],
+			"rotationOrigin": [ 8.0, 1.0, 8.0 ],
+			"faces": {
+				"north": { "texture": "#aged", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+				"east": { "texture": "#aged", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+				"south": { "texture": "#aged", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+				"west": { "texture": "#aged", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+				"up": { "texture": "#aged", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+				"down": { "texture": "#aged", "uv": [ 0.0, 0.0, 0.5, 0.5 ] }
+			},
+			"children": [
+				{
+					"name": "Taptip",
+					"from": [ 7.5, 3.0, 15.5 ],
+					"to": [ 8.25, 3.75, 16.25 ],
+					"rotationOrigin": [ 7.0, 3.5, 15.0 ],
+					"faces": {
+						"north": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+						"east": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+						"south": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+						"west": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+						"up": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+						"down": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] }
+					},
+					"children": [
+						{
+							"name": "Cube40",
+							"from": [ 0.0, 0.75, -2.25 ],
+							"to": [ 0.75, 1.5, 0.75 ],
+							"rotationOrigin": [ -0.75, 0.8, -2.3 ],
+							"faces": {
+								"north": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+								"east": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 3.0, 0.5 ] },
+								"south": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+								"west": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 3.0, 0.5 ] },
+								"up": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 3.0 ] },
+								"down": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 3.0 ] }
+							}
+						},
+						{
+							"name": "Cube62",
+							"from": [ 0.25, 1.0, 0.1 ],
+							"to": [ 0.5, 2.0, 0.35 ],
+							"rotationOrigin": [ 0.375, 1.7, 0.2 ],
+							"rotationY": 157.5,
+							"faces": {
+								"north": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 1.0 ] },
+								"east": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 1.0 ] },
+								"south": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 1.0 ] },
+								"west": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 1.0 ] },
+								"up": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+								"down": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] }
+							},
+							"children": [
+								{
+									"name": "Cube42",
+									"from": [ -0.175, 0.7, -0.375 ],
+									"to": [ 0.075, 0.95, 1.125 ],
+									"rotationOrigin": [ 0.3548, 1.2, 0.4712 ],
+									"rotationY": -45.0,
+									"faces": {
+										"north": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+										"east": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 1.5, 0.5 ] },
+										"south": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+										"west": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 1.5, 0.5 ] },
+										"up": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 1.5 ] },
+										"down": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 1.5 ] }
+									}
+								}
+							]
+						},
+						{
+							"name": "Cube41",
+							"from": [ 0.12, 0.865, -4.25 ],
+							"to": [ 0.62, 1.365, -2.25 ],
+							"rotationOrigin": [ -0.75, 0.8, -4.3 ],
+							"faces": {
+								"north": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+								"east": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 2.0, 0.5 ] },
+								"south": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+								"west": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 2.0, 0.5 ] },
+								"up": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 2.0 ] },
+								"down": { "texture": "#electrum1", "uv": [ 0.0, 0.0, 0.5, 2.0 ] }
+							}
+						}
+					]
+				}
+			]
+		}
+	]}
