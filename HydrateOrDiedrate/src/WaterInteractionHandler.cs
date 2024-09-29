@@ -67,13 +67,11 @@ namespace HydrateOrDiedrate
             foreach (IServerPlayer player in _api.World.AllOnlinePlayers)
             {
                 if (player == null || player.Entity == null) continue;
-
                 if ((player.Entity.RightHandItemSlot != null && player.Entity.RightHandItemSlot.Itemstack != null) ||
                     (player.Entity.LeftHandItemSlot != null && player.Entity.LeftHandItemSlot.Itemstack != null))
                 {
                     continue;
                 }
-
                 if (IsHeadInWater(player))
                 {
                     continue;
@@ -83,15 +81,14 @@ namespace HydrateOrDiedrate
                 {
                     var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
                     var blockSel = RayCastForFluidBlocks(player);
-
-                    if (blockSel == null || thirstBehavior == null || thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
+                    if (blockSel == null || thirstBehavior == null ||
+                        thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
                     {
                         _isDrinking = false;
                         continue;
                     }
 
                     var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
-
                     if (block.BlockMaterial == EnumBlockMaterial.Liquid && !_isDrinking)
                     {
                         _isDrinking = true;
@@ -105,7 +102,6 @@ namespace HydrateOrDiedrate
                 {
                     _isDrinking = false;
                 }
-
                 if (_isDrinking)
                 {
                     HandleDrinkingStep(player, null, currentTime, null);
