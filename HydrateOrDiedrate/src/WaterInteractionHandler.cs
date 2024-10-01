@@ -59,6 +59,18 @@ namespace HydrateOrDiedrate
 
             return particles;
         }
+        
+        public void CheckShiftRightClickBeforeInteraction(float dt)
+        {
+            foreach (IServerPlayer player in _api.World.AllOnlinePlayers)
+            {
+                if (player == null || player.Entity == null) continue;
+                if (player.Entity.Controls.Sneak && player.Entity.Controls.RightMouseDown)
+                {
+                    CheckPlayerInteraction(dt);
+                }
+            }
+        }
 
         public void CheckPlayerInteraction(float dt)
         {
@@ -94,7 +106,6 @@ namespace HydrateOrDiedrate
                         _isDrinking = true;
                         _drinkStartTime = currentTime;
                         _lastStepTime = currentTime;
-
                         HandleDrinkingStep(player, blockSel, currentTime, block);
                     }
                 }
