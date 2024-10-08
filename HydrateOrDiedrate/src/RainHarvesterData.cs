@@ -120,7 +120,7 @@ public class RainHarvesterData
 
         return 0.2f * rainIntensity * gameSpeedMultiplier * rainMultiplier;
     }
-    private bool IsOpenToSky(BlockPos pos)
+    public bool IsOpenToSky(BlockPos pos)
     {
         return BlockEntity.Api.World.BlockAccessor.GetRainMapHeightAt(pos.X, pos.Z) <= pos.Y;
     }
