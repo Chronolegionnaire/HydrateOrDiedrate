@@ -73,28 +73,31 @@ public class RainHarvesterData
         }
         calculatedTickInterval = Math.Clamp(calculatedTickInterval, 4, 40);
     }
+
     public void OnHarvest(float rainIntensity)
     {
         if (rainWaterStack == null || !IsOpenToSky(BlockEntity.Pos)) return;
-        if (BlockEntity.Block is BlockKeg) return;
 
-        float fillRate = CalculateFillRate(rainIntensity);
-        rainWaterStack.StackSize = 100;
-        float desiredLiters = (float)Math.Round(fillRate, 2);
-        if (BlockEntity is BlockEntityBarrel barrelEntity)
-        {
-            var inputSlot = barrelEntity.Inventory[0];
-            if (!inputSlot.Empty) return;
-        }
-
+        // Don't skip processing if one slot has "raw" or "unfired"; check all slots independently.
         if (BlockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
         {
             for (int i = 0; i < groundStorage.Inventory.Count; i++)
             {
                 var slot = groundStorage.Inventory[i];
+                if (slot.Empty) continue;
+
+                string itemName = slot.Itemstack?.Collectible?.Code?.Path?.ToLower() ?? "";
+
+                // Continue to the next slot if this slot contains "raw" or "unfired"
+                if (itemName.Contains("raw") || itemName.Contains("unfired")) continue;
+
                 if (slot?.Itemstack?.Collectible is BlockLiquidContainerBase blockContainer && blockContainer.IsTopOpened)
                 {
                     if (slot.Itemstack.Block is BlockKeg) continue;
+
+                    float fillRate = CalculateFillRate(rainIntensity);
+                    rainWaterStack.StackSize = 100;
+                    float desiredLiters = (float)Math.Round(fillRate, 2);
 
                     float addedAmount = blockContainer.TryPutLiquid(slot.Itemstack, rainWaterStack, desiredLiters);
                     if (addedAmount > 0) groundStorage.MarkDirty(true);
@@ -104,6 +107,10 @@ public class RainHarvesterData
         else if (BlockEntity.Block is BlockLiquidContainerBase blockContainerBase)
         {
             if (BlockEntity.Block is BlockKeg) return;
+
+            float fillRate = CalculateFillRate(rainIntensity);
+            rainWaterStack.StackSize = 100;
+            float desiredLiters = (float)Math.Round(fillRate, 2);
 
             blockContainerBase.TryPutLiquid(BlockEntity.Pos, rainWaterStack, desiredLiters);
         }
@@ -137,6 +144,7 @@ public class RainHarvesterData
         rainParticlesBlue.LifeLength = 0.15f;
         rainParticlesBlue.SizeEvolve = new EvolvingNatFloat(EnumTransformFunction.LINEAR, -0.1f);
     }
+
     public void OnParticleTickUpdate(float deltaTime)
     {
         if (!IsOpenToSky(BlockEntity.Pos)) return;
@@ -192,37 +200,69 @@ public class RainHarvesterData
     {
         List<Vec3d> positions = new List<Vec3d>();
         Vec3d basePos = BlockEntity.Pos.ToVec3d();
+
         for (int i = 0; i < groundStorage.Inventory.Count; i++)
         {
-            if (!groundStorage.Inventory[i].Empty)
+            var slot = groundStorage.Inventory[i];
+            if (slot.Empty) continue;
+            string itemName = slot.Itemstack?.Collectible?.Code?.Path?.ToLower() ?? "";
+            if (itemName.Contains("raw") || itemName.Contains("unfired")) continue;
+            Vec3d position = GetItemPositionInStorage(groundStorage, i);
+            if (position != null)
             {
-                positions.Add(GetItemPositionInStorage(groundStorage, i));
+                positions.Add(position);
             }
         }
+
         return positions;
     }
+
     private Vec3d GetItemPositionInStorage(BlockEntityGroundStorage groundStorage, int slotIndex)
     {
         Vec3d basePos = BlockEntity.Pos.ToVec3d();
-        Vec3d[] quadrantOffsets =
+        if (slotIndex < 0 || slotIndex >= 4)
+        {
+            if (harvesterManager != null)
+            {
+                harvesterManager.UnregisterHarvester(BlockEntity.Pos);
+            }
+
+            return basePos;
+        }
+
+        float meshAngle = groundStorage.MeshAngle;
+        float tolerance = 0.01f;
+        Vec3d[] offsets0Degrees =
         {
             new Vec3d(0.2, 0.5, 0.2),
             new Vec3d(0.2, 0.5, 0.8),
             new Vec3d(0.8, 0.5, 0.2),
             new Vec3d(0.8, 0.5, 0.8)
         };
-        if (slotIndex < 0 || slotIndex >= quadrantOffsets.Length)
-        {
-            if (harvesterManager != null)
-            {
-                harvesterManager.UnregisterHarvester(BlockEntity.Pos);
-            }
-            return null;
-        }
-        float meshAngle = groundStorage.MeshAngle;
-        float tolerance = 0.01f;
-        Vec3d adjustedOffset = quadrantOffsets[slotIndex];
 
+        Vec3d[] offsets90DegreesClockwise =
+        {
+            new Vec3d(0.2, 0.5, 0.8),
+            new Vec3d(0.8, 0.5, 0.8),
+            new Vec3d(0.2, 0.5, 0.2),
+            new Vec3d(0.8, 0.5, 0.2)
+        };
+
+        Vec3d[] offsets180Degrees =
+        {
+            new Vec3d(0.8, 0.5, 0.8),
+            new Vec3d(0.8, 0.5, 0.2),
+            new Vec3d(0.2, 0.5, 0.8),
+            new Vec3d(0.2, 0.5, 0.2)
+        };
+        Vec3d[] offsets90DegreesCounterClockwise =
+        {
+            new Vec3d(0.8, 0.5, 0.2),
+            new Vec3d(0.2, 0.5, 0.2),
+            new Vec3d(0.8, 0.5, 0.8),
+            new Vec3d(0.2, 0.5, 0.8)
+        };
+        Vec3d adjustedOffset;
         if (groundStorage.StorageProps.Layout == EnumGroundStorageLayout.SingleCenter)
         {
             adjustedOffset = new Vec3d(0.5, 0.5, 0.5);
@@ -231,42 +271,28 @@ public class RainHarvesterData
         {
             if (Math.Abs(meshAngle) < tolerance)
             {
-                adjustedOffset = quadrantOffsets[slotIndex];
-            }
-            else if (Math.Abs(meshAngle + 1.5707964f) < tolerance)
-            {
-                adjustedOffset = RecalculateMeshOffsets(slotIndex, 0, 2, 3, 1);
-            }
-            else if (Math.Abs(meshAngle - 3.1415927f) < tolerance ||
-                     Math.Abs(meshAngle + 3.1415927f) < tolerance)
-            {
-                adjustedOffset = RecalculateMeshOffsets(slotIndex, 3, 2, 1, 0);
+                adjustedOffset = offsets0Degrees[slotIndex];
             }
             else if (Math.Abs(meshAngle - 1.5707964f) < tolerance)
             {
-                adjustedOffset = RecalculateMeshOffsets(slotIndex, 1, 3, 0, 2);
+                adjustedOffset = offsets90DegreesClockwise[slotIndex];
+            }
+            else if (Math.Abs(meshAngle - 3.1415927f) < tolerance || Math.Abs(meshAngle + 3.1415927f) < tolerance)
+            {
+                adjustedOffset = offsets180Degrees[slotIndex];
+            }
+            else if (Math.Abs(meshAngle + 1.5707964f) < tolerance)
+            {
+                adjustedOffset = offsets90DegreesCounterClockwise[slotIndex];
+            }
+            else
+            {
+                adjustedOffset = offsets0Degrees[slotIndex];
             }
         }
         return basePos.AddCopy(adjustedOffset);
     }
-    private Vec3d RecalculateMeshOffsets(int slotIndex, int val0, int val1, int val2, int val3)
-    {
-        Vec3d[] quadrantOffsets =
-        {
-            new Vec3d(0.2, 0.5, 0.2),
-            new Vec3d(0.2, 0.5, 0.8),
-            new Vec3d(0.8, 0.5, 0.2),
-            new Vec3d(0.8, 0.5, 0.8)
-        };
-        switch (slotIndex)
-        {
-            case 0: return quadrantOffsets[val0];
-            case 1: return quadrantOffsets[val1];
-            case 2: return quadrantOffsets[val2];
-            case 3: return quadrantOffsets[val3];
-            default: return quadrantOffsets[0];
-        }
-    }
+
     private Vec3d GetAdjustedPosition(BlockEntity blockEntity)
     {
         return blockEntity.Pos.ToVec3d().Add(0.5, 0.5, 0.5);
