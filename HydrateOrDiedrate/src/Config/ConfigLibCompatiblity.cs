@@ -40,6 +40,8 @@ namespace HydrateOrDiedrate.Config
         
         private const string settingEnableRainGathering = "hydrateordiedrate:Config.Setting.EnableRainGathering";
         private const string settingRainMultiplier = "hydrateordiedrate:Config.Setting.RainMultiplier";
+        private const string settingEnableParticleTicking = "hydrateordiedrate:Config.Setting.EnableParticleTicking";
+
 
         private const string settingKegCapacityLitres = "hydrateordiedrate:Config.Setting.KegCapacityLitres";
         private const string settingSpoilRateUntapped = "hydrateordiedrate:Config.Setting.SpoilRateUntapped";
@@ -216,6 +218,10 @@ namespace HydrateOrDiedrate.Config
             float rainMultiplier = config.RainMultiplier;
             ImGui.DragFloat(Lang.Get(settingRainMultiplier) + $"##rainMultiplier-{id}", ref rainMultiplier, 0.1f, 0.1f, 10.0f);
             config.RainMultiplier = rainMultiplier;
+            
+            bool enableParticleTicking = config.EnableParticleTicking;
+            ImGui.Checkbox(Lang.Get(settingEnableParticleTicking) + $"##enableParticleTicking-{id}", ref enableParticleTicking);
+            config.EnableParticleTicking = enableParticleTicking;
             
             ImGui.SeparatorText("Keg Settings");
             

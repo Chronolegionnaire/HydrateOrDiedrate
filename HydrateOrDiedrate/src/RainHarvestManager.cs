@@ -14,7 +14,7 @@ public class RainHarvesterManager
     private Dictionary<BlockPos, RainHarvesterData> inactiveHarvesters;
     private long tickListenerId;
     private int globalTickCounter = 0;
-
+    private bool enableParticleTicking;
     public RainHarvesterManager(ICoreServerAPI api)
     {
         serverAPI = api;
@@ -22,6 +22,7 @@ public class RainHarvesterManager
         inactiveHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
 
         var config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
+        enableParticleTicking = config.EnableParticleTicking;
         if (config.EnableRainGathering)
         {
             tickListenerId = api.Event.RegisterGameTickListener(OnTick, 500);
@@ -98,7 +99,10 @@ public class RainHarvesterManager
                 harvesterData.OnHarvest(rainIntensity);
             }
 
-            harvesterData.OnParticleTickUpdate(deltaTime);
+            if (enableParticleTicking)
+            {
+                harvesterData.OnParticleTickUpdate(deltaTime);
+            }
         }
     }
 

@@ -33,6 +33,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private ConfigLibCompatibility _configLibCompatibility;
     private XLibSkills xLibSkills;
     private RainHarvesterManager rainHarvesterManager;
+    private DrinkHudOverlayRenderer hudOverlayRenderer;
+    private IClientNetworkChannel clientChannel;
+    private IServerNetworkChannel serverChannel;
+    private long customHudListenerId;
 
     public override void StartPre(ICoreAPI api)
     {
@@ -50,7 +54,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         LoadedConfig = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json") ?? new Config.Config(api);
         ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
     }
-    
+
     public override void AssetsLoaded(ICoreAPI api)
     {
         base.AssetsLoaded(api);
@@ -67,6 +71,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             LoadAndApplyHydrationPatches(api);
             LoadAndApplyBlockHydrationPatches(api);
         }
+
         foreach (var block in api.World.Blocks)
         {
             if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
@@ -75,8 +80,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
-
-    public void ApplyWaterSatietyPatches(ICoreAPI api)
+public void ApplyWaterSatietyPatches(ICoreAPI api)
     {
 
         float waterSatiety = LoadedConfig.WaterSatiety;
@@ -132,7 +136,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         List<JObject> coolingPatches = CoolingConfigLoader.LoadCoolingPatches(api);
         CoolingManager.ApplyCoolingPatches(api, coolingPatches);
     }
-
     public override void Start(ICoreAPI api)
     {
         base.Start(api);
@@ -140,11 +143,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot));
         api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
-        
+
         api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
-
 
         if (LoadedConfig.EnableThirstMechanics)
         {
@@ -152,11 +154,17 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
 
         _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
-    
-        if (api.Side == EnumAppSide.Client)
+
+        // Network channel setup for both client and server
+        if (api.Side == EnumAppSide.Server)
         {
-            _configLibCompatibility = new ConfigLibCompatibility((ICoreClientAPI)api);
+            InitializeServer(api as ICoreServerAPI);
         }
+        else if (api.Side == EnumAppSide.Client)
+        {
+            InitializeClient(api as ICoreClientAPI);
+        }
+
         if (api.ModLoader.IsModEnabled("xlib"))
         {
             xLibSkills = new XLibSkills();
@@ -164,6 +172,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
 
         api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RegisterRainHarvester));
+
         foreach (var block in api.World.Blocks)
         {
             if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
@@ -173,9 +182,14 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
     }
 
-    public override void StartServerSide(ICoreServerAPI api)
+    private void InitializeServer(ICoreServerAPI api)
     {
         _serverApi = api;
+
+        serverChannel = api.Network.RegisterChannel("hydrateordiedrate")
+            .RegisterMessageType<DrinkProgressPacket>();
+
+        _waterInteractionHandler.Initialize(serverChannel);
         rainHarvesterManager = new RainHarvesterManager(_serverApi);
         api.Event.PlayerJoin += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerNowPlaying += OnPlayerJoinOrNowPlaying;
@@ -187,21 +201,43 @@ public class HydrateOrDiedrateModSystem : ModSystem
             ThirstCommands.Register(api, LoadedConfig);
         }
     }
-
     public RainHarvesterManager GetRainHarvesterManager()
     {
         return rainHarvesterManager;
     }
-
-    private long customHudListenerId;
-
-    public override void StartClientSide(ICoreClientAPI api)
+    private void InitializeClient(ICoreClientAPI api)
     {
         _clientApi = api;
 
+        // Client-side network channel setup
+        clientChannel = api.Network.RegisterChannel("hydrateordiedrate")
+            .RegisterMessageType<DrinkProgressPacket>()
+            .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived);
+
+        // Register the HUD overlay renderer for drinking
+        hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
+        api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
+
+        // Ensure the Thirst HUD mechanics are initialized
         if (LoadedConfig.EnableThirstMechanics)
         {
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
+        }
+        _configLibCompatibility = new ConfigLibCompatibility((ICoreClientAPI)api);
+    }
+
+    private void OnDrinkProgressReceived(DrinkProgressPacket msg)
+    {
+        hudOverlayRenderer.CircleVisible = msg.IsDrinking;
+
+        if (!msg.IsDrinking)
+        {
+            hudOverlayRenderer.CircleProgress = 0f;
+        }
+        else
+        {
+            hudOverlayRenderer.CircleProgress = msg.Progress;
+            hudOverlayRenderer.IsDangerous = msg.IsDangerous; // Update the danger flag for rendering
         }
     }
 
@@ -211,12 +247,15 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         if (vanillaHudStatbar != null && vanillaHudStatbar.IsOpened())
         {
+
             _thirstHud = new HudElementThirstBar(_clientApi);
             _clientApi.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
             _clientApi.Gui.RegisterDialog(_thirstHud);
+
             _hungerReductionHud = new HudElementHungerReductionBar(_clientApi);
             _clientApi.Event.RegisterGameTickListener(_hungerReductionHud.OnGameTick, 1000);
             _clientApi.Gui.RegisterDialog(_hungerReductionHud);
+
             _clientApi.Event.UnregisterGameTickListener(customHudListenerId);
         }
     }

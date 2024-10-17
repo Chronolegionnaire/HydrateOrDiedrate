@@ -41,7 +41,15 @@ namespace HydrateOrDiedrate.Config
 
         public static string GetConfigPath(ICoreAPI api)
         {
-            return Path.Combine(api.GetOrCreateDataPath("ModConfig"), "hydrateordiedrate");
+
+            string basePath = api.GetOrCreateDataPath("ModConfig");
+            
+            if (!basePath.EndsWith("hydrateordiedrate"))
+            {
+                basePath = Path.Combine(basePath, "hydrateordiedrate");
+            }
+
+            return basePath;
         }
 
         private static void EnsureDirectoryExists(string path)
