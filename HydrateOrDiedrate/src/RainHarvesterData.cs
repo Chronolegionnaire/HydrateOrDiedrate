@@ -37,6 +37,7 @@ public class RainHarvesterData
     {
         rainMultiplier = newMultiplier;
     }
+
     public void UpdateCalculatedTickInterval(float deltaTime, float currentSpeedOfTime, float currentCalendarSpeedMul,
         float rainIntensity)
     {
@@ -44,19 +45,23 @@ public class RainHarvesterData
         {
             previousCalculatedTickInterval = calculatedTickInterval;
         }
+        
         if (calculatedTickInterval != previousCalculatedTickInterval)
         {
             previousCalculatedTickInterval = calculatedTickInterval;
         }
-        if (adaptiveTickInterval <= 0 || adaptiveTickInterval > 40)
+        
+        if (adaptiveTickInterval <= 1 || adaptiveTickInterval > 10)
         {
             adaptiveTickInterval = calculatedTickInterval;
         }
+        
         float gameSpeedMultiplier = (currentSpeedOfTime / 60f) * (currentCalendarSpeedMul / 0.5f);
         gameSpeedMultiplier = Math.Max(gameSpeedMultiplier, 1f);
-        float intervalAtMaxRain = 20f;
-        float intervalAtMinRain = 40f;
 
+        float intervalAtMaxRain = 5f;
+        float intervalAtMinRain = 10f;
+        
         if (rainIntensity >= 1)
         {
             calculatedTickInterval = (int)(intervalAtMaxRain / gameSpeedMultiplier);
@@ -71,14 +76,14 @@ public class RainHarvesterData
                 intervalAtMinRain + (intervalAtMaxRain - intervalAtMinRain) * (rainIntensity - 0.1f) / 0.9f;
             calculatedTickInterval = (int)(interpolatedInterval / gameSpeedMultiplier);
         }
-        calculatedTickInterval = Math.Clamp(calculatedTickInterval, 4, 40);
+        
+        calculatedTickInterval = Math.Clamp(calculatedTickInterval, 1, 10);
     }
 
     public void OnHarvest(float rainIntensity)
     {
         if (rainWaterStack == null || !IsOpenToSky(BlockEntity.Pos)) return;
-
-        // Don't skip processing if one slot has "raw" or "unfired"; check all slots independently.
+        
         if (BlockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
         {
             for (int i = 0; i < groundStorage.Inventory.Count; i++)
@@ -87,8 +92,7 @@ public class RainHarvesterData
                 if (slot.Empty) continue;
 
                 string itemName = slot.Itemstack?.Collectible?.Code?.Path?.ToLower() ?? "";
-
-                // Continue to the next slot if this slot contains "raw" or "unfired"
+                
                 if (itemName.Contains("raw") || itemName.Contains("unfired")) continue;
 
                 if (slot?.Itemstack?.Collectible is BlockLiquidContainerBase blockContainer && blockContainer.IsTopOpened)

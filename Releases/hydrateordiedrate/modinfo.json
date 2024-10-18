@@ -6,7 +6,7 @@
         "Chronolegionnaire"
     ],
     "description": "Adds a thirst and hot weather mechanic to the game.",
-    "version": "1.4.1-pre.6",
+    "version": "1.4.2-pre.6",
     "dependencies": {
         "game": "*"
     }

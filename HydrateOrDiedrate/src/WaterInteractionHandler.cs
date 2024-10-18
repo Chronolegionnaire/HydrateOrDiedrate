@@ -71,21 +71,21 @@ namespace HydrateOrDiedrate
             return particles;
         }
 
-        public void CheckShiftRightClickBeforeInteraction(float dt)
+        public void CheckShiftRightClickBeforeInteractionForPlayer(float dt, IServerPlayer player)
         {
-            foreach (IServerPlayer player in _api.World.AllOnlinePlayers)
-            {
-                if (player == null || player.Entity == null) continue;
-
-                CheckPlayerInteraction(dt, player);
-            }
+            if (player == null || player.Entity == null) return;
+            
+            if (!player.Entity.WatchedAttributes.GetBool("isFullyInitialized", false)) return;
+            
+            CheckPlayerInteraction(dt, player);
         }
+
 
         public void CheckPlayerInteraction(float dt, IServerPlayer player)
         {
             long currentTime = _api.World.ElapsedMilliseconds;
 
-            // Get or create PlayerDrinkData for this player
+
             if (!playerDrinkData.TryGetValue(player.PlayerUID, out var drinkData))
             {
                 drinkData = new PlayerDrinkData();

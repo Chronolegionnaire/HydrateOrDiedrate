@@ -196,7 +196,7 @@ namespace HydrateOrDiedrate.Config
             ImGui.DragFloat(Lang.Get(settingDromedaryMultiplierPerLevel) + $"##dromedaryMultiplierPerLevel-{id}", ref dromedaryMultiplierPerLevel, 0.01f, 0.1f, 3.0f);
             config.DromedaryMultiplierPerLevel = dromedaryMultiplierPerLevel;
 
-            ImGui.TextWrapped(Lang.Get(settingEquatidianCoolingMultipliers) + $"##equatidianCoolingMultipliers-{id}");
+            ImGui.TextWrapped(Lang.Get(settingEquatidianCoolingMultipliers));
             float equatidianLevel1 = config.EquatidianCoolingMultipliers[0];
             ImGui.DragFloat($"Level 1##equatidianLevel1-{id}", ref equatidianLevel1, 0.01f, 1.0f, 5.0f);
             config.EquatidianCoolingMultipliers[0] = equatidianLevel1;

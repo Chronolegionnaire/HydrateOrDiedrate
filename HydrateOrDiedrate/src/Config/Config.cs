@@ -49,7 +49,7 @@ public class Config : IModConfig
     // Rain Gathering Settings
     public bool EnableRainGathering { get; set; } = true;
     public float RainMultiplier { get; set; } = 1.0f;
-    public bool EnableParticleTicking { get; set; } = false; // Off by default
+    public bool EnableParticleTicking { get; set; } = true; 
     
     // Keg Settings
     public float KegCapacityLitres { get; set; } = 100.0f;  // Default to 100 liters
@@ -107,7 +107,7 @@ public class Config : IModConfig
         // Rain Gathering Settings
         EnableRainGathering = previousConfig?.EnableRainGathering ?? true;
         RainMultiplier = previousConfig?.RainMultiplier ?? 1.0f;
-        EnableParticleTicking = previousConfig?.EnableParticleTicking ?? false;
+        EnableParticleTicking = previousConfig?.EnableParticleTicking ?? true;
         
         // Keg settings
         KegCapacityLitres = previousConfig?.KegCapacityLitres ?? 100.0f;

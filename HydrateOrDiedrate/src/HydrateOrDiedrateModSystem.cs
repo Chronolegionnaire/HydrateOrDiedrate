@@ -195,7 +195,6 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         api.Event.PlayerNowPlaying += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerRespawn += OnPlayerRespawn;
         api.Event.RegisterGameTickListener(OnServerTick, 1000);
-        api.Event.RegisterGameTickListener(_waterInteractionHandler.CheckShiftRightClickBeforeInteraction, 100);
         if (LoadedConfig.EnableThirstMechanics)
         {
             ThirstCommands.Register(api, LoadedConfig);
@@ -209,16 +208,16 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
     {
         _clientApi = api;
 
-        // Client-side network channel setup
+
         clientChannel = api.Network.RegisterChannel("hydrateordiedrate")
             .RegisterMessageType<DrinkProgressPacket>()
             .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived);
 
-        // Register the HUD overlay renderer for drinking
+
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
 
-        // Ensure the Thirst HUD mechanics are initialized
+
         if (LoadedConfig.EnableThirstMechanics)
         {
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
@@ -237,7 +236,7 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         else
         {
             hudOverlayRenderer.CircleProgress = msg.Progress;
-            hudOverlayRenderer.IsDangerous = msg.IsDangerous; // Update the danger flag for rendering
+            hudOverlayRenderer.IsDangerous = msg.IsDangerous;
         }
     }
 
@@ -285,9 +284,14 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         {
             EnsureThirstBehavior(entity);
         }
-
+        
         entity.WatchedAttributes.SetBool("isFullyInitialized", true);
+        
+        _serverApi.Event.RegisterGameTickListener(
+            (dt) => _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, byPlayer), 100
+        );
     }
+
 
     private void OnPlayerRespawn(IServerPlayer byPlayer)
     {
@@ -304,6 +308,10 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         }
 
         entity.WatchedAttributes.SetBool("isFullyInitialized", true);
+        
+        _serverApi.Event.RegisterGameTickListener(
+            (dt) => _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, byPlayer), 100
+        );
     }
 
     private EntityBehaviorThirst EnsureThirstBehavior(Entity entity)
@@ -355,6 +363,8 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
             {
                 if (player.Entity != null && player.Entity.Alive)
                 {
+                    if (!player.Entity.WatchedAttributes.GetBool("isFullyInitialized", false)) continue;
+
                     var gameMode = player.WorldData.CurrentGameMode;
                     if (gameMode != EnumGameMode.Creative && gameMode != EnumGameMode.Spectator && gameMode != EnumGameMode.Guest)
                     {
@@ -364,6 +374,7 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
             }
         }
     }
+
 
     public static bool XSkillActive(ICoreAPI api)
     {

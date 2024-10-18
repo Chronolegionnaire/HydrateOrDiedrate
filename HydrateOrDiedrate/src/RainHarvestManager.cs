@@ -13,7 +13,7 @@ public class RainHarvesterManager
     private Dictionary<BlockPos, RainHarvesterData> activeHarvesters;
     private Dictionary<BlockPos, RainHarvesterData> inactiveHarvesters;
     private long tickListenerId;
-    private int globalTickCounter = 0;
+    private int globalTickCounter = 1;
     private bool enableParticleTicking;
     public RainHarvesterManager(ICoreServerAPI api)
     {
@@ -25,8 +25,8 @@ public class RainHarvesterManager
         enableParticleTicking = config.EnableParticleTicking;
         if (config.EnableRainGathering)
         {
-            tickListenerId = api.Event.RegisterGameTickListener(OnTick, 500);
-            api.Event.RegisterGameTickListener(OnInactiveHarvesterCheck, 5000);
+            tickListenerId = api.Event.RegisterGameTickListener(OnTick, 2000);
+            api.Event.RegisterGameTickListener(OnInactiveHarvesterCheck, 10000);
         }
     }
 
@@ -61,13 +61,12 @@ public class RainHarvesterManager
     private void OnTick(float deltaTime)
     {
         globalTickCounter++;
-        if (globalTickCounter > 40) globalTickCounter = 0;
+        if (globalTickCounter > 10) globalTickCounter = 1;
 
         foreach (var entry in activeHarvesters)
         {
             BlockPos position = entry.Key;
             RainHarvesterData harvesterData = entry.Value;
-
             float rainIntensity = harvesterData.GetRainIntensity();
             harvesterData.UpdateCalculatedTickInterval(deltaTime, serverAPI.World.Calendar.SpeedOfTime,
                 serverAPI.World.Calendar.CalendarSpeedMul, rainIntensity);
@@ -81,17 +80,17 @@ public class RainHarvesterManager
                 harvesterData.adaptiveTickInterval = globalTickCounter + 2;
             }
 
-            if (harvesterData.adaptiveTickInterval > 40)
+            if (harvesterData.adaptiveTickInterval > 10)
             {
-                harvesterData.adaptiveTickInterval -= 40;
+                harvesterData.adaptiveTickInterval -= 10;
             }
 
             if (globalTickCounter == harvesterData.adaptiveTickInterval)
             {
                 int newAdaptiveTickInterval = harvesterData.adaptiveTickInterval + harvesterData.calculatedTickInterval;
-                if (newAdaptiveTickInterval > 40)
+                if (newAdaptiveTickInterval > 10)
                 {
-                    newAdaptiveTickInterval -= 40;
+                    newAdaptiveTickInterval -= 10;
                 }
 
                 harvesterData.adaptiveTickInterval = newAdaptiveTickInterval;
