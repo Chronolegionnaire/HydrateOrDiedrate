@@ -85,7 +85,6 @@ namespace HydrateOrDiedrate
         {
             long currentTime = _api.World.ElapsedMilliseconds;
 
-
             if (!playerDrinkData.TryGetValue(player.PlayerUID, out var drinkData))
             {
                 drinkData = new PlayerDrinkData();
@@ -108,8 +107,10 @@ namespace HydrateOrDiedrate
             if (player.Entity.Controls.Sneak && player.Entity.Controls.RightMouseDown)
             {
                 var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
+                var hungerBehavior = player.Entity.GetBehavior<EntityBehaviorHunger>();
                 var blockSel = RayCastForFluidBlocks(player);
-                if (blockSel == null || thirstBehavior == null ||
+
+                if (blockSel == null || thirstBehavior == null || hungerBehavior == null ||
                     thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
                 {
                     StopDrinking(player, drinkData);
@@ -117,13 +118,27 @@ namespace HydrateOrDiedrate
                 }
 
                 var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
-                if (block.BlockMaterial == EnumBlockMaterial.Liquid)
+                var blockHydrationConfig = BlockHydrationManager.GetBlockHydration(block.Code.Path);
+
+                if (block.BlockMaterial == EnumBlockMaterial.Liquid && blockHydrationConfig != null)
                 {
+                    float hungerReduction = blockHydrationConfig.HungerReduction;
+
+                    // Prevent drinking if the player's hunger (satiety) is too low to handle the hunger reduction
+                    if (hungerBehavior.Saturation <= 0 || hungerBehavior.Saturation < hungerReduction)
+                    {
+                        // Not enough hunger to drink
+                        StopDrinking(player, drinkData);
+                        return;
+                    }
+
+                    // If the player has enough hunger, continue with drinking process
                     if (!drinkData.IsDrinking)
                     {
                         drinkData.IsDrinking = true;
                         drinkData.DrinkStartTime = currentTime;
                     }
+
                     HandleDrinkingStep(player, blockSel, currentTime, block, drinkData);
                 }
                 else
@@ -155,30 +170,28 @@ namespace HydrateOrDiedrate
             return block.BlockMaterial == EnumBlockMaterial.Liquid;
         }
 
-        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime, Block block, PlayerDrinkData drinkData)
+        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime, Block block,
+            PlayerDrinkData drinkData)
         {
             if (!drinkData.IsDrinking) return;
-
-            // Calculate drink progress
             float progress = (float)(currentTime - drinkData.DrinkStartTime) / (float)drinkDuration;
-            progress = Math.Min(1f, progress); // Clamp progress to [0, 1]
-
-            // Check if the drink source is dangerous (boiling or negative hydration)
+            progress = Math.Min(1f, progress);
             bool isDangerous = false;
             var blockHydrationConfig = BlockHydrationManager.GetBlockHydration(block.Code.Path);
             if (blockHydrationConfig != null)
             {
-                float hydrationValue = blockHydrationConfig.HydrationByType.ContainsKey("*") ? blockHydrationConfig.HydrationByType["*"] : 0f;
-                isDangerous = hydrationValue < 0 || blockHydrationConfig.IsBoiling; // Dangerous if negative hydration or boiling
+                float hydrationValue = blockHydrationConfig.HydrationByType.ContainsKey("*")
+                    ? blockHydrationConfig.HydrationByType["*"]
+                    : 0f;
+                isDangerous =
+                    hydrationValue < 0 || blockHydrationConfig.IsBoiling;
             }
-            
-            
-            // Send progress update to client
+
             SendDrinkProgressToClient(player, progress, drinkData.IsDrinking, isDangerous);
 
             if (progress >= 1f)
             {
-                // Apply hydration effects
+                SendDrinkProgressToClient(player, 1f, drinkData.IsDrinking, isDangerous);
                 var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
                 var hungerBehavior = player.Entity.GetBehavior<EntityBehaviorHunger>();
 
@@ -196,12 +209,30 @@ namespace HydrateOrDiedrate
                         : 0f;
                     float hungerReduction = blockHydrationConfig.HungerReduction;
 
+                    // Modify thirst regardless of hunger state
                     thirstBehavior.ModifyThirst(hydrationValue);
 
-                    if (hungerBehavior != null && hungerBehavior.Saturation > hungerReduction)
+                    // Check if hungerBehavior is not null and handle hunger reduction logic
+                    if (hungerBehavior != null)
                     {
-                        hungerBehavior.Saturation -= hungerReduction;
-                        thirstBehavior.HungerReductionAmount += hungerReduction;
+                        if (hungerBehavior.Saturation >= hungerReduction)
+                        {
+                            // If the player has enough satiety to reduce by hungerReduction, do so
+                            hungerBehavior.Saturation -= hungerReduction;
+                            thirstBehavior.HungerReductionAmount += hungerReduction;
+                        }
+                        else if (hungerBehavior.Saturation > 0)
+                        {
+                            // If the player has some satiety but not enough to meet the full hungerReduction, reduce to zero
+                            thirstBehavior.HungerReductionAmount += hungerBehavior.Saturation;
+                            hungerBehavior.Saturation = 0;
+                        }
+                        else
+                        {
+                            // If the player's satiety is already zero, prevent further drinking
+                            StopDrinking(player, drinkData);
+                            return;
+                        }
                     }
 
                     if (isBoiling && _config.EnableBoilingWaterDamage)
@@ -213,13 +244,8 @@ namespace HydrateOrDiedrate
                 _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), blockSel.HitPosition.X,
                     blockSel.HitPosition.Y, blockSel.HitPosition.Z, null, true, 32f, 1f);
                 SpawnWaterParticles(blockSel.HitPosition);
-
-                // Reset the drink start time to start the next sip
                 drinkData.DrinkStartTime = currentTime;
-
-                // Reset progress to 0
-                progress = 0f;
-                SendDrinkProgressToClient(player, progress, drinkData.IsDrinking, isDangerous);
+                SendDrinkProgressToClient(player, 0f, drinkData.IsDrinking, isDangerous);
             }
         }
 

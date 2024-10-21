@@ -6,90 +6,160 @@ namespace HydrateOrDiedrate
 {
     public class DrinkHudOverlayRenderer : IRenderer, IDisposable
     {
+        private const float CircleAlphaIn = 0.8F;
+        private const float CircleAlphaOut = 0.8F;
+        private const int CircleMaxSteps = 32;
+        private const float OuterRadius = 24f;
+        private const float InnerRadius = 18f;
+        private bool wasDrinking = false;
+        private MeshRef circleMesh = null;
         private ICoreClientAPI api;
-        private MeshRef circleMesh;
-        private float circleAlpha;
-        public float CircleProgress { get; set; }
+        private float circleAlpha = 0.0F;
+        private float circleProgress = 0.0F;
+        private float targetCircleProgress = 0.0F;
+
         public bool CircleVisible { get; set; }
-        public bool IsDangerous { get; set; } // New flag for rendering red ring
+
+        public float CircleProgress
+        {
+            get => targetCircleProgress;
+            set
+            {
+                targetCircleProgress = value >= 0.86f ? 1.0f : GameMath.Clamp(value, 0.0F, 1.0F);
+
+                if (targetCircleProgress > 0.0F)
+                {
+                    if (!wasDrinking)
+                    {
+                        circleProgress = 0.0F;
+                        wasDrinking = true;
+                    }
+
+                    CircleVisible = true;
+                }
+                else
+                {
+                    wasDrinking = false;
+                    CircleVisible = false;
+                }
+            }
+        }
+
+        public bool IsDangerous { get; set; }
 
         public DrinkHudOverlayRenderer(ICoreClientAPI api)
         {
             this.api = api;
             api.Event.RegisterRenderer(this, EnumRenderStage.Ortho, "drinkoverlay");
-            UpdateCircleMesh(1f);
-        }
-
-        public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
-        {
-            if (!CircleVisible || CircleProgress <= 0f) return;
-
-            // Calculate the alpha (visibility fade-in/out)
-            circleAlpha = Math.Max(0f, Math.Min(1f, circleAlpha + deltaTime / (CircleVisible ? 0.2f : -0.4f)));
-            if (circleAlpha <= 0f) return;
-
-            // Update the circle mesh progress
-            UpdateCircleMesh(CircleProgress);
-
-            // Set the color based on the danger flag
-            Vec4f color;
-            if (IsDangerous)
-            {
-                color = new Vec4f(1.0f, 0.0f, 0.0f, circleAlpha); // Red color for dangerous drink source
-            }
-            else
-            {
-                color = new Vec4f(0.8f, 0.8f, 1.0f, circleAlpha); // Normal color
-            }
-
-            // Set the color and rendering properties
-            IRenderAPI render = api.Render;
-            IShaderProgram shader = render.CurrentActiveShader;
-            shader.Uniform("rgbaIn", color);
-            shader.Uniform("tex2d", 0);
-            shader.Uniform("noTexture", 1f);
-
-            // Position the circle at the center of the screen
-            render.GlPushMatrix();
-            int centerX = api.Render.FrameWidth / 2;
-            int centerY = api.Render.FrameHeight / 2;
-            render.GlTranslate(centerX, centerY, 0);
-            render.GlScale(50f, 50f, 1f);
-
-            // Render the circle mesh
-            shader.UniformMatrix("projectionMatrix", render.CurrentProjectionMatrix);
-            render.RenderMesh(circleMesh);
-            render.GlPopMatrix();
+            UpdateCircleMesh(1);
         }
 
         private void UpdateCircleMesh(float progress)
         {
-            int steps = 1 + (int)Math.Ceiling(16f * progress);
-            MeshData meshData = new MeshData(steps * 2, steps * 6, false, false, true, false);
+            const float ringSize = (float)InnerRadius / OuterRadius;
+            const float stepSize = 1.0F / CircleMaxSteps;
+
+            int steps = 1 + (int)Math.Ceiling(CircleMaxSteps * progress);
+            int vertexCapacity = steps * 2;
+            int indexCapacity = steps * 6;
+
+            var data = new MeshData(vertexCapacity, indexCapacity, withUv: true, withRgba: false, withFlags: false);
 
             for (int i = 0; i < steps; i++)
             {
-                double angle = Math.Min(progress, i * 0.0625f) * Math.PI * 2;
-                float x = (float)Math.Sin(angle);
-                float y = -(float)Math.Cos(angle);
-                meshData.AddVertexSkipTex(x, y, 0, -1);
-                meshData.AddVertexSkipTex(x * 0.75f, y * 0.75f, 0, -1);
+                var p = Math.Min(progress, i * stepSize) * Math.PI * 2;
+                var x = (float)Math.Sin(p);
+                var y = -(float)Math.Cos(p);
+
+                data.AddVertex(x, y, 0, 0, 0);
+                data.AddVertex(x * ringSize, y * ringSize, 0, 0, 0);
 
                 if (i > 0)
                 {
-                    meshData.AddIndices(new int[] { i * 2 - 2, i * 2 - 1, i * 2 });
-                    meshData.AddIndices(new int[] { i * 2, i * 2 - 1, i * 2 + 1 });
+                    data.AddIndices(new[] { (i * 2) - 2, (i * 2) - 1, (i * 2) });
+                    data.AddIndices(new[] { (i * 2), (i * 2) - 1, (i * 2) + 1 });
                 }
+            }
+
+            if (progress == 1.0f)
+            {
+                data.AddIndices(new[] { (steps * 2) - 2, (steps * 2) - 1, 0 });
+                data.AddIndices(new[] { 0, (steps * 2) - 1, 1 });
             }
 
             if (circleMesh != null)
             {
-                api.Render.UpdateMesh(circleMesh, meshData);
+                api.Render.UpdateMesh(circleMesh, data);
             }
             else
             {
-                circleMesh = api.Render.UploadMesh(meshData);
+                circleMesh = api.Render.UploadMesh(data);
             }
+        }
+
+        public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
+        {
+            if (CircleVisible)
+            {
+                circleAlpha = Math.Min(1.0F, circleAlpha + (deltaTime * CircleAlphaIn));
+
+                float smoothingSpeed = 5f;
+                circleProgress = GameMath.Lerp(circleProgress, targetCircleProgress, deltaTime * smoothingSpeed);
+
+                if (circleProgress >= 0.86f)
+                {
+                    circleProgress = 1.0f;
+                }
+            }
+            else if (circleAlpha > 0.0F)
+            {
+                circleAlpha = Math.Max(0.0F, circleAlpha - (deltaTime * CircleAlphaOut));
+            }
+
+            if (circleAlpha <= 0.0F && !CircleVisible)
+            {
+                circleProgress = 0.0F;
+                targetCircleProgress = 0.0F;
+            }
+
+            if (circleAlpha > 0.0F)
+            {
+                UpdateCircleMesh(circleProgress);
+            }
+
+            Vec4f color = IsDangerous
+                ? new Vec4f(0.68f, 0.0f, 0.0f, circleAlpha)
+                : new Vec4f(0.4f, 0.85f, 1f, circleAlpha);
+
+            IRenderAPI render = api.Render;
+            IShaderProgram shader = render.CurrentActiveShader;
+
+            shader.Uniform("rgbaIn", color);
+            shader.Uniform("extraGlow", 0);
+            shader.Uniform("applyColor", 0);
+            shader.Uniform("tex2d", 0);
+            shader.Uniform("noTexture", 1.0F);
+            shader.UniformMatrix("projectionMatrix", render.CurrentProjectionMatrix);
+
+            int x, y;
+            if (api.Input.MouseGrabbed)
+            {
+                x = api.Render.FrameWidth / 2;
+                y = api.Render.FrameHeight / 2;
+            }
+            else
+            {
+                x = api.Input.MouseX;
+                y = api.Input.MouseY;
+            }
+
+            render.GlPushMatrix();
+            render.GlTranslate(x, y, 0);
+            render.GlScale(OuterRadius, OuterRadius, 0);
+            shader.UniformMatrix("modelViewMatrix", render.CurrentModelviewMatrix);
+            render.GlPopMatrix();
+
+            render.RenderMesh(circleMesh);
         }
 
         public void Dispose()

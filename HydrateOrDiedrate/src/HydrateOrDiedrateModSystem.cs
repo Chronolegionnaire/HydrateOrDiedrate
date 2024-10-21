@@ -227,11 +227,18 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
 
     private void OnDrinkProgressReceived(DrinkProgressPacket msg)
     {
+        if (hudOverlayRenderer == null)
+        {
+            _clientApi.Logger.Error("HUD Overlay Renderer is not initialized");
+            return;
+        }
+
         hudOverlayRenderer.CircleVisible = msg.IsDrinking;
 
-        if (!msg.IsDrinking)
+        if (!msg.IsDrinking || msg.Progress <= 0)
         {
             hudOverlayRenderer.CircleProgress = 0f;
+            hudOverlayRenderer.CircleVisible = false;
         }
         else
         {
