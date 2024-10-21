@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -88,22 +88,18 @@ namespace HydrateOrDiedrate.Hot_Weather
         {
             float coolingFactor = 0f;
             var entityAgent = entity as EntityAgent;
-            if (entityAgent == null) return;
+            if (entityAgent == null || entityAgent.GearInventory == null) return;
 
-            var behaviorContainer = entityAgent.GetBehavior<EntityBehaviorContainer>();
-            if (behaviorContainer == null || behaviorContainer.Inventory == null) return;
-
-            IInventory inventory = behaviorContainer.Inventory;
             int unequippedSlots = 0;
 
-            for (int i = 0; i < inventory.Count; i++)
+            for (int i = 0; i < entityAgent.GearInventory.Count; i++)
             {
                 if (i == 0 || i == 6 || i == 7 || i == 8 || i == 9 || i == 10)
                 {
-                    continue; // Skipping specific slots
+                    continue;
                 }
 
-                var slot = inventory[i];
+                var slot = entityAgent.GearInventory[i];
 
                 if (slot?.Itemstack == null)
                 {
@@ -138,16 +134,14 @@ namespace HydrateOrDiedrate.Hot_Weather
             double hourOfDay = world.Calendar?.HourOfDay ?? 0;
 
             float sunlightCooling = (16 - sunlightLevel) / 16f * _config.SunlightCoolingFactor;
-            double distanceTo4AM =
-                GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(4.0, hourOfDay, 24.0) / 12.0));
-            double distanceTo3PM =
-                GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0)); // Now used
-
-            double diurnalCooling = (0.5 - distanceTo4AM - distanceTo3PM) * _config.DiurnalVariationAmplitude;
+            double distanceTo4AM = GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(4.0, hourOfDay, 24.0) / 12.0));
+            double distanceTo3PM = GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0));
+            double diurnalCooling = (0.5 - distanceTo4AM) * _config.DiurnalVariationAmplitude;
             coolingFactor += (float)(sunlightCooling + diurnalCooling);
             coolingFactor *= CoolingMultiplier;
             CurrentCooling = Math.Max(0, coolingFactor);
         }
+
 
         private void CheckRoom()
         {
