@@ -11,12 +11,18 @@ namespace HydrateOrDiedrate
         private const int CircleMaxSteps = 32;
         private const float OuterRadius = 24f;
         private const float InnerRadius = 18f;
+        private const int MaxChecks = 5;  // Max consecutive frames of unchanged progress before reset
+
         private bool wasDrinking = false;
         private MeshRef circleMesh = null;
         private ICoreClientAPI api;
         private float circleAlpha = 0.0F;
         private float circleProgress = 0.0F;
         private float targetCircleProgress = 0.0F;
+
+        // Track unchanged progress to prevent the HUD from getting stuck
+        private float lastCircleProgress = -1.0F;
+        private int unchangedProgressCount = 0;
 
         public bool CircleVisible { get; set; }
 
@@ -110,6 +116,27 @@ namespace HydrateOrDiedrate
                 {
                     circleProgress = 1.0f;
                 }
+
+                // Track if progress is unchanged
+                if (circleProgress == lastCircleProgress)
+                {
+                    unchangedProgressCount++;
+                }
+                else
+                {
+                    unchangedProgressCount = 0; // Reset counter when progress changes
+                }
+
+                // If progress hasn't changed for MaxChecks frames, reset
+                if (unchangedProgressCount >= MaxChecks)
+                {
+                    CircleVisible = false;  // Force hide the HUD
+                    circleProgress = 0.0F;
+                    targetCircleProgress = 0.0F;
+                    unchangedProgressCount = 0; // Reset counter
+                }
+
+                lastCircleProgress = circleProgress; // Update last known progress
             }
             else if (circleAlpha > 0.0F)
             {
