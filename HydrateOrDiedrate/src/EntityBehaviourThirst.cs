@@ -363,17 +363,6 @@ namespace HydrateOrDiedrate
                 entity.WatchedAttributes.MarkPathDirty("hasProcessedSaturation");
             }
         }
-
-        public void CheckAndResetFlag()
-        {
-            long currentTime = entity.World.ElapsedMilliseconds;
-            if (currentTime - lastProcessedTime > 100)
-            {
-                HasProcessedSaturation = false;
-            }
-        }
-
-
         public override string PropertyName() => "thirst";
     }
 }

@@ -165,7 +165,7 @@ namespace HydrateOrDiedrate
         private bool IsHeadInWater(IServerPlayer player)
         {
             var headPos = player.Entity.ServerPos.XYZ.Add(0, player.Entity.LocalEyePos.Y, 0);
-            var headBlockPos = new BlockPos((int)headPos.X, (int)headPos.Y, (int)headPos.Z);
+            var headBlockPos = new BlockPos((int)headPos.X, (int)headPos.Y, (int)headPos.Z, (int)headPos.Y/32768);
             var block = _api.World.BlockAccessor.GetBlock(headBlockPos);
             return block.BlockMaterial == EnumBlockMaterial.Liquid;
         }
@@ -272,7 +272,7 @@ namespace HydrateOrDiedrate
 
             while (currentPos.SquareDistanceTo(fromPos) <= 5 * 5)
             {
-                var blockPos = new BlockPos((int)currentPos.X, (int)currentPos.Y, (int)currentPos.Z);
+                var blockPos = new BlockPos((int)currentPos.X, (int)currentPos.Y, (int)currentPos.Z, (int)currentPos.Y/32768);
                 var block = _api.World.BlockAccessor.GetBlock(blockPos);
 
                 if (block.BlockMaterial == EnumBlockMaterial.Liquid)

@@ -103,8 +103,6 @@ public class TryEatStopBlockBottlePatch
                     capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier * blendedValue;
                 }
                 capturedPlayer = player;
-
-                // Only accumulate hunger reduction if it's negative
                 if (nutriProps.Satiety < 0)
                 {
                     capturedHungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
@@ -136,9 +134,7 @@ public class TryEatStopBlockBottlePatch
                 thirstBehavior.HungerReductionAmount = 0;
             }
             thirstBehavior.ModifyThirst(capturedHydrationAmount, capturedHydLossDelay);
-
-            // Apply capturedHungerReduction only if it's negative
-            if (capturedHungerReduction < 0)
+            if (capturedHungerReduction > 0)
             {
                 thirstBehavior.HungerReductionAmount += capturedHungerReduction;
             }
