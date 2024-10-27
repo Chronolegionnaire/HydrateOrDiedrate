@@ -123,16 +123,13 @@ namespace HydrateOrDiedrate
                 if (block.BlockMaterial == EnumBlockMaterial.Liquid && blockHydrationConfig != null)
                 {
                     float hungerReduction = blockHydrationConfig.HungerReduction;
-
-                    // Prevent drinking if the player's hunger (satiety) is too low to handle the hunger reduction
+                    
                     if (hungerBehavior.Saturation <= 0 || hungerBehavior.Saturation < hungerReduction)
                     {
-                        // Not enough hunger to drink
                         StopDrinking(player, drinkData);
                         return;
                     }
-
-                    // If the player has enough hunger, continue with drinking process
+                    
                     if (!drinkData.IsDrinking)
                     {
                         drinkData.IsDrinking = true;
@@ -208,28 +205,23 @@ namespace HydrateOrDiedrate
                         ? blockHydrationConfig.HydrationByType["*"]
                         : 0f;
                     float hungerReduction = blockHydrationConfig.HungerReduction;
-
-                    // Modify thirst regardless of hunger state
+                    
                     thirstBehavior.ModifyThirst(hydrationValue);
-
-                    // Check if hungerBehavior is not null and handle hunger reduction logic
+                    
                     if (hungerBehavior != null)
                     {
                         if (hungerBehavior.Saturation >= hungerReduction)
                         {
-                            // If the player has enough satiety to reduce by hungerReduction, do so
                             hungerBehavior.Saturation -= hungerReduction;
                             thirstBehavior.HungerReductionAmount += hungerReduction;
                         }
                         else if (hungerBehavior.Saturation > 0)
                         {
-                            // If the player has some satiety but not enough to meet the full hungerReduction, reduce to zero
                             thirstBehavior.HungerReductionAmount += hungerBehavior.Saturation;
                             hungerBehavior.Saturation = 0;
                         }
                         else
                         {
-                            // If the player's satiety is already zero, prevent further drinking
                             StopDrinking(player, drinkData);
                             return;
                         }
@@ -296,11 +288,23 @@ namespace HydrateOrDiedrate
 
         private void SetParticleProperties(SimpleParticleProperties particles, Vec3d pos, double addPos, int quantity, float gravityEffect, Vec3f velocity, bool randomizeColor = false)
         {
-            particles.MinPos.Set(pos.X - 0.2, pos.Y + 0.1, pos.Z - 0.2);
-            particles.AddPos.Set(addPos, 0.0, addPos);
+            particles.MinPos.X = pos.X - 0.2;
+            particles.MinPos.Y = pos.Y + 0.1;
+            particles.MinPos.Z = pos.Z - 0.2;
+
+            particles.AddPos.X = addPos;
+            particles.AddPos.Y = 0.0;
+            particles.AddPos.Z = addPos;
+
             particles.GravityEffect = gravityEffect;
-            particles.MinVelocity.Set(velocity);
-            particles.AddVelocity.Set(0.2f, velocity.Y, 0.2f);
+
+            particles.MinVelocity.X = velocity.X;
+            particles.MinVelocity.Y = velocity.Y;
+            particles.MinVelocity.Z = velocity.Z;
+
+            particles.AddVelocity.X = 0.2f;
+            particles.AddVelocity.Y = velocity.Y;
+            particles.AddVelocity.Z = 0.2f;
 
             for (int i = 0; i < quantity; i++)
             {
