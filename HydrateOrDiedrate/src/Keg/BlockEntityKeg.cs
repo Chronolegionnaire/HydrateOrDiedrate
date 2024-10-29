@@ -15,7 +15,6 @@ namespace HydrateOrDiedrate.Keg
         private ICoreAPI api;
         private BlockKeg ownBlock;
         public float MeshAngle;
-        public bool isTapped;
         private Config.Config config;
         public override string InventoryClassName => "keg";
 
@@ -42,7 +41,6 @@ namespace HydrateOrDiedrate.Keg
             this.inventory = new InventoryGeneric(1, null, null, null);
             inventory.BaseWeight = 1.0f;
             inventory.OnGetSuitability = GetSuitability;
-            isTapped = false;
         }
 
         private float GetSuitability(ItemSlot sourceSlot, ItemSlot targetSlot, bool isMerge)
@@ -66,16 +64,17 @@ namespace HydrateOrDiedrate.Keg
         {
             if (transType == EnumTransitionType.Perish)
             {
-                float kegMultiplier = isTapped ? config.SpoilRateTapped : config.SpoilRateUntapped;
+                Block currentBlock = this.api.World.BlockAccessor.GetBlock(this.Pos);
+                float kegMultiplier = currentBlock.Code.Path == "kegtapped" ? config.SpoilRateTapped : config.SpoilRateUntapped;
                 return baseMul * kegMultiplier;
             }
 
             return baseMul;
         }
 
+
         public void TapKeg()
         {
-            isTapped = true;
             MarkDirty(true);
         }
 
@@ -86,22 +85,19 @@ namespace HydrateOrDiedrate.Keg
                 dsc.AppendLine(Lang.Get("Empty"));
             else
                 dsc.AppendLine(Lang.Get("Contents: {0}x{1}", itemSlot.Itemstack.StackSize, itemSlot.Itemstack.GetName()));
-
-            dsc.AppendLine(isTapped ? Lang.Get("Tapped") : Lang.Get("Untapped"));
+            
         }
 
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);
             MeshAngle = tree.GetFloat("meshAngle", MeshAngle);
-            isTapped = tree.GetBool("isTapped", false);
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
             tree.SetFloat("meshAngle", MeshAngle);
-            tree.SetBool("isTapped", isTapped);
         }
 
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tesselator)

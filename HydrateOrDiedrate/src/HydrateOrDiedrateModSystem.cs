@@ -86,10 +86,14 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         float waterSatiety = LoadedConfig.WaterSatiety;
         float saltWaterSatiety = LoadedConfig.SaltWaterSatiety;
         float boilingWaterSatiety = LoadedConfig.BoilingWaterSatiety;
+        float rainWaterSatiety = LoadedConfig.RainWaterSatiety;
+        float distilledWaterSatiety = LoadedConfig.DistilledWaterSatiety;
 
         ApplySatietyPatch(api, "game:itemtypes/liquid/waterportion.json", waterSatiety);
         ApplySatietyPatch(api, "game:itemtypes/liquid/saltwaterportion.json", saltWaterSatiety);
         ApplySatietyPatch(api, "game:itemtypes/liquid/boilingwaterportion.json", boilingWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", rainWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", distilledWaterSatiety);
     }
     private void ApplySatietyPatch(ICoreAPI api, string jsonFilePath, float satietyValue)
     {

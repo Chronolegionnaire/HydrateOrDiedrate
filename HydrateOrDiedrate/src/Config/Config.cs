@@ -16,6 +16,8 @@ public class Config : IModConfig
     public float WaterSatiety { get; set; } = -100f;
     public float SaltWaterSatiety { get; set; } = -100f;
     public float BoilingWaterSatiety { get; set; } = 0f;
+    public float RainWaterSatiety { get; set; } = -50f;
+    public float DistilledWaterSatiety { get; set; } = 0f;
 
     // Movement Speed Penalty Settings
     public float MaxMovementSpeedPenalty { get; set; } = 0.3f;
@@ -53,8 +55,8 @@ public class Config : IModConfig
     
     // Keg Settings
     public float KegCapacityLitres { get; set; } = 100.0f;  // Default to 100 liters
-    public float SpoilRateUntapped { get; set; } = 0.5f;    // Default spoil rate for untapped kegs
-    public float SpoilRateTapped { get; set; } = 0.85f;      // Default spoil rate for tapped kegs
+    public float SpoilRateUntapped { get; set; } = 0.15f;    // Default spoil rate for untapped kegs
+    public float SpoilRateTapped { get; set; } = 0.75f;      // Default spoil rate for tapped kegs
     public float KegIronHoopDropChance { get; set; } = 0.8f;  // Default 80% chance to drop an iron hoop
     public float KegTapDropChance { get; set; } = 0.9f;       // Default 90% chance to drop a keg tap (when tapped)
 
@@ -75,6 +77,8 @@ public class Config : IModConfig
         WaterSatiety = previousConfig?.WaterSatiety ?? -100f;
         SaltWaterSatiety = previousConfig?.SaltWaterSatiety ?? -100f;
         BoilingWaterSatiety = previousConfig?.BoilingWaterSatiety ?? 0f;
+        RainWaterSatiety = previousConfig?.RainWaterSatiety ?? -50f;
+        DistilledWaterSatiety = previousConfig?.DistilledWaterSatiety ?? 0f;
 
         // Movement Speed Penalty Settings
         MaxMovementSpeedPenalty = previousConfig?.MaxMovementSpeedPenalty ?? 0.3f;
@@ -111,8 +115,8 @@ public class Config : IModConfig
         
         // Keg settings
         KegCapacityLitres = previousConfig?.KegCapacityLitres ?? 100.0f;
-        SpoilRateUntapped = previousConfig?.SpoilRateUntapped ?? 0.5f;
-        SpoilRateTapped = previousConfig?.SpoilRateTapped ?? 0.85f;
+        SpoilRateUntapped = previousConfig?.SpoilRateUntapped ?? 0.15f;
+        SpoilRateTapped = previousConfig?.SpoilRateTapped ?? 0.75f;
         KegIronHoopDropChance = previousConfig?.KegIronHoopDropChance ?? 0.8f;
         KegTapDropChance = previousConfig?.KegTapDropChance ?? 0.9f;
     }

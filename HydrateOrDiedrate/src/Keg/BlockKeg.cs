@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Client;
@@ -10,7 +11,7 @@ using HydrateOrDiedrate.Config;
 
 namespace HydrateOrDiedrate.Keg
 {
-    public class BlockKeg : BlockLiquidContainerTopOpened
+    public class BlockKeg : BlockLiquidContainerBase
     {
         private Config.Config config;
 
@@ -25,9 +26,7 @@ namespace HydrateOrDiedrate.Keg
             }
         }
         public override float CapacityLitres => config.KegCapacityLitres;
-        protected override string meshRefsCacheKey => "kegMeshRefs";
-        protected override AssetLocation contentShapeLoc => new AssetLocation("hydrateordiedrate:block/keg.json");
-        protected override float liquidMaxYTranslate => 7f / 16f;
+
         public override bool CanDrinkFrom => false;
         private float resistance = 100f;
         private float playNextSound = 0.7f;
@@ -104,8 +103,8 @@ namespace HydrateOrDiedrate.Keg
                 {
                     choppingComplete = false;
                     playNextSound = 0.7f;
-
-                    if (!blockEntityKeg.isTapped)
+                    Block currentBlock = world.BlockAccessor.GetBlock(blockSel.Position);
+                    if (currentBlock.Code.Path != "kegtapped")
                     {
                         StartTappingAnimation(byPlayer);
                         PlayTappingSound(world, byPlayer, blockSel);
@@ -119,13 +118,14 @@ namespace HydrateOrDiedrate.Keg
             return base.OnBlockInteractStart(world, byPlayer, blockSel);
         }
 
-        public override bool OnBlockInteractStep(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
+
+        public override bool OnBlockInteractStep(float secondsUsed, IWorldAccessor world, IPlayer byPlayer,
+            BlockSelection blockSel)
         {
             if (choppingComplete) return false;
 
             BlockEntityKeg kegEntity = world.BlockAccessor.GetBlockEntity(blockSel.Position) as BlockEntityKeg;
             ItemStack heldItem = byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack;
-
             if (heldItem?.Collectible?.Tool == EnumTool.Axe)
             {
                 if (secondsUsed >= playNextSound)
@@ -149,7 +149,8 @@ namespace HydrateOrDiedrate.Keg
 
                 return true;
             }
-            else if (heldItem?.Collectible is ItemKegTap && byPlayer.Entity.LeftHandItemSlot.Itemstack?.Collectible?.Code?.Path?.Contains("hammer") == true)
+            else if (heldItem?.Collectible is ItemKegTap &&
+                     byPlayer.Entity.LeftHandItemSlot.Itemstack?.Collectible?.Code?.Path?.Contains("hammer") == true)
             {
                 if (secondsUsed >= playNextSound)
                 {
@@ -162,8 +163,6 @@ namespace HydrateOrDiedrate.Keg
                     world.RegisterCallback((dt) =>
                     {
                         StopTappingAnimation(byPlayer);
-                        kegEntity.TapKeg();
-
                         Block tappedKegBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:kegtapped"));
                         ITreeAttribute tree = new TreeAttribute();
                         kegEntity.ToTreeAttributes(tree);
@@ -173,10 +172,8 @@ namespace HydrateOrDiedrate.Keg
                         if (newBlockEntity is BlockEntityKeg newBlockEntityKeg)
                         {
                             newBlockEntityKeg.FromTreeAttributes(tree, world);
-                            newBlockEntityKeg.isTapped = true;
                             newBlockEntityKeg.MarkDirty(true);
                         }
-
                         ItemSlot activeHotbarSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
                         if (activeHotbarSlot.Itemstack?.Collectible is ItemKegTap)
                         {
@@ -231,24 +228,33 @@ namespace HydrateOrDiedrate.Keg
             }
         }
 
-        private bool HandleLiquidInteraction(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, BlockEntityKeg blockEntityKeg, ItemStack heldItem)
+        private bool HandleLiquidInteraction(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel,
+            BlockEntityKeg blockEntityKeg, ItemStack heldItem)
         {
-            if (heldItem == null || heldItem.Collectible == null) return false;
+            if (heldItem == null || heldItem.Collectible == null)
+            {
+                return false;
+            }
 
             ILiquidInterface liquidItem = heldItem.Collectible as ILiquidInterface;
             if (liquidItem != null)
             {
+                Block kegBlock = world.BlockAccessor.GetBlock(blockSel.Position);
+                bool isTappedKeg = kegBlock.Code.Path == "kegtapped";
+
                 if (liquidItem is ILiquidSource)
                 {
                     ItemStack liquidInHand = liquidItem.GetContent(heldItem);
                     ItemStack contentInKeg = blockEntityKeg.GetContent();
-                    WaterTightContainableProps contentProps = BlockLiquidContainerBase.GetContainableProps(contentInKeg);
+                    WaterTightContainableProps contentProps =
+                        BlockLiquidContainerBase.GetContainableProps(contentInKeg);
                     float currentLitres = contentInKeg != null && contentProps != null
                         ? (float)contentInKeg.StackSize / contentProps.ItemsPerLitre
                         : 0;
                     bool isEmpty = currentLitres <= 0;
-
-                    if (liquidInHand != null && (contentInKeg == null || liquidInHand.Collectible.Equals(liquidInHand, contentInKeg, GlobalConstants.IgnoredStackAttributes)))
+                    if (liquidInHand != null && (contentInKeg == null ||
+                                                 liquidInHand.Collectible.Equals(liquidInHand, contentInKeg,
+                                                     GlobalConstants.IgnoredStackAttributes)))
                     {
                         return base.OnBlockInteractStart(world, byPlayer, blockSel);
                     }
@@ -257,39 +263,48 @@ namespace HydrateOrDiedrate.Keg
                 if (liquidItem is ILiquidSink)
                 {
                     ItemStack contentInKeg = blockEntityKeg.GetContent();
-                    WaterTightContainableProps contentProps = BlockLiquidContainerBase.GetContainableProps(contentInKeg);
+                    WaterTightContainableProps contentProps =
+                        BlockLiquidContainerBase.GetContainableProps(contentInKeg);
                     float currentLitres = contentInKeg != null && contentProps != null
                         ? (float)contentInKeg.StackSize / contentProps.ItemsPerLitre
                         : 0;
                     bool isEmpty = currentLitres <= 0;
-
                     if (!isEmpty)
                     {
-                        if (!blockEntityKeg.isTapped)
+                        if (!isTappedKeg) 
                         {
                             return true;
                         }
                         else
-                        {
+                        { 
                             return base.OnBlockInteractStart(world, byPlayer, blockSel);
                         }
                     }
                 }
             }
-
             return base.OnBlockInteractStart(world, byPlayer, blockSel);
         }
 
         public override bool DoPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ItemStack byItemStack)
         {
             bool flag = base.DoPlaceBlock(world, byPlayer, blockSel, byItemStack);
-            if (flag && world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityKeg blockEntity)
+
+            if (flag && world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityKeg blockEntityKeg)
             {
                 float playerYaw = byPlayer.Entity.Pos.Yaw;
                 float snapAngle = 0.3926991f;
                 float snappedYaw = (float)(Math.Round(playerYaw / snapAngle) * snapAngle);
-                blockEntity.MeshAngle = snappedYaw;
-                blockEntity.MarkDirty(true, null);
+                blockEntityKeg.MeshAngle = snappedYaw;
+                blockEntityKeg.MarkDirty(true, null);
+                
+                if (byItemStack.Attributes.HasAttribute("kegContent"))
+                {
+                    ItemStack kegContent = (byItemStack.Attributes["kegContent"] as ItemstackAttribute)?.value;
+                    if (kegContent != null)
+                    {
+                        blockEntityKeg.SetContent(kegContent);
+                    }
+                }
             }
 
             return flag;
@@ -420,4 +435,5 @@ namespace HydrateOrDiedrate.Keg
             });
         }
     }
+    
 }

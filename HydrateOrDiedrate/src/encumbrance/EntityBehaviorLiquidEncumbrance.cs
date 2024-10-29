@@ -88,8 +88,9 @@ namespace HydrateOrDiedrate.encumbrance
                 var isLiquidContainer = slot.Itemstack.Block is BlockLiquidContainerBase;
                 if (isLiquidContainer)
                 {
-                    float currentLitres = GetCurrentLitres(slot.Itemstack);
-                    if (currentLitres > _config.EncumbranceLimit)
+                    float totalLitresInStack = GetTotalLitresInStack(slot.Itemstack);
+
+                    if (totalLitresInStack > _config.EncumbranceLimit)
                     {
                         return true;
                     }
@@ -98,6 +99,19 @@ namespace HydrateOrDiedrate.encumbrance
 
             return false;
         }
+
+        private float GetTotalLitresInStack(ItemStack itemStack)
+        {
+            BlockLiquidContainerBase block = itemStack.Block as BlockLiquidContainerBase;
+            if (block == null) return 0f;
+            
+            float litresPerContainer = block.GetCurrentLitres(itemStack);
+            
+            int stackSize = itemStack.StackSize;
+
+            return litresPerContainer * stackSize;
+        }
+
 
         private float GetCurrentLitres(ItemStack itemStack)
         {

@@ -19,6 +19,8 @@ namespace HydrateOrDiedrate.Config
         private const string settingWaterSatiety = "hydrateordiedrate:Config.Setting.WaterSatiety";
         private const string settingSaltWaterSatiety = "hydrateordiedrate:Config.Setting.SaltWaterSatiety";
         private const string settingBoilingWaterSatiety = "hydrateordiedrate:Config.Setting.BoilingWaterSatiety";
+        private const string settingRainWaterSatiety = "hydrateordiedrate:Config.Setting.RainWaterSatiety";
+        private const string settingDistilledWaterSatiety = "hydrateordiedrate:Config.Setting.DistilledWaterSatiety";
         private const string settingHydrationLossDelayMultiplier = "hydrateordiedrate:Config.Setting.HydrationLossDelayMultiplier";
         private const string settingMaxMovementSpeedPenalty = "hydrateordiedrate:Config.Setting.MaxMovementSpeedPenalty";
         private const string settingMovementSpeedPenaltyThreshold = "hydrateordiedrate:Config.Setting.MovementSpeedPenaltyThreshold";
@@ -97,16 +99,24 @@ namespace HydrateOrDiedrate.Config
             config.EnableLiquidEncumbrance = enableLiquidEncumbrance;
             
             float waterSatiety = config.WaterSatiety;
-            ImGui.DragFloat(Lang.Get(settingWaterSatiety) + $"##waterSatiety-{id}", ref waterSatiety, 1.0f, -200.0f, 100.0f);
+            ImGui.DragFloat(Lang.Get(settingWaterSatiety) + $"##waterSatiety-{id}", ref waterSatiety, 1.0f, -1000.0f, 1000.0f);
             config.WaterSatiety = waterSatiety;
 
             float saltWaterSatiety = config.SaltWaterSatiety;
-            ImGui.DragFloat(Lang.Get(settingSaltWaterSatiety) + $"##saltWaterSatiety-{id}", ref saltWaterSatiety, 1.0f, -200.0f, 100.0f);
+            ImGui.DragFloat(Lang.Get(settingSaltWaterSatiety) + $"##saltWaterSatiety-{id}", ref saltWaterSatiety, 1.0f, -1000.0f, 1000.0f);
             config.SaltWaterSatiety = saltWaterSatiety;
 
             float boilingWaterSatiety = config.BoilingWaterSatiety;
-            ImGui.DragFloat(Lang.Get(settingBoilingWaterSatiety) + $"##boilingWaterSatiety-{id}", ref boilingWaterSatiety, 1.0f, -100.0f, 100.0f);
+            ImGui.DragFloat(Lang.Get(settingBoilingWaterSatiety) + $"##boilingWaterSatiety-{id}", ref boilingWaterSatiety, 1.0f, -1000.0f, 1000.0f);
             config.BoilingWaterSatiety = boilingWaterSatiety;
+            
+            float rainWaterSatiety = config.RainWaterSatiety;
+            ImGui.DragFloat(Lang.Get(settingRainWaterSatiety) + $"##rainWaterSatiety-{id}", ref rainWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.RainWaterSatiety = rainWaterSatiety;
+            
+            float distilledWaterSatiety = config.DistilledWaterSatiety;
+            ImGui.DragFloat(Lang.Get(settingBoilingWaterSatiety) + $"##distilledWaterSatiety-{id}", ref distilledWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.DistilledWaterSatiety = distilledWaterSatiety;
 
             ImGui.SeparatorText("Thirst Settings");
 

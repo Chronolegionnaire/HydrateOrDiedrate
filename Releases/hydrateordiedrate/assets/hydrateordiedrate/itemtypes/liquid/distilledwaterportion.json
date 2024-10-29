@@ -6,6 +6,10 @@
     handbook: {
       ignoreCreativeInvStacks: true
     },
+    "distillationProps": {
+      distilledStack: { type: "item", code: "hydrateordiedrate:distilledwaterportion" },
+      ratio: 1.0
+    },
     waterTightContainerProps: {
       containable: true,
       itemsPerLitre: 100,
@@ -19,7 +23,7 @@
         }
       },
       "nutritionPropsPerLitre": {
-        "satiety": 0,
+        "satiety": -50,
         "foodcategory": "NoNutrition"
       }
     }
@@ -44,8 +48,8 @@
   },
   transitionableProps: [{
     type: "Perish",
-    freshHours: { avg: 225 },
-    transitionHours: { avg: 48 },
+    freshHours: { avg: 150 },
+    transitionHours: { avg: 36 },
     transitionedStack: { type: "item", code: "game:waterportion" },
     transitionRatio: 1.0
   }]
