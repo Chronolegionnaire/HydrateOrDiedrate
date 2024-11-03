@@ -29,8 +29,13 @@ namespace HydrateOrDiedrate.Config
             T config = api.LoadModConfig<T>(configFilePath);
             if (config == null)
             {
-                api.StoreModConfig(Activator.CreateInstance<T>(), configFilePath);
-                config = api.LoadModConfig<T>(configFilePath);
+                config = Activator.CreateInstance<T>();
+                if (config is Config hydrateConfig)
+                {
+                    hydrateConfig.EquatidianCoolingMultipliers = new float[] { 1.25f, 1.5f, 2.0f };
+                }
+
+                api.StoreModConfig(config, configFilePath);
             }
             else
             {

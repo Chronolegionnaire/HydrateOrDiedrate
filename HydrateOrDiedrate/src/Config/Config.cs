@@ -1,64 +1,138 @@
-﻿using Vintagestory.API.Common;
+﻿using Newtonsoft.Json;
+using ProtoBuf;
+using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
 namespace HydrateOrDiedrate.Config;
 
-public class Config : IModConfig
-{
-    // Thirst Settings
-    public float MaxThirst { get; set; } = 1500.0f;
-    public float ThirstDamage { get; set; } = 1f;
-    public float ThirstDecayRate { get; set; } = 10f;
-    public float ThirstIncreasePerDegreeMultiplier { get; set; } = 5f;
-    public float ThirstDecayRateMax { get; set; } = 5.0f;
-    public float HydrationLossDelayMultiplier { get; set; } = 0.05f;
-    public bool EnableThirstMechanics { get; set; } = true;
-    public float WaterSatiety { get; set; } = -100f;
-    public float SaltWaterSatiety { get; set; } = -100f;
-    public float BoilingWaterSatiety { get; set; } = 0f;
-    public float RainWaterSatiety { get; set; } = -50f;
-    public float DistilledWaterSatiety { get; set; } = 0f;
+[ProtoContract]
+    public class Config : IModConfig
+    {
+        // Thirst Settings
+        [ProtoMember(1)]
+        public float MaxThirst { get; set; } = 1500.0f;
 
-    // Movement Speed Penalty Settings
-    public float MaxMovementSpeedPenalty { get; set; } = 0.3f;
-    public float MovementSpeedPenaltyThreshold { get; set; } = 600.0f;
+        [ProtoMember(2)]
+        public float ThirstDamage { get; set; } = 1f;
 
-    // Temperature and Heat Settings
-    public bool HarshHeat { get; set; } = true;
-    public float TemperatureThreshold { get; set; } = 27.0f;
-    public float HarshHeatExponentialGainMultiplier { get; set; } = 0.2f;
-    public float BoilingWaterDamage { get; set; } = 5.0f;
-    public bool EnableBoilingWaterDamage { get; set; } = true;
+        [ProtoMember(3)]
+        public float ThirstDecayRate { get; set; } = 10f;
 
-    // Cooling Factors
-    public float UnequippedSlotCooling { get; set; } = 1.0f;
-    public float WetnessCoolingFactor { get; set; } = 1.5f;
-    public float ShelterCoolingFactor { get; set; } = 1.5f;
-    public float SunlightCoolingFactor { get; set; } = 1.0f;
-    public float DiurnalVariationAmplitude { get; set; } = 18f;
-    public float RefrigerationCooling { get; set; } = 20.0f;
+        [ProtoMember(4)]
+        public float ThirstIncreasePerDegreeMultiplier { get; set; } = 5f;
 
-    // Other Settings
-    public float SprintThirstMultiplier { get; set; } = 1.5f;
-    public bool EnableLiquidEncumbrance { get; set; } = true;
-    public float EncumbranceLimit { get; set; } = 4.0f;
-    public float LiquidEncumbranceMovementSpeedDebuff { get; set; } = 0.4f;
-    
-    // New Ability Settings
-    public float DromedaryMultiplierPerLevel { get; set; } = 0.3f;
-    public float[] EquatidianCoolingMultipliers { get; set; } = { 1.25f, 1.5f, 2.0f };
-    
-    // Rain Gathering Settings
-    public bool EnableRainGathering { get; set; } = true;
-    public float RainMultiplier { get; set; } = 1.0f;
-    public bool EnableParticleTicking { get; set; } = true; 
-    
-    // Keg Settings
-    public float KegCapacityLitres { get; set; } = 100.0f;  // Default to 100 liters
-    public float SpoilRateUntapped { get; set; } = 0.15f;    // Default spoil rate for untapped kegs
-    public float SpoilRateTapped { get; set; } = 0.75f;      // Default spoil rate for tapped kegs
-    public float KegIronHoopDropChance { get; set; } = 0.8f;  // Default 80% chance to drop an iron hoop
-    public float KegTapDropChance { get; set; } = 0.9f;       // Default 90% chance to drop a keg tap (when tapped)
+        [ProtoMember(5)]
+        public float ThirstDecayRateMax { get; set; } = 5.0f;
+
+        [ProtoMember(6)]
+        public float HydrationLossDelayMultiplier { get; set; } = 0.05f;
+
+        [ProtoMember(7)]
+        public bool EnableThirstMechanics { get; set; } = true;
+
+        [ProtoMember(8)]
+        public float WaterSatiety { get; set; } = -100f;
+
+        [ProtoMember(9)]
+        public float SaltWaterSatiety { get; set; } = -100f;
+
+        [ProtoMember(10)]
+        public float BoilingWaterSatiety { get; set; } = 0f;
+
+        [ProtoMember(11)]
+        public float RainWaterSatiety { get; set; } = -50f;
+
+        [ProtoMember(12)]
+        public float DistilledWaterSatiety { get; set; } = 0f;
+
+        // Movement Speed Penalty Settings
+        [ProtoMember(13)]
+        public float MaxMovementSpeedPenalty { get; set; } = 0.3f;
+
+        [ProtoMember(14)]
+        public float MovementSpeedPenaltyThreshold { get; set; } = 600.0f;
+
+        // Temperature and Heat Settings
+        [ProtoMember(15)]
+        public bool HarshHeat { get; set; } = true;
+
+        [ProtoMember(16)]
+        public float TemperatureThreshold { get; set; } = 27.0f;
+
+        [ProtoMember(17)]
+        public float HarshHeatExponentialGainMultiplier { get; set; } = 0.2f;
+
+        [ProtoMember(18)]
+        public float BoilingWaterDamage { get; set; } = 5.0f;
+
+        [ProtoMember(19)]
+        public bool EnableBoilingWaterDamage { get; set; } = true;
+
+        // Cooling Factors
+        [ProtoMember(20)]
+        public float UnequippedSlotCooling { get; set; } = 1.0f;
+
+        [ProtoMember(21)]
+        public float WetnessCoolingFactor { get; set; } = 1.5f;
+
+        [ProtoMember(22)]
+        public float ShelterCoolingFactor { get; set; } = 1.5f;
+
+        [ProtoMember(23)]
+        public float SunlightCoolingFactor { get; set; } = 1.0f;
+
+        [ProtoMember(24)]
+        public float DiurnalVariationAmplitude { get; set; } = 18f;
+
+        [ProtoMember(25)]
+        public float RefrigerationCooling { get; set; } = 20.0f;
+
+        // Other Settings
+        [ProtoMember(26)]
+        public float SprintThirstMultiplier { get; set; } = 1.5f;
+
+        [ProtoMember(27)]
+        public bool EnableLiquidEncumbrance { get; set; } = true;
+
+        [ProtoMember(28)]
+        public float EncumbranceLimit { get; set; } = 4.0f;
+
+        [ProtoMember(29)]
+        public float LiquidEncumbranceMovementSpeedDebuff { get; set; } = 0.4f;
+
+        // New Ability Settings
+        [ProtoMember(30)]
+        public float DromedaryMultiplierPerLevel { get; set; } = 0.3f;
+
+        [ProtoMember(31)]
+        [JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+        public float[] EquatidianCoolingMultipliers { get; set; }
+
+        // Rain Gathering Settings
+        [ProtoMember(32)]
+        public bool EnableRainGathering { get; set; } = true;
+
+        [ProtoMember(33)]
+        public float RainMultiplier { get; set; } = 1.0f;
+
+        [ProtoMember(34)]
+        public bool EnableParticleTicking { get; set; } = true;
+
+        // Keg Settings
+        [ProtoMember(35)]
+        public float KegCapacityLitres { get; set; } = 100.0f;
+
+        [ProtoMember(36)]
+        public float SpoilRateUntapped { get; set; } = 0.15f;
+
+        [ProtoMember(37)]
+        public float SpoilRateTapped { get; set; } = 0.75f;
+
+        [ProtoMember(38)]
+        public float KegIronHoopDropChance { get; set; } = 0.8f;
+
+        [ProtoMember(39)]
+        public float KegTapDropChance { get; set; } = 0.9f;
 
 
 

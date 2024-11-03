@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using HydrateOrDiedrate.Keg;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
@@ -83,7 +82,11 @@ public class RainHarvesterData
     public void OnHarvest(float rainIntensity)
     {
         if (rainWaterStack == null || !IsOpenToSky(BlockEntity.Pos)) return;
-        
+        if (BlockEntity is BlockEntityBarrel barrel && barrel.Sealed)
+        {
+            return;
+        }
+
         if (BlockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
         {
             for (int i = 0; i < groundStorage.Inventory.Count; i++)
@@ -92,13 +95,11 @@ public class RainHarvesterData
                 if (slot.Empty) continue;
 
                 string itemName = slot.Itemstack?.Collectible?.Code?.Path?.ToLower() ?? "";
-                
+
                 if (itemName.Contains("raw") || itemName.Contains("unfired")) continue;
 
                 if (slot?.Itemstack?.Collectible is BlockLiquidContainerBase blockContainer && blockContainer.IsTopOpened)
                 {
-                    if (slot.Itemstack.Block is BlockKeg) continue;
-
                     float fillRate = CalculateFillRate(rainIntensity);
                     rainWaterStack.StackSize = 100;
                     float desiredLiters = (float)Math.Round(fillRate, 2);
@@ -110,8 +111,6 @@ public class RainHarvesterData
         }
         else if (BlockEntity.Block is BlockLiquidContainerBase blockContainerBase)
         {
-            if (BlockEntity.Block is BlockKeg) return;
-
             float fillRate = CalculateFillRate(rainIntensity);
             rainWaterStack.StackSize = 100;
             float desiredLiters = (float)Math.Round(fillRate, 2);
@@ -153,7 +152,6 @@ public class RainHarvesterData
     {
         if (!IsOpenToSky(BlockEntity.Pos)) return;
         if (weatherSysServer == null) return;
-        if (BlockEntity.Block is BlockKeg) return;
 
         float rainIntensity = GetRainIntensity();
         if (rainIntensity > 0)
@@ -163,7 +161,6 @@ public class RainHarvesterData
                 var positions = GetGroundStoragePositions(groundStorage);
                 foreach (var pos in positions)
                 {
-                    if (BlockEntity.Block is BlockKeg) continue;
 
                     SpawnRainParticles(pos, rainIntensity);
                 }
@@ -171,7 +168,6 @@ public class RainHarvesterData
             else
             {
                 var adjustedPos = GetAdjustedPosition(BlockEntity);
-                if (BlockEntity.Block is BlockKeg) return;
 
                 SpawnRainParticles(adjustedPos, rainIntensity);
             }

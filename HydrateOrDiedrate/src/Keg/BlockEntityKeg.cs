@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using HydrateOrDiedrate.Config;
 using Vintagestory.API.Client;
@@ -25,13 +26,27 @@ namespace HydrateOrDiedrate.Keg
             this.ownBlock = this.Block as BlockKeg;
             if (this.inventory is InventoryGeneric inv)
             {
-                inv.OnAcquireTransitionSpeed += AdjustPerishSpeedInKeg;
+                inv.OnGetSuitability = GetSuitability;
+                UpdateKegMultiplier();
             }
             config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
 
             if (config == null)
             {
                 config = new Config.Config();
+            }
+        }
+        private void UpdateKegMultiplier()
+        {
+            if (this.inventory is InventoryGeneric inv && this.Block != null)
+            {
+                if (inv.TransitionableSpeedMulByType == null)
+                {
+                    inv.TransitionableSpeedMulByType = new Dictionary<EnumTransitionType, float>();
+                }
+
+                float kegMultiplier = (this.Block.Code.Path == "kegtapped") ? config?.SpoilRateTapped ?? 1.0f : config?.SpoilRateUntapped ?? 1.0f;
+                inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = kegMultiplier;
             }
         }
 
@@ -75,6 +90,7 @@ namespace HydrateOrDiedrate.Keg
 
         public void TapKeg()
         {
+            UpdateKegMultiplier();
             MarkDirty(true);
         }
 
@@ -92,6 +108,7 @@ namespace HydrateOrDiedrate.Keg
         {
             base.FromTreeAttributes(tree, worldForResolving);
             MeshAngle = tree.GetFloat("meshAngle", MeshAngle);
+            UpdateKegMultiplier();
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)

@@ -47,6 +47,10 @@
   },
   "attributes": {
     "canDrinkFrom": false,
+    "kegCapacityLitres": 100.0,
+    "spoilRate": 0.75,
+    "ironHoopDropChance": 0.8,
+    "kegTapDropChance": 0.9,
     "liquidContainerProps": {
       "transferSizeLitres": 1,
       "liquidMaxYTranslate": 0.4375

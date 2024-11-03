@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using HydrateOrDiedrate.Config;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -10,23 +11,36 @@ namespace HydrateOrDiedrate;
 public class RainHarvesterManager
 {
     private ICoreServerAPI serverAPI;
+    private Config.Config _config;
     private Dictionary<BlockPos, RainHarvesterData> activeHarvesters;
     private Dictionary<BlockPos, RainHarvesterData> inactiveHarvesters;
     private long tickListenerId;
     private int globalTickCounter = 1;
     private bool enableParticleTicking;
-    public RainHarvesterManager(ICoreServerAPI api)
+    public RainHarvesterManager(ICoreServerAPI api, Config.Config config)
     {
         serverAPI = api;
+        _config = config;
         activeHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
         inactiveHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
-
-        var config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
+        
         enableParticleTicking = config.EnableParticleTicking;
         if (config.EnableRainGathering)
         {
             tickListenerId = api.Event.RegisterGameTickListener(OnTick, 2000);
             api.Event.RegisterGameTickListener(OnInactiveHarvesterCheck, 10000);
+        }
+    }
+    public void Reset(Config.Config newConfig)
+    {
+        _config = newConfig;
+        enableParticleTicking = _config.EnableParticleTicking;
+        
+        serverAPI.Event.UnregisterGameTickListener(tickListenerId);
+        if (_config.EnableRainGathering)
+        {
+            tickListenerId = serverAPI.Event.RegisterGameTickListener(OnTick, 2000);
+            serverAPI.Event.RegisterGameTickListener(OnInactiveHarvesterCheck, 10000);
         }
     }
 
@@ -60,6 +74,11 @@ public class RainHarvesterManager
 
     private void OnTick(float deltaTime)
     {
+        if (!serverAPI.World.AllOnlinePlayers.Any())
+        {
+            return;
+        }
+
         globalTickCounter++;
         if (globalTickCounter > 10) globalTickCounter = 1;
 
@@ -104,6 +123,7 @@ public class RainHarvesterManager
             }
         }
     }
+
 
     private void OnInactiveHarvesterCheck(float deltaTime)
     {

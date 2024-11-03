@@ -13,20 +13,20 @@ namespace HydrateOrDiedrate.Keg
 {
     public class BlockKeg : BlockLiquidContainerBase
     {
-        private Config.Config config;
+        private float kegCapacityLitres;
+        private float spoilRate;
+        private float ironHoopDropChance;
+        private float kegTapDropChance;
 
         public override void OnLoaded(ICoreAPI api)
         {
             base.OnLoaded(api);
-            config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
-
-            if (config == null)
-            {
-                config = new Config.Config();
-            }
+            kegCapacityLitres = Attributes?["kegCapacityLitres"].AsFloat(10.0f) ?? 10.0f;
+            spoilRate = Attributes?["spoilRate"].AsFloat(1.0f) ?? 1.0f;
+            ironHoopDropChance = Attributes?["ironHoopDropChance"].AsFloat(0.5f) ?? 0.5f;
+            kegTapDropChance = Attributes?["kegTapDropChance"].AsFloat(0.2f) ?? 0.2f;
         }
-        public override float CapacityLitres => config.KegCapacityLitres;
-
+        public override float CapacityLitres => kegCapacityLitres;
         public override bool CanDrinkFrom => false;
         private float resistance = 100f;
         private float playNextSound = 0.7f;
@@ -217,12 +217,12 @@ namespace HydrateOrDiedrate.Keg
             Random random = new Random();
             for (int i = 0; i < 2; i++)
             {
-                if (random.NextDouble() < config.KegIronHoopDropChance)
+                if (random.NextDouble() < ironHoopDropChance)
                 {
                     world.SpawnItemEntity(new ItemStack(world.GetItem(new AssetLocation("game:hoop-iron"))), position.ToVec3d());
                 }
             }
-            if (isTappedKeg && random.NextDouble() < config.KegTapDropChance)
+            if (isTappedKeg && random.NextDouble() < kegTapDropChance)
             {
                 world.SpawnItemEntity(new ItemStack(world.GetItem(new AssetLocation("hydrateordiedrate:kegtap"))), position.ToVec3d());
             }

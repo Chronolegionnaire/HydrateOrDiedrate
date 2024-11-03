@@ -10,6 +10,7 @@ using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.XSkill;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using ProtoBuf;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -27,7 +28,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private ICoreClientAPI _clientApi;
     private HudElementThirstBar _thirstHud;
     private HudElementHungerReductionBar _hungerReductionHud;
-    public static Config.Config LoadedConfig;
+    public static Config.Config LoadedConfig { get; set; }
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
     private ConfigLibCompatibility _configLibCompatibility;
@@ -51,14 +52,19 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private void LoadConfig(ICoreAPI api)
     {
-        LoadedConfig = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json") ?? new Config.Config(api);
-        ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
+        LoadedConfig = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
+        if (LoadedConfig == null)
+        {
+            LoadedConfig = new Config.Config();
+            ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
+        }
     }
 
     public override void AssetsLoaded(ICoreAPI api)
     {
         base.AssetsLoaded(api);
         ApplyWaterSatietyPatches(api);
+        ApplyKegConfigPatches(api);
     }
 
     public override void AssetsFinalize(ICoreAPI api)
@@ -76,11 +82,15 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
             {
+                if (block is BlockKeg)
+                {
+                    return;
+                }
                 AddBehaviorToBlock(block, api);
             }
         }
     }
-public void ApplyWaterSatietyPatches(ICoreAPI api)
+    public void ApplyWaterSatietyPatches(ICoreAPI api)
     {
 
         float waterSatiety = LoadedConfig.WaterSatiety;
@@ -115,7 +125,36 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
         patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicwaterpatch"), patch, ref applied, ref notFound, ref errorCount);
     }
+    public void ApplyKegConfigPatches(ICoreAPI api)
+    {
+        ApplyKegPatch(api, "hydrateordiedrate:blocktypes/keg.json", LoadedConfig.KegCapacityLitres, LoadedConfig.SpoilRateTapped, LoadedConfig.KegIronHoopDropChance, LoadedConfig.KegTapDropChance);
+        
+        ApplyKegPatch(api, "hydrateordiedrate:blocktypes/kegtapped.json", LoadedConfig.KegCapacityLitres, LoadedConfig.SpoilRateUntapped, LoadedConfig.KegIronHoopDropChance, LoadedConfig.KegTapDropChance);
+    }
 
+    private void ApplyKegPatch(ICoreAPI api, string jsonFilePath, float capacityLitres, float spoilRate, float ironHoopDropChance, float kegTapDropChance)
+    {
+        JsonPatch patch = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes",
+            Value = new JsonObject(JObject.FromObject(new
+            {
+                kegCapacityLitres = capacityLitres,
+                spoilRate = spoilRate,
+                ironHoopDropChance = ironHoopDropChance,
+                kegTapDropChance = kegTapDropChance
+            })),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        int applied = 0;
+        int notFound = 0;
+        int errorCount = 0;
+        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegpatch"), patch, ref applied, ref notFound, ref errorCount);
+    }
 
     private void LoadAndApplyHydrationPatches(ICoreAPI api)
     {
@@ -158,8 +197,7 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         }
 
         _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
-
-        // Network channel setup for both client and server
+        
         if (api.Side == EnumAppSide.Server)
         {
             InitializeServer(api as ICoreServerAPI);
@@ -191,10 +229,13 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         _serverApi = api;
 
         serverChannel = api.Network.RegisterChannel("hydrateordiedrate")
-            .RegisterMessageType<DrinkProgressPacket>();
-
+            .RegisterMessageType<DrinkProgressPacket>()
+            .RegisterMessageType<ConfigSyncPacket>()
+            .RegisterMessageType<ConfigSyncRequestPacket>()
+            .SetMessageHandler<ConfigSyncRequestPacket>(OnConfigSyncRequestReceived);
+        
         _waterInteractionHandler.Initialize(serverChannel);
-        rainHarvesterManager = new RainHarvesterManager(_serverApi);
+        rainHarvesterManager = new RainHarvesterManager(_serverApi, LoadedConfig);
         api.Event.PlayerJoin += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerNowPlaying += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerRespawn += OnPlayerRespawn;
@@ -204,23 +245,27 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
             ThirstCommands.Register(api, LoadedConfig);
         }
     }
-    public RainHarvesterManager GetRainHarvesterManager()
-    {
-        return rainHarvesterManager;
-    }
     private void InitializeClient(ICoreClientAPI api)
     {
         _clientApi = api;
 
-
         clientChannel = api.Network.RegisterChannel("hydrateordiedrate")
             .RegisterMessageType<DrinkProgressPacket>()
-            .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived);
+            .RegisterMessageType<ConfigSyncPacket>()
+            .RegisterMessageType<ConfigSyncRequestPacket>()
+            .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived)
+            .SetMessageHandler<ConfigSyncPacket>(OnConfigSyncReceived);
 
+        api.Event.RegisterCallback((dt) =>
+        {
+            if (clientChannel.Connected)
+            {
+                clientChannel.SendPacket(new ConfigSyncRequestPacket());
+            }
+        }, 500);
 
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
-
 
         if (LoadedConfig.EnableThirstMechanics)
         {
@@ -229,11 +274,117 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         _configLibCompatibility = new ConfigLibCompatibility((ICoreClientAPI)api);
     }
 
+    [ProtoContract]
+    public class ConfigSyncPacket
+    {
+        [ProtoMember(1)] public Config.Config ServerConfig { get; set; }
+
+        [ProtoMember(2)] public List<string> HydrationPatches { get; set; }
+
+        [ProtoMember(3)] public List<string> BlockHydrationPatches { get; set; }
+
+        [ProtoMember(4)] public List<string> CoolingPatches { get; set; }
+    }
+
+    [ProtoContract]
+    public class ConfigSyncRequestPacket
+    {
+    }
+
+    private void OnConfigSyncRequestReceived(IServerPlayer fromPlayer, ConfigSyncRequestPacket packet)
+    {
+        var configSyncPacket = new ConfigSyncPacket
+        {
+            ServerConfig = LoadedConfig,
+            HydrationPatches = HydrationManager.GetLastAppliedPatches().ConvertAll(patch => patch.ToString()),
+            BlockHydrationPatches = BlockHydrationManager.GetLastAppliedPatches().ConvertAll(patch => patch.ToString()),
+            CoolingPatches = CoolingManager.GetLastAppliedPatches().ConvertAll(patch => patch.ToString())
+        };
+
+        serverChannel.SendPacket(configSyncPacket, fromPlayer);
+    }
+
+    private void OnConfigSyncReceived(ConfigSyncPacket packet)
+    {
+        if (!JToken.DeepEquals(JObject.FromObject(packet.ServerConfig), JObject.FromObject(LoadedConfig)))
+        {
+            var newConfig = JsonConvert.DeserializeObject<Config.Config>(JsonConvert.SerializeObject(packet.ServerConfig));
+            
+            if (newConfig.EquatidianCoolingMultipliers != null)
+            {
+                LoadedConfig.EquatidianCoolingMultipliers = newConfig.EquatidianCoolingMultipliers;
+            }
+            LoadedConfig = newConfig;
+        }
+
+        ReloadComponents();
+        
+        var currentHydrationPatches = HydrationManager.GetLastAppliedPatches();
+        bool hydrationPatchesChanged =
+            !ArePatchesEqual(packet.HydrationPatches.ConvertAll(JObject.Parse), currentHydrationPatches);
+
+        var currentBlockHydrationPatches = BlockHydrationManager.GetLastAppliedPatches();
+        bool blockHydrationPatchesChanged = !ArePatchesEqual(packet.BlockHydrationPatches.ConvertAll(JObject.Parse),
+            currentBlockHydrationPatches);
+
+        var currentCoolingPatches = CoolingManager.GetLastAppliedPatches();
+        bool coolingPatchesChanged =
+            !ArePatchesEqual(packet.CoolingPatches.ConvertAll(JObject.Parse), currentCoolingPatches);
+
+        if (hydrationPatchesChanged)
+        {
+            HydrationManager.ApplyHydrationPatches(_clientApi, packet.HydrationPatches.ConvertAll(JObject.Parse));
+        }
+
+        if (blockHydrationPatchesChanged)
+        {
+            BlockHydrationManager.ApplyBlockHydrationPatches(packet.BlockHydrationPatches.ConvertAll(JObject.Parse));
+        }
+
+        if (coolingPatchesChanged)
+        {
+            CoolingManager.ApplyCoolingPatches(_clientApi, packet.CoolingPatches.ConvertAll(JObject.Parse));
+        }
+    }
+
+    private bool ArePatchesEqual(List<JObject> patches1, List<JObject> patches2)
+    {
+        if (patches1.Count != patches2.Count) return false;
+        for (int i = 0; i < patches1.Count; i++)
+        {
+            if (!JToken.DeepEquals(patches1[i], patches2[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    
+    private void ReloadComponents()
+    {
+        _waterInteractionHandler?.Reset(LoadedConfig);
+        rainHarvesterManager?.Reset(LoadedConfig);
+        foreach (var entity in _clientApi.World.LoadedEntities.Values)
+        {
+            var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
+            thirstBehavior?.Reset(LoadedConfig);
+
+            var bodyTempBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
+            bodyTempBehavior?.Reset(LoadedConfig);
+
+            var encumbranceBehavior = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
+            encumbranceBehavior?.Reset(LoadedConfig);
+        }
+    }
+    public RainHarvesterManager GetRainHarvesterManager()
+    {
+        return rainHarvesterManager;
+    }
     private void OnDrinkProgressReceived(DrinkProgressPacket msg)
     {
         if (hudOverlayRenderer == null)
         {
-            _clientApi.Logger.Error("HUD Overlay Renderer is not initialized");
             return;
         }
 
@@ -361,7 +512,7 @@ public void ApplyWaterSatietyPatches(ICoreAPI api)
         var liquidEncumbranceBehavior = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
         if (liquidEncumbranceBehavior == null)
         {
-            liquidEncumbranceBehavior = new EntityBehaviorLiquidEncumbrance(entity);
+            liquidEncumbranceBehavior = new EntityBehaviorLiquidEncumbrance(entity, LoadedConfig);
             entity.AddBehavior(liquidEncumbranceBehavior);
         }
     }

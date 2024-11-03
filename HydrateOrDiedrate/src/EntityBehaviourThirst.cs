@@ -36,28 +36,30 @@ namespace HydrateOrDiedrate
                 entity.WatchedAttributes.MarkPathDirty("currentThirst");
             }
         }
-
         public float MaxThirst { get; set; }
         public float BaseMaxThirst => _config.MaxThirst;
-
+        
         public EntityBehaviorThirst(Entity entity) : base(entity)
         {
-            _config = ModConfig.ReadConfig<Config.Config>(entity.Api, "HydrateOrDiedrateConfig.json");
-            if (_config == null)
-            {
-                _config = new Config.Config();
-            }
+            _config = HydrateOrDiedrateModSystem.LoadedConfig ?? new Config.Config();
             MaxThirst = BaseMaxThirst;
             LoadThirst();
             InitializeCounters();
         }
 
+
         public EntityBehaviorThirst(Entity entity, Config.Config config) : base(entity)
         {
-            _config = config ?? new Config.Config();
+            _config = config;
             MaxThirst = BaseMaxThirst;
             LoadThirst();
             InitializeCounters();
+        }
+        public void Reset(Config.Config newConfig)
+        {
+            _config = newConfig;
+            MaxThirst = BaseMaxThirst;
+            UpdateThirstAttributes();
         }
 
         private void InitializeCounters()

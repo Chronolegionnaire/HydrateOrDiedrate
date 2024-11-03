@@ -10,8 +10,8 @@ namespace HydrateOrDiedrate
 {
     public class WaterInteractionHandler
     {
-        private readonly ICoreAPI _api;
-        private readonly Config.Config _config;
+        private ICoreAPI _api;
+        private Config.Config _config;
         private IServerNetworkChannel serverChannel;
 
         private class PlayerDrinkData
@@ -42,6 +42,11 @@ namespace HydrateOrDiedrate
                 new Vec3f(-0.1f, 0, -0.1f),
                 new Vec3f(0.1f, 0.2f, 0.1f)
             );
+        }
+        
+        public void Reset(Config.Config newConfig)
+        {
+            _config = newConfig;
         }
 
         public void Initialize(IServerNetworkChannel channel)

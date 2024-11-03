@@ -11,7 +11,7 @@ namespace HydrateOrDiedrate.Hot_Weather
 {
     public class EntityBehaviorBodyTemperatureHot : Vintagestory.API.Common.Entities.EntityBehavior
     {
-        private readonly Config.Config _config;
+        private Config.Config _config;
         private float _currentCooling;
         private float slowaccum;
         private float coolingCounter;
@@ -34,16 +34,16 @@ namespace HydrateOrDiedrate.Hot_Weather
         }
 
         public float CoolingMultiplier { get; set; } = 1.0f;
-
         public EntityBehaviorBodyTemperatureHot(Entity entity) : base(entity)
         {
-            _config = new Config.Config();
+            _config = HydrateOrDiedrateModSystem.LoadedConfig ?? new Config.Config();
             _currentCooling = 0;
             CoolingMultiplier = 1.0f;
             LoadCooling();
             InitializeFields();
             isMedievalExpansionInstalled = IsMedievalExpansionInstalled(entity.World.Api);
         }
+
 
         public EntityBehaviorBodyTemperatureHot(Entity entity, Config.Config config) : base(entity)
         {
@@ -54,6 +54,12 @@ namespace HydrateOrDiedrate.Hot_Weather
             InitializeFields();
             isMedievalExpansionInstalled = IsMedievalExpansionInstalled(entity.World.Api);
         }
+        public void Reset(Config.Config newConfig)
+        {
+            _config = newConfig;
+            UpdateCoolingFactor();
+        }
+
 
         private void InitializeFields()
         {
@@ -100,7 +106,7 @@ namespace HydrateOrDiedrate.Hot_Weather
             {
                 if (i == 0 || i == 6 || i == 7 || i == 8 || i == 9 || i == 10)
                 {
-                    continue; // Skipping specific slots
+                    continue;
                 }
 
                 var slot = inventory[i];

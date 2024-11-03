@@ -15,20 +15,29 @@ namespace HydrateOrDiedrate.encumbrance
         private ICoreServerAPI _serverApi;
 
         public bool IsPenaltyApplied => _isPenaltyApplied;
-
+        
         public EntityBehaviorLiquidEncumbrance(Entity entity) : base(entity)
         {
             _serverApi = entity.Api as ICoreServerAPI;
-
-            if (_serverApi != null)
-            {
-                _config = ModConfig.ReadConfig<Config.Config>(_serverApi, "HydrateOrDiedrateConfig.json");
-            }
+            _config = HydrateOrDiedrateModSystem.LoadedConfig ?? new Config.Config();
             _tickCounter = 0;
             _currentPenaltyAmount = 0f;
             _isPenaltyApplied = false;
         }
 
+
+        public EntityBehaviorLiquidEncumbrance(Entity entity, Config.Config config) : base(entity)
+        {
+            
+            _config = config;
+            _tickCounter = 0;
+            _currentPenaltyAmount = 0f;
+            _isPenaltyApplied = false;
+        }
+        public void Reset(Config.Config newConfig)
+        {
+            _config = newConfig;
+        }
         public override void OnGameTick(float deltaTime)
         {
             if (!entity.Alive || !_config.EnableLiquidEncumbrance) return;
@@ -153,7 +162,7 @@ namespace HydrateOrDiedrate.encumbrance
             {
                 if (!entity.HasBehavior<EntityBehaviorLiquidEncumbrance>())
                 {
-                    entity.AddBehavior(new EntityBehaviorLiquidEncumbrance(entity));
+                    entity.AddBehavior(new EntityBehaviorLiquidEncumbrance(entity, HydrateOrDiedrateModSystem.LoadedConfig));
                 }
             }, "AddLiquidEncumbranceBehavior");
         }
