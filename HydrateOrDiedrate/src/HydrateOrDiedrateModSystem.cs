@@ -186,7 +186,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot));
         api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
-
+        if (!api.ModLoader.IsModEnabled("carryon"))
+        {
+            RegisterEmptyCarryBehaviors(api);
+        }
         api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
@@ -223,7 +226,22 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
+    private void RegisterEmptyCarryBehaviors(ICoreAPI api)
+    {
+        api.RegisterBlockBehaviorClass("Carryable", typeof(EmptyBlockBehavior));
+        api.RegisterBlockBehaviorClass("CarryableInteract", typeof(EmptyBlockBehavior));
+    }
+    public class EmptyBlockBehavior : BlockBehavior
+    {
+        public EmptyBlockBehavior(Block block) : base(block)
+        {
+        }
 
+        public override void Initialize(JsonObject properties)
+        {
+            base.Initialize(properties);
+        }
+    }
     private void InitializeServer(ICoreServerAPI api)
     {
         _serverApi = api;
