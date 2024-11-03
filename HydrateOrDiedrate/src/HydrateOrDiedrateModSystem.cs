@@ -43,9 +43,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.StartPre(api);
         LoadConfig(api);
-        ItemHydrationConfigLoader.GenerateDefaultHydrationConfig(api);
-        BlockHydrationConfigLoader.GenerateDefaultBlockHydrationConfig(api);
-        CoolingConfigLoader.GenerateDefaultCoolingConfig(api);
+        ItemHydrationConfigLoader.GenerateDefaultHydrationConfig();
+        BlockHydrationConfigLoader.GenerateDefaultBlockHydrationConfig();
+        CoolingConfigLoader.GenerateDefaultCoolingConfig();
         harmony = new Harmony("com.chronolegionnaire.hydrateordiedrate");
         harmony.PatchAll();
     }
@@ -169,8 +169,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         if (LoadedConfig.EnableThirstMechanics)
         {
-            List<JObject> blockHydrationPatches = BlockHydrationConfigLoader.LoadBlockHydrationConfig(api);
-            BlockHydrationManager.ApplyBlockHydrationPatches(blockHydrationPatches);
+            List<JObject> loadedPatches = BlockHydrationConfigLoader.LoadBlockHydrationConfig(api);
+            BlockHydrationManager.ApplyBlockHydrationPatches(loadedPatches);
         }
     }
 

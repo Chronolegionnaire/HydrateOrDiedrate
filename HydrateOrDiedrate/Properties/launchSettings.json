@@ -4,13 +4,23 @@
       "commandName": "Executable",
       "executablePath": "$(VINTAGE_STORY)/Vintagestory.exe",
       "commandLineArgs": "--tracelog --addModPath \"$(ProjectDir)/bin/$(Configuration)/Mods\"",
-      "workingDirectory": "$(VINTAGE_STORY)"
+      "workingDirectory": "$(VINTAGE_STORY)",
+      "environmentVariables": {
+        "COMPlus_JITMinOpts": "1",
+        "COMPlus_gcServer": "0",
+        "COMPlus_gcConcurrent": "0"
+      }
     },
     "Server": {
       "commandName": "Executable",
       "executablePath": "$(VINTAGE_STORY)/VintagestoryServer.exe",
       "commandLineArgs": "--tracelog --addModPath \"$(ProjectDir)/bin/$(Configuration)/Mods\"",
-      "workingDirectory": "$(VINTAGE_STORY)"
+      "workingDirectory": "$(VINTAGE_STORY)",
+      "environmentVariables": {
+        "COMPlus_JITMinOpts": "1",
+        "COMPlus_gcServer": "0",
+        "COMPlus_gcConcurrent": "0"
+      }
     }
   }
 }

@@ -11,106 +11,99 @@ namespace HydrateOrDiedrate.Config
         public static List<JObject> LoadBlockHydrationConfig(ICoreAPI api)
         {
             List<JObject> allPatches = new List<JObject>();
-            string configFolder = ModConfig.GetConfigPath(api);
-            List<string> configFiles = Directory.GetFiles(configFolder, "*AddBlockHydration*.json").ToList();
-            string defaultConfigPath = Path.Combine(configFolder, "HoD.AddBlockHydration.json");
-            if (!File.Exists(defaultConfigPath))
+            string configName = "HoD.AddBlockHydration.json";
+            JObject config = api.LoadModConfig<JObject>(configName);
+
+            if (config == null)
             {
-                GenerateDefaultBlockHydrationConfig(api);
+                config = GenerateDefaultBlockHydrationConfig();
+                api.StoreModConfig(config, configName);
+            }
+            var sortedPatches = new SortedDictionary<int, List<JObject>>();
+            int priority = config["priority"]?.Value<int>() ?? 5;
+
+            if (!sortedPatches.ContainsKey(priority))
+            {
+                sortedPatches[priority] = new List<JObject>();
             }
 
-            configFiles.Insert(0, defaultConfigPath);
-            var sortedPatches = new SortedDictionary<int, List<JObject>>();
-
-            foreach (string file in configFiles)
+            var patches = config["patches"]?.ToObject<List<JObject>>();
+            if (patches != null)
             {
-                string json = File.ReadAllText(file);
-                JObject parsedFile = JObject.Parse(json);
-                int priority = parsedFile["priority"]?.Value<int>() ?? 5;
-
-                if (!sortedPatches.ContainsKey(priority))
-                {
-                    sortedPatches[priority] = new List<JObject>();
-                }
-
-                var patches = parsedFile["patches"].ToObject<List<JObject>>();
                 sortedPatches[priority].AddRange(patches);
             }
-
             Dictionary<string, JObject> mergedPatches = new Dictionary<string, JObject>();
 
             foreach (var priorityLevel in sortedPatches.Keys.OrderByDescending(k => k))
             {
                 foreach (var patch in sortedPatches[priorityLevel])
                 {
-                    string blockCode = patch["blockCode"].ToString();
-                    mergedPatches[blockCode] = patch;
+                    string blockCode = patch["blockCode"]?.ToString();
+                    if (blockCode != null)
+                    {
+                        mergedPatches[blockCode] = patch;
+                    }
                 }
             }
 
             return mergedPatches.Values.ToList();
         }
 
-        public static void GenerateDefaultBlockHydrationConfig(ICoreAPI api)
+        public static JObject GenerateDefaultBlockHydrationConfig()
         {
-            string configPath = Path.Combine(ModConfig.GetConfigPath(api), "HoD.AddBlockHydration.json");
-            if (!File.Exists(configPath))
+            var defaultConfig = new JObject
             {
-                var defaultConfig = new JObject
+                ["priority"] = 5,
+                ["patches"] = new JArray
                 {
-                    ["priority"] = 5,
-                    ["patches"] = new JArray
+                    new JObject
                     {
-                        new JObject
+                        ["blockCode"] = "boilingwater*",
+                        ["hydrationByType"] = new JObject
                         {
-                            ["blockCode"] = "boilingwater*",
-                            ["hydrationByType"] = new JObject
-                            {
-                                ["boilingwater-*"] = 600,
-                                ["*"] = 600
-                            },
-                            ["isBoiling"] = true,
-                            ["hungerReduction"] = 0
+                            ["boilingwater-*"] = 600,
+                            ["*"] = 600
                         },
-                        new JObject
+                        ["isBoiling"] = true,
+                        ["hungerReduction"] = 0
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "water*",
+                        ["hydrationByType"] = new JObject
                         {
-                            ["blockCode"] = "water*",
-                            ["hydrationByType"] = new JObject
-                            {
-                                ["water-*"] = 600,
-                                ["*"] = 600
-                            },
-                            ["isBoiling"] = false,
-                            ["hungerReduction"] = 100
+                            ["water-*"] = 600,
+                            ["*"] = 600
                         },
-                        new JObject
+                        ["isBoiling"] = false,
+                        ["hungerReduction"] = 100
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "saltwater*",
+                        ["hydrationByType"] = new JObject
                         {
-                            ["blockCode"] = "saltwater*",
-                            ["hydrationByType"] = new JObject
-                            {
-                                ["saltwater-*"] = -600,
-                                ["*"] = -600 
-                            },
-                            ["isBoiling"] = false,
-                            ["hungerReduction"] = 100
+                            ["saltwater-*"] = -600,
+                            ["*"] = -600
                         },
-                        new JObject
+                        ["isBoiling"] = false,
+                        ["hungerReduction"] = 100
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "distilledwater*",
+                        ["hydrationByType"] = new JObject
                         {
-                            ["blockCode"] = "distilledwater*",
-                            ["hydrationByType"] = new JObject
-                            {
-                                ["distilledwater-*"] = 600,
-                                ["*"] = 600 
-                            },
-                            ["isBoiling"] = false,
-                            ["hungerReduction"] = 0
-                        }
+                            ["distilledwater-*"] = 600,
+                            ["*"] = 600
+                        },
+                        ["isBoiling"] = false,
+                        ["hungerReduction"] = 0
                     }
-                };
+                }
+            };
 
-                File.WriteAllText(configPath, defaultConfig.ToString());
-            }
+            return defaultConfig;
         }
-
     }
 }

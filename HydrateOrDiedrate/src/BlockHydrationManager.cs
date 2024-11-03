@@ -9,8 +9,13 @@ public static class BlockHydrationManager
 
     public static void SetBlockHydration(string blockCode, BlockHydrationConfig config)
     {
+        if (config == null)
+        {
+            return;
+        }
         BlockHydrationDict[blockCode] = config;
     }
+
 
     public static BlockHydrationConfig GetBlockHydration(string blockCode)
     {
@@ -32,21 +37,24 @@ public static class BlockHydrationManager
 
     public static void ApplyBlockHydrationPatches(List<JObject> newPatches)
     {
-        var oldPatches = LastAppliedPatches;
-        var changedPatches = GetChangedPatches(oldPatches, newPatches);
-
-        LastAppliedPatches = newPatches;
-
-        if (changedPatches.Count == 0)
+        if (newPatches == null || newPatches.Count == 0)
         {
             return;
         }
 
-        var affectedBlocks = GetAffectedBlocks(changedPatches);
+        LastAppliedPatches = newPatches;
 
-        foreach (var blockCode in affectedBlocks)
+        foreach (var patch in newPatches)
         {
-            UpdateBlockHydration(blockCode, newPatches);
+            string blockCode = patch["blockCode"]?.ToString();
+            if (blockCode != null)
+            {
+                var config = patch.ToObject<BlockHydrationConfig>();
+                if (config != null)
+                {
+                    SetBlockHydration(blockCode, config);
+                }
+            }
         }
     }
     private static List<JObject> GetChangedPatches(List<JObject> oldPatches, List<JObject> newPatches)
@@ -105,12 +113,17 @@ public static class BlockHydrationManager
             if (IsWildcardMatch(blockCode, patchBlockCode))
             {
                 var config = patch.ToObject<BlockHydrationConfig>();
-                SetBlockHydration(blockCode, config);
+                if (config != null)
+                {
+                    SetBlockHydration(blockCode, config);
+                }
+
                 return;
             }
         }
         BlockHydrationDict.Remove(blockCode);
     }
+
 
     public static List<JObject> GetLastAppliedPatches()
     {
@@ -122,7 +135,6 @@ public static class BlockHydrationManager
         var regexPattern = "^" + System.Text.RegularExpressions.Regex.Escape(pattern).Replace("\\*", ".*") + "$";
         return System.Text.RegularExpressions.Regex.IsMatch(text, regexPattern);
     }
-
     public class BlockHydrationConfig
     {
         public Dictionary<string, float> HydrationByType { get; set; }

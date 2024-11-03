@@ -8,25 +8,7 @@ namespace HydrateOrDiedrate.Config
     {
         public static T ReadConfig<T>(ICoreAPI api, string jsonConfig) where T : class, IModConfig
         {
-            string configPath = GetConfigPath(api);
-            string configFilePath = Path.Combine(configPath, jsonConfig);
-
-            EnsureDirectoryExists(configPath);
-            return LoadOrGenerateConfig<T>(api, configFilePath);
-        }
-
-        public static void WriteConfig<T>(ICoreAPI api, string jsonConfig, T config) where T : class, IModConfig
-        {
-            string configPath = GetConfigPath(api);
-            string configFilePath = Path.Combine(configPath, jsonConfig);
-
-            EnsureDirectoryExists(configPath);
-            api.StoreModConfig(config, configFilePath);
-        }
-
-        private static T LoadOrGenerateConfig<T>(ICoreAPI api, string configFilePath) where T : class, IModConfig
-        {
-            T config = api.LoadModConfig<T>(configFilePath);
+            T config = api.LoadModConfig<T>(jsonConfig);
             if (config == null)
             {
                 config = Activator.CreateInstance<T>();
@@ -34,35 +16,14 @@ namespace HydrateOrDiedrate.Config
                 {
                     hydrateConfig.EquatidianCoolingMultipliers = new float[] { 1.25f, 1.5f, 2.0f };
                 }
-
-                api.StoreModConfig(config, configFilePath);
-            }
-            else
-            {
-                api.StoreModConfig(config, configFilePath);
+                WriteConfig(api, jsonConfig, config);
             }
             return config;
         }
 
-        public static string GetConfigPath(ICoreAPI api)
+        public static void WriteConfig<T>(ICoreAPI api, string jsonConfig, T config) where T : class, IModConfig
         {
-
-            string basePath = api.GetOrCreateDataPath("ModConfig");
-            
-            if (!basePath.EndsWith("hydrateordiedrate"))
-            {
-                basePath = Path.Combine(basePath, "hydrateordiedrate");
-            }
-
-            return basePath;
-        }
-
-        private static void EnsureDirectoryExists(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
+            api.StoreModConfig(config, jsonConfig);
         }
     }
 }
