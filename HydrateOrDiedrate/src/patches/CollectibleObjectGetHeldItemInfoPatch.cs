@@ -19,6 +19,10 @@ public static class CollectibleObjectGetHeldItemInfoPatch
         {
             return;
         }
+        if (!HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+        {
+            return;
+        }
         string itemCode = inSlot.Itemstack.Collectible.Code.ToString();
         float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
         if (hydrationValue == 0 && inSlot.Itemstack.Block is BlockLiquidContainerBase block)

@@ -22,6 +22,10 @@ namespace HydrateOrDiedrate.patches
             {
                 return;
             }
+            if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+            {
+                return;
+            }
             try
             {
                 BlockCookedContainer blockCookedContainer = inSlot.Itemstack.Collectible as BlockCookedContainer;

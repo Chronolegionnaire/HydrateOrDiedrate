@@ -27,6 +27,10 @@ public class TryEatStopBlockLiquidContainerBasePatch
         {
             return;
         }
+        if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+        {
+            return;
+        }
         alreadyCalled = false;
         capturedHydrationAmount = 0;
         capturedHydLossDelay = 0;
@@ -67,7 +71,8 @@ public class TryEatStopBlockLiquidContainerBasePatch
                 float litresToDrink = Math.Min(drinkCapLitres, currentLitres);
                 capturedHydrationAmount = (hydrationValue * litresToDrink) / drinkCapLitres;
                 float intoxicationValue = nutriProps.Intoxication;
-                var config = HydrateOrDiedrateModSystem.LoadedConfig;
+                var config = HydrateOrDiedrateModSystem.ServerConfig ?? HydrateOrDiedrateModSystem.LoadedConfig;
+
                 float scalingFactorLow = 100f;
                 float scalingFactorHigh = 5f;
 
@@ -105,6 +110,10 @@ public class TryEatStopBlockLiquidContainerBasePatch
     static void Postfix()
     {
         if (ShouldSkipPatch())
+        {
+            return;
+        }
+        if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
         {
             return;
         }

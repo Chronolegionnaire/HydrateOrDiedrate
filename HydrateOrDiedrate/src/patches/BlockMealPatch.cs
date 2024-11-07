@@ -29,6 +29,10 @@ namespace HydrateOrDiedrate.patches
             {
                 return;
             }
+            if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+            {
+                return;
+            }
             alreadyCalled = false;
             capturedTotalHydration = 0;
             capturedHydLossDelay = 0;
@@ -49,7 +53,7 @@ namespace HydrateOrDiedrate.patches
                 servingsBeforeConsume = (slot.Itemstack.Collectible as BlockMeal).GetQuantityServings(byEntity.World, slot.Itemstack);
                 capturedServingsInMeal = servingsBeforeConsume;
 
-                var config = HydrateOrDiedrateModSystem.LoadedConfig;
+                var config = HydrateOrDiedrateModSystem.ServerConfig ?? HydrateOrDiedrateModSystem.LoadedConfig;
                 float configHydrationLossDelayMultiplier = config.HydrationLossDelayMultiplier;
 
                 float capturedHydrationAmount = totalHydration / capturedServingsInMeal;
@@ -62,6 +66,10 @@ namespace HydrateOrDiedrate.patches
         public static void TryFinishEatMealPostfix(float secondsUsed, ItemSlot slot, EntityAgent byEntity, bool handleAllServingsConsumed)
         {
             if (ShouldSkipPatch())
+            {
+                return;
+            }
+            if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
             {
                 return;
             }

@@ -22,7 +22,13 @@ namespace HydrateOrDiedrate.patches
         [HarmonyPrefix]
         public static bool ComposeStatsGui_Prefix(object __instance)
         {
+            bool enableThirstMechanics = HydrateOrDiedrateModSystem.LoadedConfig?.EnableThirstMechanics ?? false;
+
             if (ShouldSkipPatch())
+            {
+                return true;
+            }
+            if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
             {
                 return true;
             }
@@ -135,7 +141,6 @@ namespace HydrateOrDiedrate.patches
                 }
                 var nutritionDeficitStaticBounds = leftColumnBoundsW.BelowCopy(fixedDeltaY: 1.0);
                 var nutritionDeficitBounds = rightColumnBoundsW.FlatCopy().WithFixedPosition(rightColumnBoundsW.fixedX, nutritionDeficitStaticBounds.fixedY);
-
                 composers["playerstats"].AddStaticText(Lang.Get("Nutrition Deficit"), 
                         CairoFont.WhiteDetailText(), 
                         nutritionDeficitStaticBounds, 
@@ -162,6 +167,10 @@ namespace HydrateOrDiedrate.patches
         public static void UpdateStats_Postfix(object __instance)
         {
             if (ShouldSkipPatch())
+            {
+                return;
+            }
+            if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
             {
                 return;
             }

@@ -29,6 +29,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private HudElementThirstBar _thirstHud;
     private HudElementHungerReductionBar _hungerReductionHud;
     public static Config.Config LoadedConfig { get; set; }
+    public static Config.Config ServerConfig { get; set; }
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
     private ConfigLibCompatibility _configLibCompatibility;
@@ -42,7 +43,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
-        LoadConfig(api);
         ItemHydrationConfigLoader.GenerateDefaultHydrationConfig();
         BlockHydrationConfigLoader.GenerateDefaultBlockHydrationConfig();
         CoolingConfigLoader.GenerateDefaultCoolingConfig();
@@ -50,9 +50,21 @@ public class HydrateOrDiedrateModSystem : ModSystem
         harmony.PatchAll();
     }
 
-    private void LoadConfig(ICoreAPI api)
+    private void LoadServerConfig(ICoreAPI api)
     {
         LoadedConfig = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
+
+        if (LoadedConfig == null)
+        {
+            LoadedConfig = new Config.Config();
+            ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", LoadedConfig);
+        }
+    }
+    
+    private void LoadLocalClientConfig(ICoreAPI api)
+    {
+        LoadedConfig = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
+
         if (LoadedConfig == null)
         {
             LoadedConfig = new Config.Config();
@@ -242,9 +254,24 @@ public class HydrateOrDiedrateModSystem : ModSystem
             base.Initialize(properties);
         }
     }
+    public static class ThirstConfigHelper
+    {
+        public static bool ShouldSkipThirstMechanics()
+        {
+            // Use ServerConfig if available, otherwise fall back to LoadedConfig
+            bool enableThirstMechanics = HydrateOrDiedrateModSystem.ServerConfig?.EnableThirstMechanics 
+                                         ?? HydrateOrDiedrateModSystem.LoadedConfig?.EnableThirstMechanics 
+                                         ?? false;
+
+            // Return the opposite, as the method is "ShouldSkip"
+            return !enableThirstMechanics;
+        }
+    }
     private void InitializeServer(ICoreServerAPI api)
     {
         _serverApi = api;
+        LoadServerConfig(api);
+        harmony = new Harmony("com.chronolegionnaire.hydrateordiedrate");
 
         serverChannel = api.Network.RegisterChannel("hydrateordiedrate")
             .RegisterMessageType<DrinkProgressPacket>()
@@ -266,7 +293,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private void InitializeClient(ICoreClientAPI api)
     {
         _clientApi = api;
-
+        LoadLocalClientConfig(api);
         clientChannel = api.Network.RegisterChannel("hydrateordiedrate")
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<ConfigSyncPacket>()
@@ -274,23 +301,25 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived)
             .SetMessageHandler<ConfigSyncPacket>(OnConfigSyncReceived);
 
-        api.Event.RegisterCallback((dt) =>
+        // Register a game tick listener to send config sync request when channel is connected
+        // We store the listener ID so we can unregister it once done
+        long listenerId = 0;
+        listenerId = api.Event.RegisterGameTickListener(dt =>
         {
             if (clientChannel.Connected)
             {
                 clientChannel.SendPacket(new ConfigSyncRequestPacket());
+                // Unregister this listener as we've completed our task
+                api.Event.UnregisterGameTickListener(listenerId);
             }
-        }, 500);
+        }, 100);
 
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
 
-        if (LoadedConfig.EnableThirstMechanics)
-        {
-            customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
-        }
         _configLibCompatibility = new ConfigLibCompatibility((ICoreClientAPI)api);
     }
+
 
     [ProtoContract]
     public class ConfigSyncPacket
@@ -311,6 +340,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private void OnConfigSyncRequestReceived(IServerPlayer fromPlayer, ConfigSyncRequestPacket packet)
     {
+
         var configSyncPacket = new ConfigSyncPacket
         {
             ServerConfig = LoadedConfig,
@@ -324,50 +354,144 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private void OnConfigSyncReceived(ConfigSyncPacket packet)
     {
-        if (!JToken.DeepEquals(JObject.FromObject(packet.ServerConfig), JObject.FromObject(LoadedConfig)))
+        // Update the LoadedConfig with the server config
+        Console.WriteLine($"[Config Sync - Incoming Packet] EnableThirstMechanics: {packet.ServerConfig.EnableThirstMechanics}");
+
+        HydrateOrDiedrateModSystem.LoadedConfig = new Config.Config
         {
-            var newConfig = JsonConvert.DeserializeObject<Config.Config>(JsonConvert.SerializeObject(packet.ServerConfig));
-            
-            if (newConfig.EquatidianCoolingMultipliers != null)
-            {
-                LoadedConfig.EquatidianCoolingMultipliers = newConfig.EquatidianCoolingMultipliers;
-            }
-            LoadedConfig = newConfig;
-        }
+            MaxThirst = packet.ServerConfig.MaxThirst,
+            ThirstDamage = packet.ServerConfig.ThirstDamage,
+            ThirstDecayRate = packet.ServerConfig.ThirstDecayRate,
+            ThirstIncreasePerDegreeMultiplier = packet.ServerConfig.ThirstIncreasePerDegreeMultiplier,
+            ThirstDecayRateMax = packet.ServerConfig.ThirstDecayRateMax,
+            HydrationLossDelayMultiplier = packet.ServerConfig.HydrationLossDelayMultiplier,
+            EnableThirstMechanics = packet.ServerConfig.EnableThirstMechanics,
+            WaterSatiety = packet.ServerConfig.WaterSatiety,
+            SaltWaterSatiety = packet.ServerConfig.SaltWaterSatiety,
+            BoilingWaterSatiety = packet.ServerConfig.BoilingWaterSatiety,
+            RainWaterSatiety = packet.ServerConfig.RainWaterSatiety,
+            DistilledWaterSatiety = packet.ServerConfig.DistilledWaterSatiety,
+            MaxMovementSpeedPenalty = packet.ServerConfig.MaxMovementSpeedPenalty,
+            MovementSpeedPenaltyThreshold = packet.ServerConfig.MovementSpeedPenaltyThreshold,
+            HarshHeat = packet.ServerConfig.HarshHeat,
+            TemperatureThreshold = packet.ServerConfig.TemperatureThreshold,
+            HarshHeatExponentialGainMultiplier = packet.ServerConfig.HarshHeatExponentialGainMultiplier,
+            BoilingWaterDamage = packet.ServerConfig.BoilingWaterDamage,
+            EnableBoilingWaterDamage = packet.ServerConfig.EnableBoilingWaterDamage,
+            UnequippedSlotCooling = packet.ServerConfig.UnequippedSlotCooling,
+            WetnessCoolingFactor = packet.ServerConfig.WetnessCoolingFactor,
+            ShelterCoolingFactor = packet.ServerConfig.ShelterCoolingFactor,
+            SunlightCoolingFactor = packet.ServerConfig.SunlightCoolingFactor,
+            DiurnalVariationAmplitude = packet.ServerConfig.DiurnalVariationAmplitude,
+            RefrigerationCooling = packet.ServerConfig.RefrigerationCooling,
+            SprintThirstMultiplier = packet.ServerConfig.SprintThirstMultiplier,
+            EnableLiquidEncumbrance = packet.ServerConfig.EnableLiquidEncumbrance,
+            EncumbranceLimit = packet.ServerConfig.EncumbranceLimit,
+            LiquidEncumbranceMovementSpeedDebuff = packet.ServerConfig.LiquidEncumbranceMovementSpeedDebuff,
+            DromedaryMultiplierPerLevel = packet.ServerConfig.DromedaryMultiplierPerLevel,
+            EquatidianCoolingMultipliers = packet.ServerConfig.EquatidianCoolingMultipliers != null
+                ? (float[])packet.ServerConfig.EquatidianCoolingMultipliers.Clone()
+                : null,
+            EnableRainGathering = packet.ServerConfig.EnableRainGathering,
+            RainMultiplier = packet.ServerConfig.RainMultiplier,
+            EnableParticleTicking = packet.ServerConfig.EnableParticleTicking,
+            KegCapacityLitres = packet.ServerConfig.KegCapacityLitres,
+            SpoilRateUntapped = packet.ServerConfig.SpoilRateUntapped,
+            SpoilRateTapped = packet.ServerConfig.SpoilRateTapped,
+            KegIronHoopDropChance = packet.ServerConfig.KegIronHoopDropChance,
+            KegTapDropChance = packet.ServerConfig.KegTapDropChance
+        };
 
+        HydrateOrDiedrateModSystem.ServerConfig = new Config.Config
+        {
+            MaxThirst = packet.ServerConfig.MaxThirst,
+            ThirstDamage = packet.ServerConfig.ThirstDamage,
+            ThirstDecayRate = packet.ServerConfig.ThirstDecayRate,
+            ThirstIncreasePerDegreeMultiplier = packet.ServerConfig.ThirstIncreasePerDegreeMultiplier,
+            ThirstDecayRateMax = packet.ServerConfig.ThirstDecayRateMax,
+            HydrationLossDelayMultiplier = packet.ServerConfig.HydrationLossDelayMultiplier,
+            EnableThirstMechanics = packet.ServerConfig.EnableThirstMechanics,
+            WaterSatiety = packet.ServerConfig.WaterSatiety,
+            SaltWaterSatiety = packet.ServerConfig.SaltWaterSatiety,
+            BoilingWaterSatiety = packet.ServerConfig.BoilingWaterSatiety,
+            RainWaterSatiety = packet.ServerConfig.RainWaterSatiety,
+            DistilledWaterSatiety = packet.ServerConfig.DistilledWaterSatiety,
+            MaxMovementSpeedPenalty = packet.ServerConfig.MaxMovementSpeedPenalty,
+            MovementSpeedPenaltyThreshold = packet.ServerConfig.MovementSpeedPenaltyThreshold,
+            HarshHeat = packet.ServerConfig.HarshHeat,
+            TemperatureThreshold = packet.ServerConfig.TemperatureThreshold,
+            HarshHeatExponentialGainMultiplier = packet.ServerConfig.HarshHeatExponentialGainMultiplier,
+            BoilingWaterDamage = packet.ServerConfig.BoilingWaterDamage,
+            EnableBoilingWaterDamage = packet.ServerConfig.EnableBoilingWaterDamage,
+            UnequippedSlotCooling = packet.ServerConfig.UnequippedSlotCooling,
+            WetnessCoolingFactor = packet.ServerConfig.WetnessCoolingFactor,
+            ShelterCoolingFactor = packet.ServerConfig.ShelterCoolingFactor,
+            SunlightCoolingFactor = packet.ServerConfig.SunlightCoolingFactor,
+            DiurnalVariationAmplitude = packet.ServerConfig.DiurnalVariationAmplitude,
+            RefrigerationCooling = packet.ServerConfig.RefrigerationCooling,
+            SprintThirstMultiplier = packet.ServerConfig.SprintThirstMultiplier,
+            EnableLiquidEncumbrance = packet.ServerConfig.EnableLiquidEncumbrance,
+            EncumbranceLimit = packet.ServerConfig.EncumbranceLimit,
+            LiquidEncumbranceMovementSpeedDebuff = packet.ServerConfig.LiquidEncumbranceMovementSpeedDebuff,
+            DromedaryMultiplierPerLevel = packet.ServerConfig.DromedaryMultiplierPerLevel,
+            EquatidianCoolingMultipliers = packet.ServerConfig.EquatidianCoolingMultipliers != null
+                ? (float[])packet.ServerConfig.EquatidianCoolingMultipliers.Clone()
+                : null,
+            EnableRainGathering = packet.ServerConfig.EnableRainGathering,
+            RainMultiplier = packet.ServerConfig.RainMultiplier,
+            EnableParticleTicking = packet.ServerConfig.EnableParticleTicking,
+            KegCapacityLitres = packet.ServerConfig.KegCapacityLitres,
+            SpoilRateUntapped = packet.ServerConfig.SpoilRateUntapped,
+            SpoilRateTapped = packet.ServerConfig.SpoilRateTapped,
+            KegIronHoopDropChance = packet.ServerConfig.KegIronHoopDropChance,
+            KegTapDropChance = packet.ServerConfig.KegTapDropChance
+        };
+
+        // Reload components as usual
         ReloadComponents();
-        
-        var currentHydrationPatches = HydrationManager.GetLastAppliedPatches();
-        bool hydrationPatchesChanged =
-            !ArePatchesEqual(packet.HydrationPatches.ConvertAll(JObject.Parse), currentHydrationPatches);
 
-        var currentBlockHydrationPatches = BlockHydrationManager.GetLastAppliedPatches();
-        bool blockHydrationPatchesChanged = !ArePatchesEqual(packet.BlockHydrationPatches.ConvertAll(JObject.Parse),
-            currentBlockHydrationPatches);
+        // Rest of the code for patch application
+        var currentHydrationPatches = HydrationManager.GetLastAppliedPatches() ?? new List<JObject>();
+        var packetHydrationPatches = packet.HydrationPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
+        bool hydrationPatchesChanged = !ArePatchesEqual(packetHydrationPatches, currentHydrationPatches);
 
-        var currentCoolingPatches = CoolingManager.GetLastAppliedPatches();
-        bool coolingPatchesChanged =
-            !ArePatchesEqual(packet.CoolingPatches.ConvertAll(JObject.Parse), currentCoolingPatches);
+        var currentBlockHydrationPatches = BlockHydrationManager.GetLastAppliedPatches() ?? new List<JObject>();
+        var packetBlockHydrationPatches =
+            packet.BlockHydrationPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
+        bool blockHydrationPatchesChanged = !ArePatchesEqual(packetBlockHydrationPatches, currentBlockHydrationPatches);
+
+        var currentCoolingPatches = CoolingManager.GetLastAppliedPatches() ?? new List<JObject>();
+        var packetCoolingPatches = packet.CoolingPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
+        bool coolingPatchesChanged = !ArePatchesEqual(packetCoolingPatches, currentCoolingPatches);
 
         if (hydrationPatchesChanged)
         {
-            HydrationManager.ApplyHydrationPatches(_clientApi, packet.HydrationPatches.ConvertAll(JObject.Parse));
+            HydrationManager.ApplyHydrationPatches(_clientApi, packetHydrationPatches);
         }
 
         if (blockHydrationPatchesChanged)
         {
-            BlockHydrationManager.ApplyBlockHydrationPatches(packet.BlockHydrationPatches.ConvertAll(JObject.Parse));
+            BlockHydrationManager.ApplyBlockHydrationPatches(packetBlockHydrationPatches);
         }
 
         if (coolingPatchesChanged)
         {
-            CoolingManager.ApplyCoolingPatches(_clientApi, packet.CoolingPatches.ConvertAll(JObject.Parse));
+            CoolingManager.ApplyCoolingPatches(_clientApi, packetCoolingPatches);
         }
     }
 
     private bool ArePatchesEqual(List<JObject> patches1, List<JObject> patches2)
     {
-        if (patches1.Count != patches2.Count) return false;
+        if (patches1 == null || patches2 == null)
+        {
+            return patches1 == patches2;
+        }
+
+        if (patches1.Count != patches2.Count)
+        {
+            return false;
+        }
+
         for (int i = 0; i < patches1.Count; i++)
         {
             if (!JToken.DeepEquals(patches1[i], patches2[i]))
@@ -381,18 +505,51 @@ public class HydrateOrDiedrateModSystem : ModSystem
     
     private void ReloadComponents()
     {
-        _waterInteractionHandler?.Reset(LoadedConfig);
         rainHarvesterManager?.Reset(LoadedConfig);
-        foreach (var entity in _clientApi.World.LoadedEntities.Values)
+
+        if (!LoadedConfig.EnableThirstMechanics)
         {
-            var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
-            thirstBehavior?.Reset(LoadedConfig);
+            // Remove Thirst Behavior from entities
+            foreach (var entity in _clientApi.World.LoadedEntities.Values)
+            {
+                EntityBehaviorThirst.RemoveThirstBehavior(entity);
+            }
 
-            var bodyTempBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
-            bodyTempBehavior?.Reset(LoadedConfig);
+            // Close and dispose of HUD elements
+            _thirstHud?.TryClose();
+            _thirstHud = null;
 
-            var encumbranceBehavior = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
-            encumbranceBehavior?.Reset(LoadedConfig);
+            _hungerReductionHud?.TryClose();
+            _hungerReductionHud = null;
+
+            // Unregister game tick listener if registered
+            if (customHudListenerId != 0)
+            {
+                _clientApi.Event.UnregisterGameTickListener(customHudListenerId);
+                customHudListenerId = 0;
+            }
+        }
+        else
+        {
+            // Initialize HUD elements if not already initialized
+            if (_thirstHud == null)
+            {
+                customHudListenerId = _clientApi.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
+            }
+
+            // Add or reset Thirst Behavior for entities
+            foreach (var entity in _clientApi.World.LoadedEntities.Values)
+            {
+                var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
+                if (thirstBehavior != null)
+                {
+                    thirstBehavior.Reset(LoadedConfig);
+                }
+                else
+                {
+                    EntityBehaviorThirst.TryAddThirstBehavior(entity, LoadedConfig);
+                }
+            }
         }
     }
     public RainHarvesterManager GetRainHarvesterManager()

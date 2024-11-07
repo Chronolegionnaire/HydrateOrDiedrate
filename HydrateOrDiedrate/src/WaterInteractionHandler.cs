@@ -11,7 +11,14 @@ namespace HydrateOrDiedrate
     public class WaterInteractionHandler
     {
         private ICoreAPI _api;
-        private Config.Config _config;
+        private Config.Config _config
+        {
+            get
+            {
+                // Use ServerConfig if available, otherwise fall back to LoadedConfig
+                return HydrateOrDiedrateModSystem.ServerConfig ?? HydrateOrDiedrateModSystem.LoadedConfig;
+            }
+        }
         private IServerNetworkChannel serverChannel;
 
         private class PlayerDrinkData
@@ -29,7 +36,6 @@ namespace HydrateOrDiedrate
         public WaterInteractionHandler(ICoreAPI api, Config.Config config)
         {
             _api = api;
-            _config = config;
 
             _waterParticles = CreateParticleProperties(
                 ColorUtil.WhiteArgb,
@@ -42,11 +48,6 @@ namespace HydrateOrDiedrate
                 new Vec3f(-0.1f, 0, -0.1f),
                 new Vec3f(0.1f, 0.2f, 0.1f)
             );
-        }
-        
-        public void Reset(Config.Config newConfig)
-        {
-            _config = newConfig;
         }
 
         public void Initialize(IServerNetworkChannel channel)
@@ -88,6 +89,15 @@ namespace HydrateOrDiedrate
 
         public void CheckPlayerInteraction(float dt, IServerPlayer player)
         {
+            if (!_config.EnableThirstMechanics)
+            {
+                if (playerDrinkData.TryGetValue(player.PlayerUID, out var existingData))
+                {
+                    StopDrinking(player, existingData);
+                }
+                return;
+            }
+            
             long currentTime = _api.World.ElapsedMilliseconds;
 
             if (!playerDrinkData.TryGetValue(player.PlayerUID, out var drinkData))

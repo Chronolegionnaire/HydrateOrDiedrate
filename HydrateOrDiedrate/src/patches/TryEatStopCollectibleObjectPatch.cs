@@ -13,6 +13,14 @@ public class TryEatStopCollectibleObjectPatch
     static bool alreadyCalled = false;
     static float capturedHydrationAmount;
     static EntityPlayer capturedPlayer;
+    private Config.Config _config
+    {
+        get
+        {
+            // Use ServerConfig if available, otherwise fall back to LoadedConfig
+            return HydrateOrDiedrateModSystem.ServerConfig ?? HydrateOrDiedrateModSystem.LoadedConfig;
+        }
+    }
 
     [HarmonyPrefix]
     static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity)
@@ -21,6 +29,10 @@ public class TryEatStopCollectibleObjectPatch
         {
             return;
         }   
+        if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+        {
+            return;
+        }
         alreadyCalled = false;
         capturedHydrationAmount = 0;
         capturedPlayer = null;
@@ -49,6 +61,10 @@ public class TryEatStopCollectibleObjectPatch
     static void Postfix()
     {
         if (ShouldSkipPatch())
+        {
+            return;
+        }
+        if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
         {
             return;
         }

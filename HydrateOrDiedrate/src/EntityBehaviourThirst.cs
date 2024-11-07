@@ -17,7 +17,15 @@ namespace HydrateOrDiedrate
         private float _currentThirst;
         private float _customThirstRate;
         private int _customThirstTicks;
-        private Config.Config _config;
+        private Config.Config _config
+        {
+            get
+            {
+                // Use ServerConfig if available, otherwise fall back to LoadedConfig
+                return HydrateOrDiedrateModSystem.ServerConfig ?? HydrateOrDiedrateModSystem.LoadedConfig;
+            }
+        }
+
         private float _currentPenaltyAmount;
         private int _thirstTickCounter;
         private bool _isPenaltyApplied;
@@ -41,7 +49,6 @@ namespace HydrateOrDiedrate
         
         public EntityBehaviorThirst(Entity entity) : base(entity)
         {
-            _config = HydrateOrDiedrateModSystem.LoadedConfig ?? new Config.Config();
             MaxThirst = BaseMaxThirst;
             LoadThirst();
             InitializeCounters();
@@ -50,14 +57,12 @@ namespace HydrateOrDiedrate
 
         public EntityBehaviorThirst(Entity entity, Config.Config config) : base(entity)
         {
-            _config = config;
             MaxThirst = BaseMaxThirst;
             LoadThirst();
             InitializeCounters();
         }
         public void Reset(Config.Config newConfig)
         {
-            _config = newConfig;
             MaxThirst = BaseMaxThirst;
             UpdateThirstAttributes();
         }
@@ -74,7 +79,10 @@ namespace HydrateOrDiedrate
         public override void OnGameTick(float deltaTime)
         {
             if (entity == null || !entity.Alive) return;
-
+            if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+            {
+                return;
+            }
             var player = entity as EntityPlayer;
             if (player?.Player?.WorldData?.CurrentGameMode is EnumGameMode.Creative or EnumGameMode.Spectator or EnumGameMode.Guest)
             {
@@ -96,6 +104,10 @@ namespace HydrateOrDiedrate
 
         private void HandleThirstDecay(float deltaTime)
         {
+            if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+            {
+                return;
+            }
             float thirstDecayRate = _customThirstTicks > 0 ? _customThirstRate : _config.ThirstDecayRate;
             int hydrationLossDelay = (int)Math.Floor(entity.WatchedAttributes.GetFloat("hydrationLossDelay", 0));
 
@@ -162,7 +174,14 @@ namespace HydrateOrDiedrate
             ModifyThirst(-thirstDecayRate * deltaTime);
             UpdateThirstRate(thirstDecayRate);
         }
-
+        public static void RemoveThirstBehavior(Entity entity)
+        {
+            var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
+            if (thirstBehavior != null)
+            {
+                entity.RemoveBehavior(thirstBehavior);
+            }
+        }
 
         private void ApplyThirstEffects()
         {
@@ -326,7 +345,7 @@ namespace HydrateOrDiedrate
             }
         }
 
-        private static bool TryAddThirstBehavior(Entity entity, Config.Config config)
+        public static bool TryAddThirstBehavior(Entity entity, Config.Config config)
         {
             try
             {

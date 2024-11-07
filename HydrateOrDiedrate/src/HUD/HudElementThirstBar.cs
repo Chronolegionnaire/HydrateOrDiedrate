@@ -12,6 +12,10 @@ private bool isFlashing;
 
     public HudElementThirstBar(ICoreClientAPI capi) : base(capi)
     {
+        if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+        {
+            return;
+        }
         ComposeGuis();
         capi.Event.RegisterGameTickListener(OnGameTick, 100);
         capi.Event.RegisterGameTickListener(OnFlashStatbars, 1200);
@@ -19,6 +23,15 @@ private bool isFlashing;
 
     public void OnGameTick(float dt)
     {
+        if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics)
+        {
+            if (this.IsOpened())
+            {
+                this.TryClose();
+            }
+            return;
+        }
+
         UpdateThirst();
     }
 
@@ -43,7 +56,11 @@ private bool isFlashing;
     private void UpdateThirst()
     {
         if (_statbar == null) return;
-
+        if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+        {
+            this.TryClose();
+            return;
+        }
         var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
         var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
         _statbar.SetValues(currentThirst, 0.0f, maxThirst);
@@ -52,6 +69,11 @@ private bool isFlashing;
 
     private void ComposeGuis()
     {
+        if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+        {
+            this.TryClose();
+            return;
+        }
         const float statsBarParentWidth = 850f;
         const float statsBarWidth = statsBarParentWidth * 0.41f;
 
@@ -98,7 +120,11 @@ private bool isFlashing;
     public override void OnRenderGUI(float deltaTime)
     {
         if (capi.World.Player.WorldData.CurrentGameMode == EnumGameMode.Spectator) return;
-
+        if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+        {
+            this.TryClose();
+            return;
+        }
         base.OnRenderGUI(deltaTime);
     }
 

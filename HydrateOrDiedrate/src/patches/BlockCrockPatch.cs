@@ -22,6 +22,10 @@ namespace HydrateOrDiedrate.patches
             {
                 return;
             }
+            if (HydrateOrDiedrateModSystem.ThirstConfigHelper.ShouldSkipThirstMechanics())
+            {
+                return;
+            }
             try
             {
                 BlockCrock blockCrock = inSlot.Itemstack.Collectible as BlockCrock;
