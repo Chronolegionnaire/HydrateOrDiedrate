@@ -12,7 +12,7 @@ namespace HydrateOrDiedrate
         private const float OuterRadius = 24f;
         private const float InnerRadius = 18f;
         private const int MaxChecks = 5;  // Max consecutive frames of unchanged progress before reset
-
+        
         private bool wasDrinking = false;
         private MeshRef circleMesh = null;
         private ICoreClientAPI api;
@@ -117,26 +117,24 @@ namespace HydrateOrDiedrate
                     circleProgress = 1.0f;
                 }
 
-                // Track if progress is unchanged
                 if (circleProgress == lastCircleProgress)
                 {
                     unchangedProgressCount++;
                 }
                 else
                 {
-                    unchangedProgressCount = 0; // Reset counter when progress changes
+                    unchangedProgressCount = 0;
                 }
 
-                // If progress hasn't changed for MaxChecks frames, reset
                 if (unchangedProgressCount >= MaxChecks)
                 {
-                    CircleVisible = false;  // Force hide the HUD
+                    CircleVisible = false;
                     circleProgress = 0.0F;
                     targetCircleProgress = 0.0F;
-                    unchangedProgressCount = 0; // Reset counter
+                    unchangedProgressCount = 0;
                 }
 
-                lastCircleProgress = circleProgress; // Update last known progress
+                lastCircleProgress = circleProgress;
             }
             else if (circleAlpha > 0.0F)
             {
@@ -154,39 +152,42 @@ namespace HydrateOrDiedrate
                 UpdateCircleMesh(circleProgress);
             }
 
-            Vec4f color = IsDangerous
-                ? new Vec4f(0.68f, 0.0f, 0.0f, circleAlpha)
-                : new Vec4f(0.4f, 0.85f, 1f, circleAlpha);
-
-            IRenderAPI render = api.Render;
-            IShaderProgram shader = render.CurrentActiveShader;
-
-            shader.Uniform("rgbaIn", color);
-            shader.Uniform("extraGlow", 0);
-            shader.Uniform("applyColor", 0);
-            shader.Uniform("tex2d", 0);
-            shader.Uniform("noTexture", 1.0F);
-            shader.UniformMatrix("projectionMatrix", render.CurrentProjectionMatrix);
-
-            int x, y;
-            if (api.Input.MouseGrabbed)
+            if (circleMesh != null)
             {
-                x = api.Render.FrameWidth / 2;
-                y = api.Render.FrameHeight / 2;
-            }
-            else
-            {
-                x = api.Input.MouseX;
-                y = api.Input.MouseY;
-            }
+                Vec4f color = IsDangerous
+                    ? new Vec4f(0.68f, 0.0f, 0.0f, circleAlpha)
+                    : new Vec4f(0.4f, 0.85f, 1f, circleAlpha);
 
-            render.GlPushMatrix();
-            render.GlTranslate(x, y, 0);
-            render.GlScale(OuterRadius, OuterRadius, 0);
-            shader.UniformMatrix("modelViewMatrix", render.CurrentModelviewMatrix);
-            render.GlPopMatrix();
+                IRenderAPI render = api.Render;
+                IShaderProgram shader = render.CurrentActiveShader;
 
-            render.RenderMesh(circleMesh);
+                shader.Uniform("rgbaIn", color);
+                shader.Uniform("extraGlow", 0);
+                shader.Uniform("applyColor", 0);
+                shader.Uniform("tex2d", 0);
+                shader.Uniform("noTexture", 1.0F);
+                shader.UniformMatrix("projectionMatrix", render.CurrentProjectionMatrix);
+
+                int x, y;
+                if (api.Input.MouseGrabbed)
+                {
+                    x = api.Render.FrameWidth / 2;
+                    y = api.Render.FrameHeight / 2;
+                }
+                else
+                {
+                    x = api.Input.MouseX;
+                    y = api.Input.MouseY;
+                }
+
+                render.GlPushMatrix();
+                render.GlTranslate(x, y, 0);
+                render.GlScale(OuterRadius, OuterRadius, 0);
+                shader.UniformMatrix("modelViewMatrix", render.CurrentModelviewMatrix);
+                render.GlPopMatrix();
+
+                render.RenderMesh(circleMesh);
+            }
         }
 
         public void Dispose()
@@ -194,6 +195,7 @@ namespace HydrateOrDiedrate
             if (circleMesh != null)
             {
                 api.Render.DeleteMesh(circleMesh);
+                circleMesh = null; // Set to null after deletion to avoid accidental usage
             }
         }
 

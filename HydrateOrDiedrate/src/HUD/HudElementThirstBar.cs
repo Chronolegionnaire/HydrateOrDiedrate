@@ -7,7 +7,7 @@ public class HudElementThirstBar : HudElement
 {
 private GuiElementStatbar _statbar;
 private bool isFlashing;
-
+public bool showThirstBar = true;
     public override double InputOrder => 1.0;
 
     public HudElementThirstBar(ICoreClientAPI capi) : base(capi)
@@ -97,10 +97,14 @@ private bool isFlashing;
 
     public override void OnRenderGUI(float deltaTime)
     {
+        // Access the static property directly using the class name
+        if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics) return;
+
         if (capi.World.Player.WorldData.CurrentGameMode == EnumGameMode.Spectator) return;
 
         base.OnRenderGUI(deltaTime);
     }
+
 
     public override bool TryClose() => false;
 
