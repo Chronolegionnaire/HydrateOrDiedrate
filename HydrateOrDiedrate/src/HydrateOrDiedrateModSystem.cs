@@ -324,9 +324,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private void OnConfigSyncReceived(ConfigSyncPacket packet)
     {
-        // Update the LoadedConfig with the server config
-        Console.WriteLine($"[Config Sync - Incoming Packet] EnableThirstMechanics: {packet.ServerConfig.EnableThirstMechanics}");
-
         LoadedConfig = new Config.Config
         {
             MaxThirst = packet.ServerConfig.MaxThirst,
@@ -371,10 +368,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
             KegIronHoopDropChance = packet.ServerConfig.KegIronHoopDropChance,
             KegTapDropChance = packet.ServerConfig.KegTapDropChance
         };
-        // Reload components as usual
+
         ReloadComponents();
 
-        // Rest of the code for patch application
+
         var currentHydrationPatches = HydrationManager.GetLastAppliedPatches() ?? new List<JObject>();
         var packetHydrationPatches = packet.HydrationPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
         bool hydrationPatchesChanged = !ArePatchesEqual(packetHydrationPatches, currentHydrationPatches);
@@ -425,8 +422,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         if (_clientApi?.World == null)
         {
-            _clientApi?.Logger.Warning("Client API World is null during ReloadComponents. Delaying component reload.");
-            // Optionally, schedule a retry after some time
             _clientApi?.Event.RegisterCallback((dt) => ReloadComponents(), 1000);
             return;
         }
@@ -442,8 +437,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             var encumbranceBehavior = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
             encumbranceBehavior?.Reset(LoadedConfig);
         }
-
-        // Hide or show the thirst HUD based on the static config setting
+        
         if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics)
         {
             _thirstHud?.TryClose();

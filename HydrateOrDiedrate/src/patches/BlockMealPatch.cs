@@ -97,7 +97,6 @@ namespace HydrateOrDiedrate.patches
             }
             catch (Exception ex)
             {
-                byEntity.World.Logger.Error($"TryFinishEatMealPostfix: Exception occurred - {ex.Message}");
             }
         }
 

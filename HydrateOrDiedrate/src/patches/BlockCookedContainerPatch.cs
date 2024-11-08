@@ -38,7 +38,6 @@ namespace HydrateOrDiedrate.patches
             }
             catch (Exception ex)
             {
-                world.Logger.Error($"[HydrateOrDiedrate] Error in BlockCookedContainerGetHeldItemInfoPatch: {ex}");
             }
         }
     }

@@ -11,7 +11,7 @@ namespace HydrateOrDiedrate
         private const int CircleMaxSteps = 32;
         private const float OuterRadius = 24f;
         private const float InnerRadius = 18f;
-        private const int MaxChecks = 5;  // Max consecutive frames of unchanged progress before reset
+        private const int MaxChecks = 5;
         
         private bool wasDrinking = false;
         private MeshRef circleMesh = null;
@@ -19,8 +19,7 @@ namespace HydrateOrDiedrate
         private float circleAlpha = 0.0F;
         private float circleProgress = 0.0F;
         private float targetCircleProgress = 0.0F;
-
-        // Track unchanged progress to prevent the HUD from getting stuck
+        
         private float lastCircleProgress = -1.0F;
         private int unchangedProgressCount = 0;
 
@@ -195,7 +194,7 @@ namespace HydrateOrDiedrate
             if (circleMesh != null)
             {
                 api.Render.DeleteMesh(circleMesh);
-                circleMesh = null; // Set to null after deletion to avoid accidental usage
+                circleMesh = null;
             }
         }
 

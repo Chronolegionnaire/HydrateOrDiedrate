@@ -147,7 +147,7 @@ namespace HydrateOrDiedrate.Hot_Weather
             double distanceTo4AM =
                 GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(4.0, hourOfDay, 24.0) / 12.0));
             double distanceTo3PM =
-                GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0)); // Now used
+                GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0));
 
             double diurnalCooling = (0.5 - distanceTo4AM - distanceTo3PM) * _config.DiurnalVariationAmplitude;
             coolingFactor += (float)(sunlightCooling + diurnalCooling);
@@ -164,14 +164,12 @@ namespace HydrateOrDiedrate.Hot_Weather
             if (roomRegistry == null) return;
 
             Room room = roomRegistry.GetRoomForPosition(plrpos);
-
-            // Reset room state
+            
             inEnclosedRoom = false;
             nearHeatSourceStrength = 0f;
 
             if (room != null)
             {
-                // Check if the player is in an enclosed room
                 inEnclosedRoom = room.ExitCount == 0 && room.SkylightCount < room.NonSkylightCount;
 
                 if (inEnclosedRoom)

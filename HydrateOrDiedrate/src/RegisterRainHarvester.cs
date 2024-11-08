@@ -30,8 +30,7 @@ public class RegisterRainHarvester : BlockEntityBehavior
         }
         base.OnBlockRemoved();
     }
-
-    // This method is called when the block is unloaded from memory (e.g., when a chunk is unloaded)
+    
     public override void OnBlockUnloaded()
     {
         if (harvesterManager != null && harvesterData != null)

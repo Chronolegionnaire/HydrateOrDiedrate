@@ -153,9 +153,4 @@ public class RainHarvesterManager
     {
         return harvesterData.GetRainIntensity() > 0 && harvesterData.IsOpenToSky(harvesterData.BlockEntity.Pos);
     }
-
-    private void LogDictionaryCounts()
-    {
-        serverAPI.Logger.Notification($"Active Harvesters: {activeHarvesters.Count}, Inactive Harvesters: {inactiveHarvesters.Count}");
-    }
 }

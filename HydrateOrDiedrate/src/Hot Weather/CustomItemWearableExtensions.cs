@@ -28,24 +28,20 @@ public static class CustomItemWearableExtensions
     private static void EnsureConditionExists(ItemSlot slot, ICoreAPI api)
     {
         if (slot is DummySlot) return;
-
-        // Check if the condition attribute already exists and is valid
+        
         if (slot.Itemstack.Attributes.HasAttribute("condition"))
         {
         }
         else if (api.Side == EnumAppSide.Server)
         {
             JsonObject itemAttributes = slot.Itemstack.ItemAttributes;
-
-            // Check if the item has either "cooling" or "warming" attributes
+            
             bool hasCooling = itemAttributes != null && itemAttributes["cooling"].Exists;
             bool hasWarming = itemAttributes != null && itemAttributes["warmth"].Exists;
-
-            // Retrieve the values of maxCooling and maxWarmth
+            
             float maxCooling = hasCooling ? itemAttributes["cooling"].AsFloat(0f) : 0f;
             float maxWarmth = hasWarming ? itemAttributes["warmth"].AsFloat(0f) : 0f;
-
-            // Check if both values are 0, NaN, or null
+            
             bool shouldAssignCondition = !(IsZeroNaNOrNull(maxCooling) && IsZeroNaNOrNull(maxWarmth));
 
             if (shouldAssignCondition)

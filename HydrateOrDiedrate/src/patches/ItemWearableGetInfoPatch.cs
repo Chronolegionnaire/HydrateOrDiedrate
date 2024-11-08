@@ -38,25 +38,20 @@ public static class ItemWearableGetHeldItemInfoPatch
                     {
                         condition = 0;
                     }
-
-                    // Calculate actual warmth value after condition modification
+                    
                     float maxWarmth = inSlot.Itemstack.ItemAttributes["warmth"].AsFloat(0f);
                     float actualWarmth = maxWarmth * condition;
-
-                    // Only display the condition text if either maxWarmth or maxCooling is greater than 0
+                    
                     if (maxWarmth > 0 || maxCooling > 0)
                     {
-                        // Create the new formatted string for warmth and cooling
                         string updatedWarmthLine = $"Warmth:<font color=\"#ff8444\"> +{actualWarmth:0.#}°C</font>";
                         if (cooling != 0)
                         {
                             updatedWarmthLine += $", Cooling:<font color=\"#84dfff\"> +{cooling:0.#}°C</font>";
                         }
-
-                        // Check if the formatted warmth line already exists
+                        
                         if (!existingText.Contains(updatedWarmthLine))
                         {
-                            // Find and replace the existing warmth line
                             string greenWarmthPattern = "<font color=\"#84ff84\">+";
                             string redWarmthPattern = "<font color=\"#ff8484\">+";
                             int warmthLineStart = existingText.IndexOf(greenWarmthPattern);
@@ -96,8 +91,7 @@ public static class ItemWearableGetHeldItemInfoPatch
                         }
                     }
                 }
-
-                // Handle max warmth and max cooling separately
+                
                 if ((inSlot.Itemstack.ItemAttributes["warmth"].Exists || maxCooling > 0) && !existingText.Contains("Max Cooling:"))
                 {
                     string maxWarmthLinePrefix = "Max warmth:";
@@ -110,8 +104,7 @@ public static class ItemWearableGetHeldItemInfoPatch
 
                         string maxWarmthLine = existingText.Substring(maxWarmthIndex, endOfMaxWarmthLine - maxWarmthIndex).Trim();
                         string updatedMaxWarmthLine = $"{maxWarmthLine}";
-
-                        // Ensure max cooling is added only once and not colored
+                        
                         string maxCoolingText = $"Max Cooling: {maxCooling:0.#}°C";
                         updatedMaxWarmthLine += $" | {maxCoolingText}";
 
@@ -127,7 +120,6 @@ public static class ItemWearableGetHeldItemInfoPatch
         }
         catch (Exception ex)
         {
-            world.Logger.Error("Error in hydrateordiedrate ItemWearableGetHeldItemInfoPatch.Postfix: " + ex);
         }
     }
 

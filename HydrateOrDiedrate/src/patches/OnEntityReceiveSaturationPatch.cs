@@ -107,7 +107,6 @@ namespace HydrateOrDiedrate.Patches
             }
             catch (Exception ex)
             {
-                __instance.entity.World.Logger.Error($"[EntityBehaviorHungerPatch] Exception: {ex.Message}\n{ex.StackTrace}");
             }
 
             return false;
