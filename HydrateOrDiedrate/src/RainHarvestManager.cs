@@ -61,17 +61,6 @@ public class RainHarvesterManager
         activeHarvesters.Remove(position);
         inactiveHarvesters.Remove(position);
     }
-
-    public void OnBlockRemoved(BlockPos position)
-    {
-        UnregisterHarvester(position);
-    }
-
-    public void OnBlockUnloaded(BlockPos position)
-    {
-        UnregisterHarvester(position);
-    }
-
     private void OnTick(float deltaTime)
     {
         if (!serverAPI.World.AllOnlinePlayers.Any())

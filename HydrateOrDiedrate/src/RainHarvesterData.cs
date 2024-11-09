@@ -185,17 +185,35 @@ public class RainHarvesterData
     }
     private void SetParticleProperties(SimpleParticleProperties particles, Vec3d pos, double addPos, int quantity, float gravityEffect, Vec3f velocity)
     {
-        particles.MinPos.Set(pos.X - 0.2, pos.Y + 0.1, pos.Z - 0.2);
-        particles.AddPos.Set(addPos, 0.0, addPos);
+        // Directly assign the position values
+        particles.MinPos.X = pos.X - 0.2;
+        particles.MinPos.Y = pos.Y + 0.1;
+        particles.MinPos.Z = pos.Z - 0.2;
+
+        // Directly assign the addPos vector values
+        particles.AddPos.X = addPos;
+        particles.AddPos.Y = 0.0;
+        particles.AddPos.Z = addPos;
+
         particles.GravityEffect = gravityEffect;
-        particles.MinVelocity.Set(velocity);
-        particles.AddVelocity.Set(0.2f, velocity.Y, 0.2f);
+
+        // Directly assign the velocity values to MinVelocity
+        particles.MinVelocity.X = velocity.X;
+        particles.MinVelocity.Y = velocity.Y;
+        particles.MinVelocity.Z = velocity.Z;
+
+        // Directly assign the values to AddVelocity
+        particles.AddVelocity.X = 0.2f;
+        particles.AddVelocity.Y = velocity.Y;
+        particles.AddVelocity.Z = 0.2f;
 
         for (int i = 0; i < quantity; i++)
         {
             BlockEntity.Api.World.SpawnParticles(particles, null);
         }
     }
+
+
     private List<Vec3d> GetGroundStoragePositions(BlockEntityGroundStorage groundStorage)
     {
         List<Vec3d> positions = new List<Vec3d>();
