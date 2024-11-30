@@ -78,6 +78,8 @@ namespace HydrateOrDiedrate.Config
                             ["game:juiceportion-orange"] = 1000,
                             ["game:juiceportion-mango"] = 950,
                             ["game:juiceportion-pomegranate"] = 850,
+                            ["game:juiceportion-redgrapes"] = 950,
+                            ["game:juiceportion-greengrapes"] = 950,
                             ["*"] = 750
                         },
                         ["IsLiquid"] = true
@@ -105,6 +107,8 @@ namespace HydrateOrDiedrate.Config
                             ["game:fruit-orange"] = 30,
                             ["game:fruit-mango"] = 25,
                             ["game:fruit-pomegranate"] = 20,
+                            ["game:fruit-redgrapes"] = 30,
+                            ["game:fruit-greengrapes"] = 30,
                             ["*"] = 8
                         },
                         ["IsLiquid"] = false
@@ -379,6 +383,8 @@ namespace HydrateOrDiedrate.Config
                             ["game:ciderportion-rye"] = 450,
                             ["game:ciderportion-amaranth"] = 450,
                             ["game:ciderportion-cassava"] = 450,
+                            ["game:ciderportion-redgrapes"] = 500,
+                            ["game:ciderportion-greengrapes"] = 500,
                             ["*"] = 375
                         },
                         ["IsLiquid"] = true
@@ -485,6 +491,8 @@ namespace HydrateOrDiedrate.Config
                             ["game:spiritportion-rye"] = 225,
                             ["game:spiritportion-amaranth"] = 225,
                             ["game:spiritportion-cassava"] = 225,
+                            ["game:spiritportion-redgrapes"] = 270,
+                            ["game:spiritportion-greengrapes"] = 270,
                             ["*"] = 190
                         },
                         ["IsLiquid"] = true
@@ -1048,6 +1056,8 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:candiedfruit-cherry"] = -2,
                             ["expandedfoods:candiedfruit-lychee"] = -2,
                             ["expandedfoods:candiedfruit-breadfruit"] = -2,
+                            ["expandedfoods:candiedfruit-redgrapes"] = -2,
+                            ["expandedfoods:candiedfruit-greengrapes"] = -2,
                             ["*"] = -2
                         },
                         ["IsLiquid"] = false

@@ -73,11 +73,14 @@ public class GuiElementCustomStatbar : GuiElementTextBase
         }
         ctx.SetSourceRGBA(0.0, 0.0, 0.0, 0.5); 
         ctx.LineWidth = GuiElement.scaled(2.2);
-        int customLines = Math.Min(50, (int)((this.customMaxValue - this.customMinValue) / this.customLineInterval));
-        for (int i = 1; i < customLines; i++)
+        int customLines = (int)((this.customMaxValue - this.customMinValue) / this.customLineInterval);
+        
+        customLines = Math.Max(1, customLines);
+
+        for (int i = 1; i <= customLines; i++)
         {
             ctx.NewPath();
-            double customX2 = this.Bounds.InnerWidth * (double)i / (double)customLines;
+            double customX2 = this.Bounds.InnerWidth * ((double)i * this.customLineInterval) / (this.customMaxValue - this.customMinValue);
             ctx.MoveTo(customX2, 0.0);
             ctx.LineTo(customX2, Math.Max(3.0, this.Bounds.InnerHeight - 1.0));
             ctx.ClosePath();

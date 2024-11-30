@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Client;
+﻿using System;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
 namespace HydrateOrDiedrate.HUD
@@ -46,9 +47,13 @@ public bool showThirstBar = true;
 
         var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
         var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
+        
+        float lineInterval = Math.Max(100f, maxThirst / 100f);
+
         _statbar.SetValues(currentThirst, 0.0f, maxThirst);
-        _statbar.SetLineInterval(maxThirst / 15f);
+        _statbar.SetLineInterval(lineInterval);
     }
+
 
     private void ComposeGuis()
     {

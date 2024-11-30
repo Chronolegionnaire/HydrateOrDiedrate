@@ -74,7 +74,8 @@ namespace HydrateOrDiedrate.HUD
             float maxSaturation = hungerTree.GetFloat("maxsaturation");
             float displayValue = Math.Min(hungerReductionAmount, currentSaturation);
             _statbar.SetCustomValues(displayValue, 0.0f, maxSaturation);
-            _statbar.SetCustomLineInterval(maxSaturation / 15f);
+
+            _statbar.SetCustomLineInterval(100f);
         }
 
 

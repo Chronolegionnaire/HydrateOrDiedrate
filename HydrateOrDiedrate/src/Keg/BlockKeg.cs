@@ -21,7 +21,7 @@ namespace HydrateOrDiedrate.Keg
         public override void OnLoaded(ICoreAPI api)
         {
             base.OnLoaded(api);
-            kegCapacityLitres = Attributes?["kegCapacityLitres"].AsFloat(10.0f) ?? 10.0f;
+            kegCapacityLitres = Attributes?["kegCapacityLitres"].AsFloat(100.0f) ?? 100.0f;
             spoilRate = Attributes?["spoilRate"].AsFloat(1.0f) ?? 1.0f;
             ironHoopDropChance = Attributes?["ironHoopDropChance"].AsFloat(0.5f) ?? 0.5f;
             kegTapDropChance = Attributes?["kegTapDropChance"].AsFloat(0.2f) ?? 0.2f;

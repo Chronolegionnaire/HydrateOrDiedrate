@@ -102,22 +102,10 @@
     "z2": 1
   },
   "tpHandTransform": {
-    "translation": {
-      "x": -0.9,
-      "y": -1.4,
-      "z": -0.5
-    },
-    "rotation": {
-      "x": 137,
-      "y": -11,
-      "z": -75
-    },
-    "origin": {
-      "x": 0.2,
-      "y": 0.5,
-      "z": 0.5
-    },
-    "scale": 0.5899
+    "translation": { "x": -0.29, "y": -1.19, "z": -0.19 },
+    "rotation": { "x": 96, "y": -19, "z": -76 },
+    "origin": { "x": 0.48, "y": 0.55, "z": 0.24 },
+    "scale": 0.8
   },
   "groundTransform": {
     "translation": { "x": 0, "y": 0, "z": 0 },
