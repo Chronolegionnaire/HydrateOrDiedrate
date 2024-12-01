@@ -1,7 +1,9 @@
 ﻿{
-  "code": "kegtapped",
-  "class": "BlockKeg",
-  "entityclass": "BlockEntityKeg",
+  "code": "tun",
+  "class": "BlockTun",
+  "entityclass": "BlockEntityTun",
+  "defaultType": "normal-generic",
+  types: ["normal-generic"],
   "behaviors": [
     { "name": "UnstableFalling" },
     {
@@ -9,6 +11,14 @@
       "properties": {
         "sides": ["up"]
       }
+    },
+    { "name": "HorizontalOrientable"},
+    { name: "Multiblock", propertiesByType: {
+      "*-north": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 0, y: 0, z: 0 } },
+      "*-east": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 0, y: 0, z: 0 } },
+      "*-south": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 0, y: 0, z: 0 } },
+      "*-west": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 0, y: 0, z: 0 } }
+    }
     },
     {
       "name": "Carryable",
@@ -22,10 +32,10 @@
               "scale": [0.5, 0.5, 0.5]
             },
             "animation": "carryon:holdheavy",
-            "walkSpeedModifier": -0.25
+            "walkSpeedModifier": -0.75
           },
           "Back": {
-            "walkSpeedModifier": -0.15
+            "walkSpeedModifier": -0.5
           }
         },
         "patchPriority": 1
@@ -38,26 +48,25 @@
       }
     }
   ],
-  "shape": { "base": "hydrateordiedrate:block/kegtapped", "rotateY": 180 },
-  "textures": {
-    "blackbronze4": { "base": "game:block/metal/sheet/blackbronze4" },
-    "bottom": { "base": "game:block/wood/barrel/bottom" },
-    "aged": { "base": "game:block/wood/debarked/aged" },
-    "electrum1": { "base": "game:block/metal/sheet/electrum1" }
+  shapeByType: {
+    "*-north": { base: "hydrateordiedrate:block/tun", rotateY: 0 },
+    "*-east": { base: "hydrateordiedrate:block/tun", rotateY: 270 },
+    "*-west": { base: "hydrateordiedrate:block/tun", rotateY: 90 },
+    "*-south": { base: "hydrateordiedrate:block/tun", rotateY: 180 },
   },
+  variantgroups: [
+    { code:"side", loadFromProperties: "abstract/horizontalorientation" }
+  ],
   "attributes": {
     "canDrinkFrom": false,
-    "kegCapacityLitres": 100.0,
-    "spoilRate": 0.75,
-    "ironHoopDropChance": 0.8,
-    "kegTapDropChance": 0.9,
     "liquidContainerProps": {
       "transferSizeLitres": 1,
       "liquidMaxYTranslate": 0.4375
     },
     "rotatatableInterval": {
-      "default": "22.5deg"
-    }
+      "normal-generic": "22.5deg"
+    },
+    variantByGroup: "side"
   },
   "creativeinventory": {
     "general": [ "*" ],
@@ -85,21 +94,13 @@
   },
   "heldTpIdleAnimation": "holdbothhandslarge",
   "heldTpUseAnimation": "twohandplaceblock",
-  "collisionbox": {
-    "x1": 0,
-    "y1": 0,
-    "z1": 0,
-    "x2": 1,
-    "y2": 0.9375,
-    "z2": 1
-  },
-  "selectionbox": {
-    "x1": 0,
-    "y1": 0,
-    "z1": 0,
-    "x2": 1,
-    "y2": 0.9375,
-    "z2": 1
+  collisionSelectionBox: {
+    x1: 0, y1: 0, z1: 0, x2: 1, y2: 1, z2: 1,
+    rotateYByType: {
+      "*-east": 270,
+      "*-west": 90,
+      "*-south": 180
+    }
   },
   "tpHandTransform": {
     "translation": { "x": -0.29, "y": -1.19, "z": -0.19 },

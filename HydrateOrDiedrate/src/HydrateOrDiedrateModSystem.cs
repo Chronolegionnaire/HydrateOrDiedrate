@@ -7,6 +7,7 @@ using HydrateOrDiedrate.encumbrance;
 using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
+using HydrateOrDiedrate.Tun;
 using HydrateOrDiedrate.XSkill;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -193,6 +194,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
+        
+        api.RegisterBlockClass("BlockTun", typeof(BlockTun));
+        api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
 
         if (LoadedConfig.EnableThirstMechanics)
         {
