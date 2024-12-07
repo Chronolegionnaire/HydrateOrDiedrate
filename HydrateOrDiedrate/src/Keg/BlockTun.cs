@@ -66,50 +66,6 @@ namespace HydrateOrDiedrate.Tun
 
             base.tryEatStop(secondsUsed, slot, byEntity);
         }
-
-        public override bool DoPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ItemStack byItemStack)
-        {
-            BlockFacing facing = SuggestedHVOrientation(byPlayer, blockSel)[0];
-            BlockPos originPos = blockSel.Position;
-
-            world.Logger.Debug($"Attempting to place multiblock at {originPos}");
-
-            // Place the block at the origin position
-            if (!base.DoPlaceBlock(world, byPlayer, blockSel, byItemStack))
-            {
-                world.Logger.Debug("Base placement failed.");
-                return false; // If the base placement logic fails, return false
-            }
-
-            // Set up the block entity at the origin
-            if (world.BlockAccessor.GetBlockEntity(originPos) is BlockEntityTun blockEntityTun)
-            {
-                blockEntityTun.MeshAngle = facing.HorizontalAngleIndex * 90f;
-                blockEntityTun.MarkDirty(true, null);
-                world.Logger.Debug($"Multiblock placed successfully at {originPos} with rotation {blockEntityTun.MeshAngle}");
-            }
-            else
-            {
-                world.Logger.Debug("Block entity setup failed.");
-            }
-
-            return true;
-        }
-
-        private Vec3i RotateOffset(Vec3i offset, BlockFacing facing)
-        {
-            switch (facing.HorizontalAngleIndex)
-            {
-                case 1: // 90 degrees
-                    return new Vec3i(-offset.Z, offset.Y, offset.X);
-                case 2: // 180 degrees
-                    return new Vec3i(-offset.X, offset.Y, -offset.Z);
-                case 3: // 270 degrees
-                    return new Vec3i(offset.Z, offset.Y, -offset.X);
-                default: // 0 degrees
-                    return offset;
-            }
-        }
-
+        
     }
 }

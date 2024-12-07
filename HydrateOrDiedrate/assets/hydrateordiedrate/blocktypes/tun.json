@@ -13,11 +13,12 @@
       }
     },
     { "name": "HorizontalOrientable"},
-    { name: "Multiblock", 
-      properties: {
-        sizex: 2, sizey: 2, sizez: 2, 
-        cposition: { x: 0, y: 0, z: 0 }
-      }
+    { name: "Multiblock", propertiesByType: {
+      "*-north": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 0, y: 0, z: 1 } },
+      "*-east": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 0, y: 0, z: 0 } },
+      "*-south": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 1, y: 0, z: 0 } },
+      "*-west": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 1, y: 0, z: 1 } }
+    }
     },
     {
       "name": "Carryable",
@@ -47,7 +48,12 @@
       }
     }
   ],
-  "shape": { "base": "hydrateordiedrate:block/tun"},
+  shapeByType: {
+    "*-north": { base: "hydrateordiedrate:block/tun", rotateY: 0 },
+    "*-east": { base: "hydrateordiedrate:block/tun", rotateY: 270 },
+    "*-west": { base: "hydrateordiedrate:block/tun", rotateY: 90 },
+    "*-south": { base: "hydrateordiedrate:block/tun", rotateY: 180 },
+  },
   "attributes": {
     "canDrinkFrom": false,
     "liquidContainerProps": {
@@ -56,11 +62,27 @@
     },
     "rotatatableInterval": {
       "normal-generic": "22.5deg"
+    },
+    "variantByGroup": "side",
+    spoilSpeedMulByFoodCat: {
+      "normal": {
+        "vegetable": 1,
+        "grain": 1
+      }
     }
   },
-  "creativeinventory": {
-    "general": [ "*" ],
-    "decorative": [ "*" ]
+  variantgroups: [
+    { code:"side", loadFromProperties: "abstract/horizontalorientation" }
+  ],
+  creativeinventoryStacksByType: {
+    "*-east": [
+      {
+        tabs: [ "general", "decorative" ],
+        stacks: [
+          { type: "block", code: "tun-east", attributes: { type: "normal-generic" } }
+        ]
+      }
+    ]
   },
   "blockmaterial": "Wood",
   "replaceable": 900,
@@ -85,7 +107,11 @@
   "heldTpIdleAnimation": "holdbothhandslarge",
   "heldTpUseAnimation": "twohandplaceblock",
   collisionSelectionBox: {
-    x1: 0, y1: 0, z1: 0, x2: 1, y2: 1, z2: 1
+    x1: 0, y1: 0, z1: 0, x2: 1, y2: 1, z2: 1, rotateYByType: {
+      "*-east": 270,
+      "*-west": 90,
+      "*-south": 180
+    }
   },
   "tpHandTransform": {
     "translation": { "x": -0.29, "y": -1.19, "z": -0.19 },
