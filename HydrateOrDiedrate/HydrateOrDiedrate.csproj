@@ -4,7 +4,6 @@
         <TargetFramework>net7.0</TargetFramework>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
-		<IntermediateOutputPath>.\obj\$(Configuration)\</IntermediateOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -73,10 +72,6 @@
         <Content Include="modinfo.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="assets\hydrateordiedrate\patches\" />
     </ItemGroup>
 
 </Project>

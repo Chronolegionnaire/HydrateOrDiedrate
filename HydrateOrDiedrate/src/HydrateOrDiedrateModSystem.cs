@@ -7,6 +7,7 @@ using HydrateOrDiedrate.encumbrance;
 using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
+using HydrateOrDiedrate.Tun;
 using HydrateOrDiedrate.XSkill;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -64,7 +65,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.AssetsLoaded(api);
         ApplyWaterSatietyPatches(api);
-        ApplyKegConfigPatches(api);
+        ApplyKegTunConfigPatches(api);
     }
 
     public override void AssetsFinalize(ICoreAPI api)
@@ -125,11 +126,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
         patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicwaterpatch"), patch, ref applied, ref notFound, ref errorCount);
     }
-    public void ApplyKegConfigPatches(ICoreAPI api)
+    public void ApplyKegTunConfigPatches(ICoreAPI api)
     {
         ApplyKegPatch(api, "hydrateordiedrate:blocktypes/keg.json", LoadedConfig.KegCapacityLitres, LoadedConfig.SpoilRateTapped, LoadedConfig.KegIronHoopDropChance, LoadedConfig.KegTapDropChance);
-        
         ApplyKegPatch(api, "hydrateordiedrate:blocktypes/kegtapped.json", LoadedConfig.KegCapacityLitres, LoadedConfig.SpoilRateUntapped, LoadedConfig.KegIronHoopDropChance, LoadedConfig.KegTapDropChance);
+        ApplyTunPatch(api, "hydrateordiedrate:blocktypes/tun.json", LoadedConfig.TunCapacityLitres, LoadedConfig.TunSpoilRateMultiplier);
     }
 
     private void ApplyKegPatch(ICoreAPI api, string jsonFilePath, float capacityLitres, float spoilRate, float ironHoopDropChance, float kegTapDropChance)
@@ -154,6 +155,27 @@ public class HydrateOrDiedrateModSystem : ModSystem
         int errorCount = 0;
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
         patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegpatch"), patch, ref applied, ref notFound, ref errorCount);
+    }
+    private void ApplyTunPatch(ICoreAPI api, string jsonFilePath, float capacityLitres, float spoilRate)
+    {
+        JsonPatch patch = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes",
+            Value = new JsonObject(JObject.FromObject(new
+            {
+                TunCapacityLitres = capacityLitres,
+                spoilRate = spoilRate
+            })),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        int applied = 0;
+        int notFound = 0;
+        int errorCount = 0;
+        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamictunpatch"), patch, ref applied, ref notFound, ref errorCount);
     }
 
     private void LoadAndApplyHydrationPatches(ICoreAPI api)
@@ -193,6 +215,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
+        
+        api.RegisterBlockClass("BlockTun", typeof(BlockTun));
+        api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
 
         if (LoadedConfig.EnableThirstMechanics)
         {
@@ -366,7 +391,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
             SpoilRateUntapped = packet.ServerConfig.SpoilRateUntapped,
             SpoilRateTapped = packet.ServerConfig.SpoilRateTapped,
             KegIronHoopDropChance = packet.ServerConfig.KegIronHoopDropChance,
-            KegTapDropChance = packet.ServerConfig.KegTapDropChance
+            KegTapDropChance = packet.ServerConfig.KegTapDropChance,
+            TunCapacityLitres = packet.ServerConfig.TunCapacityLitres,
+            TunSpoilRateMultiplier = packet.ServerConfig.TunSpoilRateMultiplier
         };
 
         ReloadComponents();

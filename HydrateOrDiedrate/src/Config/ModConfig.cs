@@ -65,9 +65,13 @@ namespace HydrateOrDiedrate.Config
                     // Keg Settings
                     hydrateConfig.KegCapacityLitres = 100.0f;
                     hydrateConfig.SpoilRateUntapped = 0.15f;
-                    hydrateConfig.SpoilRateTapped = 0.75f;
+                    hydrateConfig.SpoilRateTapped = 0.65f;
                     hydrateConfig.KegIronHoopDropChance = 0.8f;
                     hydrateConfig.KegTapDropChance = 0.9f;
+                    
+                    // Tun Settings
+                    hydrateConfig.TunCapacityLitres = 1100f;
+                    hydrateConfig.TunSpoilRateMultiplier = 0.5f;
                 }
                 WriteConfig(api, jsonConfig, config);
             }
