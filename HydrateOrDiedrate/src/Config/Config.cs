@@ -95,7 +95,12 @@ public class Config : IModConfig
     [ProtoMember(38)] public float KegIronHoopDropChance { get; set; }
 
     [ProtoMember(39)] public float KegTapDropChance { get; set; }
+    
+    // Tun Settings
+    
+    [ProtoMember(40)] public float TunCapacityLitres { get; set; }
 
+    [ProtoMember(41)] public float TunSpoilRateMultiplier { get; set; }
 
 
     public Config()
@@ -155,8 +160,12 @@ public class Config : IModConfig
         // Keg settings
         KegCapacityLitres = previousConfig?.KegCapacityLitres ?? 100.0f;
         SpoilRateUntapped = previousConfig?.SpoilRateUntapped ?? 0.15f;
-        SpoilRateTapped = previousConfig?.SpoilRateTapped ?? 0.75f;
+        SpoilRateTapped = previousConfig?.SpoilRateTapped ?? 0.65f;
         KegIronHoopDropChance = previousConfig?.KegIronHoopDropChance ?? 0.8f;
         KegTapDropChance = previousConfig?.KegTapDropChance ?? 0.9f;
+        
+        // Tun Settings
+        TunCapacityLitres = previousConfig?.TunCapacityLitres ?? 1100.0f;
+        TunSpoilRateMultiplier = previousConfig?.TunSpoilRateMultiplier ?? 0.5f;
     }
 }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.Tun;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -20,114 +19,45 @@ namespace HydrateOrDiedrate.Tun
         public float MeshAngle;
         private Config.Config config;
         private const int UpdateIntervalMs = 1000;
-        private bool[] hasTemperatureBeenUpdated = new bool[4];
-        private float[] dailyTemperatures = new float[4];
-        private readonly int[] sampleHours = { 6, 12, 18, 24 };
-        private int lastSampleIndex = -1;
-        private bool isTransitionSpeedDelegateRegistered = false;
         public override string InventoryClassName => "tun";
-
-        private bool isTickListenerRegistered = false;
 
         public override void Initialize(ICoreAPI api)
         {
-            if (this.inventory == null)
-            {
-                this.inventory = new InventoryGeneric(1, null, null, null);
-            }
-
             base.Initialize(api);
             this.api = api;
-            
             this.ownBlock = this.Block as BlockTun;
-
             if (this.inventory is InventoryGeneric inv)
             {
                 inv.OnGetSuitability = GetSuitability;
+                UpdateTunMultiplier();
             }
-
             config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
+
             if (config == null)
             {
                 config = new Config.Config();
             }
-
-            InitializeTemperatureData();
-            
-            if (api.Side == EnumAppSide.Server && !isTickListenerRegistered)
-            {
-                RegisterGameTickListener(UpdateSpoilRate, UpdateIntervalMs);
-                isTickListenerRegistered = true;
-            }
+            RegisterGameTickListener(UpdateSpoilRate, UpdateIntervalMs);
         }
-        private void InitializeTemperatureData()
+        private void UpdateTunMultiplier()
         {
-            if (dailyTemperatures.All(t => t == 0))
+            if (this.inventory is InventoryGeneric inv && this.Block != null)
             {
-                float initialTemp = GetCurrentTemperature();
-                for (int i = 0; i < dailyTemperatures.Length; i++)
+                if (inv.TransitionableSpeedMulByType == null)
                 {
-                    dailyTemperatures[i] = initialTemp;
+                    inv.TransitionableSpeedMulByType = new Dictionary<EnumTransitionType, float>();
                 }
-            }
-        }
 
-        private float GetCurrentTemperature()
-        {
-            ClimateCondition climate = api.World.BlockAccessor.GetClimateAt(Pos, EnumGetClimateMode.NowValues);
-            return climate?.Temperature ?? 20f;
-        }
-        private void SampleTemperature()
-        {
-            float currentHour = api.World.Calendar.HourOfDay;
-            int newSampleIndex = -1;
-            if (currentHour >= 0 && currentHour < 6)
-            {
-                newSampleIndex = 0;
-            }
-            else if (currentHour >= 6 && currentHour < 12)
-            {
-                newSampleIndex = 1;
-            }
-            else if (currentHour >= 12 && currentHour < 18)
-            {
-                newSampleIndex = 2;
-            }
-            else if (currentHour >= 18 && currentHour < 24)
-            {
-                newSampleIndex = 3;
-            }
-            if (newSampleIndex != -1 && !hasTemperatureBeenUpdated[newSampleIndex])
-            {
-                dailyTemperatures[newSampleIndex] = GetCurrentTemperature();
-                hasTemperatureBeenUpdated[newSampleIndex] = true;
-                for (int i = 0; i < hasTemperatureBeenUpdated.Length; i++)
-                {
-                    if (i != newSampleIndex)
-                    {
-                        hasTemperatureBeenUpdated[i] = false;
-                    }
-                }
+                float tunMultiplier = config?.TunSpoilRateMultiplier ?? 0.5f;
+                inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = tunMultiplier;
             }
         }
-        private string GetTimeSlotName(int index)
+        public BlockEntityTun()
         {
-            return index switch
-            {
-                0 => "Morning",
-                1 => "Noon",
-                2 => "Evening",
-                3 => "Night",
-                _ => "Unknown"
-            };
+            this.inventory = new InventoryGeneric(1, null, null, null);
+            inventory.BaseWeight = 1.0f;
+            inventory.OnGetSuitability = GetSuitability;
         }
-
-
-        private float CalculateAverageTemperature()
-        {
-            return dailyTemperatures.Average();
-        }
-
         private float GetRoomMultiplier()
         {
             RoomRegistry roomRegistry = api.ModLoader.GetModSystem<RoomRegistry>();
@@ -151,24 +81,32 @@ namespace HydrateOrDiedrate.Tun
 
             return 1.0f;
         }
-
         private float GetTemperatureFactor()
         {
-            float averageTemp = CalculateAverageTemperature();
-            float normalizedTemperature = averageTemp / 20f;
+            ClimateCondition climate = api.World.BlockAccessor.GetClimateAt(Pos, EnumGetClimateMode.NowValues);
+            if (climate == null)
+            {
+                return 1.0f;
+            }
+            float normalizedTemperature = climate.Temperature / 20f;
             return Math.Max(0.5f, Math.Min(2.0f, normalizedTemperature));
         }
-
         private void UpdateSpoilRate(float dt)
         {
-            SampleTemperature();
-
             if (this.inventory is InventoryGeneric inv)
             {
-                inv.TransitionableSpeedMulByType = new Dictionary<EnumTransitionType, float>();
+                if (inv.TransitionableSpeedMulByType == null)
+                {
+                    inv.TransitionableSpeedMulByType = new Dictionary<EnumTransitionType, float>();
+                }
+                else
+                {
+                    inv.TransitionableSpeedMulByType.Clear();
+                }
                 float roomMultiplier = GetRoomMultiplier();
+                float tunMultiplier = config?.TunSpoilRateMultiplier ?? 0.5f;
                 float temperatureFactor = GetTemperatureFactor();
-                float finalSpoilRate = roomMultiplier * temperatureFactor;
+                float finalSpoilRate = tunMultiplier * roomMultiplier * temperatureFactor;
                 inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = finalSpoilRate;
             }
         }
@@ -188,36 +126,19 @@ namespace HydrateOrDiedrate.Tun
             return (isMerge ? (inventory.BaseWeight + 3) : (inventory.BaseWeight + 1)) +
                    (sourceSlot.Inventory is InventoryBasePlayer ? 1 : 0);
         }
+
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);
             MeshAngle = tree.GetFloat("meshAngle", MeshAngle);
-
-            ITreeAttribute tempTree = tree.GetTreeAttribute("dailyTemperatures");
-            if (tempTree != null)
-            {
-                for (int i = 0; i < dailyTemperatures.Length; i++)
-                {
-                    dailyTemperatures[i] = tempTree.GetFloat($"temp{i}", dailyTemperatures[i]);
-                }
-            }
-
-            lastSampleIndex = tree.GetInt("lastSampleIndex", -1);
         }
+
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
             tree.SetFloat("meshAngle", MeshAngle);
-
-            ITreeAttribute tempTree = new TreeAttribute();
-            for (int i = 0; i < dailyTemperatures.Length; i++)
-            {
-                tempTree.SetFloat($"temp{i}", dailyTemperatures[i]);
-            }
-            tree["dailyTemperatures"] = tempTree;
-
-            tree.SetInt("lastSampleIndex", lastSampleIndex);
         }
+
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             ItemSlot itemSlot = inventory[0];
@@ -225,6 +146,24 @@ namespace HydrateOrDiedrate.Tun
                 dsc.AppendLine(Lang.Get("Empty"));
             else
                 dsc.AppendLine(Lang.Get("Contents: {0}x{1}", itemSlot.Itemstack.StackSize, itemSlot.Itemstack.GetName()));
+            
+        }
+
+        public override void OnBlockBroken(IPlayer byPlayer = null)
+        {
+            if (inventory != null)
+            {
+                foreach (var slot in inventory)
+                {
+                    if (!slot.Empty)
+                    {
+                        api.World.SpawnItemEntity(slot.TakeOutWhole(), Pos.ToVec3d());
+                    }
+                }
+                inventory.Clear();
+            }
+
+            base.OnBlockBroken(byPlayer);
         }
     }
 }
