@@ -18,7 +18,6 @@ namespace HydrateOrDiedrate.Config
                     hydrateConfig.MaxThirst = 1500.0f;
                     hydrateConfig.ThirstDamage = 1f;
                     hydrateConfig.ThirstDecayRate = 10f;
-                    hydrateConfig.ThirstIncreasePerDegreeMultiplier = 5f;
                     hydrateConfig.ThirstDecayRateMax = 5.0f;
                     hydrateConfig.HydrationLossDelayMultiplier = 0.05f;
                     hydrateConfig.EnableThirstMechanics = true;
@@ -27,17 +26,24 @@ namespace HydrateOrDiedrate.Config
                     hydrateConfig.BoilingWaterSatiety = 0f;
                     hydrateConfig.RainWaterSatiety = -50f;
                     hydrateConfig.DistilledWaterSatiety = 0f;
+                    hydrateConfig.SprintThirstMultiplier = 1.5f;
+                    hydrateConfig.EnableBoilingWaterDamage = true;
+                    hydrateConfig.BoilingWaterDamage = 5.0f;
 
                     // Movement Speed Penalty Settings
                     hydrateConfig.MaxMovementSpeedPenalty = 0.3f;
                     hydrateConfig.MovementSpeedPenaltyThreshold = 600.0f;
 
+                    // Liquid Encumbrance Settings
+                    hydrateConfig.EnableLiquidEncumbrance = true;
+                    hydrateConfig.EncumbranceLimit = 4.0f;
+                    hydrateConfig.LiquidEncumbranceMovementSpeedDebuff = 0.4f;
+
                     // Temperature and Heat Settings
                     hydrateConfig.HarshHeat = true;
                     hydrateConfig.TemperatureThreshold = 27.0f;
+                    hydrateConfig.ThirstIncreasePerDegreeMultiplier = 5f;
                     hydrateConfig.HarshHeatExponentialGainMultiplier = 0.2f;
-                    hydrateConfig.BoilingWaterDamage = 5.0f;
-                    hydrateConfig.EnableBoilingWaterDamage = true;
 
                     // Cooling Factors
                     hydrateConfig.UnequippedSlotCooling = 1.0f;
@@ -47,13 +53,7 @@ namespace HydrateOrDiedrate.Config
                     hydrateConfig.DiurnalVariationAmplitude = 18f;
                     hydrateConfig.RefrigerationCooling = 20.0f;
 
-                    // Other Settings
-                    hydrateConfig.SprintThirstMultiplier = 1.5f;
-                    hydrateConfig.EnableLiquidEncumbrance = true;
-                    hydrateConfig.EncumbranceLimit = 4.0f;
-                    hydrateConfig.LiquidEncumbranceMovementSpeedDebuff = 0.4f;
-
-                    // New Ability Settings
+                    // XSkills Settings
                     hydrateConfig.DromedaryMultiplierPerLevel = 0.3f;
                     hydrateConfig.EquatidianCoolingMultipliers = new float[] { 1.25f, 1.5f, 2.0f };
 
@@ -68,7 +68,7 @@ namespace HydrateOrDiedrate.Config
                     hydrateConfig.SpoilRateTapped = 0.65f;
                     hydrateConfig.KegIronHoopDropChance = 0.8f;
                     hydrateConfig.KegTapDropChance = 0.9f;
-                    
+
                     // Tun Settings
                     hydrateConfig.TunCapacityLitres = 1100f;
                     hydrateConfig.TunSpoilRateMultiplier = 0.5f;

@@ -3,7 +3,7 @@
   "class": "BlockTun",
   "entityclass": "BlockEntityTun",
   "defaultType": "normal-generic",
-  types: ["normal-generic"],
+  "types": ["normal-generic"],
   "behaviors": [
     { "name": "UnstableFalling" },
     {
@@ -12,47 +12,44 @@
         "sides": ["up"]
       }
     },
-    { "name": "HorizontalOrientable"},
-    { name: "Multiblock", propertiesByType: {
-      "*-north": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 0, y: 0, z: 1 } },
-      "*-east": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 0, y: 0, z: 0 } },
-      "*-south": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 1, y: 0, z: 0 } },
-      "*-west": { sizex: 2, sizey: 2, sizez: 2, cposition: { x: 1, y: 0, z: 1 } }
-    }
+    { "name": "HorizontalOrientable" },
+    {
+      "name": "Multiblock",
+      "propertiesByType": {
+        "*-north": { "sizex": 2, "sizey": 2, "sizez": 2, "cposition": { "x": 0, "y": 0, "z": 1 } },
+        "*-east": { "sizex": 2, "sizey": 2, "sizez": 2, "cposition": { "x": 0, "y": 0, "z": 0 } },
+        "*-south": { "sizex": 2, "sizey": 2, "sizez": 2, "cposition": { "x": 1, "y": 0, "z": 0 } },
+        "*-west": { "sizex": 2, "sizey": 2, "sizez": 2, "cposition": { "x": 1, "y": 0, "z": 1 } }
+      }
     },
     {
-      "name": "Carryable",
-      "properties": {
-        "slots": {
+      "name": "Carryable", "properties": {
+      "interactDelay": 1.5,
+      "slots": {
           "Hands": {
-            "transform": {
-              "translation": [0, 0, 0],
-              "rotation": [0, 0, 0],
-              "origin": [0.5, 0.5, 0.5],
-              "scale": [0.5, 0.5, 0.5]
-            },
+            "translation": [ 0, -1, 0.5 ],
+            "rotation": [ 0, 0, 0 ],
+            "origin": [ 0, 0, 0 ],
+            "scale": [0.5, 0.5, 0.5],
             "animation": "carryon:holdheavy",
             "walkSpeedModifier": -0.75
           },
           "Back": {
-            "walkSpeedModifier": -0.5
+            "walkSpeedModifier": -0.5,
+              "translation": [0, -1, 0.5],
+              "rotation": [0, 0, 0],
+              "origin": [0, 0, 0],
+              "scale": [0.5, 0.5, 0.5]
           }
-        },
-        "patchPriority": 1
-      }
-    },
-    {
-      "name": "CarryableInteract",
-      "properties": {
-        "interactDelay": 1.5
+        }
       }
     }
   ],
-  shapeByType: {
-    "*-north": { base: "hydrateordiedrate:block/tun", rotateY: 0 },
-    "*-east": { base: "hydrateordiedrate:block/tun", rotateY: 270 },
-    "*-west": { base: "hydrateordiedrate:block/tun", rotateY: 90 },
-    "*-south": { base: "hydrateordiedrate:block/tun", rotateY: 180 },
+  "shapeByType": {
+    "*-north": { "base": "hydrateordiedrate:block/tun", "rotateY": 0 },
+    "*-east": { "base": "hydrateordiedrate:block/tun", "rotateY": 270 },
+    "*-west": { "base": "hydrateordiedrate:block/tun", "rotateY": 90 },
+    "*-south": { "base": "hydrateordiedrate:block/tun", "rotateY": 180 }
   },
   "attributes": {
     "canDrinkFrom": false,
@@ -64,22 +61,22 @@
       "normal-generic": "22.5deg"
     },
     "variantByGroup": "side",
-    spoilSpeedMulByFoodCat: {
+    "spoilSpeedMulByFoodCat": {
       "normal": {
         "vegetable": 1,
         "grain": 1
       }
     }
   },
-  variantgroups: [
-    { code:"side", loadFromProperties: "abstract/horizontalorientation" }
+  "variantgroups": [
+    { "code": "side", "loadFromProperties": "abstract/horizontalorientation" }
   ],
-  creativeinventoryStacksByType: {
+  "creativeinventoryStacksByType": {
     "*-east": [
       {
-        tabs: [ "general", "decorative" ],
-        stacks: [
-          { type: "block", code: "tun-east", attributes: { type: "normal-generic" } }
+        "tabs": ["general", "decorative"],
+        "stacks": [
+          { "type": "block", "code": "tun-east", "attributes": { "type": "normal-generic" } }
         ]
       }
     ]
@@ -106,26 +103,28 @@
   },
   "heldTpIdleAnimation": "holdbothhandslarge",
   "heldTpUseAnimation": "twohandplaceblock",
-  collisionSelectionBox: {
-    x1: 0, y1: 0, z1: 0, x2: 1, y2: 1, z2: 1, rotateYByType: {
+  "collisionSelectionBox": {
+    "x1": 0, "y1": 0, "z1": 0, "x2": 1, "y2": 1, "z2": 1,
+    "rotateYByType": {
       "*-east": 270,
       "*-west": 90,
       "*-south": 180
     }
   },
   "tpHandTransform": {
-    "translation": { "x": -0.29, "y": -1.19, "z": -0.19 },
-    "rotation": { "x": 96, "y": -19, "z": -76 },
+    "translation": { "x": -1.19, "y": -2.29, "z": -1.09 },
+    "rotation": { "x": -167, "y": -13, "z": -107 },
     "origin": { "x": 0.48, "y": 0.55, "z": 0.24 },
-    "scale": 0.25
+    "scale": 0.4
   },
   "groundTransform": {
     "translation": { "x": 0, "y": 0, "z": 0 },
     "rotation": { "x": 0, "y": 0, "z": 0 },
     "origin": { "x": 0, "y": 0, "z": 0 },
-    "scale": 1.0
+    "scale": 1.8
   },
   "guiTransform": {
-    "scale": 1.0
+    "translation": { "x": 0, "y": 10, "z": 0 },
+    "scale": 0.56
   }
 }
