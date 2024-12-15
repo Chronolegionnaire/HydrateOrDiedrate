@@ -7,7 +7,6 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
-using HydrateOrDiedrate.Config;
 
 namespace HydrateOrDiedrate.Keg
 {

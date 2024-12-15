@@ -131,7 +131,7 @@ public class Config : IModConfig
         KegTapDropChance = previousConfig?.KegTapDropChance ?? 0.9f;
 
         // Tun Settings
-        TunCapacityLitres = previousConfig?.TunCapacityLitres ?? 1100.0f;
+        TunCapacityLitres = previousConfig?.TunCapacityLitres ?? 950.0f;
         TunSpoilRateMultiplier = previousConfig?.TunSpoilRateMultiplier ?? 0.5f;
     }
 }

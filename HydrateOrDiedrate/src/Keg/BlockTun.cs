@@ -14,7 +14,7 @@ namespace HydrateOrDiedrate.Tun
         public override void OnLoaded(ICoreAPI api)
         {
             base.OnLoaded(api);
-            tunCapacityLitres = Attributes?["tunCapacityLitres"].AsFloat(1100.0f) ?? 1100.0f;
+            tunCapacityLitres = Attributes?["tunCapacityLitres"].AsFloat(950.0f) ?? 950.0f;
         }
 
         public override float CapacityLitres => tunCapacityLitres;
