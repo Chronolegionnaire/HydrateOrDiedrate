@@ -70,7 +70,7 @@ namespace HydrateOrDiedrate.Config
                     hydrateConfig.KegTapDropChance = 0.9f;
 
                     // Tun Settings
-                    hydrateConfig.TunCapacityLitres = 1100f;
+                    hydrateConfig.TunCapacityLitres = 950f;
                     hydrateConfig.TunSpoilRateMultiplier = 0.5f;
                 }
                 WriteConfig(api, jsonConfig, config);
