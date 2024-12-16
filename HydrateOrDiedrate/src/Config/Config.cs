@@ -56,18 +56,17 @@ public class Config : IModConfig
     // Rain Gathering Settings
     [ProtoMember(32)] public bool EnableRainGathering { get; set; }
     [ProtoMember(33)] public float RainMultiplier { get; set; }
-    [ProtoMember(34)] public bool EnableParticleTicking { get; set; }
 
     // Keg Settings
-    [ProtoMember(35)] public float KegCapacityLitres { get; set; }
-    [ProtoMember(36)] public float SpoilRateUntapped { get; set; }
-    [ProtoMember(37)] public float SpoilRateTapped { get; set; }
-    [ProtoMember(38)] public float KegIronHoopDropChance { get; set; }
-    [ProtoMember(39)] public float KegTapDropChance { get; set; }
+    [ProtoMember(34)] public float KegCapacityLitres { get; set; }
+    [ProtoMember(35)] public float SpoilRateUntapped { get; set; }
+    [ProtoMember(36)] public float SpoilRateTapped { get; set; }
+    [ProtoMember(37)] public float KegIronHoopDropChance { get; set; }
+    [ProtoMember(38)] public float KegTapDropChance { get; set; }
 
     // Tun Settings
-    [ProtoMember(40)] public float TunCapacityLitres { get; set; }
-    [ProtoMember(41)] public float TunSpoilRateMultiplier { get; set; }
+    [ProtoMember(39)] public float TunCapacityLitres { get; set; }
+    [ProtoMember(40)] public float TunSpoilRateMultiplier { get; set; }
 
     public Config()
     {
@@ -121,7 +120,6 @@ public class Config : IModConfig
         // Rain Gathering Settings
         EnableRainGathering = previousConfig?.EnableRainGathering ?? true;
         RainMultiplier = previousConfig?.RainMultiplier ?? 1.0f;
-        EnableParticleTicking = previousConfig?.EnableParticleTicking ?? true;
 
         // Keg Settings
         KegCapacityLitres = previousConfig?.KegCapacityLitres ?? 100.0f;
@@ -132,6 +130,6 @@ public class Config : IModConfig
 
         // Tun Settings
         TunCapacityLitres = previousConfig?.TunCapacityLitres ?? 950.0f;
-        TunSpoilRateMultiplier = previousConfig?.TunSpoilRateMultiplier ?? 0.5f;
+        TunSpoilRateMultiplier = previousConfig?.TunSpoilRateMultiplier ?? 1.0f;
     }
 }

@@ -10,7 +10,7 @@ namespace HydrateOrDiedrate.XSkill
 
         public void Initialize(ICoreAPI api)
         {
-            if (!api.ModLoader.IsModEnabled("xlib"))
+            if (!api.ModLoader.IsModEnabled("xlib") && !api.ModLoader.IsModEnabled("xlibpatch"))
             {
                 return;
             }

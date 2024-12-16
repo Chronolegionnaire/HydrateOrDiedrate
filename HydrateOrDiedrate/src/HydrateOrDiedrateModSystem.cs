@@ -16,6 +16,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
@@ -39,6 +40,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private IClientNetworkChannel clientChannel;
     private IServerNetworkChannel serverChannel;
     private long customHudListenerId;
+    private AquiferSystem aquiferSystem;
 
     public override void StartPre(ICoreAPI api)
     {
@@ -235,7 +237,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             InitializeClient(api as ICoreClientAPI);
         }
 
-        if (api.ModLoader.IsModEnabled("xlib"))
+        if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibpatch"))
         {
             xLibSkills = new XLibSkills();
             xLibSkills.Initialize(api);
@@ -249,6 +251,19 @@ public class HydrateOrDiedrateModSystem : ModSystem
             {
                 AddBehaviorToBlock(block, api);
             }
+        }
+        if (api.Side == EnumAppSide.Server)
+        {
+            HydrateOrDiedrateGlobals.InitializeAquiferSystem(api as ICoreServerAPI);
+        }
+    }
+    public static class HydrateOrDiedrateGlobals
+    {
+        public static AquiferSystem AquiferSystem { get; private set; }
+
+        public static void InitializeAquiferSystem(ICoreServerAPI api)
+        {
+            AquiferSystem = new AquiferSystem(api);
         }
     }
     private void RegisterEmptyCarryBehaviors(ICoreAPI api)
@@ -287,7 +302,29 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             ThirstCommands.Register(api, LoadedConfig);
         }
+        RegisterClearAquiferCommand(api);
     }
+    private void RegisterClearAquiferCommand(ICoreServerAPI api)
+    {
+        api.RegisterCommand(
+            "clearaquiferdata", 
+            "Clears all saved aquifer data", 
+            "", 
+            (player, groupId, args) =>
+            {
+                if (aquiferSystem == null)
+                {
+                    api.SendMessage(player, groupId, "Aquifer system is not initialized.", EnumChatType.Notification);
+                    return;
+                }
+
+                aquiferSystem.ClearAquiferData();
+                api.SendMessage(player, groupId, "Aquifer data has been cleared successfully.", EnumChatType.Notification);
+            }, 
+            Privilege.controlserver // Restrict to players with the "controlserver" privilege
+        );
+    }
+
     private void InitializeClient(ICoreClientAPI api)
     {
         _clientApi = api;
@@ -386,7 +423,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 : null,
             EnableRainGathering = packet.ServerConfig.EnableRainGathering,
             RainMultiplier = packet.ServerConfig.RainMultiplier,
-            EnableParticleTicking = packet.ServerConfig.EnableParticleTicking,
             KegCapacityLitres = packet.ServerConfig.KegCapacityLitres,
             SpoilRateUntapped = packet.ServerConfig.SpoilRateUntapped,
             SpoilRateTapped = packet.ServerConfig.SpoilRateTapped,
@@ -636,13 +672,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
-
-
-    public static bool XSkillActive(ICoreAPI api)
-    {
-        return api.ModLoader.IsModEnabled("xskills");
-    }
-
     private void AddBehaviorToBlock(Block block, ICoreAPI api)
     {
         if (block.BlockEntityBehaviors == null)

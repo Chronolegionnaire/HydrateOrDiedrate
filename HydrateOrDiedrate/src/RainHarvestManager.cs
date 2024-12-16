@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using HydrateOrDiedrate;
 using HydrateOrDiedrate.Config;
-using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
@@ -16,66 +18,99 @@ public class RainHarvesterManager
     private Dictionary<BlockPos, RainHarvesterData> inactiveHarvesters;
     private long tickListenerId;
     private int globalTickCounter = 1;
-    private bool enableParticleTicking;
+    private ConcurrentQueue<Action> taskQueue;  // Task queue for background processing
+    private CancellationTokenSource cancellationTokenSource;
+    private Thread workerThread;
+
     public RainHarvesterManager(ICoreServerAPI api, Config.Config config)
     {
         serverAPI = api;
         _config = config;
         activeHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
         inactiveHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
-        
-        enableParticleTicking = config.EnableParticleTicking;
+        taskQueue = new ConcurrentQueue<Action>();
+        cancellationTokenSource = new CancellationTokenSource();
+
+        // Start worker thread for background tasks
+        workerThread = new Thread(ProcessTaskQueue)
+        {
+            IsBackground = true
+        };
+        workerThread.Start();
+
         if (config.EnableRainGathering)
         {
-            tickListenerId = api.Event.RegisterGameTickListener(OnTick, 2000);
+            api.Event.RegisterGameTickListener(ScheduleTickProcessing, 2000);
             api.Event.RegisterGameTickListener(OnInactiveHarvesterCheck, 10000);
         }
     }
+
     public void Reset(Config.Config newConfig)
     {
         _config = newConfig;
-        enableParticleTicking = _config.EnableParticleTicking;
-        
         serverAPI.Event.UnregisterGameTickListener(tickListenerId);
+
         if (_config.EnableRainGathering)
         {
-            tickListenerId = serverAPI.Event.RegisterGameTickListener(OnTick, 2000);
+            tickListenerId = serverAPI.Event.RegisterGameTickListener(ScheduleTickProcessing, 2000);
             serverAPI.Event.RegisterGameTickListener(OnInactiveHarvesterCheck, 10000);
         }
     }
 
     public void RegisterHarvester(BlockPos position, RainHarvesterData data)
     {
-        if (IsRainyAndOpenToSky(data))
+        lock (activeHarvesters)
         {
-            activeHarvesters[position] = data;
-        }
-        else
-        {
-            inactiveHarvesters[position] = data;
+            if (IsRainyAndOpenToSky(data))
+            {
+                activeHarvesters[position] = data;
+            }
+            else
+            {
+                inactiveHarvesters[position] = data;
+            }
         }
     }
 
     public void UnregisterHarvester(BlockPos position)
     {
-        activeHarvesters.Remove(position);
-        inactiveHarvesters.Remove(position);
-    }
-    private void OnTick(float deltaTime)
-    {
-        if (!serverAPI.World.AllOnlinePlayers.Any())
+        lock (activeHarvesters)
         {
-            return;
+            activeHarvesters.Remove(position);
+            inactiveHarvesters.Remove(position);
         }
+    }
 
+    public void OnBlockRemoved(BlockPos position)
+    {
+        UnregisterHarvester(position);
+    }
+
+    public void OnBlockUnloaded(BlockPos position)
+    {
+        UnregisterHarvester(position);
+    }
+
+    private void ScheduleTickProcessing(float deltaTime)
+    {
+        if (!serverAPI.World.AllOnlinePlayers.Any()) return;
+
+        // Add a task to the queue for processing the active harvesters
+        taskQueue.Enqueue(() => ProcessTick(deltaTime));
+    }
+
+    private void ProcessTick(float deltaTime)
+    {
         globalTickCounter++;
         if (globalTickCounter > 10) globalTickCounter = 1;
 
+        List<BlockPos> toRemove = new List<BlockPos>();
         foreach (var entry in activeHarvesters)
         {
             BlockPos position = entry.Key;
             RainHarvesterData harvesterData = entry.Value;
             float rainIntensity = harvesterData.GetRainIntensity();
+
             harvesterData.UpdateCalculatedTickInterval(deltaTime, serverAPI.World.Calendar.SpeedOfTime,
                 serverAPI.World.Calendar.CalendarSpeedMul, rainIntensity);
 
@@ -102,40 +137,72 @@ public class RainHarvesterManager
                 }
 
                 harvesterData.adaptiveTickInterval = newAdaptiveTickInterval;
-                activeHarvesters[position] = harvesterData;
-                harvesterData.OnHarvest(rainIntensity);
-            }
 
-            if (enableParticleTicking)
+                harvesterData.OnHarvest(rainIntensity);
+
+                if (!IsRainyAndOpenToSky(harvesterData))
+                {
+                    toRemove.Add(position);
+                }
+            }
+        }
+
+        lock (activeHarvesters)
+        {
+            foreach (var pos in toRemove)
             {
-                harvesterData.OnParticleTickUpdate(deltaTime);
+                inactiveHarvesters[pos] = activeHarvesters[pos];
+                activeHarvesters.Remove(pos);
             }
         }
     }
 
-
     private void OnInactiveHarvesterCheck(float deltaTime)
     {
-        var toActivate = new List<BlockPos>();
-
-        foreach (var entry in inactiveHarvesters)
+        taskQueue.Enqueue(() =>
         {
-            BlockPos position = entry.Key;
-            RainHarvesterData harvesterData = entry.Value;
+            var toActivate = new ConcurrentBag<BlockPos>();
 
-            if (IsRainyAndOpenToSky(harvesterData))
+            foreach (var entry in inactiveHarvesters)
             {
-                toActivate.Add(position);
-            }
-        }
+                BlockPos position = entry.Key;
+                RainHarvesterData harvesterData = entry.Value;
 
-        foreach (var position in toActivate)
+                if (IsRainyAndOpenToSky(harvesterData))
+                {
+                    toActivate.Add(position);
+                }
+            }
+
+            foreach (var position in toActivate)
+            {
+                lock (activeHarvesters)
+                {
+                    RainHarvesterData harvesterData = inactiveHarvesters[position];
+                    inactiveHarvesters.Remove(position);
+                    activeHarvesters[position] = harvesterData;
+                }
+            }
+        });
+    }
+
+    private void ProcessTaskQueue()
+    {
+        while (!cancellationTokenSource.Token.IsCancellationRequested)
         {
-            RainHarvesterData harvesterData = inactiveHarvesters[position];
-            inactiveHarvesters.Remove(position);
-            activeHarvesters[position] = harvesterData;
+            if (taskQueue.TryDequeue(out var task))
+            {
+                try
+                {
+                    task();
+                }
+                catch (Exception ex)
+                {
+                    serverAPI.Logger.Error($"Error in RainHarvesterManager: {ex}");
+                }
+            }
+            Thread.Sleep(10);  // Avoid busy-waiting
         }
-        
     }
 
     private bool IsRainyAndOpenToSky(RainHarvesterData harvesterData)
