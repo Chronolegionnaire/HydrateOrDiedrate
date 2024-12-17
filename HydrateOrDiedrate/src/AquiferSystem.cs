@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ProtoBuf;
@@ -9,14 +10,14 @@ using Vintagestory.API.Server;
 public class AquiferSystem
 {
     private readonly ICoreServerAPI serverAPI;
-    private readonly Dictionary<Vec2i, AquiferChunkData> aquiferDataCache;
+    private readonly ConcurrentDictionary<Vec2i, AquiferChunkData> aquiferDataCache;
 
     private bool isEnabled;
 
     public AquiferSystem(ICoreServerAPI api)
     {
         serverAPI = api;
-        aquiferDataCache = new Dictionary<Vec2i, AquiferChunkData>();
+        aquiferDataCache = new ConcurrentDictionary<Vec2i, AquiferChunkData>();
         isEnabled = true;
         serverAPI.Event.ChunkColumnLoaded += OnChunkColumnLoaded;
         serverAPI.Event.SaveGameLoaded += OnSaveGameLoaded;
@@ -54,7 +55,6 @@ public class AquiferSystem
 
         if (!aquiferDataCache.ContainsKey(chunkCoord))
         {
-            // Offload calculation to a background task
             var preSmoothedData = await Task.Run(() => CalculateAquiferData(chunks, chunkCoord));
 
             aquiferDataCache[chunkCoord] = new AquiferChunkData
@@ -63,8 +63,6 @@ public class AquiferSystem
                 SmoothedData = preSmoothedData
             };
         }
-
-        // Smooth data asynchronously with neighbors
         await Task.Run(() => SmoothWithNeighbors(chunkCoord));
     }
     public class LocalCounts
@@ -94,10 +92,9 @@ public class AquiferSystem
         object lockObj = new object();
         
         Parallel.For(0, chunks.Length, 
-            () => new LocalCounts(), // Local initializer
+            () => new LocalCounts(),
             (chunkIndex, state, localCounts) =>
             {
-                // Local computation
                 var chunk = chunks[chunkIndex];
                 if (chunk?.Blocks == null) return localCounts;
 
@@ -130,7 +127,6 @@ public class AquiferSystem
             },
             localCounts =>
             {
-                // Aggregate results
                 lock (lockObj)
                 {
                     normalWaterBlockCount += localCounts.NormalCount;
@@ -138,7 +134,6 @@ public class AquiferSystem
                     boilingWaterBlockCount += localCounts.BoilingCount;
                 }
             });
-        // Apply the saltwater multiplier
         int adjustedWaterBlockCount = normalWaterBlockCount + (int)(saltWaterBlockCount * saltWaterMultiplier) +
                                       (boilingWaterBlockCount * boilingWaterMultiplier);
 
@@ -184,8 +179,6 @@ public class AquiferSystem
         double centralWeight = 2.0 + Math.Sqrt(centralChunkRating) / 10.0;
         totalWeightedRating += centralChunkRating * centralWeight;
         totalWeight += centralWeight;
-
-        // Parallel processing of neighbors
         var neighborCoords = new List<Vec2i>();
 
         for (int dx = -radius; dx <= radius; dx++)
@@ -256,7 +249,7 @@ public class AquiferSystem
     [ProtoContract]
     public class AquiferData
     {
-        [ProtoMember(1)] // Field order for serialization
+        [ProtoMember(1)]
         public int AquiferRating { get; set; }
 
         [ProtoMember(2)]
@@ -274,14 +267,8 @@ public class AquiferSystem
     public void ClearAquiferData()
     {
         if (!isEnabled) return;
-
-        // Clear the in-memory cache
         aquiferDataCache.Clear();
-
-        // Remove the saved data from the save game storage
         serverAPI.WorldManager.SaveGame.StoreData("aquiferData", null);
-
-        // Optionally notify the server console or log
         serverAPI.Logger.Notification("Aquifer data has been cleared.");
     }
 }

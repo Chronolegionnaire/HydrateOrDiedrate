@@ -2,4 +2,6 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7B8B6CDA_002D6372_002D41D9_002DA965_002DED8194257F50_002Fd_003Asrc_002Fd_003Apatches_002Ff_003ACharacterExtraDialogsPatch_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
   &lt;Assembly Path="C:\Users\bryan\AppData\Roaming\Vintagestory\VintagestoryAPI.dll" /&gt;&#xD;
+  &lt;Assembly Path="C:\Users\bryan\RiderProjects\HydrateOrDiedrate\HydrateOrDiedrate\lib\configlib.dll" /&gt;&#xD;
+  &lt;Assembly Path="C:\Users\bryan\RiderProjects\HydrateOrDiedrate\HydrateOrDiedrate\lib\ImGui.NET.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>

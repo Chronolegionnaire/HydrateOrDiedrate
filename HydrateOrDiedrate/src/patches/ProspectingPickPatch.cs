@@ -41,8 +41,6 @@ public static class PrintProbeResultsPatch
                     : GetAquiferDescription(aquiferData.IsSalty, aquiferData.AquiferRating);
                 SendMessageToPlayer(world, splr, aquiferInfo);
             }
-
-            // Reset the flag after a short delay
             world.RegisterCallback(_ =>
             {
                 splr.Entity?.WatchedAttributes.SetBool(flagKey, false);

@@ -8,6 +8,7 @@ using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.Tun;
+using HydrateOrDiedrate.wellwater;
 using HydrateOrDiedrate.XSkill;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -220,6 +221,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
         
         api.RegisterBlockClass("BlockTun", typeof(BlockTun));
         api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
+        
+        api.RegisterBlockClass("BlockwellWater", typeof(BlockWellWater));
+        api.RegisterBlockClass("BlockwellWaterfall", typeof(BlockWellWaterfall));
+        api.RegisterBlockClass("BlockwellWaterflowing", typeof(BlockWellWaterflowing));
 
         if (LoadedConfig.EnableThirstMechanics)
         {
@@ -321,7 +326,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 aquiferSystem.ClearAquiferData();
                 api.SendMessage(player, groupId, "Aquifer data has been cleared successfully.", EnumChatType.Notification);
             }, 
-            Privilege.controlserver // Restrict to players with the "controlserver" privilege
+            Privilege.controlserver 
         );
     }
 

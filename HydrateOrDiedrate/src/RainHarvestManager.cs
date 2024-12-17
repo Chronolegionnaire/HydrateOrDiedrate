@@ -18,7 +18,7 @@ public class RainHarvesterManager
     private Dictionary<BlockPos, RainHarvesterData> inactiveHarvesters;
     private long tickListenerId;
     private int globalTickCounter = 1;
-    private ConcurrentQueue<Action> taskQueue;  // Task queue for background processing
+    private ConcurrentQueue<Action> taskQueue;
     private CancellationTokenSource cancellationTokenSource;
     private Thread workerThread;
 
@@ -30,8 +30,6 @@ public class RainHarvesterManager
         inactiveHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
         taskQueue = new ConcurrentQueue<Action>();
         cancellationTokenSource = new CancellationTokenSource();
-
-        // Start worker thread for background tasks
         workerThread = new Thread(ProcessTaskQueue)
         {
             IsBackground = true
@@ -94,8 +92,6 @@ public class RainHarvesterManager
     private void ScheduleTickProcessing(float deltaTime)
     {
         if (!serverAPI.World.AllOnlinePlayers.Any()) return;
-
-        // Add a task to the queue for processing the active harvesters
         taskQueue.Enqueue(() => ProcessTick(deltaTime));
     }
 
@@ -201,7 +197,7 @@ public class RainHarvesterManager
                     serverAPI.Logger.Error($"Error in RainHarvesterManager: {ex}");
                 }
             }
-            Thread.Sleep(10);  // Avoid busy-waiting
+            Thread.Sleep(10);
         }
     }
 
