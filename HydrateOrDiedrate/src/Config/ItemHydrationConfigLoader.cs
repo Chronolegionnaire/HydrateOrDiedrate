@@ -433,6 +433,36 @@ namespace HydrateOrDiedrate.Config
                     },
                     new JObject
                     {
+                        ["itemname"] = "hydrateordiedrate:wellwaterportion-fresh",
+                        ["hydration"] = 750,
+                        ["IsLiquid"] = true
+                    },
+                    new JObject
+                    {
+                        ["itemname"] = "hydrateordiedrate:wellwaterportion-salt",
+                        ["hydration"] = -600,
+                        ["IsLiquid"] = true
+                    },
+                    new JObject
+                    {
+                        ["itemname"] = "hydrateordiedrate:wellwaterportion-muddy",
+                        ["hydration"] = 600,
+                        ["IsLiquid"] = true
+                    },
+                    new JObject
+                    {
+                        ["itemname"] = "hydrateordiedrate:wellwaterportion-tainted",
+                        ["hydration"] = 750,
+                        ["IsLiquid"] = true
+                    },
+                    new JObject
+                    {
+                        ["itemname"] = "hydrateordiedrate:wellwaterportion-poisoned",
+                        ["hydration"] = 750,
+                        ["IsLiquid"] = true
+                    },
+                    new JObject
+                    {
                         ["itemname"] = "game:mushroom-*",
                         ["hydrationByType"] = new JObject
                         {

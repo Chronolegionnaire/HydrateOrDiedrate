@@ -225,7 +225,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockClass("BlockwellWater", typeof(BlockWellWater));
         api.RegisterBlockClass("BlockwellWaterfall", typeof(BlockWellWaterfall));
         api.RegisterBlockClass("BlockwellWaterflowing", typeof(BlockWellWaterflowing));
-
+        api.RegisterBlockBehaviorClass("BlockBehaviorWellWater", typeof(BlockBehaviorWellWater));
         if (LoadedConfig.EnableThirstMechanics)
         {
             api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));

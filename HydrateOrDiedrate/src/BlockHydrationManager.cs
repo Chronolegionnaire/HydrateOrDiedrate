@@ -140,5 +140,6 @@ public static class BlockHydrationManager
         public Dictionary<string, float> HydrationByType { get; set; }
         public bool IsBoiling { get; set; }
         public int HungerReduction { get; set; }
+        public int Health { get; set; } = 0;
     }
 }

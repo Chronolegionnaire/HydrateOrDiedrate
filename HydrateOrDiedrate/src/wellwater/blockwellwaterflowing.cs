@@ -12,12 +12,20 @@ namespace HydrateOrDiedrate.wellwater
 		public override void OnLoaded(ICoreAPI api)
 		{
 			base.OnLoaded(api);
+    
 			if (api.Side == EnumAppSide.Client)
 			{
 				(api as ICoreClientAPI).Settings.Int.AddWatcher("particleLevel", new OnSettingsChanged<int>(this.OnParticelLevelChanged));
 				this.OnParticelLevelChanged(0);
 			}
-			this.ParticleProperties[0].SwimOnLiquid = true;
+			if (this.ParticleProperties != null && this.ParticleProperties.Length > 0)
+			{
+				this.ParticleProperties[0].SwimOnLiquid = true;
+			}
+			else
+			{
+			}
+
 			this.isBoiling = this.HasBehavior<BlockBehaviorSteaming>(false);
 		}
 		private void OnParticelLevelChanged(int newValue)
@@ -34,22 +42,43 @@ namespace HydrateOrDiedrate.wellwater
 		}
 		public override void OnAsyncClientParticleTick(IAsyncParticleManager manager, BlockPos pos, float windAffectednessAtPos, float secondsTicking)
 		{
-			BlockBehavior[] blockBehaviors = this.BlockBehaviors;
-			for (int i = 0; i < blockBehaviors.Length; i++)
-			{
-				blockBehaviors[i].OnAsyncClientParticleTick(manager, pos, windAffectednessAtPos, secondsTicking);
-			}
-			if (this.api.World.Rand.NextDouble() > (double)this.particleQuantity)
+			if (this.api == null || this.api.World == null) return;
+
+			if (this.ParticleProperties == null || this.ParticleProperties.Length == 0 || this.ParticleProperties[0] == null)
 			{
 				return;
 			}
+
 			AdvancedParticleProperties bps = this.ParticleProperties[0];
-			bps.basePos.X = (double)pos.X;
-			bps.basePos.Y = (double)pos.Y;
-			bps.basePos.Z = (double)pos.Z;
-			bps.Velocity[0].avg = (float)base.PushVector.X * 500f;
-			bps.Velocity[1].avg = (float)base.PushVector.Y * 1000f;
-			bps.Velocity[2].avg = (float)base.PushVector.Z * 500f;
+
+			if (bps.Velocity == null || bps.Velocity.Length < 3 || bps.PosOffset == null || bps.PosOffset.Length < 2)
+			{
+				return;
+			}
+
+			if (base.PushVector == null)
+			{
+				return;
+			}
+			
+			if (this.BlockBehaviors != null)
+			{
+				for (int i = 0; i < this.BlockBehaviors.Length; i++)
+				{
+					this.BlockBehaviors[i]?.OnAsyncClientParticleTick(manager, pos, windAffectednessAtPos, secondsTicking);
+				}
+			}
+
+			if (this.api.World.Rand.NextDouble() > this.particleQuantity) return;
+			
+			bps.basePos.X = pos.X;
+			bps.basePos.Y = pos.Y;
+			bps.basePos.Z = pos.Z;
+
+			bps.Velocity[0].avg = (float)(base.PushVector.X * 500f);
+			bps.Velocity[1].avg = (float)(base.PushVector.Y * 1000f);
+			bps.Velocity[2].avg = (float)(base.PushVector.Z * 500f);
+
 			bps.GravityEffect.avg = 0.5f;
 			bps.HsvaColor[3].avg = 180f * Math.Min(1f, secondsTicking / 7f);
 			bps.Quantity.avg = 1f;
@@ -59,8 +88,10 @@ namespace HydrateOrDiedrate.wellwater
 			bps.Size.avg = 0.05f;
 			bps.Size.var = 0f;
 			bps.SizeEvolve = EvolvingNatFloat.create(EnumTransformFunction.LINEAR, 0.8f);
+
 			manager.Spawn(bps);
 		}
+
 		public override float GetTraversalCost(BlockPos pos, EnumAICreatureType creatureType)
 		{
 			if (creatureType == EnumAICreatureType.SeaCreature && !this.isBoiling)

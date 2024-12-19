@@ -12,6 +12,10 @@ namespace HydrateOrDiedrate.wellwater
 	{
 		public string Flow { get; set; }
 		public Vec3i FlowNormali { get; set; }
+		private bool freezable;
+		private Block iceBlock;
+		private float freezingPoint = -4f;
+		private bool isBoiling;
 		public bool IsLava
 		{
 			get
@@ -110,11 +114,24 @@ namespace HydrateOrDiedrate.wellwater
 		public override bool CanPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ref string failureCode)
 		{
 			Block oldBlock = world.BlockAccessor.GetBlock(blockSel.Position);
+
+			if (this.Variant["flow"] == "still" && this.LiquidLevel == 1)
+			{
+				if (oldBlock.Replaceable >= this.Replaceable)
+				{
+					return true;
+				}
+
+				failureCode = "notreplaceable";
+				return false;
+			}
+			
 			if (oldBlock.DisplacesLiquids(world.BlockAccessor, blockSel.Position) && !oldBlock.IsReplacableBy(this))
 			{
 				failureCode = "notreplaceable";
 				return false;
 			}
+
 			bool result = true;
 			if (byPlayer != null && !world.Claims.TryAccess(byPlayer, blockSel.Position, EnumBlockAccessFlags.BuildOrBreak))
 			{
@@ -122,6 +139,7 @@ namespace HydrateOrDiedrate.wellwater
 				failureCode = "claimed";
 				return false;
 			}
+
 			bool preventDefault = false;
 			foreach (BlockBehavior blockBehavior in this.BlockBehaviors)
 			{
@@ -137,6 +155,7 @@ namespace HydrateOrDiedrate.wellwater
 					return result;
 				}
 			}
+
 			return !preventDefault || result;
 		}
 		public override float GetTraversalCost(BlockPos pos, EnumAICreatureType creatureType)
@@ -151,9 +170,5 @@ namespace HydrateOrDiedrate.wellwater
 			}
 			return 99999f;
 		}
-		private bool freezable;
-		private Block iceBlock;
-		private float freezingPoint = -4f;
-		private bool isBoiling;
 	}
 }

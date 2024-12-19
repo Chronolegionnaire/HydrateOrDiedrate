@@ -9,16 +9,14 @@ namespace HydrateOrDiedrate.Patches
     {
         static bool Prefix(InWorldContainer __instance)
         {
-            // Get the inventory class name
             var inventoryClassName = __instance.Inventory?.ClassName;
-
-            // Skip processing for custom tun and keg entities
+            
             if (inventoryClassName == "tun" || inventoryClassName == "keg")
             {
-                return false; // Skip original method
+                return false;
             }
 
-            return true; // Continue with original method for other inventories
+            return true;
         }
     }
 }

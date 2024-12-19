@@ -185,8 +185,7 @@ namespace HydrateOrDiedrate
                 float hydrationValue = blockHydrationConfig.HydrationByType.ContainsKey("*")
                     ? blockHydrationConfig.HydrationByType["*"]
                     : 0f;
-                isDangerous =
-                    hydrationValue < 0 || blockHydrationConfig.IsBoiling;
+                isDangerous = hydrationValue < 0 || blockHydrationConfig.IsBoiling;
             }
 
             SendDrinkProgressToClient(player, progress, drinkData.IsDrinking, isDangerous);
@@ -210,9 +209,10 @@ namespace HydrateOrDiedrate
                         ? blockHydrationConfig.HydrationByType["*"]
                         : 0f;
                     float hungerReduction = blockHydrationConfig.HungerReduction;
-                    
+                    int healthEffect = blockHydrationConfig.Health;
+
                     thirstBehavior.ModifyThirst(hydrationValue);
-                    
+
                     if (hungerBehavior != null)
                     {
                         if (hungerBehavior.Saturation >= hungerReduction)
@@ -230,6 +230,17 @@ namespace HydrateOrDiedrate
                             StopDrinking(player, drinkData);
                             return;
                         }
+                    }
+                    if (healthEffect != 0)
+                    {
+                        var damageSource = new DamageSource
+                        {
+                            Source = EnumDamageSource.Internal,
+                            Type = healthEffect > 0 ? EnumDamageType.Heal : EnumDamageType.Poison
+                        };
+
+                        float damageAmount = Math.Abs(healthEffect);
+                        player.Entity.ReceiveDamage(damageSource, damageAmount);
                     }
 
                     if (isBoiling && _config.EnableBoilingWaterDamage)

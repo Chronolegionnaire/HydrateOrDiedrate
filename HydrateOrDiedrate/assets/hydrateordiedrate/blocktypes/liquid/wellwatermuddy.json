@@ -1,6 +1,5 @@
 ﻿{
-  "code": "wellwater",
-  "__comment": "BlockWaterfall and BlockWaterflowing merely contain some extra code for particle spawning, BlockWater contains code for extra checks on ambient sounds",
+  "code": "wellwatermuddy",
   "classByType": {
     "wellwater-d-*": "BlockwellWaterfall",
     "wellwater-still-*": "BlockwellWater",
@@ -8,7 +7,7 @@
   },
   "behaviors": [
     {
-      "name": "FiniteSpreadingLiquid",
+      "name": "BlockBehaviorWellWater",
       "properties": {
         "spreadDelay": 125,
         "liquidCollisionSound": "sizzle",
@@ -73,7 +72,7 @@
       "whenFilled": {
         "stack": {
           "type": "item",
-          "code": "hydrateordiedrate:wellwaterportion"
+          "code": "hydrateordiedrate:wellwaterportion-muddy"
         }
       }
     }
@@ -120,10 +119,10 @@
   "materialdensity": 1000,
   "creativeinventory": {
     "general": [
-      "wellwater-still-7"
+      "wellwatermuddy-still-7"
     ],
     "terrain": [
-      "wellwater-still-7"
+      "wellwatermuddy-still-7"
     ]
   },
   "replaceable": 9500,
@@ -140,12 +139,12 @@
     "*-7": 7
   },
   "textures": {
-    "all": {
-      "base": "game:block/liquid/water"
-    },
-    "specialSecondTexture": {
-      "base": "game:block/liquid/water2"
-    }
+      "all": {
+        "base": "hydrateordiedrate:watermuddy"
+      },
+      "specialSecondTexture": {
+        "base": "hydrateordiedrate:water2muddy"
+      }
   },
   "sidesolid": {
     "all": false
@@ -156,13 +155,13 @@
   "collisionbox": null,
   "selectionbox": null,
   "soundsByType": {
-    "water-still-*": {
+    "wellwatermuddy-still-*": {
       "place": "game:block/water",
       "inside": "game:walk/water",
       "ambient": "game:environment/waterwaves",
       "ambientBlockCount": 50
     },
-    "water-d-*": {
+    "wellwatermuddy-d-*": {
       "place": "game:block/water",
       "inside": "game:walk/water",
       "ambient": "game:environment/waterfall"
@@ -174,8 +173,8 @@
     }
   },
   "particlePropertiesByType": {
-    "water-still-*": [],
-    "water-d-*": [
+    "wellwatermuddy-still-*": [],
+    "wellwatermuddy-d-*": [
       {
         "comment": "North side",
         "hsvaColor": [

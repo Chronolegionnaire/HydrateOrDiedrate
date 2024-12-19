@@ -11,15 +11,21 @@ public class AquiferSystem
 {
     private readonly ICoreServerAPI serverAPI;
     private readonly ConcurrentDictionary<Vec2i, AquiferChunkData> aquiferDataCache;
+    private readonly ConcurrentQueue<(Vec2i chunkCoord, IWorldChunk[] chunks)> calculationQueue;
 
     private bool isEnabled;
+    private bool runGamePhaseReached;
 
     public AquiferSystem(ICoreServerAPI api)
     {
         serverAPI = api;
         aquiferDataCache = new ConcurrentDictionary<Vec2i, AquiferChunkData>();
+        calculationQueue = new ConcurrentQueue<(Vec2i, IWorldChunk[])>();
         isEnabled = true;
+        runGamePhaseReached = false;
+
         serverAPI.Event.ChunkColumnLoaded += OnChunkColumnLoaded;
+        serverAPI.Event.ServerRunPhase(EnumServerRunPhase.RunGame, OnRunGamePhaseEntered);
         serverAPI.Event.SaveGameLoaded += OnSaveGameLoaded;
         serverAPI.Event.GameWorldSave += OnSaveGameSaving;
     }
@@ -48,11 +54,32 @@ public class AquiferSystem
         if (!isEnabled) return;
         serverAPI.WorldManager.SaveGame.StoreData("aquiferData", aquiferDataCache);
     }
-
-    private async void OnChunkColumnLoaded(Vec2i chunkCoord, IWorldChunk[] chunks)
+    private void OnRunGamePhaseEntered()
+    {
+        runGamePhaseReached = true;
+        ProcessQueuedCalculations();
+    }
+    private void OnChunkColumnLoaded(Vec2i chunkCoord, IWorldChunk[] chunks)
     {
         if (!isEnabled) return;
-
+        if (runGamePhaseReached)
+        {
+            ProcessChunkColumn(chunkCoord, chunks);
+        }
+        else
+        {
+            calculationQueue.Enqueue((chunkCoord, chunks));
+        }
+    }
+    private void ProcessQueuedCalculations()
+    {
+        while (calculationQueue.TryDequeue(out var chunkData))
+        {
+            ProcessChunkColumn(chunkData.chunkCoord, chunkData.chunks);
+        }
+    }
+    private async void ProcessChunkColumn(Vec2i chunkCoord, IWorldChunk[] chunks)
+    {
         if (!aquiferDataCache.ContainsKey(chunkCoord))
         {
             var preSmoothedData = await Task.Run(() => CalculateAquiferData(chunks, chunkCoord));
@@ -83,57 +110,76 @@ public class AquiferSystem
         const double waterBlockMultiplier = 50.0;
         const double saltWaterMultiplier = 5.0;
         const int boilingWaterMultiplier = 1500;
-        const double randomMultiplierChance = 0.01;
+        const double randomMultiplierChance = 0.02;
 
         int worldSeed = serverAPI.WorldManager.SaveGame.Seed;
         int chunkSeed = worldSeed ^ (chunkCoord.X * 73856093) ^ (chunkCoord.Y * 19349663);
         Random random = new Random(chunkSeed);
 
         object lockObj = new object();
-        
-        Parallel.For(0, chunks.Length, 
-            () => new LocalCounts(),
-            (chunkIndex, state, localCounts) =>
+
+        Parallel.For(0, chunks.Length,
+    () => new LocalCounts(),
+    (chunkIndex, state, localCounts) =>
+    {
+        var chunk = chunks[chunkIndex];
+        if (chunk?.Blocks == null)
+        {
+            serverAPI.Logger.Warning($"Chunk at index {chunkIndex} is null or has no blocks.");
+            return localCounts;
+        }
+
+        try
+        {
+            int blockCount = chunk.Blocks.Length;
+
+            for (int y = 0; y < chunkSize; y += step)
             {
-                var chunk = chunks[chunkIndex];
-                if (chunk?.Blocks == null) return localCounts;
-
-                for (int y = 0; y < chunkSize; y += step)
+                for (int x = 0; x < chunkSize; x += step)
                 {
-                    for (int x = 0; x < chunkSize; x += step)
+                    for (int z = 0; z < chunkSize; z += step)
                     {
-                        for (int z = 0; z < chunkSize; z += step)
+                        int index = (y * chunkSize + z) * chunkSize + x;
+                        if (index < 0 || index >= blockCount)
                         {
-                            int index = (y * chunkSize + z) * chunkSize + x;
-                            if (index < 0 || index >= chunk.Blocks.Length) continue;
+                            serverAPI.Logger.Warning($"Index {index} out of range for chunk {chunkIndex}.");
+                            continue;
+                        }
 
-                            int blockId = chunk.Blocks[index];
-                            Block block = serverAPI.World.GetBlock(blockId);
-                            if (block == null) continue;
+                        int blockId = chunk.Blocks[index];
+                        if (blockId < 0) continue;
 
-                            if (block.Code.Path.Contains("boilingwater"))
-                                localCounts.BoilingCount++;
-                            else if (block.Code.Path.Contains("water"))
-                            {
-                                localCounts.NormalCount++;
-                                if (block.Code.Path.Contains("saltwater"))
-                                    localCounts.SaltCount++;
-                            }
+                        Block block = serverAPI.World?.GetBlock(blockId);
+                        if (block?.Code?.Path == null) continue;
+
+                        if (block.Code.Path.Contains("boilingwater"))
+                            localCounts.BoilingCount++;
+                        else if (block.Code.Path.Contains("water"))
+                        {
+                            localCounts.NormalCount++;
+                            if (block.Code.Path.Contains("saltwater"))
+                                localCounts.SaltCount++;
                         }
                     }
                 }
+            }
+        }
+        catch (Exception ex)
+        {
+            serverAPI.Logger.Error($"Error processing chunk at index {chunkIndex}: {ex}");
+        }
 
-                return localCounts;
-            },
-            localCounts =>
-            {
-                lock (lockObj)
-                {
-                    normalWaterBlockCount += localCounts.NormalCount;
-                    saltWaterBlockCount += localCounts.SaltCount;
-                    boilingWaterBlockCount += localCounts.BoilingCount;
-                }
-            });
+        return localCounts;
+    },
+    localCounts =>
+    {
+        lock (lockObj)
+        {
+            normalWaterBlockCount += localCounts.NormalCount;
+            saltWaterBlockCount += localCounts.SaltCount;
+            boilingWaterBlockCount += localCounts.BoilingCount;
+        }
+    });
         int adjustedWaterBlockCount = normalWaterBlockCount + (int)(saltWaterBlockCount * saltWaterMultiplier) +
                                       (boilingWaterBlockCount * boilingWaterMultiplier);
 
@@ -229,22 +275,17 @@ public class AquiferSystem
 
     public AquiferData GetAquiferData(Vec2i chunkCoord)
     {
-        if (!isEnabled) return null;
-
-        return aquiferDataCache.TryGetValue(chunkCoord, out var chunkData) ? chunkData.SmoothedData : null;
-    }
-
-    private IWorldChunk[] GetChunksForColumn(Vec2i chunkCoord)
-    {
-        int chunkHeight = serverAPI.World.BlockAccessor.MapSizeY / serverAPI.World.BlockAccessor.ChunkSize;
-        IWorldChunk[] chunks = new IWorldChunk[chunkHeight];
-
-        for (int i = 0; i < chunkHeight; i++)
+        if (!isEnabled)
         {
-            chunks[i] = serverAPI.World.BlockAccessor.GetChunk(chunkCoord.X, i, chunkCoord.Y);
+            return null;
         }
 
-        return chunks;
+        if (!aquiferDataCache.TryGetValue(chunkCoord, out var chunkData))
+        {
+            return null;
+        }
+
+        return chunkData.SmoothedData;
     }
     [ProtoContract]
     public class AquiferData
