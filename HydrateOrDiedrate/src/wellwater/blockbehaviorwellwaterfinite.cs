@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -9,7 +10,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.wellwater
 {
-	public class BlockBehaviorWellWater : BlockBehavior
+	public class BlockBehaviorWellWaterFinite : BlockBehavior
 	{
 		private const int MAXLEVEL = 7;
 		private const float MAXLEVEL_float = 7f;
@@ -21,7 +22,7 @@ namespace HydrateOrDiedrate.wellwater
 		private string collidesWith;
 		private AssetLocation liquidSourceCollisionReplacement;
 		private AssetLocation liquidFlowingCollisionReplacement;
-		public BlockBehaviorWellWater(Block block)
+		public BlockBehaviorWellWaterFinite(Block block)
 			: base(block)
 		{
 		}
@@ -29,9 +30,9 @@ namespace HydrateOrDiedrate.wellwater
 		{
 			base.Initialize(properties);
 			this.spreadDelay = properties["spreadDelay"].AsInt(0);
-			this.collisionReplaceSound = BlockBehaviorWellWater.CreateAssetLocation(properties, "sounds/", "liquidCollisionSound");
-			this.liquidSourceCollisionReplacement = BlockBehaviorWellWater.CreateAssetLocation(properties, "sourceReplacementCode");
-			this.liquidFlowingCollisionReplacement = BlockBehaviorWellWater.CreateAssetLocation(properties, "flowingReplacementCode");
+			this.collisionReplaceSound = BlockBehaviorWellWaterFinite.CreateAssetLocation(properties, "sounds/", "liquidCollisionSound");
+			this.liquidSourceCollisionReplacement = BlockBehaviorWellWaterFinite.CreateAssetLocation(properties, "sourceReplacementCode");
+			this.liquidFlowingCollisionReplacement = BlockBehaviorWellWaterFinite.CreateAssetLocation(properties, "flowingReplacementCode");
 			JsonObject jsonObject = properties["collidesWith"];
 			this.collidesWith = ((jsonObject != null) ? jsonObject.AsString(null) : null);
 		}
@@ -56,7 +57,7 @@ namespace HydrateOrDiedrate.wellwater
 			this.SpreadAndUpdateLiquidLevels(world, pos);
 			world.BulkBlockAccessor.Commit();
 			Block block = world.BlockAccessor.GetBlock(pos, 2);
-			if (block.HasBehavior<BlockBehaviorWellWater>(false))
+			if (block.HasBehavior<BlockBehaviorWellWaterFinite>(false))
 			{
 				this.updateOwnFlowDir(block, world, pos);
 			}
@@ -65,7 +66,7 @@ namespace HydrateOrDiedrate.wellwater
 			{
 				npos.Set(pos.X + val.Normali.X, pos.Y, pos.Z + val.Normali.Z);
 				Block neib = world.BlockAccessor.GetBlock(npos, 2);
-				if (neib.HasBehavior<BlockBehaviorWellWater>(false))
+				if (neib.HasBehavior<BlockBehaviorWellWaterFinite>(false))
 				{
 					this.updateOwnFlowDir(neib, world, npos);
 				}
@@ -101,7 +102,7 @@ namespace HydrateOrDiedrate.wellwater
 							{
 								BlockFacing.HORIZONTALS[i].IterateThruFacingOffsets(npos);
 								Block nblock = world.BlockAccessor.GetBlock(npos, 2);
-								if (nblock.HasBehavior<BlockBehaviorFiniteSpreadingLiquid>(false))
+								if (nblock.HasBehavior<BlockBehaviorWellWaterFinite>(false))
 								{
 									this.updateOwnFlowDir(nblock, world, npos);
 								}
@@ -144,7 +145,6 @@ namespace HydrateOrDiedrate.wellwater
 			}
 			return nearbySourceBlockCount;
 		}
-		
 		private void FlowTowardDownwardPaths(List<PosAndDist> downwardPaths, Block liquidBlock, Block solidBlock, BlockPos pos, IWorldAccessor world)
 		{
 			foreach (PosAndDist pod in downwardPaths)
@@ -208,6 +208,10 @@ namespace HydrateOrDiedrate.wellwater
 		}
 		private void ReplaceLiquidBlock(Block liquidBlock, BlockPos pos, IWorldAccessor world)
 		{
+			if (liquidBlock.Variant["createdBy"] == "natural")
+			{
+				return;
+			}
 			Block replacementBlock = this.GetReplacementBlock(liquidBlock, world);
 			if (replacementBlock != null)
 			{
@@ -222,12 +226,30 @@ namespace HydrateOrDiedrate.wellwater
 				world.PlaySoundAt(this.collisionReplaceSound, pos, 0.0, null, true, 16f, 1f);
 			}
 		}
+
 		private void SpreadLiquid(int blockId, BlockPos pos, IWorldAccessor world)
 		{
-			world.BulkBlockAccessor.SetBlock(blockId, pos, 2);
+			Block block = world.GetBlock(blockId);
+
+			if (block == null)
+			{
+				return;
+			}
+			string waterType = block.Variant["type"];
+			string flow = block.Variant["flow"];
+			AssetLocation newCode = block.CodeWithVariants(new Dictionary<string, string>
+			{
+				{ "createdBy", "spreading" },
+				{ "flow", flow }
+			});
+			Block spreadingBlock = world.GetBlock(newCode);
+
+			if (spreadingBlock == null)
+			{
+				return;
+			}
+			world.BulkBlockAccessor.SetBlock(spreadingBlock.BlockId, pos, 2);
 			world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), pos, this.spreadDelay);
-			Block ourBlock = world.GetBlock(blockId);
-			this.TryReplaceNearbyLiquidBlocks(ourBlock, pos, world);
 		}
 		private void updateOwnFlowDir(Block block, IWorldAccessor world, BlockPos pos)
 		{
@@ -291,19 +313,19 @@ namespace HydrateOrDiedrate.wellwater
 		private void UpdateNeighbouringLiquids(BlockPos pos, IWorldAccessor world)
 		{
 			BlockPos npos = pos.DownCopy(1);
-			if (world.BlockAccessor.GetBlock(npos, 2).HasBehavior<BlockBehaviorFiniteSpreadingLiquid>(false))
+			if (world.BlockAccessor.GetBlock(npos, 2).HasBehavior<BlockBehaviorWellWaterFinite>(false))
 			{
 				world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), npos.Copy(), this.spreadDelay);
 			}
 			npos.Up(2);
-			if (world.BlockAccessor.GetBlock(npos, 2).HasBehavior<BlockBehaviorFiniteSpreadingLiquid>(false))
+			if (world.BlockAccessor.GetBlock(npos, 2).HasBehavior<BlockBehaviorWellWaterFinite>(false))
 			{
 				world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), npos.Copy(), this.spreadDelay);
 			}
 			foreach (Cardinal val in Cardinal.ALL)
 			{
 				npos.Set(pos.X + val.Normali.X, pos.Y, pos.Z + val.Normali.Z);
-				if (world.BlockAccessor.GetBlock(npos, 2).HasBehavior<BlockBehaviorFiniteSpreadingLiquid>(false))
+				if (world.BlockAccessor.GetBlock(npos, 2).HasBehavior<BlockBehaviorWellWaterFinite>(false))
 				{
 					world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), npos.Copy(), this.spreadDelay);
 				}
@@ -332,16 +354,44 @@ namespace HydrateOrDiedrate.wellwater
 		}
 		private bool IsLiquidSourceBlock(Block block)
 		{
-			return block.LiquidLevel == 7;
+			return block.Variant["createdBy"] == "natural";
 		}
-		
-		private bool TryLoweringLiquidLevel(Block ourBlock, IWorldAccessor world, BlockPos pos)
+		public bool TryLoweringLiquidLevel(Block ourBlock, IWorldAccessor world, BlockPos pos)
 		{
+			var ourSolid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid);
+			var aqueductInterface = ourSolid.GetType().GetInterface("IAqueduct");
+
+			if (aqueductInterface != null)
+			{
+				var blockEntity = world.BlockAccessor.GetBlockEntity(pos);
+				if (blockEntity != null)
+				{
+					var blockEntityType = blockEntity.GetType();
+					if (blockEntityType.Name == "BlockEntityAqueduct")
+					{
+						var waterLevelProperty = blockEntityType.GetProperty("WaterLevel", BindingFlags.Public | BindingFlags.Instance);
+						var waterLevel = (int)waterLevelProperty?.GetValue(blockEntity);
+						var waterSourcePosProperty = blockEntityType.GetProperty("WaterSourcePos", BindingFlags.Public | BindingFlags.Instance);
+						var waterSourcePos = waterSourcePosProperty?.GetValue(blockEntity);
+						if (ourBlock.LiquidLevel == 1 && IsLiquidSourceBlock(ourBlock))
+						{
+							return false;
+						}
+
+						if (ourBlock.LiquidLevel - 1 <= waterLevel && waterSourcePos != null)
+						{
+							return false;
+						}
+					}
+				}
+			}
+
 			if (!this.IsLiquidSourceBlock(ourBlock) && this.GetMaxNeighbourLiquidLevel(ourBlock, world, pos) <= ourBlock.LiquidLevel)
 			{
 				this.LowerLiquidLevelAndNotifyNeighbors(ourBlock, pos, world);
 				return true;
 			}
+
 			return false;
 		}
 		private void LowerLiquidLevelAndNotifyNeighbors(Block block, BlockPos pos, IWorldAccessor world)
@@ -497,6 +547,10 @@ namespace HydrateOrDiedrate.wellwater
 			Block neighborLiquid = world.BlockAccessor.GetBlock(npos, 2);
 			if (neighborLiquid.LiquidCode == ourblock.LiquidCode)
 			{
+				if (neighborLiquid.Variant["createdBy"] == "natural" && ourblock.Variant["createdBy"] == "spreading")
+				{
+					return false;
+				}
 				return neighborLiquid.LiquidLevel < ourblock.LiquidLevel;
 			}
 			if (neighborLiquid.LiquidLevel == 7 && !this.IsDifferentCollidableLiquid(ourblock, neighborLiquid))
@@ -512,7 +566,7 @@ namespace HydrateOrDiedrate.wellwater
 		public override bool IsReplacableBy(Block byBlock, ref EnumHandling handled)
 		{
 			handled = EnumHandling.PreventDefault;
-			return (this.block.IsLiquid() || this.block.Replaceable >= BlockBehaviorFiniteSpreadingLiquid.ReplacableThreshold) && byBlock.Replaceable <= this.block.Replaceable;
+			return (this.block.IsLiquid() || this.block.Replaceable >= BlockBehaviorWellWaterFinite.ReplacableThreshold) && byBlock.Replaceable <= this.block.Replaceable;
 		}
 		public List<PosAndDist> FindDownwardPaths(IWorldAccessor world, BlockPos pos, Block ourBlock)
 		{
@@ -520,15 +574,15 @@ namespace HydrateOrDiedrate.wellwater
 			Queue<BlockPos> uncheckedPositions = new Queue<BlockPos>();
 			int shortestPath = 99;
 			BlockPos npos = new BlockPos(pos.dimension);
-			for (int i = 0; i < BlockBehaviorFiniteSpreadingLiquid.downPaths.Length; i++)
+			for (int i = 0; i < BlockBehaviorWellWaterFinite.downPaths.Length; i++)
 			{
-				Vec2i offset = BlockBehaviorFiniteSpreadingLiquid.downPaths[i];
+				Vec2i offset = BlockBehaviorWellWaterFinite.downPaths[i];
 				npos.Set(pos.X + offset.X, pos.Y - 1, pos.Z + offset.Y);
 				Block block = world.BlockAccessor.GetBlock(npos);
 				npos.Y++;
 				Block block2 = world.BlockAccessor.GetBlock(npos, 2);
 				Block aboveblock = world.BlockAccessor.GetBlock(npos, 1);
-				if (block2.LiquidLevel < ourBlock.LiquidLevel && block.Replaceable >= BlockBehaviorFiniteSpreadingLiquid.ReplacableThreshold && aboveblock.Replaceable >= BlockBehaviorFiniteSpreadingLiquid.ReplacableThreshold)
+				if (block2.LiquidLevel < ourBlock.LiquidLevel && block.Replaceable >= BlockBehaviorWellWaterFinite.ReplacableThreshold && aboveblock.Replaceable >= BlockBehaviorWellWaterFinite.ReplacableThreshold)
 				{
 					uncheckedPositions.Enqueue(new BlockPos(pos.X + offset.X, pos.Y, pos.Z + offset.Y, pos.dimension));
 					BlockPos foundPos = this.BfsSearchPath(world, uncheckedPositions, pos, ourBlock);
@@ -600,15 +654,14 @@ namespace HydrateOrDiedrate.wellwater
 			}
 			if (this.block.LiquidCode == "lava")
 			{
-				return world.BlockAccessor.GetBlockAbove(pos, 1, 0).Replaceable > BlockBehaviorFiniteSpreadingLiquid.ReplacableThreshold;
+				return world.BlockAccessor.GetBlockAbove(pos, 1, 0).Replaceable > BlockBehaviorWellWaterFinite.ReplacableThreshold;
 			}
 			handled = EnumHandling.PassThrough;
 			return false;
 		}
-
 		private static AssetLocation CreateAssetLocation(JsonObject properties, string propertyName)
 		{
-			return BlockBehaviorWellWater.CreateAssetLocation(properties, null, propertyName);
+			return BlockBehaviorWellWaterFinite.CreateAssetLocation(properties, null, propertyName);
 		}
 		private static AssetLocation CreateAssetLocation(JsonObject properties, string prefix, string propertyName)
 		{

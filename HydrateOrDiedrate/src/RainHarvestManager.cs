@@ -79,16 +79,6 @@ public class RainHarvesterManager
         }
     }
 
-    public void OnBlockRemoved(BlockPos position)
-    {
-        UnregisterHarvester(position);
-    }
-
-    public void OnBlockUnloaded(BlockPos position)
-    {
-        UnregisterHarvester(position);
-    }
-
     private void ScheduleTickProcessing(float deltaTime)
     {
         if (!serverAPI.World.AllOnlinePlayers.Any()) return;
@@ -101,48 +91,53 @@ public class RainHarvesterManager
         if (globalTickCounter > 10) globalTickCounter = 1;
 
         List<BlockPos> toRemove = new List<BlockPos>();
-        foreach (var entry in activeHarvesters)
+        
+        lock (activeHarvesters)
         {
-            BlockPos position = entry.Key;
-            RainHarvesterData harvesterData = entry.Value;
-            float rainIntensity = harvesterData.GetRainIntensity();
-
-            harvesterData.UpdateCalculatedTickInterval(deltaTime, serverAPI.World.Calendar.SpeedOfTime,
-                serverAPI.World.Calendar.CalendarSpeedMul, rainIntensity);
-
-            int tickIntervalDifference = harvesterData.calculatedTickInterval - harvesterData.previousCalculatedTickInterval;
-            harvesterData.adaptiveTickInterval += tickIntervalDifference;
-
-            if (harvesterData.adaptiveTickInterval <= globalTickCounter &&
-                harvesterData.previousCalculatedTickInterval > globalTickCounter)
+            foreach (var entry in activeHarvesters.ToList())
             {
-                harvesterData.adaptiveTickInterval = globalTickCounter + 2;
-            }
+                BlockPos position = entry.Key;
+                RainHarvesterData harvesterData = entry.Value;
+                float rainIntensity = harvesterData.GetRainIntensity();
 
-            if (harvesterData.adaptiveTickInterval > 10)
-            {
-                harvesterData.adaptiveTickInterval -= 10;
-            }
+                harvesterData.UpdateCalculatedTickInterval(deltaTime, serverAPI.World.Calendar.SpeedOfTime,
+                    serverAPI.World.Calendar.CalendarSpeedMul, rainIntensity);
 
-            if (globalTickCounter == harvesterData.adaptiveTickInterval)
-            {
-                int newAdaptiveTickInterval = harvesterData.adaptiveTickInterval + harvesterData.calculatedTickInterval;
-                if (newAdaptiveTickInterval > 10)
+                int tickIntervalDifference =
+                    harvesterData.calculatedTickInterval - harvesterData.previousCalculatedTickInterval;
+                harvesterData.adaptiveTickInterval += tickIntervalDifference;
+
+                if (harvesterData.adaptiveTickInterval <= globalTickCounter &&
+                    harvesterData.previousCalculatedTickInterval > globalTickCounter)
                 {
-                    newAdaptiveTickInterval -= 10;
+                    harvesterData.adaptiveTickInterval = globalTickCounter + 2;
                 }
 
-                harvesterData.adaptiveTickInterval = newAdaptiveTickInterval;
-
-                harvesterData.OnHarvest(rainIntensity);
-
-                if (!IsRainyAndOpenToSky(harvesterData))
+                if (harvesterData.adaptiveTickInterval > 10)
                 {
-                    toRemove.Add(position);
+                    harvesterData.adaptiveTickInterval -= 10;
+                }
+
+                if (globalTickCounter == harvesterData.adaptiveTickInterval)
+                {
+                    int newAdaptiveTickInterval =
+                        harvesterData.adaptiveTickInterval + harvesterData.calculatedTickInterval;
+                    if (newAdaptiveTickInterval > 10)
+                    {
+                        newAdaptiveTickInterval -= 10;
+                    }
+
+                    harvesterData.adaptiveTickInterval = newAdaptiveTickInterval;
+
+                    harvesterData.OnHarvest(rainIntensity);
+
+                    if (!IsRainyAndOpenToSky(harvesterData))
+                    {
+                        toRemove.Add(position);
+                    }
                 }
             }
         }
-
         lock (activeHarvesters)
         {
             foreach (var pos in toRemove)
@@ -157,26 +152,31 @@ public class RainHarvesterManager
     {
         taskQueue.Enqueue(() =>
         {
-            var toActivate = new ConcurrentBag<BlockPos>();
-
-            foreach (var entry in inactiveHarvesters)
+            List<BlockPos> toActivate = new List<BlockPos>();
+            
+            lock (inactiveHarvesters)
             {
-                BlockPos position = entry.Key;
-                RainHarvesterData harvesterData = entry.Value;
-
-                if (IsRainyAndOpenToSky(harvesterData))
+                foreach (var entry in inactiveHarvesters.ToList())
                 {
-                    toActivate.Add(position);
+                    BlockPos position = entry.Key;
+                    RainHarvesterData harvesterData = entry.Value;
+
+                    if (IsRainyAndOpenToSky(harvesterData))
+                    {
+                        toActivate.Add(position);
+                    }
                 }
             }
-
-            foreach (var position in toActivate)
+            
+            lock (activeHarvesters)
             {
-                lock (activeHarvesters)
+                foreach (var position in toActivate)
                 {
-                    RainHarvesterData harvesterData = inactiveHarvesters[position];
-                    inactiveHarvesters.Remove(position);
-                    activeHarvesters[position] = harvesterData;
+                    if (inactiveHarvesters.TryGetValue(position, out RainHarvesterData harvesterData))
+                    {
+                        inactiveHarvesters.Remove(position);
+                        activeHarvesters[position] = harvesterData;
+                    }
                 }
             }
         });

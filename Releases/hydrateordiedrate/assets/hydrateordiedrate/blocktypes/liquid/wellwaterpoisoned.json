@@ -1,13 +1,13 @@
 ﻿{
   "code": "wellwaterpoisoned",
   "classByType": {
-    "wellwater-d-*": "BlockwellWaterfall",
-    "wellwater-still-*": "BlockwellWater",
-    "*": "BlockwellWaterflowing"
+    "wellwaterpoisoned-*-d-*": "BlockWaterfall",
+    "wellwaterpoisoned-*-still-*": "BlockWater",
+    "*": "BlockWaterflowing"
   },
   "behaviors": [
     {
-      "name": "BlockBehaviorWellWater",
+      "name": "BlockBehaviorWellWaterFinite",
       "properties": {
         "spreadDelay": 125,
         "liquidCollisionSound": "sizzle",
@@ -20,47 +20,47 @@
   "attributes": {
     "smothersFire": true,
     "pushVectorByType": {
-      "*-n-*": {
+      "*-*-n-*": {
         "x": 0,
         "y": 0,
         "z": -0.0015
       },
-      "*-ne-*": {
+      "*-*-ne-*": {
         "x": 0.0015,
         "y": 0,
         "z": -0.0015
       },
-      "*-e-*": {
+      "*-*-e-*": {
         "x": 0.0015,
         "y": 0,
         "z": 0
       },
-      "*-se-*": {
+      "*-*-se-*": {
         "x": 0.0015,
         "y": 0,
         "z": 0.0015
       },
-      "*-s-*": {
+      "*-*-s-*": {
         "x": 0,
         "y": 0,
         "z": 0.0015
       },
-      "*-sw-*": {
+      "*-*-sw-*": {
         "x": -0.0015,
         "y": 0,
         "z": 0.0015
       },
-      "*-w-*": {
+      "*-*-w-*": {
         "x": -0.0015,
         "y": 0,
         "z": 0
       },
-      "*-nw-*": {
+      "*-*-nw-*": {
         "x": -0.0015,
         "y": 0,
         "z": -0.0015
       },
-      "*-d-*": {
+      "*-*-d-*": {
         "x": 0,
         "y": -0.003,
         "z": 0
@@ -68,7 +68,7 @@
     },
     "waterTightContainerProps": {
       "containable": true,
-      "itemsPerLitre": 0.001,
+      "itemsPerLitre": 70.0,
       "whenFilled": {
         "stack": {
           "type": "item",
@@ -81,6 +81,13 @@
     "base": "game:block/basic/cube"
   },
   "variantgroups": [
+    {
+      "code": "createdBy",
+      "states": [
+        "natural",
+        "spreading"
+      ]
+    },
     {
       "code": "flow",
       "states": [
@@ -114,15 +121,15 @@
   "matterstate": "liquid",
   "blockmaterial": "liquid",
   "faceCullMode": "liquid",
-  "liquidCode": "water",
+  "liquidCode": "wellwater",
   "snowCoverage": false,
   "materialdensity": 1000,
   "creativeinventory": {
     "general": [
-      "wellwaterpoisoned-still-7"
+      "wellwaterpoisoned-natural-still-7"
     ],
     "terrain": [
-      "wellwaterpoisoned-still-7"
+      "wellwaterpoisoned-natural-still-7"
     ]
   },
   "replaceable": 9500,
@@ -155,13 +162,13 @@
   "collisionbox": null,
   "selectionbox": null,
   "soundsByType": {
-    "wellwaterpoisoned-still-*": {
+    "*-*-still-*": {
       "place": "game:block/water",
       "inside": "game:walk/water",
       "ambient": "game:environment/waterwaves",
       "ambientBlockCount": 50
     },
-    "wellwaterpoisoned-d-*": {
+    "*-*-d-*": {
       "place": "game:block/water",
       "inside": "game:walk/water",
       "ambient": "game:environment/waterfall"
@@ -173,8 +180,8 @@
     }
   },
   "particlePropertiesByType": {
-    "wellwaterpoisoned-still-*": [],
-    "wellwaterpoisoned-d-*": [
+    "*-*-still-*": [],
+    "*-*-d-*": [
       {
         "comment": "North side",
         "hsvaColor": [
