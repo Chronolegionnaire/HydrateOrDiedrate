@@ -76,6 +76,17 @@ namespace HydrateOrDiedrate.wellwater
 		{
 			Block ourBlock = world.BlockAccessor.GetBlock(pos, 2);
 			int liquidLevel = ourBlock.LiquidLevel;
+			var naturalSourcePos = FindNaturalSourceInLiquidChain(world.BlockAccessor, pos);
+
+			if (naturalSourcePos == null)
+			{
+				if (liquidLevel > 0)
+				{
+					LowerLiquidLevelAndNotifyNeighbors(ourBlock, pos, world);
+				}
+
+				return;
+			}
 			if (liquidLevel > 0 && !this.TryLoweringLiquidLevel(ourBlock, world, pos))
 			{
 				pos.Y--;
@@ -356,44 +367,49 @@ namespace HydrateOrDiedrate.wellwater
 		{
 			return block.Variant["createdBy"] == "natural";
 		}
+
 		public bool TryLoweringLiquidLevel(Block ourBlock, IWorldAccessor world, BlockPos pos)
-		{
-			var ourSolid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid);
-			var aqueductInterface = ourSolid.GetType().GetInterface("IAqueduct");
+{
+    var ourSolid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid);
+    var aqueductInterface = ourSolid.GetType().GetInterface("IAqueduct");
 
-			if (aqueductInterface != null)
-			{
-				var blockEntity = world.BlockAccessor.GetBlockEntity(pos);
-				if (blockEntity != null)
-				{ 
-					var blockEntityType = blockEntity.GetType();
-					if (blockEntityType.Name == "BlockEntityAqueduct")
-					{
-						var waterLevelProperty = blockEntityType.GetProperty("WaterLevel", BindingFlags.Public | BindingFlags.Instance);
-						var waterLevel = (int)waterLevelProperty?.GetValue(blockEntity);
-						var waterSourcePosProperty = blockEntityType.GetProperty("WaterSourcePos", BindingFlags.Public | BindingFlags.Instance);
-						var waterSourcePos = waterSourcePosProperty?.GetValue(blockEntity);
-						if (ourBlock.LiquidLevel == 1)
-						{
-							return true;
-						}
+    if (aqueductInterface != null)
+    {
+        var blockEntity = world.BlockAccessor.GetBlockEntity(pos);
+        if (blockEntity != null)
+        {
+            var blockEntityType = blockEntity.GetType();
+            if (blockEntityType.Name == "BlockEntityAqueduct")
+            {
+                var waterLevelProperty = blockEntityType.GetProperty("WaterLevel", BindingFlags.Public | BindingFlags.Instance);
+                var waterLevel = (int)(waterLevelProperty?.GetValue(blockEntity) ?? 0);
 
-						if (ourBlock.LiquidLevel - 1 <= waterLevel && waterSourcePos != null)
-						{
-							return false;
-						}
-					}
-				}
-			}
+                var waterSourcePosProperty = blockEntityType.GetProperty("WaterSourcePos", BindingFlags.Public | BindingFlags.Instance);
+                var waterSourcePos = waterSourcePosProperty?.GetValue(blockEntity);
 
-			if (!this.IsLiquidSourceBlock(ourBlock) && this.GetMaxNeighbourLiquidLevel(ourBlock, world, pos) <= ourBlock.LiquidLevel)
-			{
-				this.LowerLiquidLevelAndNotifyNeighbors(ourBlock, pos, world);
-				return true;
-			}
+                var naturalSourcePos = FindNaturalSourceInLiquidChain(world.BlockAccessor, pos);
 
-			return false;
-		}
+                if (ourBlock.LiquidLevel == 1 && !IsLiquidSourceBlock(ourBlock) || naturalSourcePos == null)
+                {
+                    LowerLiquidLevelAndNotifyNeighbors(ourBlock, pos, world);
+                    return true;
+                }
+
+                if (ourBlock.LiquidLevel - 1 <= waterLevel && waterSourcePos != null)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    if (!this.IsLiquidSourceBlock(ourBlock) && this.GetMaxNeighbourLiquidLevel(ourBlock, world, pos) <= ourBlock.LiquidLevel)
+    {
+        this.LowerLiquidLevelAndNotifyNeighbors(ourBlock, pos, world);
+        return true;
+    }
+    return false;
+}
+
 		private void LowerLiquidLevelAndNotifyNeighbors(Block block, BlockPos pos, IWorldAccessor world)
 		{
 			this.SpreadLiquid(this.GetLessLiquidBlockId(world, pos, block), pos, world);
@@ -421,6 +437,36 @@ namespace HydrateOrDiedrate.wellwater
 				this.SpreadLiquid(this.GetLessLiquidBlockId(world, npos, ourblock), npos, world);
 			}
 		}
+		public BlockPos FindNaturalSourceInLiquidChain(IBlockAccessor blockAccessor, BlockPos pos, HashSet<BlockPos> visited = null)
+		{
+			if (visited == null) visited = new HashSet<BlockPos>();
+			if (visited.Contains(pos)) return null;
+			visited.Add(pos);
+			Block currentBlock = blockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
+			if (currentBlock != null && currentBlock.Variant["createdBy"] == "natural")
+			{
+				return pos;
+			}
+			foreach (BlockFacing facing in BlockFacing.ALLFACES)
+			{
+				BlockPos neighborPos = pos.AddCopy(facing);
+				Block neighborBlock = blockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
+				if (neighborBlock != null && neighborBlock.Code?.Domain == "game")
+				{
+					continue;
+				}
+				if (neighborBlock != null && neighborBlock.IsLiquid())
+				{
+					var naturalSourcePos = FindNaturalSourceInLiquidChain(blockAccessor, neighborPos, visited);
+					if (naturalSourcePos != null)
+					{
+						return naturalSourcePos;
+					}
+				}
+			}
+			return null;
+		}
+		
 		public int GetLessLiquidBlockId(IWorldAccessor world, BlockPos pos, Block block)
 		{
 			return this.GetLiquidBlockId(world, pos, block, block.LiquidLevel - 1);

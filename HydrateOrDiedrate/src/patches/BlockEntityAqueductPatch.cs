@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using HydrateOrDiedrate.wellwater;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -89,15 +90,49 @@ namespace HydrateOrDiedrate.patches
                 null
             );
         }
-
         [HarmonyPrefix]
         static bool Prefix(object __instance, float dt)
         {
             dynamic aqueduct = __instance;
             var api = aqueduct.Api;
             if (api == null) return false;
+
             var blockAccessor = api.World.BlockAccessor;
             var waterSourcePos = aqueduct.WaterSourcePos;
+            var liquidBlock = blockAccessor.GetBlock(aqueduct.Pos, BlockLayersAccess.Fluid);
+            if (liquidBlock != null && liquidBlock.IsLiquid())
+            {
+                int neighboringWaterCount = 0;
+                foreach (var facing in BlockFacing.HORIZONTALS)
+                {
+                    var neighborPos = aqueduct.Pos.AddCopy(facing);
+                    var neighborBlock = blockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
+
+                    if (neighborBlock != null && neighborBlock.IsLiquid() &&
+                        neighborBlock.LiquidCode == liquidBlock.LiquidCode)
+                    {
+                        neighboringWaterCount++;
+                    }
+
+                    if (neighboringWaterCount >= 2)
+                    {
+                        break;
+                    }
+                }
+                var blockBehavior = liquidBlock.GetBehavior<BlockBehaviorWellWaterFinite>();
+                if (blockBehavior != null)
+                {
+                    var naturalSourcePos = blockBehavior.FindNaturalSourceInLiquidChain(blockAccessor, aqueduct.Pos);
+                    if (neighboringWaterCount <= 2 && naturalSourcePos == null)
+                    {
+                        blockAccessor.SetBlock(0, aqueduct.Pos, BlockLayersAccess.Fluid);
+                        blockAccessor.TriggerNeighbourBlockUpdate(aqueduct.Pos);
+                        aqueduct.MarkDirty(true);
+                        return false;
+                    }
+                }
+            }
+
             if (waterSourcePos != null)
             {
                 var sourceBlock = blockAccessor.GetBlock(waterSourcePos, BlockLayersAccess.Fluid);
@@ -114,8 +149,10 @@ namespace HydrateOrDiedrate.patches
                     }
                 }
             }
+
             return true;
         }
+
         [HarmonyPostfix]
         static void Postfix(object __instance, float dt)
         {
