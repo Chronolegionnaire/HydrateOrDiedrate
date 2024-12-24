@@ -15,6 +15,7 @@ public class AquiferSystem
 
     private bool isEnabled;
     private bool runGamePhaseReached;
+    private bool isInitialized;
 
     public AquiferSystem(ICoreServerAPI api)
     {
@@ -23,21 +24,35 @@ public class AquiferSystem
         calculationQueue = new ConcurrentQueue<(Vec2i, IWorldChunk[])>();
         isEnabled = true;
         runGamePhaseReached = false;
+        isInitialized = false;
 
+        serverAPI.Event.PlayerNowPlaying += OnPlayerNowPlaying;
         serverAPI.Event.ChunkColumnLoaded += OnChunkColumnLoaded;
         serverAPI.Event.ServerRunPhase(EnumServerRunPhase.RunGame, OnRunGamePhaseEntered);
         serverAPI.Event.SaveGameLoaded += OnSaveGameLoaded;
         serverAPI.Event.GameWorldSave += OnSaveGameSaving;
-
-        // Setup retry mechanism
+        
         SetupRetryTimer();
+    }
+
+    private void OnPlayerNowPlaying(IPlayer player)
+    {
+        if (isInitialized) return;
+
+        isInitialized = true;
+        serverAPI.Logger.Notification("AquiferSystem: Marked as Initialized on PlayerNowPlaying event.");
+        
+        if (runGamePhaseReached)
+        {
+            ProcessQueuedCalculations();
+        }
     }
 
     public void SetEnabled(bool enabled)
     {
         isEnabled = enabled;
     }
-
+    
     private void OnSaveGameLoaded()
     {
         if (!isEnabled) return;
@@ -51,31 +66,32 @@ public class AquiferSystem
             }
         }
     }
-
+    
     private void OnSaveGameSaving()
     {
         if (!isEnabled) return;
         serverAPI.WorldManager.SaveGame.StoreData("aquiferData", aquiferDataCache);
     }
-
+    
     private void OnRunGamePhaseEntered()
     {
         runGamePhaseReached = true;
-        ProcessQueuedCalculations();
+        if (isInitialized)
+        {
+            ProcessQueuedCalculations();
+        }
     }
-
     private void OnChunkColumnLoaded(Vec2i chunkCoord, IWorldChunk[] chunks)
     {
         if (!isEnabled) return;
-
-        // Validate chunk data
+        
         if (!AreChunksValid(chunks))
         {
             calculationQueue.Enqueue((chunkCoord, chunks));
             return;
         }
-
-        if (runGamePhaseReached)
+        
+        if (isInitialized && runGamePhaseReached)
         {
             ProcessChunkColumn(chunkCoord, chunks);
         }
@@ -84,7 +100,6 @@ public class AquiferSystem
             calculationQueue.Enqueue((chunkCoord, chunks));
         }
     }
-
     private void ProcessQueuedCalculations()
     {
         var deferredQueue = new List<(Vec2i chunkCoord, IWorldChunk[] chunks)>();
@@ -100,8 +115,6 @@ public class AquiferSystem
                 deferredQueue.Add(chunkData);
             }
         }
-
-        // Requeue deferred chunks for later retries
         foreach (var deferredChunk in deferredQueue)
         {
             calculationQueue.Enqueue(deferredChunk);
@@ -120,7 +133,6 @@ public class AquiferSystem
                 SmoothedData = preSmoothedData
             };
         }
-
         await Task.Run(() => SmoothWithNeighbors(chunkCoord));
     }
 
@@ -135,16 +147,15 @@ public class AquiferSystem
         }
         return true;
     }
-
     private void SetupRetryTimer()
     {
         serverAPI.Event.RegisterGameTickListener(_ =>
         {
-            if (calculationQueue.Count > 0)
+            if (calculationQueue.Count > 0 && isInitialized && runGamePhaseReached)
             {
                 ProcessQueuedCalculations();
             }
-        }, 5000); // Retry every 5 seconds (5000 ms)
+        }, 5000);
     }
 
     private AquiferData CalculateAquiferData(IWorldChunk[] chunks, Vec2i chunkCoord)
@@ -173,10 +184,7 @@ public class AquiferSystem
                 (chunkIndex, state, localCounts) =>
                 {
                     var chunk = chunks[chunkIndex];
-                    if (chunk?.Blocks == null)
-                    {
-                        return localCounts;
-                    }
+                    if (chunk?.Blocks == null) return localCounts;
 
                     int blockCount = chunk.Blocks.Length;
 
@@ -196,7 +204,9 @@ public class AquiferSystem
                                 if (block?.Code?.Path == null) continue;
 
                                 if (block.Code.Path.Contains("boilingwater"))
+                                {
                                     localCounts.BoilingCount++;
+                                }
                                 else if (block.Code.Path.Contains("water"))
                                 {
                                     localCounts.NormalCount++;
@@ -219,15 +229,14 @@ public class AquiferSystem
                     }
                 });
 
-            int adjustedWaterBlockCount = normalWaterBlockCount + (int)(saltWaterBlockCount * saltWaterMultiplier) +
-                                          (boilingWaterBlockCount * boilingWaterMultiplier);
+            int adjustedWaterBlockCount = normalWaterBlockCount 
+                + (int)(saltWaterBlockCount * saltWaterMultiplier)
+                + (boilingWaterBlockCount * boilingWaterMultiplier);
 
             int maxBlocks = chunkSize * chunkSize * chunkSize / (step * step * step);
             double weightedWaterBlocks = adjustedWaterBlockCount * waterBlockMultiplier;
             int aquiferRating = maxBlocks > 0 ? (int)((weightedWaterBlocks / maxBlocks) * 100) : 0;
-
             aquiferRating = Math.Clamp(aquiferRating, 0, 100);
-
             if (random.NextDouble() < randomMultiplierChance)
             {
                 int baseRandomAddition = random.Next(1, 11);
@@ -239,7 +248,8 @@ public class AquiferSystem
                 aquiferRating = Math.Clamp(aquiferRating, 0, 100);
             }
 
-            bool isSalty = adjustedWaterBlockCount > 0 && (saltWaterBlockCount > adjustedWaterBlockCount * 0.5);
+            bool isSalty = adjustedWaterBlockCount > 0 
+                           && (saltWaterBlockCount > adjustedWaterBlockCount * 0.5);
 
             return new AquiferData
             {
@@ -247,7 +257,7 @@ public class AquiferSystem
                 IsSalty = isSalty
             };
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return new AquiferData { AquiferRating = 0, IsSalty = false };
         }
@@ -256,7 +266,6 @@ public class AquiferSystem
     private void SmoothWithNeighbors(Vec2i chunkCoord)
     {
         if (!isEnabled) return;
-
         if (!aquiferDataCache.TryGetValue(chunkCoord, out var chunkData)) return;
 
         int radius = 4;
@@ -264,12 +273,10 @@ public class AquiferSystem
         double totalWeightedRating = 0;
         double totalWeight = 0;
         bool anySalty = chunkData.PreSmoothedData.IsSalty;
-
         double centralWeight = 2.0 + Math.Sqrt(centralChunkRating) / 10.0;
         totalWeightedRating += centralChunkRating * centralWeight;
         totalWeight += centralWeight;
         var neighborCoords = new List<Vec2i>();
-
         for (int dx = -radius; dx <= radius; dx++)
         {
             for (int dy = -radius; dy <= radius; dy++)
@@ -284,7 +291,6 @@ public class AquiferSystem
         }
 
         object lockObj = new object();
-
         Parallel.ForEach(neighborCoords, neighborCoord =>
         {
             if (aquiferDataCache.TryGetValue(neighborCoord, out var neighborChunkData))
@@ -292,15 +298,16 @@ public class AquiferSystem
                 var neighborRating = neighborChunkData.PreSmoothedData.AquiferRating;
                 bool isNeighborSalty = neighborChunkData.PreSmoothedData.IsSalty;
 
-                double dist = Math.Sqrt(Math.Pow(neighborCoord.X - chunkCoord.X, 2) +
-                                        Math.Pow(neighborCoord.Y - chunkCoord.Y, 2));
+                double dist = Math.Sqrt(
+                    Math.Pow(neighborCoord.X - chunkCoord.X, 2) +
+                    Math.Pow(neighborCoord.Y - chunkCoord.Y, 2));
+
                 double neighborWeight = (1.0 / (1.0 + dist)) * (1.0 + Math.Sqrt(neighborRating) / 10.0);
 
                 lock (lockObj)
                 {
                     totalWeightedRating += neighborRating * neighborWeight;
                     totalWeight += neighborWeight;
-
                     if (isNeighborSalty) anySalty = true;
                 }
             }
@@ -318,16 +325,8 @@ public class AquiferSystem
 
     public AquiferData GetAquiferData(Vec2i chunkCoord)
     {
-        if (!isEnabled)
-        {
-            return null;
-        }
-
-        if (!aquiferDataCache.TryGetValue(chunkCoord, out var chunkData))
-        {
-            return null;
-        }
-
+        if (!isEnabled) return null;
+        if (!aquiferDataCache.TryGetValue(chunkCoord, out var chunkData)) return null;
         return chunkData.SmoothedData;
     }
 

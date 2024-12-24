@@ -1,39 +1,58 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
-using HardcoreWater.ModBlockEntity;
 
 namespace HydrateOrDiedrate.patches
 {
-    [HarmonyPatch(typeof(BlockEntityAqueduct))]
-    [HarmonyPatch("IsValidWaterSource", new System.Type[] { typeof(BlockPos), typeof(int) })]
+    [HarmonyPatch]
     public static class Patch_AqueductIsValidWaterSource
     {
-        static bool Prefix(BlockEntityAqueduct __instance, BlockPos blockPos, int minLevel, ref bool __result)
+        static bool Prepare()
         {
-            var api = __instance.Api;
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .Any(a => a.GetName().Name == "HardcoreWater");
+        }
+        static MethodBase TargetMethod()
+        {
+            var assembly = AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(a => a.GetName().Name == "HardcoreWater");
+            if (assembly == null) return null;
+            var aqueductType = assembly.GetType("HardcoreWater.ModBlockEntity.BlockEntityAqueduct");
+            if (aqueductType == null) return null;
+            return aqueductType.GetMethod(
+                "IsValidWaterSource",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                new Type[] { typeof(BlockPos), typeof(int) },
+                null
+            );
+        }
+        [HarmonyPrefix]
+        static bool Prefix(object __instance, BlockPos blockPos, int minLevel, ref bool __result)
+        {
+            dynamic aqueduct = __instance;
+            var api = aqueduct.Api;
             if (api == null)
             {
                 return true;
             }
             var blockAccessor = api.World.BlockAccessor;
             var block = blockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid);
-            if (block == null)
-            {
-                return true;
-            }
+            if (block == null) return true;
             if (block.Code?.Domain == "game")
             {
                 return true;
             }
+
             if (block.Code?.Domain == "hydrateordiedrate" && block.Code.Path.StartsWith("wellwater"))
             {
                 var tokens = block.Code.Path.Split('-');
                 if (tokens.Length >= 2)
                 {
-                    string createdBy = tokens[1]; // Check the second part of the code path (index 1)
+                    string createdBy = tokens[1];
                     int liquidLevel = block.LiquidLevel;
                     if (createdBy == "natural" && liquidLevel > 1)
                     {
@@ -47,78 +66,84 @@ namespace HydrateOrDiedrate.patches
             return true;
         }
     }
-
-    [HarmonyPatch(typeof(BlockEntityAqueduct))]
-    [HarmonyPatch("onServerTick1s")]
+    [HarmonyPatch]
     public static class Patch_AqueductOnServerTick1s
     {
-        static bool Prefix(BlockEntityAqueduct __instance, float dt)
+        static bool Prepare()
         {
-            var api = __instance.Api;
-            if (api == null)
-            {
-                return false;
-            }
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .Any(a => a.GetName().Name == "HardcoreWater");
+        }
+        static MethodBase TargetMethod()
+        {
+            var assembly = AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(a => a.GetName().Name == "HardcoreWater");
+            if (assembly == null) return null;
+            var aqueductType = assembly.GetType("HardcoreWater.ModBlockEntity.BlockEntityAqueduct");
+            if (aqueductType == null) return null;
+            return aqueductType.GetMethod(
+                "onServerTick1s",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                new Type[] { typeof(float) },
+                null
+            );
+        }
 
+        [HarmonyPrefix]
+        static bool Prefix(object __instance, float dt)
+        {
+            dynamic aqueduct = __instance;
+            var api = aqueduct.Api;
+            if (api == null) return false;
             var blockAccessor = api.World.BlockAccessor;
-            if (__instance.WaterSourcePos != null)
+            var waterSourcePos = aqueduct.WaterSourcePos;
+            if (waterSourcePos != null)
             {
-                var sourceBlock = blockAccessor.GetBlock(__instance.WaterSourcePos, BlockLayersAccess.Fluid);
+                var sourceBlock = blockAccessor.GetBlock(waterSourcePos, BlockLayersAccess.Fluid);
                 if (sourceBlock != null)
                 {
                     var domain = sourceBlock.Code?.Domain;
                     if (domain == "game")
                     {
-                        // Skip postfix and keep original method behavior
                         return true;
                     }
                     else if (domain == "hydrateordiedrate")
                     {
-                        // Skip original method and go to postfix
                         return false;
                     }
                 }
             }
-
-            return true; // Keep original method behavior if no condition matches
+            return true;
         }
-
-        static void Postfix(BlockEntityAqueduct __instance, float dt)
+        [HarmonyPostfix]
+        static void Postfix(object __instance, float dt)
         {
-            var api = __instance.Api;
-            if (api == null || __instance.WaterSourcePos == null)
-            {
-                return;
-            }
-
+            dynamic aqueduct = __instance;
+            var api = aqueduct.Api;
+            if (api == null) return;
+            var waterSourcePos = aqueduct.WaterSourcePos;
+            if (waterSourcePos == null) return;
             var blockAccessor = api.World.BlockAccessor;
-            var sourceBlock = blockAccessor.GetBlock(__instance.WaterSourcePos, BlockLayersAccess.Fluid);
+            var sourceBlock = blockAccessor.GetBlock(waterSourcePos, BlockLayersAccess.Fluid);
             if (sourceBlock != null && sourceBlock.Code?.Domain == "hydrateordiedrate")
             {
                 var tokens = sourceBlock.Code.Path.Split('-');
                 if (tokens.Length >= 4)
                 {
                     string liquidLevel = tokens[3];
-                    if (liquidLevel == "1")
-                    {
-                        return;
-                    }
-                    if (liquidLevel == "7")
-                    {
-                        liquidLevel = "6";
-                    }
+                    if (liquidLevel == "1") return;
+                    if (liquidLevel == "7") liquidLevel = "6";
                     string baseCode = tokens[0];
                     string createdBy = "spreading";
                     string still = tokens[2];
-
                     string newCode = $"hydrateordiedrate:{baseCode}-{createdBy}-{still}-{liquidLevel}";
                     var newWaterBlock = api.World.GetBlock(new AssetLocation(newCode));
-
                     if (newWaterBlock != null)
                     {
-                        blockAccessor.SetBlock(newWaterBlock.BlockId, __instance.Pos, BlockLayersAccess.Fluid);
-                        blockAccessor.TriggerNeighbourBlockUpdate(__instance.Pos);
-                        __instance.MarkDirty(true);
+                        blockAccessor.SetBlock(newWaterBlock.BlockId, aqueduct.Pos, BlockLayersAccess.Fluid);
+                        blockAccessor.TriggerNeighbourBlockUpdate(aqueduct.Pos);
+                        aqueduct.MarkDirty(true);
                     }
                 }
             }

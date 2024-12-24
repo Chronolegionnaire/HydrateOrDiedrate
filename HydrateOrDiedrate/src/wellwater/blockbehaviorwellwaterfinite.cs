@@ -365,7 +365,7 @@ namespace HydrateOrDiedrate.wellwater
 			{
 				var blockEntity = world.BlockAccessor.GetBlockEntity(pos);
 				if (blockEntity != null)
-				{
+				{ 
 					var blockEntityType = blockEntity.GetType();
 					if (blockEntityType.Name == "BlockEntityAqueduct")
 					{
@@ -373,9 +373,9 @@ namespace HydrateOrDiedrate.wellwater
 						var waterLevel = (int)waterLevelProperty?.GetValue(blockEntity);
 						var waterSourcePosProperty = blockEntityType.GetProperty("WaterSourcePos", BindingFlags.Public | BindingFlags.Instance);
 						var waterSourcePos = waterSourcePosProperty?.GetValue(blockEntity);
-						if (ourBlock.LiquidLevel == 1 && IsLiquidSourceBlock(ourBlock))
+						if (ourBlock.LiquidLevel == 1)
 						{
-							return false;
+							return true;
 						}
 
 						if (ourBlock.LiquidLevel - 1 <= waterLevel && waterSourcePos != null)

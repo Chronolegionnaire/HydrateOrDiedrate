@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Reference Include="HardcoreWater">
-          <HintPath>lib\HardcoreWater.dll</HintPath>
-          <Private>False</Private>
-        </Reference>
         <Reference Include="VintagestoryAPI">
             <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
             <Private>false</Private>
