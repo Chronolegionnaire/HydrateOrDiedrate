@@ -6,8 +6,6 @@ using Vintagestory.API.Server;
 using Vintagestory.API.Client;
 using Vintagestory.GameContent;
 
-
-
 namespace HydrateOrDiedrate
 {
     public class WaterInteractionHandler
@@ -45,7 +43,7 @@ namespace HydrateOrDiedrate
                 new Vec3f(0.1f, 0.2f, 0.1f)
             );
         }
-        
+
         public void Reset(Config.Config newConfig)
         {
             _config = newConfig;
@@ -81,17 +79,31 @@ namespace HydrateOrDiedrate
         public void CheckShiftRightClickBeforeInteractionForPlayer(float dt, IServerPlayer player)
         {
             if (player == null || player.Entity == null) return;
-            
+
             if (!player.Entity.WatchedAttributes.GetBool("isFullyInitialized", false)) return;
-            
+
             CheckPlayerInteraction(dt, player);
         }
+        private void StopDrinking(IServerPlayer player, PlayerDrinkData drinkData)
+        {
+            if (drinkData.IsDrinking)
+            {
+                drinkData.IsDrinking = false;
+                drinkData.DrinkStartTime = 0;
+                SendDrinkProgressToClient(player, 0f, false,false);
+            }
+        }
 
-
+        private bool IsHeadInWater(IServerPlayer player)
+        {
+            var headPos = player.Entity.ServerPos.XYZ.Add(0, player.Entity.LocalEyePos.Y, 0);
+            var headBlockPos = new BlockPos((int)headPos.X, (int)headPos.Y, (int)headPos.Z, (int)headPos.Y/32768);
+            var block = _api.World.BlockAccessor.GetBlock(headBlockPos);
+            return block.BlockMaterial == EnumBlockMaterial.Liquid;
+        }
         public void CheckPlayerInteraction(float dt, IServerPlayer player)
         {
             long currentTime = _api.World.ElapsedMilliseconds;
-
             if (!playerDrinkData.TryGetValue(player.PlayerUID, out var drinkData))
             {
                 drinkData = new PlayerDrinkData();
@@ -124,13 +136,18 @@ namespace HydrateOrDiedrate
                 }
 
                 var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
-                
-                var blockHydrationConfig = BlockHydrationManager.GetBlockHydration(block.Code.Path);
 
-                if (block.BlockMaterial == EnumBlockMaterial.Liquid && blockHydrationConfig != null)
+                var collectible = GetCollectibleObject(block);
+                if (collectible == null)
                 {
-                    float hungerReduction = blockHydrationConfig.HungerReduction;
+                    StopDrinking(player, drinkData);
+                    return;
+                }
 
+                float hydrationValue = BlockHydrationManager.GetHydrationValue(collectible, "*");
+                if (hydrationValue != 0)
+                {
+                    float hungerReduction = BlockHydrationManager.GetBlockHungerReduction(collectible);
                     if (hungerBehavior.Saturation <= 0 || hungerBehavior.Saturation < hungerReduction)
                     {
                         StopDrinking(player, drinkData);
@@ -143,44 +160,7 @@ namespace HydrateOrDiedrate
                         drinkData.DrinkStartTime = currentTime;
                     }
 
-                    HandleDrinkingStep(player, blockSel, currentTime, block, drinkData);
-                }
-                else if (block is not null)
-                {
-                    var blockType = block.GetType();
-                    var aqueductInterface = blockType.GetInterface("IAqueduct");
-                    if (aqueductInterface != null)
-                    {
-                        var fluidBlock = _api.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
-
-                        if (fluidBlock != null && fluidBlock.LiquidLevel > 0)
-                        {
-
-                            var fluidHydrationConfig = BlockHydrationManager.GetBlockHydration(fluidBlock.Code.Path);
-                            if (fluidHydrationConfig != null)
-                            {
-                                if (!drinkData.IsDrinking)
-                                {
-                                    drinkData.IsDrinking = true;
-                                    drinkData.DrinkStartTime = currentTime;
-                                }
-
-                                HandleDrinkingStep(player, blockSel, currentTime, fluidBlock, drinkData);
-                            }
-                            else
-                            {
-                                StopDrinking(player, drinkData);
-                            }
-                        }
-                        else
-                        {
-                            StopDrinking(player, drinkData);
-                        }
-                    }
-                    else
-                    {
-                        StopDrinking(player, drinkData);
-                    }
+                    HandleDrinkingStep(player, blockSel, currentTime, collectible, drinkData);
                 }
                 else
                 {
@@ -193,80 +173,31 @@ namespace HydrateOrDiedrate
             }
         }
 
-        private void StopDrinking(IServerPlayer player, PlayerDrinkData drinkData)
+        private CollectibleObject GetCollectibleObject(Block block)
         {
-            if (drinkData.IsDrinking)
+            if (block == null)
             {
-                drinkData.IsDrinking = false;
-                drinkData.DrinkStartTime = 0;
-                SendDrinkProgressToClient(player, 0f, false,false);
+                return null;
             }
+
+            var collectible = _api.World.Collectibles?.Find(c => c.Code.Path == block.Code.Path);
+            return collectible;
         }
 
-        private bool IsHeadInWater(IServerPlayer player)
-        {
-            var headPos = player.Entity.ServerPos.XYZ.Add(0, player.Entity.LocalEyePos.Y, 0);
-            var headBlockPos = new BlockPos((int)headPos.X, (int)headPos.Y, (int)headPos.Z, (int)headPos.Y/32768);
-            var block = _api.World.BlockAccessor.GetBlock(headBlockPos);
-            return block.BlockMaterial == EnumBlockMaterial.Liquid;
-        }
 
-        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime, Block block,
-            PlayerDrinkData drinkData)
+        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime, CollectibleObject collectible, PlayerDrinkData drinkData)
         {
             if (!drinkData.IsDrinking) return;
 
             float progress = (float)(currentTime - drinkData.DrinkStartTime) / (float)drinkDuration;
             progress = Math.Min(1f, progress);
-            bool isDangerous = false;
-            float hydrationValue = 0f;
-            float hungerReduction = 0f;
-            int healthEffect = 0;
-            bool isBoiling = false;
-            var blockHydrationConfig = BlockHydrationManager.GetBlockHydration(block.Code.Path);
-            if (blockHydrationConfig != null)
-            {
-                hydrationValue = blockHydrationConfig.HydrationByType.ContainsKey("*")
-                    ? blockHydrationConfig.HydrationByType["*"]
-                    : 0f;
-                hungerReduction = blockHydrationConfig.HungerReduction;
-                healthEffect = blockHydrationConfig.Health;
-                isBoiling = blockHydrationConfig.IsBoiling;
-                isDangerous = hydrationValue < 0 || isBoiling;
-            }
-            else
-            {
-                var blockType = block.GetType();
-                var aqueductInterface = blockType.GetInterface("IAqueduct");
-                if (aqueductInterface != null)
-                {
-                    var fluidBlock = _api.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
-                    if (fluidBlock != null && fluidBlock.LiquidLevel > 0)
-                    {
-                        blockHydrationConfig = BlockHydrationManager.GetBlockHydration(fluidBlock.Code.Path);
-                        if (blockHydrationConfig != null)
-                        {
-                            hydrationValue = blockHydrationConfig.HydrationByType.ContainsKey("*")
-                                ? blockHydrationConfig.HydrationByType["*"]
-                                : 0f;
-                            hungerReduction = blockHydrationConfig.HungerReduction;
-                            healthEffect = blockHydrationConfig.Health;
-                            isBoiling = blockHydrationConfig.IsBoiling;
-                            isDangerous = hydrationValue < 0 || isBoiling;
-                        }
-                    }
-                    else
-                    {
-                        StopDrinking(player, drinkData);
-                        return;
-                    }
-                }
-                else
-                {
-                    StopDrinking(player, drinkData);
-                    return;
-                }
-            }
+
+            float hydrationValue = BlockHydrationManager.GetHydrationValue(collectible, "*");
+            bool isBoiling = BlockHydrationManager.IsBlockBoiling(collectible);
+            int hungerReduction = BlockHydrationManager.GetBlockHungerReduction(collectible);
+            int healthEffect = BlockHydrationManager.GetBlockHealth(collectible);
+
+            bool isDangerous = hydrationValue < 0 || isBoiling;
 
             SendDrinkProgressToClient(player, progress, drinkData.IsDrinking, isDangerous);
 

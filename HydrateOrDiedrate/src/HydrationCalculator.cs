@@ -12,8 +12,7 @@ public static class HydrationCalculator
         {
             if (contentStack != null)
             {
-                string itemCode = contentStack.Collectible.Code.ToString();
-                float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
+                float hydrationValue = HydrationManager.GetHydration(contentStack);
                 totalHydration += hydrationValue;
             }
         }

@@ -64,7 +64,8 @@ namespace HydrateOrDiedrate
             const float ringSize = (float)InnerRadius / OuterRadius;
             const float stepSize = 1.0F / CircleMaxSteps;
 
-            int steps = 1 + (int)Math.Ceiling(CircleMaxSteps * progress);
+            int steps = Math.Max(1, 1 + (int)Math.Ceiling(Math.Min(CircleMaxSteps * progress, int.MaxValue / CircleMaxSteps)));
+
             int vertexCapacity = steps * 2;
             int indexCapacity = steps * 6;
 

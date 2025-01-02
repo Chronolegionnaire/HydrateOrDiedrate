@@ -67,6 +67,9 @@ public class Config : IModConfig
     // Tun Settings
     [ProtoMember(39)] public float TunCapacityLitres { get; set; }
     [ProtoMember(40)] public float TunSpoilRateMultiplier { get; set; }
+    
+    // Misc Settings
+    [ProtoMember(41)] public bool DisableDrunkSway { get; set; }
 
     public Config()
     {
@@ -131,5 +134,8 @@ public class Config : IModConfig
         // Tun Settings
         TunCapacityLitres = previousConfig?.TunCapacityLitres ?? 950.0f;
         TunSpoilRateMultiplier = previousConfig?.TunSpoilRateMultiplier ?? 1.0f;
+        
+        // Misc Settings
+        DisableDrunkSway = previousConfig?.DisableDrunkSway ?? true;
     }
 }

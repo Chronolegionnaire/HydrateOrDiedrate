@@ -14,6 +14,15 @@
   ],
   "class": "ItemLiquidPortion",
   "matterState": "liquid",
+  "attributes": {
+    "distillationProps": {
+      "distilledStack": {
+        "type": "item",
+        "code": "hydrateordiedrate:distilledwaterportion"
+      },
+      "ratio": 1.0
+    }
+  },
   "attributesByType": {
     "*-fresh": {
       "handbook": {
@@ -36,13 +45,6 @@
         "nutritionPropsPerLitre": {
           "satiety": 0,
           "foodcategory": "NoNutrition"
-        },
-        "distillationProps": {
-          "distilledStack": {
-            "type": "item",
-            "code": "hydrateordiedrate:distilledwaterportion"
-          },
-          "ratio": 1.0
         }
       }
     },
@@ -67,13 +69,6 @@
         "nutritionPropsPerLitre": {
           "satiety": -100,
           "foodcategory": "NoNutrition"
-        },
-        "distillationProps": {
-          "distilledStack": {
-            "type": "item",
-            "code": "hydrateordiedrate:distilledwaterportion"
-          },
-          "ratio": 1.0
         }
       }
     },
@@ -98,13 +93,6 @@
         "nutritionPropsPerLitre": {
           "satiety": -50,
           "foodcategory": "NoNutrition"
-        },
-        "distillationProps": {
-          "distilledStack": {
-            "type": "item",
-            "code": "hydrateordiedrate:distilledwaterportion"
-          },
-          "ratio": 1.0
         }
       }
     },
@@ -130,13 +118,6 @@
           "satiety": -400,
           "foodcategory": "NoNutrition",
           "health": -5
-        },
-        "distillationProps": {
-          "distilledStack": {
-            "type": "item",
-            "code": "hydrateordiedrate:distilledwaterportion"
-          },
-          "ratio": 1.0
         }
       }
     },
@@ -162,13 +143,6 @@
           "satiety": 0,
           "foodcategory": "NoNutrition",
           "health": -20
-        },
-        "distillationProps": {
-          "distilledStack": {
-            "type": "item",
-            "code": "hydrateordiedrate:distilledwaterportion"
-          },
-          "ratio": 1.0
         }
       }
     }

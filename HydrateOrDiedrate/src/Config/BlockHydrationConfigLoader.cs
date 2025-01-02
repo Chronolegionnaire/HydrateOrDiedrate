@@ -64,7 +64,7 @@ namespace HydrateOrDiedrate.Config
                             ["boilingwater-*"] = 600,
                             ["*"] = 600
                         },
-                        ["isBoiling"] = true,
+                        ["HoDisBoiling"] = true,
                         ["hungerReduction"] = 0
                     },
                     new JObject
@@ -75,7 +75,7 @@ namespace HydrateOrDiedrate.Config
                             ["water-*"] = 600,
                             ["*"] = 600
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 100
                     },
                     new JObject
@@ -86,7 +86,7 @@ namespace HydrateOrDiedrate.Config
                             ["wellwaterfresh-*"] = 750,
                             ["*"] = 750
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 0
                     },
                     new JObject
@@ -97,7 +97,7 @@ namespace HydrateOrDiedrate.Config
                             ["wellwatersalt-*"] = -600,
                             ["*"] = -600
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 100
                     },
                     new JObject
@@ -108,7 +108,7 @@ namespace HydrateOrDiedrate.Config
                             ["wellwatermuddy-*"] = 600,
                             ["*"] = 600
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 50
                     },
                     new JObject
@@ -119,7 +119,7 @@ namespace HydrateOrDiedrate.Config
                             ["wellwatertainted-*"] = 750,
                             ["*"] = 750
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 400,
                         ["Health"] = -5,
                     },
@@ -131,7 +131,7 @@ namespace HydrateOrDiedrate.Config
                             ["wellwaterpoisoned-*"] = 750,
                             ["*"] = 750
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 0,
                         ["Health"] = -20,
                     },
@@ -143,7 +143,7 @@ namespace HydrateOrDiedrate.Config
                             ["saltwater-*"] = -600,
                             ["*"] = -600
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 100
                     },
                     new JObject
@@ -154,7 +154,7 @@ namespace HydrateOrDiedrate.Config
                             ["distilledwater-*"] = 600,
                             ["*"] = 600
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 0
                     }
                 }

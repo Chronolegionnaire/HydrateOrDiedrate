@@ -1,32 +1,31 @@
 ﻿using HarmonyLib;
 using Vintagestory.API.Common;
 
-namespace HydrateOrDiedrate.patches;
+namespace HydrateOrDiedrate.Patches;
 
 [HarmonyPatch(typeof(CollectibleObject), "tryEatStop")]
 public class TryEatStopCollectibleObjectPatch
 {
+    private static bool alreadyCalled = false;
+
     private static bool ShouldSkipPatch()
     {
         return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
     }
-    static bool alreadyCalled = false;
-    static float capturedHydrationAmount;
-    static EntityPlayer capturedPlayer;
 
     [HarmonyPrefix]
-    static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity)
+    static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity, out PatchState __state)
     {
+        __state = null;
+
         if (ShouldSkipPatch())
         {
             return;
-        }   
+        }
+
         alreadyCalled = false;
-        capturedHydrationAmount = 0;
-        capturedPlayer = null;
 
         var api = byEntity?.World?.Api;
-
         if (api == null || api.Side != EnumAppSide.Server || slot?.Itemstack == null)
         {
             return;
@@ -35,42 +34,49 @@ public class TryEatStopCollectibleObjectPatch
         FoodNutritionProperties nutriProps = slot.Itemstack.Collectible.GetNutritionProperties(byEntity.World, slot.Itemstack, byEntity);
         if (nutriProps != null && secondsUsed >= 0.95f)
         {
-            string itemCode = slot.Itemstack.Collectible.Code?.ToString() ?? "Unknown Item";
-            capturedHydrationAmount = HydrationManager.GetHydration(api, itemCode);
+            float hydrationAmount = HydrationManager.GetHydration(slot.Itemstack);
 
-            if (capturedHydrationAmount != 0 && byEntity is EntityPlayer player)
+            if (hydrationAmount != 0 && byEntity is EntityPlayer player)
             {
-                capturedPlayer = player;
+                __state = new PatchState
+                {
+                    Player = player,
+                    HydrationAmount = hydrationAmount
+                };
             }
         }
     }
 
     [HarmonyPostfix]
-    static void Postfix()
+    static void Postfix(PatchState __state)
     {
-        if (ShouldSkipPatch())
+        if (ShouldSkipPatch() || alreadyCalled)
         {
             return;
         }
-        if (alreadyCalled) return;
         alreadyCalled = true;
 
-        if (capturedPlayer == null || capturedHydrationAmount == 0) return;
+        if (__state == null || __state.Player == null || __state.HydrationAmount == 0)
+        {
+            return;
+        }
 
-        var api = capturedPlayer?.World?.Api;
-
+        var api = __state.Player?.World?.Api;
         if (api == null || api.Side != EnumAppSide.Server)
         {
             return;
         }
 
-        var thirstBehavior = capturedPlayer.GetBehavior<EntityBehaviorThirst>();
+        var thirstBehavior = __state.Player.GetBehavior<EntityBehaviorThirst>();
         if (thirstBehavior != null)
         {
-            thirstBehavior.ModifyThirst(capturedHydrationAmount);
+            thirstBehavior.ModifyThirst(__state.HydrationAmount);
         }
+    }
 
-        capturedHydrationAmount = 0;
-        capturedPlayer = null;
+    private class PatchState
+    {
+        public EntityPlayer Player { get; set; }
+        public float HydrationAmount { get; set; }
     }
 }

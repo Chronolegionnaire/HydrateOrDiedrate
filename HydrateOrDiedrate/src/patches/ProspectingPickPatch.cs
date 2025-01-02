@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using HarmonyLib;
 using HydrateOrDiedrate;
 using Vintagestory.API.Common;
@@ -7,71 +8,79 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-[HarmonyPatch(typeof(ItemProspectingPick), "PrintProbeResults")]
-public static class PrintProbeResultsPatch
+namespace HydrateOrDiedrate.Patches
 {
-    static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, IServerPlayer splr, ItemSlot itemslot, BlockPos pos)
+    [HarmonyPatch(typeof(ItemProspectingPick), "PrintProbeResults")]
+    public static class PrintProbeResultsPatch
     {
-        if (world.Api.Side != EnumAppSide.Server || HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferSystem == null)
+        static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, IServerPlayer splr, ItemSlot itemslot,
+            BlockPos pos)
         {
-            return;
-        }
-
-        string flagKey = "PrintProbeResultsFlag";
-        if (splr.Entity?.WatchedAttributes.GetBool(flagKey, false) == true)
-        {
-            return;
-        }
-
-        splr.Entity?.WatchedAttributes.SetBool(flagKey, true);
-        
-        Task.Run(() =>
-        {
-            Vec2i chunkCoord = new Vec2i(pos.X / world.BlockAccessor.ChunkSize, pos.Z / world.BlockAccessor.ChunkSize);
-            var aquiferData = HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferSystem.GetAquiferData(chunkCoord);
-
-            if (aquiferData == null)
+            if (world.Api.Side != EnumAppSide.Server ||
+                HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager == null)
             {
-                SendMessageToPlayer(world, splr, "No aquifer data available for this region.");
+                return;
             }
+
+            string flagKey = "PrintProbeResultsFlag";
+            if (splr.Entity?.WatchedAttributes.GetBool(flagKey, false) == true)
+            {
+                return;
+            }
+
+            splr.Entity?.WatchedAttributes.SetBool(flagKey, true);
+
+            Task.Run(() =>
+            {
+                Vec2i chunkCoord = new Vec2i(pos.X / GlobalConstants.ChunkSize, pos.Z / GlobalConstants.ChunkSize);
+                var aquiferData =
+                    HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager.GetAquiferData(chunkCoord);
+
+                if (aquiferData == null)
+                {
+                    SendMessageToPlayer(world, splr, "No aquifer data available for this region.");
+                }
+                else
+                {
+                    double worldHeight = world.BlockAccessor.MapSizeY;
+                    double posY = pos.Y;
+                    string aquiferInfo = aquiferData.AquiferRating == 0
+                        ? "There is no aquifer here."
+                        : GetAquiferDescription(aquiferData.IsSalty, aquiferData.AquiferRating, worldHeight, posY);
+                    SendMessageToPlayer(world, splr, aquiferInfo);
+                }
+
+                world.RegisterCallback(_ => { splr.Entity?.WatchedAttributes.SetBool(flagKey, false); }, 500);
+            });
+        }
+
+        private static string GetAquiferDescription(bool isSalty, int rating, double worldHeight, double posY)
+        {
+            double waterLineY = Math.Round(0.4296875 * worldHeight);
+            double depthFactor;
+            depthFactor = (waterLineY - posY) / (waterLineY - 1);
+
+            int effectiveRating = (int)Math.Round(rating * depthFactor);
+            string aquiferType = isSalty ? "salt" : "fresh";
+            if (effectiveRating <= 0)
+                return $"No aquifer detected. Actual {rating}.";
+            else if (effectiveRating <= 10)
+                return $"Very poor {aquiferType} water aquifer detected. Actual {rating}.";
+            else if (effectiveRating <= 20)
+                return $"Poor {aquiferType} water aquifer detected. Actual {rating}.";
+            else if (effectiveRating <= 40)
+                return $"Light {aquiferType} water aquifer detected. Actual {rating}.";
+            else if (effectiveRating <= 60)
+                return $"Moderate {aquiferType} water aquifer detected. Actual {rating}.";
             else
-            {
-                string aquiferInfo = aquiferData.AquiferRating == 0
-                    ? "There is no aquifer here."
-                    : GetAquiferDescription(aquiferData.IsSalty, aquiferData.AquiferRating);
-                SendMessageToPlayer(world, splr, aquiferInfo);
-            }
-            world.RegisterCallback(_ =>
-            {
-                splr.Entity?.WatchedAttributes.SetBool(flagKey, false);
-            }, 500);
-        });
-    }
+                return $"Heavy {aquiferType} water aquifer detected. Actual {rating}.";
+        }
 
-    private static string GetAquiferDescription(bool isSalty, int rating)
-    {
-        if (rating == 0)
-            return "No aquifer detected.";
-
-        string aquiferType = isSalty ? "salt" : "fresh";
-
-        if (rating <= 20)
-            return $"Very poor {aquiferType} water aquifer detected.";
-        else if (rating <= 40)
-            return $"Poor {aquiferType} water aquifer detected.";
-        else if (rating <= 60)
-            return $"Light {aquiferType} water aquifer detected.";
-        else if (rating <= 80)
-            return $"Moderate {aquiferType} water aquifer detected.";
-        else
-            return $"Heavy {aquiferType} water aquifer detected.";
-    }
-
-    private static void SendMessageToPlayer(IWorldAccessor world, IServerPlayer splr, string message)
-    {
-        world.Api.Event.EnqueueMainThreadTask(() =>
+        private static void SendMessageToPlayer(IWorldAccessor world, IServerPlayer splr, string message)
         {
-            splr.SendMessage(GlobalConstants.InfoLogChatGroup, message, EnumChatType.Notification, null);
-        }, "SendAquiferMessage");
+            world.Api.Event.EnqueueMainThreadTask(
+                () => { splr.SendMessage(GlobalConstants.InfoLogChatGroup, message, EnumChatType.Notification, null); },
+                "SendAquiferMessage");
+        }
     }
 }

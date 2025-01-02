@@ -72,6 +72,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:juiceportion-whitecurrant"] = 800,
                             ["game:juiceportion-redapple"] = 900,
                             ["game:juiceportion-yellowapple"] = 900,
+                            ["game:juiceportion-apple"] = 900,
                             ["game:juiceportion-cherry"] = 800,
                             ["game:juiceportion-peach"] = 950,
                             ["game:juiceportion-pear"] = 950,
@@ -81,9 +82,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:juiceportion-redgrapes"] = 950,
                             ["game:juiceportion-greengrapes"] = 950,
                             ["*"] = 750
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "game:fruit-*",
@@ -110,15 +109,12 @@ namespace HydrateOrDiedrate.Config
                             ["game:fruit-redgrapes"] = 30,
                             ["game:fruit-greengrapes"] = 30,
                             ["*"] = 8
-                        },
-                        ["IsLiquid"] = false
+                        }
                     },
                     new JObject
                     {
                         ["itemname"] = "game:bambooshoot",
-                        ["hydration"] = 15,
-                        ["IsLiquid"] = false
-                    },
+                        ["hydration"] = 15},
                     new JObject
                     {
                         ["itemname"] = "game:bread-*",
@@ -153,8 +149,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:bread-amaranth-charred"] = -9,
                             ["game:bread-sunflower-charred"] = -8,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
+                        }
                     },
                     new JObject
                     {
@@ -164,15 +159,12 @@ namespace HydrateOrDiedrate.Config
                             ["game:bushmeat-cooked"] = -5,
                             ["game:bushmeat-cured"] = -10,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
+                        }
                     },
                     new JObject
                     {
                         ["itemname"] = "game:butter",
-                        ["hydration"] = -5,
-                        ["IsLiquid"] = false
-                    },
+                        ["hydration"] = -5},
                     new JObject
                     {
                         ["itemname"] = "game:cheese-*",
@@ -180,8 +172,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["game:cheese-blue-1slice"] = -4,
                             ["game:cheese-cheddar-1slice"] = -3
-                        },
-                        ["IsLiquid"] = false
+                        }
                     },
                     new JObject
                     {
@@ -196,8 +187,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:dough-amaranth"] = 5,
                             ["game:dough-sunflower"] = 5,
                             ["*"] = 5
-                        },
-                        ["IsLiquid"] = false
+                        }
                     },
                     new JObject
                     {
@@ -210,8 +200,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:fish-smoked"] = -8,
                             ["game:fish-cured-smoked"] = -12,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
+                        }
                     },
                     new JObject
                     {
@@ -225,8 +214,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:grain-amaranth"] = -3,
                             ["game:grain-sunflower"] = -3,
                             ["*"] = -3
-                        },
-                        ["IsLiquid"] = false
+                        }
                     },
                     new JObject
                     {
@@ -237,8 +225,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:insect-termite"] = 2,
                             ["game:insect-termite-stick"] = 2,
                             ["*"] = 2
-                        },
-                        ["IsLiquid"] = false
+                        }
                     },
                     new JObject
                     {
@@ -247,9 +234,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["game:legume-peanut"] = -3,
                             ["*"] = -3
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "game:pemmican-*",
@@ -260,15 +245,11 @@ namespace HydrateOrDiedrate.Config
                             ["game:pemmican-dried-basic"] = -10,
                             ["game:pemmican-dried-salted"] = -12,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "game:pickledlegume-soybean",
-                        ["hydration"] = 2,
-                        ["IsLiquid"] = false
-                    },
+                        ["hydration"] = 2},
                     new JObject
                     {
                         ["itemname"] = "game:pickledvegetable-*",
@@ -283,9 +264,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:pickledvegetable-bellpepper"] = 4,
                             ["game:pickledvegetable-olive"] = 1,
                             ["*"] = 3
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "game:poultry-*",
@@ -294,9 +273,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:poultry-cooked"] = -5,
                             ["game:poultry-cured"] = -10,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "game:redmeat-*",
@@ -306,9 +283,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:redmeat-vintage"] = -8,
                             ["game:redmeat-cured"] = -10,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "game:vegetable-*",
@@ -326,33 +301,23 @@ namespace HydrateOrDiedrate.Config
                             ["game:vegetable-bellpepper"] = 12,
                             ["game:vegetable-olive"] = 4,
                             ["*"] = 7
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "game:alcoholportion",
-                        ["hydration"] = -20,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = -20},
                     new JObject
                     {
                         ["itemname"] = "game:boilingwaterportion",
-                        ["hydration"] = 600,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 600},
                     new JObject
                     {
                         ["itemname"] = "hydrateordiedrate:distilledwaterportion",
-                        ["hydration"] = 900,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 900},
                     new JObject
                     {
                         ["itemname"] = "hydrateordiedrate:rainwaterportion",
-                        ["hydration"] = 750,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 750},
                     new JObject
                     {
                         ["itemname"] = "game:ciderportion-*",
@@ -386,81 +351,55 @@ namespace HydrateOrDiedrate.Config
                             ["game:ciderportion-redgrapes"] = 500,
                             ["game:ciderportion-greengrapes"] = 500,
                             ["*"] = 375
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "game:honeyportion",
-                        ["hydration"] = 300,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 300},
                     new JObject
                     {
                         ["itemname"] = "game:jamhoneyportion",
-                        ["hydration"] = 350,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 350},
                     new JObject
                     {
                         ["itemname"] = "game:saltwaterportion",
-                        ["hydration"] = -600,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = -600},
                     new JObject
                     {
                         ["itemname"] = "game:vinegarportion",
-                        ["hydration"] = 50,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 50},
                     new JObject
                     {
                         ["itemname"] = "game:cottagecheeseportion",
-                        ["hydration"] = 50,
-                        ["IsLiquid"] = false
-                    },
+                        ["hydration"] = 50},
                     new JObject
                     {
                         ["itemname"] = "game:milkportion",
-                        ["hydration"] = 500,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 500},
                     new JObject
                     {
                         ["itemname"] = "game:waterportion",
-                        ["hydration"] = 600,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 600},
                     new JObject
                     {
                         ["itemname"] = "hydrateordiedrate:wellwaterportion-fresh",
-                        ["hydration"] = 750,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 750},
                     new JObject
                     {
                         ["itemname"] = "hydrateordiedrate:wellwaterportion-salt",
-                        ["hydration"] = -600,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = -600},
                     new JObject
                     {
                         ["itemname"] = "hydrateordiedrate:wellwaterportion-muddy",
-                        ["hydration"] = 600,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 600},
                     new JObject
                     {
                         ["itemname"] = "hydrateordiedrate:wellwaterportion-tainted",
-                        ["hydration"] = 750,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 750},
                     new JObject
                     {
                         ["itemname"] = "hydrateordiedrate:wellwaterportion-poisoned",
-                        ["hydration"] = 750,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 750},
                     new JObject
                     {
                         ["itemname"] = "game:mushroom-*",
@@ -488,9 +427,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:mushroom-shiitake"] = 1,
                             ["game:mushroom-deerear"] = 1,
                             ["*"] = 0
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "game:spiritportion-*",
@@ -524,9 +461,7 @@ namespace HydrateOrDiedrate.Config
                             ["game:spiritportion-redgrapes"] = 270,
                             ["game:spiritportion-greengrapes"] = 270,
                             ["*"] = 190
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "alchemy:potionportion-*",
@@ -565,15 +500,11 @@ namespace HydrateOrDiedrate.Config
                             ["alchemy:potionportion-vitality-medium"] = -100,
                             ["alchemy:potionportion-vitality-strong"] = -300,
                             ["*"] = -200
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "alchemy:potionteaportion",
-                        ["hydration"] = 300,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 300},
                     new JObject
                     {
                         ["itemname"] = "alchemy:utilitypotionportion-*",
@@ -585,15 +516,11 @@ namespace HydrateOrDiedrate.Config
                             ["alchemy:utilitypotionportion-nutrition"] = -200,
                             ["alchemy:utilitypotionportion-temporal"] = -200,
                             ["*"] = -200
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "butchering:bloodportion",
-                        ["hydration"] = 50,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 50},
                     new JObject
                     {
                         ["itemname"] = "butcher:smoked-*",
@@ -608,9 +535,7 @@ namespace HydrateOrDiedrate.Config
                             ["butcher:smoked-none-primemeat"] = -5,
                             ["butcher:smoked-healing-primemeat"] = -8,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "butchering:sausage-*",
@@ -621,9 +546,7 @@ namespace HydrateOrDiedrate.Config
                             ["butchering:sausage-blackpudding-raw"] = -5,
                             ["butchering:sausage-blackpudding-cooked"] = -8,
                             ["*"] = 0
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "butchering:primemeat-*",
@@ -634,27 +557,19 @@ namespace HydrateOrDiedrate.Config
                             ["butchering:primemeat-cooked"] = -10,
                             ["butchering:primemeat-healing"] = -10,
                             ["*"] = 0
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "butchering:offal",
-                        ["hydration"] = 3,
-                        ["IsLiquid"] = false
-                    },
+                        ["hydration"] = 3},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:birchsapportion",
-                        ["hydration"] = -20,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = -20},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:breadstarter",
-                        ["hydration"] = 5,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 5},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:brothportion-*",
@@ -665,9 +580,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:brothportion-meat"] = 425,
                             ["expandedfoods:brothportion-fish"] = 420,
                             ["*"] = 400
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:clarifiedbrothportion-*",
@@ -678,9 +591,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:clarifiedbrothportion-meat"] = 625,
                             ["expandedfoods:clarifiedbrothportion-fish"] = 620,
                             ["*"] = 600
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:dressing-*",
@@ -688,15 +599,11 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:dressing-salad"] = 50,
                             ["*"] = 50
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:fishsauce",
-                        ["hydration"] = 60,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 60},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:foodoilportion-*",
@@ -710,9 +617,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:foodoilportion-peanut"] = -30,
                             ["expandedfoods:foodoilportion-olive"] = -30,
                             ["*"] = -30
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:fruitsyrupportion-*",
@@ -721,27 +626,19 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:fruitsyrupportion-apple"] = 100,
                             ["expandedfoods:fruitsyrupportion-saguaro"] = 100,
                             ["*"] = 100
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:lard",
-                        ["hydration"] = -5,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = -5},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:maplesapportion",
-                        ["hydration"] = 200,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 200},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:pasteurizedmilkportion",
-                        ["hydration"] = 500,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 500},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:peanutliquid-*",
@@ -751,9 +648,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:peanutliquid-butter"] = -30,
                             ["expandedfoods:peanutliquid-sauce"] = -5,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:potentspiritportion-*",
@@ -767,9 +662,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:potentspiritportion-amaranth"] = 175,
                             ["expandedfoods:potentspiritportion-cassava"] = 175,
                             ["*"] = 170
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:potentwineportion-*",
@@ -783,15 +676,11 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:potentwineportion-amaranth"] = 165,
                             ["expandedfoods:potentwineportion-cassava"] = 165,
                             ["*"] = 160
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:softresin",
-                        ["hydration"] = -10,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = -10},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:soulstormbrew-*",
@@ -801,9 +690,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:soulstormbrew-refinedslop"] = 150,
                             ["expandedfoods:soulstormbrew-basic"] = 200,
                             ["*"] = 100
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:soymilk-*",
@@ -812,15 +699,11 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:soymilk-raw"] = 200,
                             ["expandedfoods:soymilk-edible"] = 400,
                             ["*"] = 200
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:soysauce",
-                        ["hydration"] = -20,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = -20},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:strongspiritportion-*",
@@ -834,9 +717,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:strongspiritportion-amaranth"] = 155,
                             ["expandedfoods:strongspiritportion-cassava"] = 155,
                             ["*"] = 150
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:strongwineportion-*",
@@ -850,9 +731,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:strongwineportion-amaranth"] = 155,
                             ["expandedfoods:strongwineportion-cassava"] = 155,
                             ["*"] = 150
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:treesyrupportion-*",
@@ -861,9 +740,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:treesyrupportion-birch"] = -20,
                             ["expandedfoods:treesyrupportion-maple"] = -20,
                             ["*"] = -20
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:vegetablejuiceportion-*",
@@ -878,15 +755,11 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:vegetablejuiceportion-cassava"] = 150,
                             ["expandedfoods:vegetablejuiceportion-bellpepper"] = 150,
                             ["*"] = 150
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:yeastwaterportion",
-                        ["hydration"] = 50,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 50},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:yogurt-*",
@@ -938,15 +811,11 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:yogurt-purpleplum"] = 50,
                             ["expandedfoods:yogurt-quince"] = 50,
                             ["*"] = 50
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acorncoffee",
-                        ["hydration"] = 75,
-                        ["IsLiquid"] = true
-                    },
+                        ["hydration"] = 75},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildfruitsyrupportion-*",
@@ -954,9 +823,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildfruitsyrupportion-*"] = 50,
                             ["*"] = 50
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildpotentspiritportion-*",
@@ -964,9 +831,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildpotentspiritportion-*"] = 50,
                             ["*"] = 50
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildpotentwineportion-*",
@@ -974,9 +839,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildpotentwineportion-*"] = 100,
                             ["*"] = 100
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildstrongspiritportion-*",
@@ -984,9 +847,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildstrongspiritportion-*"] = 50,
                             ["*"] = 50
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildstrongwineportion-*",
@@ -994,9 +855,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildstrongwineportion-*"] = 50,
                             ["*"] = 50
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildtreefruitsyrupportion-*",
@@ -1004,9 +863,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildtreefruitsyrupportion-*"] = 50,
                             ["*"] = 50
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildtreepotentspiritportion-*",
@@ -1014,9 +871,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildtreepotentspiritportion-*"] = 50,
                             ["*"] = 50
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildtreepotentwineportion-*",
@@ -1024,9 +879,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildtreepotentwineportion-*"] = 100,
                             ["*"] = 100
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildtreestrongspiritportion-*",
@@ -1034,9 +887,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildtreestrongspiritportion-*"] = 50,
                             ["*"] = 50
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildtreestrongwineportion-*",
@@ -1044,9 +895,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:wildtreestrongwineportion-*"] = 100,
                             ["*"] = 100
-                        },
-                        ["IsLiquid"] = true
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:agedmeat-*",
@@ -1054,9 +903,7 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["expandedfoods:agedmeat-*"] = -5,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:breadcrumbs-*",
@@ -1073,9 +920,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:breadcrumbs-pine"] = -5,
                             ["expandedfoods:breadcrumbs-maple"] = -5,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:candiedfruit-*",
@@ -1089,9 +934,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:candiedfruit-redgrapes"] = -2,
                             ["expandedfoods:candiedfruit-greengrapes"] = -2,
                             ["*"] = -2
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:choppedmushroom-*",
@@ -1109,9 +952,7 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:choppedmushroom-devilstooth"] = -1,
                             ["expandedfoods:choppedmushroom-golddropmilkcap"] = -1,
                             ["*"] = -5
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:choppedvegetable-*",
@@ -1129,1245 +970,832 @@ namespace HydrateOrDiedrate.Config
                             ["expandedfoods:choppedvegetable-cattailroot"] = 100,
                             ["expandedfoods:choppedvegetable-bellpepper"] = 7,
                             ["*"] = 5
-                        },
-                        ["IsLiquid"] = false
-                    },
+                        }},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:cookedchoppedmushroom-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -1,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -1}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:cookedchoppedvegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:cookedmushroom-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:cookedveggie-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:dehydratedfruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:dryfruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:driedseaweed-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:fermentedfish-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:fishnugget-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:gelatin-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 1,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 1}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:gelatinfish-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 1,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 1}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:limeegg-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 1,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 1}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:meatnugget-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -1,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -1}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:peanut-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -3,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -3}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:soyprep-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornbreadcrumbs-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornpowdered-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acorns-roasted-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornberrybread-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornbreadedball-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornbreadedfishnugget-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornbreadedmeatnugget-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornbreadedmushroom-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornbreadedvegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acorndoughball-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acorndumpling-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornhardtack-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -25,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -25}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornmuffin-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornpasta-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:acornstuffedpepper-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:saltedmeatnugget-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -15,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -15}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:berrybread-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:breadedball-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:breadedfishnugget-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:breadedmeatnugget-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:breadedmushroom-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:breadedvegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:candy-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:dumpling-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -3,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -3}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:fruitbar-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:gozinaki-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:hardtack-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -25,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -25}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:muffin-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:pasta-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -3,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -3}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:pemmican-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -25,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -25}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:pemmicanfish-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -25,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -25}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:plaindoughball-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sausage-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sausagefish-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:stuffedpepper-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sushi-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sushiveg-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -1,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -1}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:trailmix-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -25,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -25}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:trailmixvegetarian-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -25,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -25}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:crabnugget-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:snakenugget-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:pemmicancrab-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -25,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -25}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:pemmicansnake-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -25,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -25}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sausagecrab-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sausagesnake-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:herbalcornbreadcrumbs-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:herbalbreadcrumbs-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildcandiedfruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wilddehydratedfruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wilddryfruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:gozinakiherb-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:herbalacornbread-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:herbalacornhardtack-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -25,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -25}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:herbalabread-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sausagecrabherb-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sausagefishherb-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sausageherb-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:sausagesnakeherb-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildtreecandiedfruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildtreedehydratedfruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:wildtreedryfruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaperegion:fruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 10}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaperegion:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaribbeanregion:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaribbeanregion:vegetable-nonpalm-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaribbeanregion:fruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 10}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaribbeanregion:flour-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -7,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -7}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaribbeanregion:dough-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaribbeanregion:bread-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaribbeanregion:spiritportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 100,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 100}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaribbeanregion:juiceportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 50,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 50}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescaribbeanregion:ciderportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 300,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 300}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescentralaustralianregion:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescentralaustralianregion:legume-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescentralaustralianregion:fruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 10}},
                     new JObject
                     {
                         ["itemname"] = "floralzonescentralaustralianregion:fruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 10}},
                     new JObject
                     {
                         ["itemname"] = "floralzoneseastasiaticregion:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "floralzoneseastasiaticregion:rawkudzu-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "floralzoneseastasiaticregion:fruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 10}},
                     new JObject
                     {
                         ["itemname"] = "floralzoneseastasiaticregion:flour-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -8,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -8}},
                     new JObject
                     {
                         ["itemname"] = "floralzoneseastasiaticregion:dough-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "floralzoneseastasiaticregion:bread-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "floralzoneseastasiaticregion:spiritportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 100,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 100}},
                     new JObject
                     {
                         ["itemname"] = "floralzoneseastasiaticregion:juiceportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 700,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 700}},
                     new JObject
                     {
                         ["itemname"] = "floralzoneseastasiaticregion:ciderportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 350,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 350}},
                     new JObject
                     {
                         ["itemname"] = "floralzonesneozeylandicregion:fruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 10}},
                     new JObject
                     {
                         ["itemname"] = "floralzonesneozeylandicregion:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "newworldcrops:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "newworldcrops:pickledlegume-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "newworldcrops:pickledlegrain-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "newworldcrops:legume-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -3,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -3}},
                     new JObject
                     {
                         ["itemname"] = "newworldcrops:grain-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -3,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -3}},
                     new JObject
                     {
                         ["itemname"] = "newworldcrops:flour-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -8,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -8}},
                     new JObject
                     {
                         ["itemname"] = "newworldcrops:dough-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "newworldcrops:bread-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "warriordrink:spiritportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 100,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 100}},
                     new JObject
                     {
                         ["itemname"] = "warriordrink:ciderportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 300,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 300}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 5}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:nut-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:fruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 10}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:flour-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -8,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -8}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:dough-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:bread-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:berrymush-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 20,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 20}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:spiritportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 100,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 100}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:juiceportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 800,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 800}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftfruit:ciderportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 400,
-                        },
-                        ["IsLiquid"] = true
-                    },
+                            ["*"] = 400}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftherb:root-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 2}},
                     new JObject
                     {
                         ["itemname"] = "wildcraftherb:herb-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 4,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = 4}},
                     new JObject
                     {
                         ["itemname"] = "acorns:flour-acorn-*",
                         ["hydrationByType"] = new JObject
                         {
                             ["*"] = -8,
-                            ["flour-acorn"] = -8,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["flour-acorn"] = -8}},
                     new JObject
                     {
                         ["itemname"] = "acorns:acorn-meal-*",
                         ["hydrationByType"] = new JObject
                         {
                             ["*"] = -5,
-                            ["acorn-meal"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["acorn-meal"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "primitivesurvival:trussedrot-*",
                         ["hydrationByType"] = new JObject
                         {
                             ["*"] = -5,
-                            ["trussedrot"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["trussedrot"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "primitivesurvival:trussedmeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -5}},
                     new JObject
                     {
                         ["itemname"] = "primitivesurvival:snakemeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -2,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -2}},
                     new JObject
                     {
                         ["itemname"] = "primitivesurvival:smokedmeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -6,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -6}},
                     new JObject
                     {
                         ["itemname"] = "primitivesurvival:jerky-redmeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "primitivesurvival:jerky-fish-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "primitivesurvival:jerky-bushmeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -10,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -10}},
                     new JObject
                     {
                         ["itemname"] = "primitivesurvival:curedsmokedmeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -12,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -12}},
                     new JObject
                     {
                         ["itemname"] = "primitivesurvival:crabmeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -4,
-                        },
-                        ["IsLiquid"] = false
-                    },
+                            ["*"] = -4}},
                     new JObject
                     {
                         ["itemname"] = "ancienttools:saltedmeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -12,
-                        },
-                        ["IsLiquid"] = false
-                    }
+                            ["*"] = -12}}
                 }
             };
             return defaultConfig;

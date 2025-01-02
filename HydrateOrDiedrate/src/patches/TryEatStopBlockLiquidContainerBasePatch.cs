@@ -4,7 +4,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.patches;
+namespace HydrateOrDiedrate.Patches;
 
 [HarmonyPatch(typeof(BlockLiquidContainerBase), "tryEatStop")]
 public class TryEatStopBlockLiquidContainerBasePatch
@@ -14,27 +14,21 @@ public class TryEatStopBlockLiquidContainerBasePatch
         return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
     }
 
-    static bool alreadyCalled = false;
-    static float capturedHydrationAmount;
-    static float capturedHydLossDelay;
-    static float capturedHungerReduction;
-    static EntityPlayer capturedPlayer;
+    private static bool alreadyCalled = false;
 
     [HarmonyPrefix]
-    static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity)
+    static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity, out PatchState __state)
     {
+        __state = null;
+
         if (ShouldSkipPatch())
         {
             return;
         }
+
         alreadyCalled = false;
-        capturedHydrationAmount = 0;
-        capturedHydLossDelay = 0;
-        capturedHungerReduction = 0;
-        capturedPlayer = null;
 
         var api = byEntity?.World?.Api;
-
         if (api == null || api.Side != EnumAppSide.Server || slot?.Itemstack == null)
         {
             return;
@@ -57,81 +51,91 @@ public class TryEatStopBlockLiquidContainerBasePatch
             {
                 return;
             }
-
-            string itemCode = contentStack.Collectible.Code?.ToString() ?? "Unknown Item";
-            float hydrationValue = HydrationManager.GetHydration(api, itemCode);
+            float hydrationValue = HydrationManager.GetHydration(contentStack);
 
             if (hydrationValue != 0 && byEntity is EntityPlayer player)
             {
                 float drinkCapLitres = 1f;
                 float litresToDrink = Math.Min(drinkCapLitres, currentLitres);
-                capturedHydrationAmount = (hydrationValue * litresToDrink) / drinkCapLitres;
+                float calculatedHydration = (hydrationValue * litresToDrink) / drinkCapLitres;
                 float intoxicationValue = nutriProps.Intoxication;
                 var config = HydrateOrDiedrateModSystem.LoadedConfig;
-                float scalingFactorLow = 100f;
-                float scalingFactorHigh = 5f;
+                float hydLossDelay = 0;
 
                 if (intoxicationValue == 0)
                 {
-                    capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier;
+                    hydLossDelay = (calculatedHydration / 2) * config.HydrationLossDelayMultiplier;
                 }
                 else if (intoxicationValue < 0.2)
                 {
-                    capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier * (float)(Math.Log(1 + intoxicationValue * scalingFactorLow));
+                    hydLossDelay = (calculatedHydration / 2) * config.HydrationLossDelayMultiplier * (float)(Math.Log(1 + intoxicationValue * 100f));
                 }
                 else if (intoxicationValue > 0.7)
                 {
-                    capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier * (float)Math.Pow(scalingFactorHigh, intoxicationValue);
+                    hydLossDelay = (calculatedHydration / 2) * config.HydrationLossDelayMultiplier * (float)Math.Pow(5f, intoxicationValue);
                 }
                 else
                 {
-                    float logValue_0_2 = (float)Math.Log(1 + 0.2 * scalingFactorLow);
-                    float expValue_0_7 = (float)Math.Pow(scalingFactorHigh, 0.7);
+                    float logValue_0_2 = (float)Math.Log(1 + 0.2 * 100f);
+                    float expValue_0_7 = (float)Math.Pow(5f, 0.7);
                     float blendRatio = (intoxicationValue - 0.2f) / 0.5f;
                     float blendedValue = logValue_0_2 * (1 - blendRatio) + expValue_0_7 * blendRatio;
-                    capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier * blendedValue;
+                    hydLossDelay = (calculatedHydration / 2) * config.HydrationLossDelayMultiplier * blendedValue;
                 }
 
-                capturedPlayer = player;
+                float hungerReduction = 0;
                 if (nutriProps.Satiety < 0)
                 {
-                    capturedHungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
+                    hungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
                 }
+
+                __state = new PatchState
+                {
+                    Player = player,
+                    HydrationAmount = calculatedHydration,
+                    HydLossDelay = hydLossDelay,
+                    HungerReduction = hungerReduction
+                };
             }
         }
     }
 
     [HarmonyPostfix]
-    static void Postfix()
+    static void Postfix(PatchState __state)
     {
-        if (ShouldSkipPatch())
+        if (ShouldSkipPatch() || alreadyCalled)
         {
             return;
         }
-        if (alreadyCalled) return;
         alreadyCalled = true;
 
-        if (capturedPlayer == null || capturedHydrationAmount == 0) return;
+        if (__state == null || __state.Player == null || __state.HydrationAmount == 0)
+        {
+            return;
+        }
 
-        var thirstBehavior = capturedPlayer.GetBehavior<EntityBehaviorThirst>();
-
+        var thirstBehavior = __state.Player.GetBehavior<EntityBehaviorThirst>();
         if (thirstBehavior != null)
         {
             if (thirstBehavior.HungerReductionAmount < 0)
             {
                 thirstBehavior.HungerReductionAmount = 0;
             }
-            
-            thirstBehavior.ModifyThirst(capturedHydrationAmount, capturedHydLossDelay);
 
-            if (capturedHungerReduction > 0)
+            thirstBehavior.ModifyThirst(__state.HydrationAmount, __state.HydLossDelay);
+
+            if (__state.HungerReduction > 0)
             {
-                thirstBehavior.HungerReductionAmount += capturedHungerReduction;
+                thirstBehavior.HungerReductionAmount += __state.HungerReduction;
             }
         }
-        capturedHydrationAmount = 0;
-        capturedHydLossDelay = 0;
-        capturedHungerReduction = 0;
-        capturedPlayer = null;
+    }
+
+    private class PatchState
+    {
+        public EntityPlayer Player;
+        public float HydrationAmount;
+        public float HydLossDelay;
+        public float HungerReduction;
     }
 }

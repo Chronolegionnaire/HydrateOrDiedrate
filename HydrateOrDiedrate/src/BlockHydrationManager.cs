@@ -1,145 +1,146 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
+using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 
 public static class BlockHydrationManager
 {
-    private static readonly Dictionary<string, BlockHydrationConfig> BlockHydrationDict = new();
-    private static List<JObject> LastAppliedPatches = new();
+    private const string HydrationByTypeKey = "hydrationByType";
+    private const string IsBoilingKey = "HoDisBoiling";
+    private const string HungerReductionKey = "hungerReduction";
+    private const string HealthKey = "health";
+    private static ICoreAPI Api;
+    private static List<JsonObject> _lastAppliedPatches = new List<JsonObject>();
 
-    public static void SetBlockHydration(string blockCode, BlockHydrationConfig config)
+    public static void SetHydrationAttributes(ICoreAPI api, CollectibleObject collectible, float hydrationValue = 0f, bool isBoiling = false, int hungerReduction = 0, int healthEffect = 0)
     {
-        if (config == null)
+        if (collectible.Attributes == null)
         {
-            return;
+            collectible.Attributes = new JsonObject(new JObject());
         }
-        BlockHydrationDict[blockCode] = config;
+        if (collectible.Attributes.Token[HydrationByTypeKey] == null)
+        {
+            collectible.Attributes.Token[HydrationByTypeKey] = new JObject();
+        }
+        var hydrationByType = collectible.Attributes.Token[HydrationByTypeKey] as JObject;
+        hydrationByType["*"] = JToken.FromObject(hydrationValue);
+        collectible.Attributes.Token[IsBoilingKey] = JToken.FromObject(isBoiling); // Use HoDisBoiling instead of isBoiling
+        collectible.Attributes.Token[HungerReductionKey] = JToken.FromObject(hungerReduction);
+        collectible.Attributes.Token[HealthKey] = JToken.FromObject(healthEffect);
     }
 
-
-    public static BlockHydrationConfig GetBlockHydration(string blockCode)
-    {
-        if (BlockHydrationDict.TryGetValue(blockCode, out var config))
-        {
-            return config;
-        }
-
-        foreach (var key in BlockHydrationDict.Keys)
-        {
-            if (IsWildcardMatch(blockCode, key))
-            {
-                return BlockHydrationDict[key];
-            }
-        }
-
-        return null;
-    }
-
-    public static void ApplyBlockHydrationPatches(List<JObject> newPatches)
-    {
-        if (newPatches == null || newPatches.Count == 0)
-        {
-            return;
-        }
-
-        LastAppliedPatches = newPatches;
-
-        foreach (var patch in newPatches)
-        {
-            string blockCode = patch["blockCode"]?.ToString();
-            if (blockCode != null)
-            {
-                var config = patch.ToObject<BlockHydrationConfig>();
-                if (config != null)
-                {
-                    SetBlockHydration(blockCode, config);
-                }
-            }
-        }
-    }
-    private static List<JObject> GetChangedPatches(List<JObject> oldPatches, List<JObject> newPatches)
-    {
-        var changedPatches = new List<JObject>();
-        var oldPatchDict = oldPatches.ToDictionary(p => p["blockCode"].ToString());
-        var newPatchDict = newPatches.ToDictionary(p => p["blockCode"].ToString());
-        foreach (var kvp in newPatchDict)
-        {
-            if (!oldPatchDict.TryGetValue(kvp.Key, out var oldPatch) || !JToken.DeepEquals(oldPatch, kvp.Value))
-            {
-                changedPatches.Add(kvp.Value);
-            }
-        }
-
-        return changedPatches;
-    }
-    private static HashSet<string> GetAffectedBlocks(List<JObject> changedPatches)
-    {
-        var affectedBlocks = new HashSet<string>();
-
-        foreach (var patch in changedPatches)
-        {
-            string patchBlockCode = patch["blockCode"]?.ToString();
-            if (string.IsNullOrEmpty(patchBlockCode)) continue;
-            var matchingBlockCodes = GetMatchingBlockCodes(patchBlockCode);
-            foreach (var blockCode in matchingBlockCodes)
-            {
-                affectedBlocks.Add(blockCode);
-            }
-        }
-
-        return affectedBlocks;
-    }
-    private static List<string> GetMatchingBlockCodes(string pattern)
-    {
-        var matchingBlockCodes = new List<string>();
-        string regexPattern = "^" + System.Text.RegularExpressions.Regex.Escape(pattern).Replace("\\*", ".*") + "$";
-        var regex = new System.Text.RegularExpressions.Regex(regexPattern);
-
-        foreach (var blockCode in BlockHydrationDict.Keys)
-        {
-            if (regex.IsMatch(blockCode))
-            {
-                matchingBlockCodes.Add(blockCode);
-            }
-        }
-
-        return matchingBlockCodes;
-    }
-    private static void UpdateBlockHydration(string blockCode, List<JObject> patches)
+    public static void ApplyBlockHydrationPatches(ICoreAPI api, IEnumerable<JsonObject> patches,
+        IEnumerable<CollectibleObject> collectibles)
     {
         foreach (var patch in patches)
         {
-            string patchBlockCode = patch["blockCode"]?.ToString();
-            if (IsWildcardMatch(blockCode, patchBlockCode))
+            string collectibleCode = patch["blockCode"]?.AsString();
+            if (string.IsNullOrEmpty(collectibleCode))
             {
-                var config = patch.ToObject<BlockHydrationConfig>();
-                if (config != null)
+                continue;
+            }
+
+            var hydrationByType = patch[HydrationByTypeKey]?.AsObject<Dictionary<string, float>>();
+            bool isBoiling = patch[IsBoilingKey]?.AsBool(false) ?? false;
+            int hungerReduction = patch[HungerReductionKey]?.AsInt(0) ?? 0;
+            int healthEffect = patch[HealthKey]?.AsInt(0) ?? 0;
+
+            foreach (var collectible in collectibles)
+            {
+                if (collectible == null || collectible.Code == null)
                 {
-                    SetBlockHydration(blockCode, config);
+                    continue;
                 }
 
-                return;
+                if (IsWildcardMatch(collectible.Code.Path, collectibleCode))
+                {
+                    float hydrationValue = 0f;
+
+                    if (hydrationByType != null && hydrationByType.ContainsKey(collectible.Code.Path))
+                    {
+                        hydrationValue = hydrationByType[collectible.Code.Path];
+                    }
+                    else if (hydrationByType != null && hydrationByType.ContainsKey("*"))
+                    {
+                        hydrationValue = hydrationByType["*"];
+                    }
+
+                    SetHydrationAttributes(api, collectible, hydrationValue, isBoiling, hungerReduction, healthEffect);
+                }
             }
         }
-        BlockHydrationDict.Remove(blockCode);
     }
 
-
-    public static List<JObject> GetLastAppliedPatches()
+    public static float GetHydrationValue(CollectibleObject collectible, string type)
     {
-        return LastAppliedPatches;
+        try
+        {
+            if (collectible == null)
+            {
+                return 0f;
+            }
+            if (collectible.Code == null)
+            {
+                return 0f;
+            }
+            if (collectible.Attributes == null)
+            {
+                return 0f;
+            }
+            var hydrationByTypeToken = collectible.Attributes.Token[HydrationByTypeKey];
+            if (hydrationByTypeToken == null)
+            {
+                return 0f;
+            }
+            var hydrationByType = hydrationByTypeToken.ToObject<Dictionary<string, float>>();
+            if (hydrationByType == null)
+            {
+                return 0f;
+            }
+            if (hydrationByType.TryGetValue(type, out float hydrationValue))
+            {
+                return hydrationValue;
+            }
+            if (hydrationByType.TryGetValue("*", out float wildcardHydrationValue))
+            {
+                return wildcardHydrationValue;
+            }
+            return 0f;
+        }
+        catch (Exception ex)
+        {
+            Api.Logger.Error("An error occurred while retrieving hydration value for collectible: {0}. Exception: {1}",
+                collectible?.Code?.Path ?? "Unknown", ex);
+            return 0f;
+        }
     }
+
+    public static bool IsBlockBoiling(CollectibleObject collectible)
+    {
+        return collectible?.Attributes?.Token[IsBoilingKey]?.ToObject<bool>() ?? false;
+    }
+
+    public static int GetBlockHungerReduction(CollectibleObject collectible)
+    {
+        return collectible?.Attributes?.Token[HungerReductionKey]?.ToObject<int>() ?? 0;
+    }
+
+    public static int GetBlockHealth(CollectibleObject collectible)
+    {
+        return collectible?.Attributes?.Token[HealthKey]?.ToObject<int>() ?? 0;
+    }
+
 
     private static bool IsWildcardMatch(string text, string pattern)
     {
-        var regexPattern = "^" + System.Text.RegularExpressions.Regex.Escape(pattern).Replace("\\*", ".*") + "$";
-        return System.Text.RegularExpressions.Regex.IsMatch(text, regexPattern);
+        var regexPattern = "^" + Regex.Escape(pattern).Replace("\\*", ".*") + "$";
+        return Regex.IsMatch(text, regexPattern);
     }
-    public class BlockHydrationConfig
+
+    public static List<JsonObject> GetLastAppliedPatches()
     {
-        public Dictionary<string, float> HydrationByType { get; set; }
-        public bool IsBoiling { get; set; }
-        public int HungerReduction { get; set; }
-        public int Health { get; set; } = 0;
+        return _lastAppliedPatches;
     }
 }

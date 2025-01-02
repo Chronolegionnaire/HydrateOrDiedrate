@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate.Config;
@@ -9,15 +8,14 @@ using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.Tun;
 using HydrateOrDiedrate.wellwater;
+using HydrateOrDiedrate.Wellwater;
 using HydrateOrDiedrate.XSkill;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ProtoBuf;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
-using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
@@ -41,7 +39,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private IClientNetworkChannel clientChannel;
     private IServerNetworkChannel serverChannel;
     private long customHudListenerId;
-    private AquiferSystem aquiferSystem;
+    private AquiferManager _aquiferManager;
 
     public override void StartPre(ICoreAPI api)
     {
@@ -194,11 +192,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         if (LoadedConfig.EnableThirstMechanics)
         {
-            List<JObject> loadedPatches = BlockHydrationConfigLoader.LoadBlockHydrationConfig(api);
-            BlockHydrationManager.ApplyBlockHydrationPatches(loadedPatches);
+            List<JsonObject> loadedPatches = BlockHydrationConfigLoader.LoadBlockHydrationConfig(api)
+                .ConvertAll(jObject => new JsonObject(jObject));
+            BlockHydrationManager.ApplyBlockHydrationPatches(api, loadedPatches, api.World.Blocks);
         }
     }
-
     private void LoadAndApplyCoolingPatches(ICoreAPI api)
     {
         List<JObject> coolingPatches = CoolingConfigLoader.LoadCoolingPatches(api);
@@ -218,11 +216,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
-        
+        api.RegisterItemClass("DigWellToolMode", typeof(DigWellToolMode));
         api.RegisterBlockClass("BlockTun", typeof(BlockTun));
         api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
-        
         api.RegisterBlockBehaviorClass("BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
+        api.RegisterBlockClass("BlockWellSpring", typeof(blockWellSpring));
+        api.RegisterBlockEntityClass("BlockEntityWellSpring", typeof(BlockEntityWellSpring));
         if (LoadedConfig.EnableThirstMechanics)
         {
             api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
@@ -261,11 +260,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
     }
     public static class HydrateOrDiedrateGlobals
     {
-        public static AquiferSystem AquiferSystem { get; private set; }
+        public static AquiferManager AquiferManager { get; private set; }
 
         public static void InitializeAquiferSystem(ICoreServerAPI api)
         {
-            AquiferSystem = new AquiferSystem(api);
+            AquiferManager = new AquiferManager(api);
         }
     }
     private void RegisterEmptyCarryBehaviors(ICoreAPI api)
@@ -314,19 +313,18 @@ public class HydrateOrDiedrateModSystem : ModSystem
             "", 
             (player, groupId, args) =>
             {
-                if (aquiferSystem == null)
+                if (HydrateOrDiedrateGlobals.AquiferManager == null)
                 {
                     api.SendMessage(player, groupId, "Aquifer system is not initialized.", EnumChatType.Notification);
                     return;
                 }
 
-                aquiferSystem.ClearAquiferData();
+                HydrateOrDiedrateGlobals.AquiferManager.ClearAquiferData();
                 api.SendMessage(player, groupId, "Aquifer data has been cleared successfully.", EnumChatType.Notification);
             }, 
             Privilege.controlserver 
         );
     }
-
     private void InitializeClient(ICoreClientAPI api)
     {
         _clientApi = api;
@@ -431,35 +429,29 @@ public class HydrateOrDiedrateModSystem : ModSystem
             KegIronHoopDropChance = packet.ServerConfig.KegIronHoopDropChance,
             KegTapDropChance = packet.ServerConfig.KegTapDropChance,
             TunCapacityLitres = packet.ServerConfig.TunCapacityLitres,
-            TunSpoilRateMultiplier = packet.ServerConfig.TunSpoilRateMultiplier
+            TunSpoilRateMultiplier = packet.ServerConfig.TunSpoilRateMultiplier,
+            DisableDrunkSway = packet.ServerConfig.DisableDrunkSway
         };
-
         ReloadComponents();
-
-
         var currentHydrationPatches = HydrationManager.GetLastAppliedPatches() ?? new List<JObject>();
         var packetHydrationPatches = packet.HydrationPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
         bool hydrationPatchesChanged = !ArePatchesEqual(packetHydrationPatches, currentHydrationPatches);
-
-        var currentBlockHydrationPatches = BlockHydrationManager.GetLastAppliedPatches() ?? new List<JObject>();
-        var packetBlockHydrationPatches =
-            packet.BlockHydrationPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
+        var currentBlockHydrationPatches = BlockHydrationManager.GetLastAppliedPatches()?.ConvertAll(jsonObj => jsonObj.Token as JObject) ?? new List<JObject>();
+        var packetBlockHydrationPatches = packet.BlockHydrationPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
         bool blockHydrationPatchesChanged = !ArePatchesEqual(packetBlockHydrationPatches, currentBlockHydrationPatches);
-
         var currentCoolingPatches = CoolingManager.GetLastAppliedPatches() ?? new List<JObject>();
         var packetCoolingPatches = packet.CoolingPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
         bool coolingPatchesChanged = !ArePatchesEqual(packetCoolingPatches, currentCoolingPatches);
-
         if (hydrationPatchesChanged)
         {
             HydrationManager.ApplyHydrationPatches(_clientApi, packetHydrationPatches);
         }
-
         if (blockHydrationPatchesChanged)
         {
-            BlockHydrationManager.ApplyBlockHydrationPatches(packetBlockHydrationPatches);
+            var convertedBlockHydrationPatches = packetBlockHydrationPatches
+                .ConvertAll(jObj => new Vintagestory.API.Datastructures.JsonObject(jObj));
+            BlockHydrationManager.ApplyBlockHydrationPatches(_clientApi, convertedBlockHydrationPatches, _clientApi.World.Blocks);
         }
-
         if (coolingPatchesChanged)
         {
             CoolingManager.ApplyCoolingPatches(_clientApi, packetCoolingPatches);
