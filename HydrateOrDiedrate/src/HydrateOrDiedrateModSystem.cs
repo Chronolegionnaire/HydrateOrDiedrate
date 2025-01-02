@@ -109,23 +109,38 @@ public class HydrateOrDiedrateModSystem : ModSystem
     }
     private void ApplySatietyPatch(ICoreAPI api, string jsonFilePath, float satietyValue)
     {
-        JsonPatch patch = new JsonPatch
+        JsonPatch ensureNutritionProps = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre",
-            Value = new JsonObject(JObject.FromObject(new
-            {
-                satiety = satietyValue,
-                foodcategory = "NoNutrition"
-            })),
+            Value = new JsonObject(JToken.FromObject(new { })),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
-        int applied = 0;
-        int notFound = 0;
-        int errorCount = 0;
+
+        JsonPatch patchSatiety = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre/satiety",
+            Value = new JsonObject(JToken.FromObject(satietyValue)),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        JsonPatch patchFoodCategory = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre/foodcategory",
+            Value = new JsonObject(JToken.FromObject("NoNutrition")),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        int applied = 0, notFound = 0, errorCount = 0;
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicwaterpatch"), patch, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:ensureNutritionProps"), ensureNutritionProps, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicsatietypatch"), patchSatiety, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicfoodcategorypatch"), patchFoodCategory, ref applied, ref notFound, ref errorCount);
     }
     public void ApplyKegTunConfigPatches(ICoreAPI api)
     {
@@ -134,50 +149,74 @@ public class HydrateOrDiedrateModSystem : ModSystem
         ApplyTunPatch(api, "hydrateordiedrate:blocktypes/tun.json", LoadedConfig.TunCapacityLitres, LoadedConfig.TunSpoilRateMultiplier);
     }
 
-    private void ApplyKegPatch(ICoreAPI api, string jsonFilePath, float capacityLitres, float spoilRate, float ironHoopDropChance, float kegTapDropChance)
+    private void ApplyKegPatch(ICoreAPI api, string jsonFilePath, float kegCapacityLitres, float spoilRate, float ironHoopDropChance, float kegTapDropChance)
+{
+    JsonPatch patchKegCapacity = new JsonPatch
     {
-        JsonPatch patch = new JsonPatch
-        {
-            Op = EnumJsonPatchOp.AddMerge,
-            Path = "/attributes",
-            Value = new JsonObject(JObject.FromObject(new
-            {
-                kegCapacityLitres = capacityLitres,
-                spoilRate = spoilRate,
-                ironHoopDropChance = ironHoopDropChance,
-                kegTapDropChance = kegTapDropChance
-            })),
-            File = new AssetLocation(jsonFilePath),
-            Side = EnumAppSide.Server
-        };
+        Op = EnumJsonPatchOp.AddMerge,
+        Path = "/attributes/kegCapacityLitres",
+        Value = new JsonObject(JToken.FromObject(kegCapacityLitres)),
+        File = new AssetLocation(jsonFilePath),
+        Side = EnumAppSide.Server
+    };
+    JsonPatch patchSpoilRate = new JsonPatch
+    {
+        Op = EnumJsonPatchOp.AddMerge,
+        Path = "/attributes/spoilRate",
+        Value = new JsonObject(JToken.FromObject(spoilRate)),
+        File = new AssetLocation(jsonFilePath),
+        Side = EnumAppSide.Server
+    };
+    JsonPatch patchIronHoop = new JsonPatch
+    {
+        Op = EnumJsonPatchOp.AddMerge,
+        Path = "/attributes/ironHoopDropChance",
+        Value = new JsonObject(JToken.FromObject(ironHoopDropChance)),
+        File = new AssetLocation(jsonFilePath),
+        Side = EnumAppSide.Server
+    };
+    JsonPatch patchKegTap = new JsonPatch
+    {
+        Op = EnumJsonPatchOp.AddMerge,
+        Path = "/attributes/kegTapDropChance",
+        Value = new JsonObject(JToken.FromObject(kegTapDropChance)),
+        File = new AssetLocation(jsonFilePath),
+        Side = EnumAppSide.Server
+    };
 
-        int applied = 0;
-        int notFound = 0;
-        int errorCount = 0;
-        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegpatch"), patch, ref applied, ref notFound, ref errorCount);
-    }
+    int applied = 0, notFound = 0, errorCount = 0;
+    ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
+    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegcapacitypatch"), patchKegCapacity, ref applied, ref notFound, ref errorCount);
+    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegspoilratepatch"), patchSpoilRate, ref applied, ref notFound, ref errorCount);
+    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicironhooppatch"), patchIronHoop, ref applied, ref notFound, ref errorCount);
+    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegtappatch"), patchKegTap, ref applied, ref notFound, ref errorCount);
+}
+
     private void ApplyTunPatch(ICoreAPI api, string jsonFilePath, float capacityLitres, float spoilRate)
     {
-        JsonPatch patch = new JsonPatch
+        JsonPatch patchCapacity = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
-            Path = "/attributes",
-            Value = new JsonObject(JObject.FromObject(new
-            {
-                TunCapacityLitres = capacityLitres,
-                spoilRate = spoilRate
-            })),
+            Path = "/attributes/tunCapacityLitres",
+            Value = new JsonObject(JToken.FromObject(capacityLitres)),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+        JsonPatch patchSpoilRate = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/spoilRate",
+            Value = new JsonObject(JToken.FromObject(spoilRate)),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
 
-        int applied = 0;
-        int notFound = 0;
-        int errorCount = 0;
+        int applied = 0, notFound = 0, errorCount = 0;
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamictunpatch"), patch, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamictuncapacitypatch"), patchCapacity, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamictunspoilratepatch"), patchSpoilRate, ref applied, ref notFound, ref errorCount);
     }
+
 
     private void LoadAndApplyHydrationPatches(ICoreAPI api)
     {
