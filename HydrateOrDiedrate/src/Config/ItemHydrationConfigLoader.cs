@@ -402,6 +402,18 @@ namespace HydrateOrDiedrate.Config
                         ["hydration"] = 750},
                     new JObject
                     {
+                        ["itemname"] = "hydrateordiedrate:wellwaterportion-muddysalt",
+                        ["hydration"] = -600},
+                    new JObject
+                    {
+                        ["itemname"] = "hydrateordiedrate:wellwaterportion-taintedsalt",
+                        ["hydration"] = -600},
+                    new JObject
+                    {
+                        ["itemname"] = "hydrateordiedrate:wellwaterportion-poisonedsalt",
+                        ["hydration"] = -600},
+                    new JObject
+                    {
                         ["itemname"] = "game:mushroom-*",
                         ["hydrationByType"] = new JObject
                         {
