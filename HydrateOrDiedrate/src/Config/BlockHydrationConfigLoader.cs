@@ -137,6 +137,41 @@ namespace HydrateOrDiedrate.Config
                     },
                     new JObject
                     {
+                        ["blockCode"] = "wellwatermuddysalt*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwatermuddysalt-*"] = -600,
+                            ["*"] = -600
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 50
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwatertaintedsalt*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwatertaintedsalt-*"] = -600,
+                            ["*"] = -600
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 400,
+                        ["Health"] = -5,
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwaterpoisonedsalt*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwaterpoisonedsalt-*"] = -600,
+                            ["*"] = -600
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 0,
+                        ["Health"] = -20,
+                    },
+                    new JObject
+                    {
                         ["blockCode"] = "saltwater*",
                         ["hydrationByType"] = new JObject
                         {

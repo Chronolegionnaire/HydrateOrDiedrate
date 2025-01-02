@@ -8,7 +8,10 @@
         "salt",
         "muddy",
         "tainted",
-        "poisoned"
+        "poisoned",
+        "muddysalt",
+        "taintedsalt",
+        "poisonedsalt"
       ]
     }
   ],
@@ -145,6 +148,80 @@
           "health": -20
         }
       }
+    },
+    "*-muddysalt": {
+      "handbook": {
+        "ignoreCreativeInvStacks": true
+      },
+      "waterTightContainerProps": {
+        "containable": true,
+        "itemsPerLitre": 100,
+        "texture": {
+          "base": "hydrateordiedrate:waterportionmuddy"
+        },
+        "tintIndex": 2,
+        "whenSpilled": {
+          "action": "DropContents",
+          "stack": {
+            "type": "item",
+            "code": "game:waterportion"
+          }
+        },
+        "nutritionPropsPerLitre": {
+          "satiety": -50,
+          "foodcategory": "NoNutrition"
+        }
+      }
+    },
+    "*-taintedsalt": {
+      "handbook": {
+        "ignoreCreativeInvStacks": true
+      },
+      "waterTightContainerProps": {
+        "containable": true,
+        "itemsPerLitre": 100,
+        "texture": {
+          "base": "hydrateordiedrate:waterportiontainted"
+        },
+        "tintIndex": 2,
+        "whenSpilled": {
+          "action": "DropContents",
+          "stack": {
+            "type": "item",
+            "code": "game:waterportion"
+          }
+        },
+        "nutritionPropsPerLitre": {
+          "satiety": -400,
+          "foodcategory": "NoNutrition",
+          "health": -5
+        }
+      }
+    },
+    "*-poisonedsalt": {
+      "handbook": {
+        "ignoreCreativeInvStacks": true
+      },
+      "waterTightContainerProps": {
+        "containable": true,
+        "itemsPerLitre": 100,
+        "texture": {
+          "base": "hydrateordiedrate:waterportionpoisoned"
+        },
+        "tintIndex": 2,
+        "whenSpilled": {
+          "action": "DropContents",
+          "stack": {
+            "type": "item",
+            "code": "game:waterportion"
+          }
+        },
+        "nutritionPropsPerLitre": {
+          "satiety": 0,
+          "foodcategory": "NoNutrition",
+          "health": -20
+        }
+      }
     }
   },
   "shape": {
@@ -173,7 +250,10 @@
                   "salt",
                   "muddy",
                   "tainted",
-                  "poisoned"
+                  "poisoned",
+                  "muddysalt",
+                  "taintedsalt",
+                  "poisonedsalt"
                 ],
                 "makefull": true
               }

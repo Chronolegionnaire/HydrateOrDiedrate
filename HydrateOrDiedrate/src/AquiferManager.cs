@@ -20,7 +20,7 @@ namespace HydrateOrDiedrate
         private bool isEnabled;
         private bool runGamePhaseReached;
         private bool isInitialized;
-
+        private const int CurrentAquiferDataVersion = 1;
         public AquiferManager(ICoreServerAPI api)
         {
             serverAPI = api;
@@ -86,40 +86,49 @@ namespace HydrateOrDiedrate
         private async Task ProcessChunkColumn(Vec2i chunkCoord, IWorldChunk[] chunks)
         {
             if (chunks == null || chunks.Length == 0) return;
-            if (!AreChunksValid(chunks))
-            {
-                RegisterFailedChunk(chunkCoord, chunks);
-                return;
-            }
+
             var mainChunk = chunks[0];
             if (mainChunk == null) return;
             mainChunk.Unpack();
             var data = mainChunk.GetModdata<AquiferChunkData>("aquiferData", null);
-            if (data == null)
+
+            if (data == null || data.Version < CurrentAquiferDataVersion)
             {
                 var pre = await Task.Run(() => CalculateAquiferData(chunks, chunkCoord));
                 data = new AquiferChunkData
                 {
                     PreSmoothedData = pre,
-                    SmoothedData = null
+                    SmoothedData = null,
+                    Version = CurrentAquiferDataVersion
                 };
                 mainChunk.SetModdata("aquiferData", data);
             }
+
             if (data.SmoothedData == null)
             {
                 await Task.Run(() => SmoothWithNeighbors(mainChunk, chunkCoord));
             }
         }
-
-
         private bool AreChunksValid(IWorldChunk[] chunks)
         {
             foreach (var chunk in chunks)
             {
-                if (chunk == null || chunk.Disposed || chunk.Data == null || chunk.Data.Length == 0) return false;
+                if (chunk == null)
+                {
+                    return false;
+                }
+                if (chunk.Disposed)
+                {
+                    return false;
+                }
+                if (chunk.Data == null || chunk.Data.Length == 0)
+                {
+                    return false;
+                }
             }
             return true;
         }
+
 
         private void SetupRetryTimer()
         {
@@ -127,11 +136,58 @@ namespace HydrateOrDiedrate
             {
                 if (calculationQueue.Count > 0 && isInitialized && runGamePhaseReached)
                 {
-                    _ = ProcessQueuedCalculations(); 
+                    _ = ProcessQueuedCalculations();
                 }
-                AttemptReprocessingOfFailedChunks();
             }, 5000);
+            serverAPI.Event.RegisterGameTickListener(dt => { RetryFailedChunks(); }, 5000);
         }
+
+        private void RetryFailedChunks()
+        {
+            foreach (var kvp in failedChunks)
+            {
+                var chunkCoord = kvp.Key;
+                var (attempts, chunks) = kvp.Value;
+
+                if (attempts >= 10)
+                {
+                    failedChunks.TryRemove(chunkCoord, out _);
+                    continue;
+                }
+
+                if (AreChunksValid(chunks))
+                {
+                    if (failedChunks.TryRemove(chunkCoord, out _))
+                    {
+                        calculationQueue.Enqueue((chunkCoord, chunks));
+                    }
+                }
+                else
+                {
+                    failedChunks[chunkCoord] = (attempts + 1, chunks);
+                }
+            }
+        }
+
+        private void RegisterFailedChunk(Vec2i chunkCoord, IWorldChunk[] chunks)
+        {
+            failedChunks.AddOrUpdate(
+                chunkCoord,
+                (1, chunks),
+                (key, existingValue) =>
+                {
+                    int attempts = existingValue.attempts + 1;
+                    if (attempts < 30)
+                    {
+                        return (attempts, chunks);
+                    }
+                    else
+                    {
+                        return existingValue;
+                    }
+                });
+        }
+
         private void AttemptReprocessingOfFailedChunks()
         {
             foreach (var kvp in failedChunks)
@@ -144,27 +200,6 @@ namespace HydrateOrDiedrate
                     }
                 }
             }
-        }
-
-
-        private void RegisterFailedChunk(Vec2i chunkCoord, IWorldChunk[] chunks)
-        {
-            failedChunks.AddOrUpdate(
-                chunkCoord,
-                (1, chunks),
-                (key, existingValue) =>
-                {
-                    int attempts = existingValue.attempts + 1;
-                    if (attempts < MaxFailedAttempts)
-                    {
-                        return (attempts, chunks);
-                    }
-                    else
-                    {
-                        failedChunks.TryRemove(key, out _);
-                        return existingValue;
-                    }
-                });
         }
 
         private double CalculateDiminishingReturns(int blockCount, double startValue, double minValue, double decayRate)
@@ -205,7 +240,7 @@ namespace HydrateOrDiedrate
                 const double waterBlockMultiplier = 4.0;
                 const double saltWaterMultiplier = 4.0;
                 const int boilingWaterMultiplier = 100;
-                const double randomMultiplierChance = 0.07;
+                const double randomMultiplierChance = 0.02;
                 int worldSeed = serverAPI.WorldManager.SaveGame.Seed;
                 int chunkSeed = worldSeed ^ (chunkCoord.X * 73856093) ^ (chunkCoord.Y * 19349663);
                 Random random = new Random(chunkSeed);
@@ -299,12 +334,15 @@ namespace HydrateOrDiedrate
                 RegisterFailedChunk(chunkCoord, new[] { mainChunk });
                 return;
             }
+
             var data = mainChunk?.GetModdata<AquiferChunkData>("aquiferData", null);
             if (data == null)
             {
                 RegisterFailedChunk(chunkCoord, new[] { mainChunk });
             }
+
             if (data == null || data.SmoothedData != null) return;
+
             double centralChunkRating = data.PreSmoothedData.AquiferRating;
             int radius = 2;
             var neighborCoords = new List<Vec2i>();
@@ -321,6 +359,7 @@ namespace HydrateOrDiedrate
                     }
                 }
             }
+
             int worldSeed = serverAPI.WorldManager.SaveGame.Seed;
             int chunkSeed = worldSeed ^ (chunkCoord.X * 73856093) ^ (chunkCoord.Y * 19349663);
             Random random = new Random(chunkSeed);
@@ -328,6 +367,7 @@ namespace HydrateOrDiedrate
             int highestNeighborRating = 0;
             int saltyNeighbors = 0;
             int totalNeighbors = 0;
+
             foreach (var ncoord in neighborCoords)
             {
                 var neighborChunk = serverAPI.World.BlockAccessor.GetChunk(ncoord.X, 0, ncoord.Y);
@@ -338,8 +378,10 @@ namespace HydrateOrDiedrate
                         neighborChunk == null ? Array.Empty<IWorldChunk>() : new[] { neighborChunk });
                     continue;
                 }
+
                 neighborChunk.Unpack();
                 AquiferChunkData neighborAqData = null;
+
                 try
                 {
                     neighborAqData = neighborChunk.GetModdata<AquiferChunkData>("aquiferData", null);
@@ -357,6 +399,7 @@ namespace HydrateOrDiedrate
                     RegisterFailedChunk(ncoord, new[] { neighborChunk });
                     continue;
                 }
+
                 var neighborAq = neighborAqData.SmoothedData ?? neighborAqData.PreSmoothedData;
                 int neighborRating = neighborAq.AquiferRating;
                 bool isNeighborSalty = neighborAq.IsSalty;
@@ -372,11 +415,12 @@ namespace HydrateOrDiedrate
                 RegisterFailedChunk(chunkCoord, new[] { mainChunk });
                 return;
             }
-            if (highestNeighborRating < centralChunkRating)
+            if (highestNeighborRating > centralChunkRating)
             {
-                double reductionFactor = 0.1 + (random.NextDouble() * 0.1);
-                centralChunkRating -= centralChunkRating * reductionFactor;
+                double reductionFactor = 0.2 + (random.NextDouble() * 0.3);
+                centralChunkRating = highestNeighborRating - (highestNeighborRating * reductionFactor);
             }
+
             bool finalIsSalty = saltyNeighbors > (totalNeighbors / 2.0);
 
             data.SmoothedData = new AquiferData
@@ -425,7 +469,9 @@ namespace HydrateOrDiedrate
         {
             [ProtoMember(1)] public AquiferData PreSmoothedData { get; set; }
             [ProtoMember(2)] public AquiferData SmoothedData { get; set; }
+            [ProtoMember(3)] public int Version { get; set; }
         }
+
 
         public class LocalCounts
         {
