@@ -1,5 +1,5 @@
 ﻿{
-  "code": "distilledwaterportion",
+  "code": "boiledrainwaterportion",
   "class": "ItemLiquidPortion",
   "matterState": "liquid",
   "attributes": {
@@ -36,7 +36,7 @@
           "code": "game:woodbucket",
           "attributes": {
             "ucontents": [
-              { "type": "item", "code": "hydrateordiedrate:distilledwaterportion", "makefull": true }
+              { "type": "item", "code": "hydrateordiedrate:boiledrainwaterportion", "makefull": true }
             ]
           }
         }
@@ -61,8 +61,8 @@
   "transitionableProps": [
     {
       "type": "Perish",
-      "freshHours": { "avg": 150 },
-      "transitionHours": { "avg": 36 },
+      "freshHours": { "avg": 75 },
+      "transitionHours": { "avg": 18 },
       "transitionedStack": { "type": "item", "code": "game:waterportion" },
       "transitionRatio": 1.0
     }

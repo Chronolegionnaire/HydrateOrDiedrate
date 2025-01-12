@@ -5,7 +5,7 @@ using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 
-namespace HydrateOrDiedrate.Patches
+namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch]
     public class TryEatStopBlockBottlePatch

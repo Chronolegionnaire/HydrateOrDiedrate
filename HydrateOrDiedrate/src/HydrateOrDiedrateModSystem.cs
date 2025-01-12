@@ -100,12 +100,16 @@ public class HydrateOrDiedrateModSystem : ModSystem
         float boilingWaterSatiety = LoadedConfig.BoilingWaterSatiety;
         float rainWaterSatiety = LoadedConfig.RainWaterSatiety;
         float distilledWaterSatiety = LoadedConfig.DistilledWaterSatiety;
+        float boiledWaterSatiety = LoadedConfig.BoiledWaterSatiety;
+        float boiledRainWaterSatiety = LoadedConfig.BoiledRainWaterSatiety;
 
         ApplySatietyPatch(api, "game:itemtypes/liquid/waterportion.json", waterSatiety);
         ApplySatietyPatch(api, "game:itemtypes/liquid/saltwaterportion.json", saltWaterSatiety);
         ApplySatietyPatch(api, "game:itemtypes/liquid/boilingwaterportion.json", boilingWaterSatiety);
         ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", rainWaterSatiety);
         ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", distilledWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", boiledWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", boiledRainWaterSatiety);
     }
     private void ApplySatietyPatch(ICoreAPI api, string jsonFilePath, float satietyValue)
     {
@@ -258,6 +262,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterItemClass("DigWellToolMode", typeof(DigWellToolMode));
         api.RegisterBlockClass("BlockTun", typeof(BlockTun));
         api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
+        api.RegisterBlockEntityClass("BlockEntityWellWaterData", typeof(BlockEntityWellWaterData));
         api.RegisterBlockBehaviorClass("BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
         api.RegisterBlockClass("BlockWellSpring", typeof(blockWellSpring));
         api.RegisterBlockEntityClass("BlockEntityWellSpring", typeof(BlockEntityWellSpring));
@@ -439,6 +444,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             BoilingWaterSatiety = packet.ServerConfig.BoilingWaterSatiety,
             RainWaterSatiety = packet.ServerConfig.RainWaterSatiety,
             DistilledWaterSatiety = packet.ServerConfig.DistilledWaterSatiety,
+            BoiledWaterSatiety = packet.ServerConfig.BoiledWaterSatiety,
             MaxMovementSpeedPenalty = packet.ServerConfig.MaxMovementSpeedPenalty,
             MovementSpeedPenaltyThreshold = packet.ServerConfig.MovementSpeedPenaltyThreshold,
             HarshHeat = packet.ServerConfig.HarshHeat,

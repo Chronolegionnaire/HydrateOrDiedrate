@@ -175,7 +175,21 @@ namespace HydrateOrDiedrate.Wellwater
                     BlockPos abovePos = Pos.UpCopy();
                     Block aboveBlock = blockAccessor.GetBlock(abovePos, 1);
 
-                    if (aquiferData.IsSalty) continue;
+                    if (aquiferData.IsSalty)
+                    {
+                        if (aboveBlock != null && aboveBlock.Code.Path.StartsWith("wellwatersalt-"))
+                        {
+                            string newPath = aboveBlock.Code.Path.Replace("wellwatersalt-", "wellwatermuddysalt-");
+                            Block muddySaltBlock = blockAccessor.GetBlock(new AssetLocation(newPath));
+
+                            if (muddySaltBlock != null)
+                            {
+                                blockAccessor.SetBlock(muddySaltBlock.BlockId, abovePos);
+                            }
+                        }
+
+                        continue;
+                    }
 
                     if (aboveBlock != null && aboveBlock.Code.Path.Contains("fresh"))
                     {
@@ -188,7 +202,6 @@ namespace HydrateOrDiedrate.Wellwater
                 }
             }
         }
-
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);

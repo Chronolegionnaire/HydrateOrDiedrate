@@ -58,6 +58,8 @@
   "hydrateordiedrate:abilitydesc-equatidian": "Provides a cooling multiplier.",
   "hydrateordiedrate:item-distilledwaterportion": "Distilled Water",
   "hydrateordiedrate:incontainer-item-distilledwaterportion": "Distilled Water",
+  "hydrateordiedrate:item-boiledwaterportion": "Boiled Water",
+  "hydrateordiedrate:incontainer-item-boiledwaterportion": "Boiled Water",
   "hydrateordiedrate:item-rainwaterportion": "Rain Water",
   "hydrateordiedrate:incontainer-item-rainwaterportion": "Rain Water",
   "hydrateordiedrate:block-keg": "Keg",
@@ -73,6 +75,8 @@
   "hydrateordiedrate:incontainer-item-wellwaterportion-muddy": "Muddy Well Water",
   "hydrateordiedrate:incontainer-item-wellwaterportion-tainted": "Tainted Well Water",
   "hydrateordiedrate:incontainer-item-wellwaterportion-poisoned": "Poisoned Well Water",
-  "hydrateordiedrate:block-wellwater*": "Well Water"
+  "hydrateordiedrate:incontainer-item-wellwaterportion-muddysalt": "Muddy Salty Well Water",
+  "hydrateordiedrate:incontainer-item-wellwaterportion-taintedsalt": "Tainted Salty Well Water",
+  "hydrateordiedrate:incontainer-item-wellwaterportion-poisonedsalt": "Poisoned Salty Well Water"
   
 }

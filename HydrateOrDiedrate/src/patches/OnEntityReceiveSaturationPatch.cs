@@ -1,10 +1,9 @@
 ﻿using System;
 using HarmonyLib;
 using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.Patches
+namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch(typeof(EntityBehaviorHunger), "OnEntityReceiveSaturation")]
     public class EntityBehaviorHungerPatch

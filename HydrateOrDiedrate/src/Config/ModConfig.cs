@@ -26,6 +26,8 @@ namespace HydrateOrDiedrate.Config
                     hydrateConfig.BoilingWaterSatiety = 0f;
                     hydrateConfig.RainWaterSatiety = -50f;
                     hydrateConfig.DistilledWaterSatiety = 0f;
+                    hydrateConfig.BoiledWaterSatiety = 0f;
+                    hydrateConfig.BoiledRainWaterSatiety = 0f;
                     hydrateConfig.SprintThirstMultiplier = 1.5f;
                     hydrateConfig.EnableBoilingWaterDamage = true;
                     hydrateConfig.BoilingWaterDamage = 5.0f;

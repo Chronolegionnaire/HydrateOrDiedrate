@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
 using HarmonyLib;
-using HydrateOrDiedrate;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.Patches
+namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch(typeof(ItemProspectingPick), "PrintProbeResults")]
     public static class PrintProbeResultsPatch

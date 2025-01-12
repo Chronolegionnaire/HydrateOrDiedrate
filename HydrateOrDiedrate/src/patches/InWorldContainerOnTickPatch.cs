@@ -1,8 +1,7 @@
 ﻿using HarmonyLib;
-using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.Patches
+namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch(typeof(InWorldContainer), "OnTick")]
     public static class InWorldContainerOnTickPatch

@@ -4,7 +4,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.Patches;
+namespace HydrateOrDiedrate.patches;
 
 [HarmonyPatch(typeof(CollectibleObject), "GetHeldItemInfo")]
 public static class CollectibleObjectGetHeldItemInfoPatch

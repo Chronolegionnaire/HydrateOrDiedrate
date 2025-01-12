@@ -75,8 +75,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="assets\hydrateordiedrate\blocktypes\wood\" />
-      <Folder Include="assets\hydrateordiedrate\patches\" />
+      <PackageReference Include="SkiaSharp" Version="3.116.1" />
     </ItemGroup>
 
 </Project>

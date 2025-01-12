@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using HydrateOrDiedrate.wellwater;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
@@ -185,7 +186,8 @@ namespace HydrateOrDiedrate
         }
 
 
-        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime, CollectibleObject collectible, PlayerDrinkData drinkData)
+        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime,
+            CollectibleObject collectible, PlayerDrinkData drinkData)
         {
             if (!drinkData.IsDrinking) return;
 
@@ -204,9 +206,8 @@ namespace HydrateOrDiedrate
             if (progress >= 1f)
             {
                 SendDrinkProgressToClient(player, 1f, drinkData.IsDrinking, isDangerous);
-                var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
-                var hungerBehavior = player.Entity.GetBehavior<EntityBehaviorHunger>();
 
+                var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
                 if (thirstBehavior == null || thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
                 {
                     StopDrinking(player, drinkData);
@@ -215,45 +216,45 @@ namespace HydrateOrDiedrate
 
                 thirstBehavior.ModifyThirst(hydrationValue);
 
-                if (hungerBehavior != null)
+                // Interact with well water entity
+                var block = _api.World.BlockAccessor.GetBlock(blockSel.Position);
+                if (block.Code.Path.StartsWith("wellwater"))
                 {
-                    if (hungerBehavior.Saturation >= hungerReduction)
-                    {
-                        hungerBehavior.Saturation -= hungerReduction;
-                        thirstBehavior.HungerReductionAmount += hungerReduction;
-                    }
-                    else if (hungerBehavior.Saturation > 0)
-                    {
-                        thirstBehavior.HungerReductionAmount += hungerBehavior.Saturation;
-                        hungerBehavior.Saturation = 0;
-                    }
-                    else
-                    {
-                        StopDrinking(player, drinkData);
-                        return;
-                    }
-                }
+                    var blockBehavior = block.GetBehavior<BlockBehaviorWellWaterFinite>();
+                    var naturalSourcePos = blockBehavior?.FindNaturalSourceInLiquidChain(
+                        _api.World.BlockAccessor,
+                        blockSel.Position
+                    );
 
-                if (healthEffect != 0)
-                {
-                    var damageSource = new DamageSource
+                    if (naturalSourcePos != null)
                     {
-                        Source = EnumDamageSource.Internal,
-                        Type = healthEffect > 0 ? EnumDamageType.Heal : EnumDamageType.Poison
-                    };
+                        var blockEntity = _api.World.BlockAccessor.GetBlockEntity(naturalSourcePos);
+                        if (blockEntity is BlockEntityWellWaterData wellWaterData)
+                        {
+                            int beforeVolume = wellWaterData.Volume;
 
-                    float damageAmount = Math.Abs(healthEffect);
-                    player.Entity.ReceiveDamage(damageSource, damageAmount);
-                }
+                            // Decrement volume
+                            wellWaterData.Volume -= 1;
 
-                if (isBoiling && _config.EnableBoilingWaterDamage)
-                {
-                    ApplyHeatDamage(player);
+                            int afterVolume = wellWaterData.Volume;
+
+                            // Log before and after volumes
+                            _api.Logger.Notification(
+                                $"[WellWater] Player {player.PlayerName} drank 1 liter. Volume before: {beforeVolume}, after: {afterVolume}");
+
+                            if (afterVolume <= 0)
+                            {
+                                StopDrinking(player, drinkData);
+                                return;
+                            }
+                        }
+                    }
                 }
 
                 _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), blockSel.HitPosition.X,
                     blockSel.HitPosition.Y, blockSel.HitPosition.Z, null, true, 32f, 1f);
                 SpawnWaterParticles(blockSel.HitPosition);
+
                 drinkData.DrinkStartTime = currentTime;
                 SendDrinkProgressToClient(player, 0f, drinkData.IsDrinking, isDangerous);
             }

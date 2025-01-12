@@ -21,7 +21,7 @@
       }
     },
     "nutritionPropsPerLitre": {
-      "satiety": -10,
+      "satiety": -50,
       "foodcategory": "NoNutrition"
     }
   },
