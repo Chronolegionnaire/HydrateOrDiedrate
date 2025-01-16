@@ -24,7 +24,7 @@ namespace HydrateOrDiedrate.patches
                 if (itemWearable == null) return;
 
                 ItemStack itemStack = inSlot.Itemstack;
-                float cooling = CoolingManager.GetCooling(itemStack); // Using the new CoolingManager.GetCooling method
+                float cooling = CoolingManager.GetCooling(itemStack);
                 string existingText = dsc.ToString();
 
                 ensureConditionExistsMethod?.Invoke(itemWearable, new object[] { inSlot });

@@ -7,6 +7,7 @@ using Vintagestory.GameContent;
 public static class BlockCookingContainerPatch
 {
     [HarmonyPrefix]
+    [HarmonyPriority(Priority.Low)]
     public static bool Prefix(IWorldAccessor world, ISlotProvider cookingSlotsProvider, ItemSlot inputSlot, ItemSlot outputSlot, BlockCookingContainer __instance)
     {
         ItemStack[] stacks = __instance.GetCookingStacks(cookingSlotsProvider, true);
@@ -30,8 +31,8 @@ public static class BlockCookingContainerPatch
             outputStack.Collectible.SetTemperature(world, outputStack, BlockCookingContainer.GetIngredientsTemperature(world, stacks), true);
             TransitionableProperties cookedPerishProps = recipe.PerishableProps.Clone();
             cookedPerishProps.TransitionedStack.Resolve(world, "cooking container perished stack", true);
-            var apiField = typeof(Block).GetField("api", BindingFlags.NonPublic | BindingFlags.Instance);
-            ICoreAPI api = (ICoreAPI)apiField.GetValue(__instance);
+
+            ICoreAPI api = world.Api;
 
             CollectibleObject.CarryOverFreshness(api, cookingSlotsProvider.Slots, stacks, cookedPerishProps);
             for (int i = 0; i < cookingSlotsProvider.Slots.Length; i++)

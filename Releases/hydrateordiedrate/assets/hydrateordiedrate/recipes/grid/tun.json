@@ -1,8 +1,8 @@
 ﻿{
   ingredientPattern: "SPS,PPP,SPS",
   ingredients: {
-    "S": { type: "item", code: "game:stick", quantity: 2 },
-    "P": { type: "item", code: "game:plank-*", quantity: 2 }
+    "S": { type: "item", code: "game:stick", quantity: 10 },
+    "P": { type: "item", code: "game:plank-*", quantity: 5 }
   },
   width: 3,
   height: 3,

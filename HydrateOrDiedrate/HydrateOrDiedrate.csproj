@@ -55,6 +55,10 @@
             <HintPath>lib\dlls\VSImGui.dll</HintPath>
             <Private>false</Private>
         </Reference>
+		<Reference Include="SkiaSharp">
+			<HintPath>$(VINTAGE_STORY)/Lib/SkiaSharp.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
         <Reference Include="ImGui.NET">
             <HintPath>lib\dlls\VImGui.NET.dll</HintPath>
             <Private>false</Private>

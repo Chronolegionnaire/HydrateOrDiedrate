@@ -223,6 +223,7 @@ namespace HydrateOrDiedrate.wellwater
 			{
 				return;
 			}
+
 			Block replacementBlock = this.GetReplacementBlock(liquidBlock, world);
 			if (replacementBlock != null)
 			{
@@ -237,6 +238,7 @@ namespace HydrateOrDiedrate.wellwater
 				world.PlaySoundAt(this.collisionReplaceSound, pos, 0.0, null, true, 16f, 1f);
 			}
 		}
+
 
 		private void SpreadLiquid(int blockId, BlockPos pos, IWorldAccessor world)
 		{
@@ -261,6 +263,8 @@ namespace HydrateOrDiedrate.wellwater
 			}
 			world.BulkBlockAccessor.SetBlock(spreadingBlock.BlockId, pos, 2);
 			world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), pos, this.spreadDelay);
+			Block ourBlock = world.GetBlock(blockId);
+			this.TryReplaceNearbyLiquidBlocks(ourBlock, pos, world);
 		}
 		private void updateOwnFlowDir(Block block, IWorldAccessor world, BlockPos pos)
 		{
@@ -594,13 +598,15 @@ namespace HydrateOrDiedrate.wellwater
 			{
 				return false;
 			}
+
 			Block neighborLiquid = world.BlockAccessor.GetBlock(npos, 2);
 			if (neighborLiquid.LiquidCode == ourblock.LiquidCode)
 			{
-				if (neighborLiquid.Variant["createdBy"] == "natural" && ourblock.Variant["createdBy"] == "spreading")
+				if (neighborLiquid.Variant["createdBy"] == "natural")
 				{
 					return false;
 				}
+
 				return neighborLiquid.LiquidLevel < ourblock.LiquidLevel;
 			}
 			if (neighborLiquid.LiquidLevel == 7 && !this.IsDifferentCollidableLiquid(ourblock, neighborLiquid))
@@ -613,6 +619,7 @@ namespace HydrateOrDiedrate.wellwater
 			}
 			return ourblock.LiquidLevel > 1 || facing.Index == BlockFacing.DOWN.Index;
 		}
+
 		public override bool IsReplacableBy(Block byBlock, ref EnumHandling handled)
 		{
 			handled = EnumHandling.PreventDefault;

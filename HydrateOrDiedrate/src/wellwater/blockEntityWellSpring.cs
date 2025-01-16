@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using HydrateOrDiedrate.wellwater;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Datastructures;
@@ -13,7 +14,7 @@ namespace HydrateOrDiedrate.Wellwater
     {
         private ICoreServerAPI sapi;
         private AquiferManager _aquiferManager;
-        private int updateIntervalMs = 2000; //normally 600000
+        private int updateIntervalMs = 2000;
         private const int maxWaterLevel = 7;
 
         private bool disableWaterSpawning = true;
@@ -117,28 +118,49 @@ namespace HydrateOrDiedrate.Wellwater
 
             var blockAccessor = sapi.World.BlockAccessor;
             BlockPos abovePos = Pos.UpCopy();
-            Block aboveBlock = blockAccessor.GetBlock(abovePos, 1);
-
-            int waterLevel = aboveBlock?.LiquidLevel ?? 0;
-
-            if (aboveBlock != null && aboveBlock.Code.Path.Contains("water"))
+            Block aboveBlock = blockAccessor.GetBlock(abovePos, BlockLayersAccess.Default);
+            if (aboveBlock?.Code?.Path.Contains("wellwater") == true)
             {
-                if (aquiferData.IsSalty && !aboveBlock.Code.Path.Contains("salt"))
+                bool isAboveBlockSalty = aboveBlock.Code.Path.Contains("salt");
+                var aboveBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(abovePos);
+                if (aboveBE == null)
                 {
-                    ReplaceWithWaterBlock(abovePos, waterType, waterLevel + 1);
+                    ReplaceBlockWithVolume(abovePos, waterType, 1);
                 }
-                else if (waterLevel < maxWaterLevel)
+                else
                 {
-                    ReplaceWithWaterBlock(abovePos, waterType, waterLevel + 1);
+                    if (aquiferData.IsSalty && !isAboveBlockSalty)
+                    {
+                        ReplaceBlockWithVolume(abovePos, waterType, aboveBE.Volume);
+                    }
+                    else
+                    {
+                        aboveBE.Volume += 1;
+                    }
                 }
             }
             else
             {
-                ReplaceWithWaterBlock(abovePos, waterType, 1);
+                ReplaceBlockWithVolume(abovePos, waterType, 1);
             }
-
             HandleMudGeneration(aquiferData);
         }
+        private void ReplaceBlockWithVolume(BlockPos pos, string waterType, int newVolume)
+        {
+            if (disableWaterSpawning) return;
+            string blockCode = $"hydrateordiedrate:wellwater{waterType}-natural-still-1";
+            Block waterBlock = sapi.World.GetBlock(new AssetLocation(blockCode));
+            if (waterBlock == null) return;
+            var blockAccessor = sapi.World.BlockAccessor;
+            blockAccessor.SetBlock(waterBlock.BlockId, pos);
+            blockAccessor.TriggerNeighbourBlockUpdate(pos);
+            var aboveBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(pos);
+            if (aboveBE != null)
+            {
+                aboveBE.Volume = newVolume;
+            }
+        }
+
 
         private void ReplaceWithWaterBlock(BlockPos pos, string waterType, int level)
         {
@@ -220,7 +242,7 @@ namespace HydrateOrDiedrate.Wellwater
             base.ToTreeAttributes(tree);
         }
 
-        public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
+        public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc) 
         {
             base.GetBlockInfo(forPlayer, dsc);
             dsc.AppendLine("This block generates water based on the aquifer level beneath it.");

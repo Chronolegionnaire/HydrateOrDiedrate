@@ -30,8 +30,6 @@ namespace HydrateOrDiedrate.patches
             alreadyCalled = false;
 
             var api = byEntity?.World?.Api;
-
-            // Ensure this logic only runs on the server side
             if (api == null || api.Side != EnumAppSide.Server)
             {
                 return;
@@ -67,8 +65,6 @@ namespace HydrateOrDiedrate.patches
             alreadyCalled = true;
 
             var api = byEntity?.World?.Api;
-
-            // Ensure this logic only runs on the server side
             if (api == null || api.Side != EnumAppSide.Server)
             {
                 return;

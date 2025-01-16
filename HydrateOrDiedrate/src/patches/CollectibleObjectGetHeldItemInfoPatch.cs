@@ -22,14 +22,10 @@ public static class CollectibleObjectGetHeldItemInfoPatch
         }
 
         float hydrationValue = 0f;
-
-        // Check hydration value directly from the ItemStack
         if (inSlot.Itemstack != null)
         {
             hydrationValue = HydrationManager.GetHydration(inSlot.Itemstack);
         }
-
-        // If hydration value is 0 and the item is a liquid container, get content hydration
         if (hydrationValue == 0 && inSlot.Itemstack?.Block is BlockLiquidContainerBase block)
         {
             ItemStack contentStack = block.GetContent(inSlot.Itemstack);
@@ -40,8 +36,6 @@ public static class CollectibleObjectGetHeldItemInfoPatch
                 hydrationValue = contentHydrationValue * litres;
             }
         }
-
-        // Update the description with hydration value
         string existingText = dsc.ToString();
         string whenEatenLine = "When eaten: ";
         int startIndex = existingText.IndexOf(whenEatenLine);
