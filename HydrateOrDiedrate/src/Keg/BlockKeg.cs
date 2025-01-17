@@ -13,7 +13,6 @@ namespace HydrateOrDiedrate.Keg
     public class BlockKeg : BlockLiquidContainerBase
     {
         private float kegCapacityLitres;
-        private float spoilRate;
         private float ironHoopDropChance;
         private float kegTapDropChance;
 
@@ -21,7 +20,6 @@ namespace HydrateOrDiedrate.Keg
         {
             base.OnLoaded(api);
             kegCapacityLitres = Attributes?["kegCapacityLitres"].AsFloat(100.0f) ?? 100.0f;
-            spoilRate = Attributes?["spoilRate"].AsFloat(1.0f) ?? 1.0f;
             ironHoopDropChance = Attributes?["ironHoopDropChance"].AsFloat(0.5f) ?? 0.5f;
             kegTapDropChance = Attributes?["kegTapDropChance"].AsFloat(0.2f) ?? 0.2f;
         }

@@ -64,7 +64,7 @@ namespace HydrateOrDiedrate.Config
                             ["boilingwater-*"] = 600,
                             ["*"] = 600
                         },
-                        ["isBoiling"] = true,
+                        ["HoDisBoiling"] = true,
                         ["hungerReduction"] = 0
                     },
                     new JObject
@@ -75,8 +75,100 @@ namespace HydrateOrDiedrate.Config
                             ["water-*"] = 600,
                             ["*"] = 600
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 100
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwaterfresh*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwaterfresh-*"] = 750,
+                            ["*"] = 750
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 0
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwatersalt*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwatersalt-*"] = -600,
+                            ["*"] = -600
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 100
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwatermuddy*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwatermuddy-*"] = 600,
+                            ["*"] = 600
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 50
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwatertainted*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwatertainted-*"] = 750,
+                            ["*"] = 750
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 400,
+                        ["Health"] = -5,
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwaterpoisoned*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwaterpoisoned-*"] = 750,
+                            ["*"] = 750
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 0,
+                        ["Health"] = -20,
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwatermuddysalt*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwatermuddysalt-*"] = -600,
+                            ["*"] = -600
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 50
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwatertaintedsalt*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwatertaintedsalt-*"] = -600,
+                            ["*"] = -600
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 400,
+                        ["Health"] = -5,
+                    },
+                    new JObject
+                    {
+                        ["blockCode"] = "wellwaterpoisonedsalt*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["wellwaterpoisonedsalt-*"] = -600,
+                            ["*"] = -600
+                        },
+                        ["HoDisBoiling"] = false,
+                        ["hungerReduction"] = 0,
+                        ["Health"] = -20,
                     },
                     new JObject
                     {
@@ -86,7 +178,7 @@ namespace HydrateOrDiedrate.Config
                             ["saltwater-*"] = -600,
                             ["*"] = -600
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 100
                     },
                     new JObject
@@ -97,7 +189,7 @@ namespace HydrateOrDiedrate.Config
                             ["distilledwater-*"] = 600,
                             ["*"] = 600
                         },
-                        ["isBoiling"] = false,
+                        ["HoDisBoiling"] = false,
                         ["hungerReduction"] = 0
                     }
                 }

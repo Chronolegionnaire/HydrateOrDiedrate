@@ -1,140 +1,104 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
 public static class CoolingManager
 {
-    private static readonly Dictionary<string, float> ItemCoolingDict = new();
-    private static List<JObject> LastAppliedPatches = new();
+    public const string CoolingAttributeKey = "cooling";
+    public static List<JObject> _lastAppliedPatches = new List<JObject>();
 
-    public static void SetCooling(ICoreAPI api, string itemCode, float coolingValue)
+    public static void SetCooling(ICoreAPI api, CollectibleObject collectible, float coolingValue)
     {
-        ItemCoolingDict[itemCode] = coolingValue;
-    }
-
-    public static float GetCooling(ICoreAPI api, string itemCode)
-    {
-        return ItemCoolingDict.TryGetValue(itemCode, out var value) ? value : 0f;
-    }
-
-    public static void ApplyCoolingPatches(ICoreAPI api, List<JObject> newPatches)
-    {
-        var oldPatches = LastAppliedPatches;
-        var changedPatches = GetChangedPatches(oldPatches, newPatches);
-
-        LastAppliedPatches = newPatches;
-
-        if (changedPatches.Count == 0)
+        if (collectible.Attributes == null)
         {
-            return;
+            collectible.Attributes = new JsonObject(new JObject());
         }
 
-        var affectedItems = GetAffectedItems(api, changedPatches);
-
-        foreach (var itemCode in affectedItems)
-        {
-            UpdateItemCooling(api, itemCode, newPatches);
-        }
+        collectible.Attributes.Token[CoolingAttributeKey] = JToken.FromObject(coolingValue);
     }
-    private static void UpdateItemCooling(ICoreAPI api, string itemCode, List<JObject> patches)
+
+    public static float GetCooling(ItemStack itemStack)
+    {
+        CollectibleObject collectible = itemStack?.Collectible;
+        if (collectible?.Attributes == null)
+        {
+            return 0f;
+        }
+
+        return collectible.Attributes.Token[CoolingAttributeKey]?.ToObject<float>() ?? 0f;
+    }
+
+    public static void ApplyCoolingPatches(ICoreAPI api, List<JObject> patches)
     {
         foreach (var patch in patches)
         {
-            string patchItemName = patch["itemname"]?.ToString();
-            if (IsMatch(itemCode, patchItemName))
+            string itemName = patch["itemname"]?.ToString();
+            if (string.IsNullOrEmpty(itemName)) continue;
+
+            var matchingCollectibles = GetMatchingCollectibles(api, itemName);
+            foreach (var collectible in matchingCollectibles)
             {
-                if (patch.ContainsKey("cooling"))
+                if (patch.ContainsKey(CoolingAttributeKey))
                 {
-                    float cooling = patch["cooling"].ToObject<float>();
-                    SetCooling(api, itemCode, cooling);
-                    
-                    var item = api.World.GetItem(new AssetLocation(itemCode));
-                    if (item != null && item.Attributes != null)
+                    float coolingValue = patch[CoolingAttributeKey].ToObject<float>();
+                    SetCooling(api, collectible, coolingValue);
+                }
+                else if (patch.ContainsKey("coolingByType"))
+                {
+                    var coolingByType = patch["coolingByType"].ToObject<Dictionary<string, float>>();
+                    foreach (var entry in coolingByType)
                     {
-                        float currentWarmth = item.Attributes["warmth"]?.AsFloat(0f) ?? 0f;
-                        if (currentWarmth <= 0f)
+                        string typeKey = entry.Key;
+                        float coolingValue = entry.Value;
+
+                        if (IsMatch(collectible.Code.ToString(), typeKey))
                         {
-                            var clonedAttributes = item.Attributes.Token.DeepClone() as JObject;
-                            if (clonedAttributes != null)
-                            {
-                                clonedAttributes["warmth"] = 0.01f;
-                                item.Attributes = new JsonObject(clonedAttributes);
-                            }
+                            SetCooling(api, collectible, coolingValue);
                         }
                     }
-
-                    return;
                 }
             }
         }
-        ItemCoolingDict.Remove(itemCode);
+
+        _lastAppliedPatches = patches;
     }
-    
-    private static List<JObject> GetChangedPatches(List<JObject> oldPatches, List<JObject> newPatches)
-    {
-        var changedPatches = new List<JObject>();
-        var oldPatchDict = oldPatches.ToDictionary(p => p["itemname"].ToString());
-        var newPatchDict = newPatches.ToDictionary(p => p["itemname"].ToString());
-        foreach (var kvp in newPatchDict)
-        {
-            if (!oldPatchDict.TryGetValue(kvp.Key, out var oldPatch) || !JToken.DeepEquals(oldPatch, kvp.Value))
-            {
-                changedPatches.Add(kvp.Value);
-            }
-        }
-        return changedPatches;
-    }
-    private static HashSet<string> GetAffectedItems(ICoreAPI api, List<JObject> changedPatches)
-    {
-        var affectedItems = new HashSet<string>();
-
-        foreach (var patch in changedPatches)
-        {
-            string patchItemName = patch["itemname"]?.ToString();
-            if (string.IsNullOrEmpty(patchItemName)) continue;
-            var matchingItemCodes = GetMatchingItemCodes(api, patchItemName);
-            foreach (var itemCode in matchingItemCodes)
-            {
-                affectedItems.Add(itemCode);
-            }
-        }
-
-        return affectedItems;
-    }
-    private static List<string> GetMatchingItemCodes(ICoreAPI api, string pattern)
-    {
-        var matchingItemCodes = new List<string>();
-        string regexPattern = "^" + System.Text.RegularExpressions.Regex.Escape(pattern).Replace("\\*", ".*") + "$";
-        var regex = new System.Text.RegularExpressions.Regex(regexPattern);
-
-        foreach (var collectible in api.World.Collectibles)
-        {
-            string itemCode = collectible.Code?.ToString();
-            if (itemCode != null && regex.IsMatch(itemCode))
-            {
-                matchingItemCodes.Add(itemCode);
-            }
-        }
-
-        return matchingItemCodes;
-    }
-
 
     public static List<JObject> GetLastAppliedPatches()
     {
-        return LastAppliedPatches;
+        return _lastAppliedPatches;
     }
 
-    private static bool IsMatch(string itemName, string patchItemName)
+    private static List<CollectibleObject> GetMatchingCollectibles(ICoreAPI api, string pattern)
     {
-        if (string.IsNullOrEmpty(patchItemName)) return false;
-        if (patchItemName.Contains("*"))
+        var matchingCollectibles = new List<CollectibleObject>();
+        string regexPattern = "^" + Regex.Escape(pattern).Replace("\\*", ".*") + "$";
+        var regex = new Regex(regexPattern);
+
+        foreach (var collectible in api.World.Collectibles)
         {
-            string pattern = "^" + System.Text.RegularExpressions.Regex.Escape(patchItemName).Replace("\\*", ".*") + "$";
-            return System.Text.RegularExpressions.Regex.IsMatch(itemName, pattern);
+            if (collectible.Code != null && regex.IsMatch(collectible.Code.ToString()))
+            {
+                matchingCollectibles.Add(collectible);
+            }
         }
-        return itemName == patchItemName;
+
+        return matchingCollectibles;
+    }
+
+    private static bool IsMatch(string itemName, string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern)) return false;
+
+        if (pattern.Contains("*"))
+        {
+            string regexPattern = "^" + pattern.Replace("*", ".*") + "$";
+            return Regex.IsMatch(itemName, regexPattern);
+        }
+
+        return itemName == pattern;
     }
 }

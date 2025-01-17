@@ -1,0 +1,63 @@
+﻿{
+  "code": "wellspring",
+  "class": "BlockWellSpring",
+  "entityclass": "BlockEntityWellSpring",
+  "storageFlags": 5,
+  "attributes": {
+    "handbook": {
+      "extraSections": [
+        {
+          "title": "handbook-item-sources",
+          "text": "Can be created with the aquifer mode of the shovel or pickaxe."
+        }
+      ]
+    }
+  },
+  "drawtype": "json",
+  "creativeinventory": {
+    "general": [
+      "*"
+    ],
+    "terrain": [
+      "*"
+    ],
+    "construction": [
+      "*"
+    ]
+  },
+  "shape": {
+    "base": "hydrateordiedrate:block/wellspring"
+  },
+  "textures": {
+    "ground": { "base": "game:block/soil/fertmedium" },
+    "stoney1": { "base": "game:block/stone/dirtygravel/wet/stoney1" },
+    "waterportiontransparent": { "base":  "hydrateordiedrate:waterportiontransparent" }
+  },
+  "replaceable": 90,
+  "resistance": 8,
+  "sounds": {
+    "walk": "game:walk/stone",
+    "byTool": {
+      "Pickaxe": {
+        "hit": "game:block/rock-hit-pickaxe",
+        "break": "game:block/rock-break-pickaxe"
+      }
+    }
+  },
+  "heldTpIdleAnimation": "holdbothhandslarge",
+  "heldRightReadyAnimation": "heldblockready",
+  "heldTpUseAnimation": "twohandplaceblock",
+  "tpHandTransform": {
+    "translation": {
+      "x": -1.23,
+      "y": -0.91,
+      "z": -0.8
+    },
+    "rotation": {
+      "x": -2,
+      "y": 25,
+      "z": -78
+    },
+    "scale": 0.4
+  }
+}

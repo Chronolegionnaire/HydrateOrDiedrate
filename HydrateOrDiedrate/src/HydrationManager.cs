@@ -1,136 +1,119 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 
 public static class HydrationManager
 {
-    private static readonly Dictionary<string, float> ItemHydrationDict = new();
-    private static List<JObject> LastAppliedPatches = new();
+    private const string HydrationAttributeKey = "hydration";
+    private static List<JObject> _lastAppliedPatches = new List<JObject>();
+    private static readonly Dictionary<string, System.Func<ItemStack, float>> CustomHydrationEvaluators = new();
 
-    public static void SetHydration(ICoreAPI api, string itemCode, float hydrationValue)
+    public static void SetHydration(ICoreAPI api, CollectibleObject collectible, float hydrationValue)
     {
-        ItemHydrationDict[itemCode] = hydrationValue;
-    }
-
-    public static float GetHydration(ICoreAPI api, string itemCode)
-    {
-        return ItemHydrationDict.TryGetValue(itemCode, out var value) ? value : 0f;
-    }
-
-    public static void ApplyHydrationPatches(ICoreAPI api, List<JObject> newPatches)
-    {
-        var oldPatches = LastAppliedPatches;
-        var changedPatches = GetChangedPatches(oldPatches, newPatches);
-        LastAppliedPatches = newPatches;
-        if (changedPatches.Count == 0)
+        if (collectible.Attributes == null)
         {
-            return;
-        }
-        var affectedItems = GetAffectedItems(api, changedPatches);
-        foreach (var itemCode in affectedItems)
-        {
-            UpdateItemHydration(api, itemCode, newPatches);
-        }
-    }
-    
-    private static List<JObject> GetChangedPatches(List<JObject> oldPatches, List<JObject> newPatches)
-    {
-        var changedPatches = new List<JObject>();
-        var oldPatchDict = oldPatches.ToDictionary(p => p["itemname"].ToString());
-        var newPatchDict = newPatches.ToDictionary(p => p["itemname"].ToString());
-        foreach (var kvp in newPatchDict)
-        {
-            if (!oldPatchDict.TryGetValue(kvp.Key, out var oldPatch) || !JToken.DeepEquals(oldPatch, kvp.Value))
-            {
-                changedPatches.Add(kvp.Value);
-            }
-        }
-        return changedPatches;
-    }
-    
-    private static HashSet<string> GetAffectedItems(ICoreAPI api, List<JObject> changedPatches)
-    {
-        var affectedItems = new HashSet<string>();
-
-        foreach (var patch in changedPatches)
-        {
-            string patchItemName = patch["itemname"]?.ToString();
-            if (string.IsNullOrEmpty(patchItemName)) continue;
-            var matchingItemCodes = GetMatchingItemCodes(api, patchItemName);
-            foreach (var itemCode in matchingItemCodes)
-            {
-                affectedItems.Add(itemCode);
-            }
+            collectible.Attributes = new JsonObject(new JObject());
         }
 
-        return affectedItems;
+        collectible.Attributes.Token[HydrationAttributeKey] = JToken.FromObject(hydrationValue);
     }
-    
-    private static List<string> GetMatchingItemCodes(ICoreAPI api, string pattern)
-    {
-        var matchingItemCodes = new List<string>();
-        string regexPattern = "^" + System.Text.RegularExpressions.Regex.Escape(pattern).Replace("\\*", ".*") + "$";
-        var regex = new System.Text.RegularExpressions.Regex(regexPattern);
 
-        foreach (var collectible in api.World.Collectibles)
+    public static float GetHydration(ItemStack itemStack)
+    {
+        CollectibleObject collectible = itemStack?.Collectible;
+
+        if (collectible == null)
         {
-            string itemCode = collectible.Code?.ToString();
-            if (itemCode != null && regex.IsMatch(itemCode))
-            {
-                matchingItemCodes.Add(itemCode);
-            }
+            return 0f;
+        }
+        string collectibleCode = collectible.Code?.ToString() ?? string.Empty;
+        if (CustomHydrationEvaluators.TryGetValue(collectibleCode, out var evaluator))
+        {
+            return evaluator(itemStack);
+        }
+        if (collectible.Attributes == null)
+        {
+            return 0f;
+        }
+        return collectible.Attributes.Token[HydrationAttributeKey]?.ToObject<float>() ?? 0f;
+    }
+
+    public static void RegisterHydrationEvaluator(string collectibleCode, System.Func<ItemStack, float> evaluator)
+    {
+        if (string.IsNullOrEmpty(collectibleCode) || evaluator == null)
+        {
+            throw new ArgumentException("Collectible code and evaluator must not be null or empty.");
         }
 
-        return matchingItemCodes;
+        CustomHydrationEvaluators[collectibleCode] = evaluator;
     }
-    
-    private static void UpdateItemHydration(ICoreAPI api, string itemCode, List<JObject> patches)
+
+    public static void ApplyHydrationPatches(ICoreAPI api, List<JObject> patches)
     {
         foreach (var patch in patches)
         {
-            string patchItemName = patch["itemname"]?.ToString();
-            if (IsMatch(itemCode, patchItemName))
+            string itemName = patch["itemname"]?.ToString();
+            if (string.IsNullOrEmpty(itemName)) continue;
+
+            var matchingCollectibles = GetMatchingCollectibles(api, itemName);
+            foreach (var collectible in matchingCollectibles)
             {
-                if (patch.ContainsKey("hydration"))
+                if (patch.ContainsKey(HydrationAttributeKey))
                 {
-                    float hydration = patch["hydration"].ToObject<float>();
-                    SetHydration(api, itemCode, hydration);
-                    return;
+                    float hydrationValue = patch[HydrationAttributeKey].ToObject<float>();
+                    SetHydration(api, collectible, hydrationValue);
                 }
                 else if (patch.ContainsKey("hydrationByType"))
                 {
                     var hydrationByType = patch["hydrationByType"].ToObject<Dictionary<string, float>>();
                     foreach (var entry in hydrationByType)
                     {
-                        string key = entry.Key;
-                        float hydration = entry.Value;
+                        string typeKey = entry.Key;
+                        float hydrationValue = entry.Value;
 
-                        if (IsMatch(itemCode, key))
+                        if (IsMatch(collectible.Code.ToString(), typeKey))
                         {
-                            SetHydration(api, itemCode, hydration);
-                            return;
+                            SetHydration(api, collectible, hydrationValue);
                         }
                     }
                 }
             }
         }
-        ItemHydrationDict.Remove(itemCode);
+        _lastAppliedPatches = patches;
     }
-
     public static List<JObject> GetLastAppliedPatches()
     {
-        return LastAppliedPatches;
+        return _lastAppliedPatches;
     }
 
-    private static bool IsMatch(string itemName, string patchItemName)
+    private static List<CollectibleObject> GetMatchingCollectibles(ICoreAPI api, string pattern)
     {
-        if (string.IsNullOrEmpty(patchItemName)) return false;
-        if (patchItemName.Contains("*"))
+        var matchingCollectibles = new List<CollectibleObject>();
+        string regexPattern = "^" + Regex.Escape(pattern).Replace("\\*", ".*") + "$";
+        var regex = new Regex(regexPattern);
+
+        foreach (var collectible in api.World.Collectibles)
         {
-            string pattern = "^" + patchItemName.Replace("*", ".*") + "$";
-            return System.Text.RegularExpressions.Regex.IsMatch(itemName, pattern);
+            if (collectible.Code != null && regex.IsMatch(collectible.Code.ToString()))
+            {
+                matchingCollectibles.Add(collectible);
+            }
         }
-        return itemName == patchItemName;
+
+        return matchingCollectibles;
+    }
+    private static bool IsMatch(string itemName, string pattern)
+    {
+        if (string.IsNullOrEmpty(pattern)) return false;
+
+        if (pattern.Contains("*"))
+        {
+            string regexPattern = "^" + pattern.Replace("*", ".*") + "$";
+            return Regex.IsMatch(itemName, regexPattern);
+        }
+        return itemName == pattern;
     }
 }

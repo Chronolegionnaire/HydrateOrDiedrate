@@ -13,21 +13,25 @@ public static class CollectibleObjectGetHeldItemInfoPatch
     {
         return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
     }
+
     public static void Postfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
     {
         if (ShouldSkipPatch())
         {
             return;
         }
-        string itemCode = inSlot.Itemstack.Collectible.Code.ToString();
-        float hydrationValue = HydrationManager.GetHydration(world.Api, itemCode);
-        if (hydrationValue == 0 && inSlot.Itemstack.Block is BlockLiquidContainerBase block)
+
+        float hydrationValue = 0f;
+        if (inSlot.Itemstack != null)
+        {
+            hydrationValue = HydrationManager.GetHydration(inSlot.Itemstack);
+        }
+        if (hydrationValue == 0 && inSlot.Itemstack?.Block is BlockLiquidContainerBase block)
         {
             ItemStack contentStack = block.GetContent(inSlot.Itemstack);
             if (contentStack != null)
             {
-                string contentItemCode = contentStack.Collectible.Code.ToString();
-                float contentHydrationValue = HydrationManager.GetHydration(world.Api, contentItemCode);
+                float contentHydrationValue = HydrationManager.GetHydration(contentStack);
                 float litres = block.GetCurrentLitres(inSlot.Itemstack);
                 hydrationValue = contentHydrationValue * litres;
             }

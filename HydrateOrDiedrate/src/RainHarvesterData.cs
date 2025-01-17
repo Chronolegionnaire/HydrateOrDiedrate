@@ -15,7 +15,6 @@ public class RainHarvesterData
     public int calculatedTickInterval;
     public int adaptiveTickInterval;
     public int previousCalculatedTickInterval = 0;
-    private SimpleParticleProperties rainParticlesBlue;
     private WeatherSystemServer weatherSysServer;
     private RainHarvesterManager harvesterManager;
     public RainHarvesterData(BlockEntity entity, float rainMultiplier)
@@ -28,7 +27,6 @@ public class RainHarvesterData
         {
             rainWaterStack = new ItemStack(item);
         }
-        InitializeParticles();
         weatherSysServer = BlockEntity.Api.ModLoader.GetModSystem<WeatherSystemServer>();
         harvesterManager = BlockEntity.Api.ModLoader.GetModSystem<HydrateOrDiedrateModSystem>().GetRainHarvesterManager();
     }
@@ -134,86 +132,6 @@ public class RainHarvesterData
     {
         return BlockEntity.Api.World.BlockAccessor.GetRainMapHeightAt(pos.X, pos.Z) <= pos.Y;
     }
-    private void InitializeParticles()
-    {
-        rainParticlesBlue = new SimpleParticleProperties(
-            1, 1, ColorUtil.ColorFromRgba(255, 200, 150, 255),
-            new Vec3d(), new Vec3d(),
-            new Vec3f(0, 1.8f, 0), new Vec3f(0, 1.8f, 0),
-            0.05f, 0.05f, 0.25f, 0.5f, EnumParticleModel.Cube);
-        rainParticlesBlue.ShouldDieInLiquid = true;
-        rainParticlesBlue.ShouldSwimOnLiquid = true;
-        rainParticlesBlue.GravityEffect = 1.5f;
-        rainParticlesBlue.LifeLength = 0.15f;
-        rainParticlesBlue.SizeEvolve = new EvolvingNatFloat(EnumTransformFunction.LINEAR, -0.1f);
-    }
-
-    public void OnParticleTickUpdate(float deltaTime)
-    {
-        if (!IsOpenToSky(BlockEntity.Pos)) return;
-        if (weatherSysServer == null) return;
-
-        float rainIntensity = GetRainIntensity();
-        if (rainIntensity > 0)
-        {
-            if (BlockEntity is BlockEntityGroundStorage groundStorage)
-            {
-                var positions = GetGroundStoragePositions(groundStorage);
-                foreach (var pos in positions)
-                {
-
-                    SpawnRainParticles(pos, rainIntensity);
-                }
-            }
-            else
-            {
-                var adjustedPos = GetAdjustedPosition(BlockEntity);
-
-                SpawnRainParticles(adjustedPos, rainIntensity);
-            }
-        }
-    }
-    private void SpawnRainParticles(Vec3d pos, float rainIntensity)
-    {
-        int baseQuantity = 10;
-        int quantity = (int)(baseQuantity * (rainIntensity / 2));
-
-        Vec3d lowerPosition = pos.AddCopy(-0.10, -0.6, -0.1);
-        Vec3f upwardsVelocity = new Vec3f(0, 1.8f, 0);
-
-        SetParticleProperties(rainParticlesBlue, lowerPosition, 0.6, quantity, 1.5f, upwardsVelocity);
-    }
-    private void SetParticleProperties(SimpleParticleProperties particles, Vec3d pos, double addPos, int quantity, float gravityEffect, Vec3f velocity)
-    {
-        // Directly assign the position values
-        particles.MinPos.X = pos.X - 0.2;
-        particles.MinPos.Y = pos.Y + 0.1;
-        particles.MinPos.Z = pos.Z - 0.2;
-
-        // Directly assign the addPos vector values
-        particles.AddPos.X = addPos;
-        particles.AddPos.Y = 0.0;
-        particles.AddPos.Z = addPos;
-
-        particles.GravityEffect = gravityEffect;
-
-        // Directly assign the velocity values to MinVelocity
-        particles.MinVelocity.X = velocity.X;
-        particles.MinVelocity.Y = velocity.Y;
-        particles.MinVelocity.Z = velocity.Z;
-
-        // Directly assign the values to AddVelocity
-        particles.AddVelocity.X = 0.2f;
-        particles.AddVelocity.Y = velocity.Y;
-        particles.AddVelocity.Z = 0.2f;
-
-        for (int i = 0; i < quantity; i++)
-        {
-            BlockEntity.Api.World.SpawnParticles(particles, null);
-        }
-    }
-
-
     private List<Vec3d> GetGroundStoragePositions(BlockEntityGroundStorage groundStorage)
     {
         List<Vec3d> positions = new List<Vec3d>();

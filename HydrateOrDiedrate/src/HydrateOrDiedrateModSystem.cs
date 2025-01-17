@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate.Config;
@@ -8,8 +7,9 @@ using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.Tun;
+using HydrateOrDiedrate.wellwater;
+using HydrateOrDiedrate.Wellwater;
 using HydrateOrDiedrate.XSkill;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ProtoBuf;
 using Vintagestory.API.Client;
@@ -39,6 +39,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private IClientNetworkChannel clientChannel;
     private IServerNetworkChannel serverChannel;
     private long customHudListenerId;
+    private AquiferManager _aquiferManager;
 
     public override void StartPre(ICoreAPI api)
     {
@@ -99,32 +100,51 @@ public class HydrateOrDiedrateModSystem : ModSystem
         float boilingWaterSatiety = LoadedConfig.BoilingWaterSatiety;
         float rainWaterSatiety = LoadedConfig.RainWaterSatiety;
         float distilledWaterSatiety = LoadedConfig.DistilledWaterSatiety;
+        float boiledWaterSatiety = LoadedConfig.BoiledWaterSatiety;
+        float boiledRainWaterSatiety = LoadedConfig.BoiledRainWaterSatiety;
 
         ApplySatietyPatch(api, "game:itemtypes/liquid/waterportion.json", waterSatiety);
         ApplySatietyPatch(api, "game:itemtypes/liquid/saltwaterportion.json", saltWaterSatiety);
         ApplySatietyPatch(api, "game:itemtypes/liquid/boilingwaterportion.json", boilingWaterSatiety);
         ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", rainWaterSatiety);
         ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", distilledWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", boiledWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", boiledRainWaterSatiety);
     }
     private void ApplySatietyPatch(ICoreAPI api, string jsonFilePath, float satietyValue)
     {
-        JsonPatch patch = new JsonPatch
+        JsonPatch ensureNutritionProps = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre",
-            Value = new JsonObject(JObject.FromObject(new
-            {
-                satiety = satietyValue,
-                foodcategory = "NoNutrition"
-            })),
+            Value = new JsonObject(JToken.FromObject(new { })),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
-        int applied = 0;
-        int notFound = 0;
-        int errorCount = 0;
+
+        JsonPatch patchSatiety = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre/satiety",
+            Value = new JsonObject(JToken.FromObject(satietyValue)),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        JsonPatch patchFoodCategory = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre/foodcategory",
+            Value = new JsonObject(JToken.FromObject("NoNutrition")),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        int applied = 0, notFound = 0, errorCount = 0;
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicwaterpatch"), patch, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:ensureNutritionProps"), ensureNutritionProps, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicsatietypatch"), patchSatiety, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicfoodcategorypatch"), patchFoodCategory, ref applied, ref notFound, ref errorCount);
     }
     public void ApplyKegTunConfigPatches(ICoreAPI api)
     {
@@ -133,50 +153,74 @@ public class HydrateOrDiedrateModSystem : ModSystem
         ApplyTunPatch(api, "hydrateordiedrate:blocktypes/tun.json", LoadedConfig.TunCapacityLitres, LoadedConfig.TunSpoilRateMultiplier);
     }
 
-    private void ApplyKegPatch(ICoreAPI api, string jsonFilePath, float capacityLitres, float spoilRate, float ironHoopDropChance, float kegTapDropChance)
+    private void ApplyKegPatch(ICoreAPI api, string jsonFilePath, float kegCapacityLitres, float spoilRate, float ironHoopDropChance, float kegTapDropChance)
+{
+    JsonPatch patchKegCapacity = new JsonPatch
     {
-        JsonPatch patch = new JsonPatch
-        {
-            Op = EnumJsonPatchOp.AddMerge,
-            Path = "/attributes",
-            Value = new JsonObject(JObject.FromObject(new
-            {
-                kegCapacityLitres = capacityLitres,
-                spoilRate = spoilRate,
-                ironHoopDropChance = ironHoopDropChance,
-                kegTapDropChance = kegTapDropChance
-            })),
-            File = new AssetLocation(jsonFilePath),
-            Side = EnumAppSide.Server
-        };
+        Op = EnumJsonPatchOp.AddMerge,
+        Path = "/attributes/kegCapacityLitres",
+        Value = new JsonObject(JToken.FromObject(kegCapacityLitres)),
+        File = new AssetLocation(jsonFilePath),
+        Side = EnumAppSide.Server
+    };
+    JsonPatch patchSpoilRate = new JsonPatch
+    {
+        Op = EnumJsonPatchOp.AddMerge,
+        Path = "/attributes/spoilRate",
+        Value = new JsonObject(JToken.FromObject(spoilRate)),
+        File = new AssetLocation(jsonFilePath),
+        Side = EnumAppSide.Server
+    };
+    JsonPatch patchIronHoop = new JsonPatch
+    {
+        Op = EnumJsonPatchOp.AddMerge,
+        Path = "/attributes/ironHoopDropChance",
+        Value = new JsonObject(JToken.FromObject(ironHoopDropChance)),
+        File = new AssetLocation(jsonFilePath),
+        Side = EnumAppSide.Server
+    };
+    JsonPatch patchKegTap = new JsonPatch
+    {
+        Op = EnumJsonPatchOp.AddMerge,
+        Path = "/attributes/kegTapDropChance",
+        Value = new JsonObject(JToken.FromObject(kegTapDropChance)),
+        File = new AssetLocation(jsonFilePath),
+        Side = EnumAppSide.Server
+    };
 
-        int applied = 0;
-        int notFound = 0;
-        int errorCount = 0;
-        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegpatch"), patch, ref applied, ref notFound, ref errorCount);
-    }
+    int applied = 0, notFound = 0, errorCount = 0;
+    ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
+    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegcapacitypatch"), patchKegCapacity, ref applied, ref notFound, ref errorCount);
+    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegspoilratepatch"), patchSpoilRate, ref applied, ref notFound, ref errorCount);
+    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicironhooppatch"), patchIronHoop, ref applied, ref notFound, ref errorCount);
+    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegtappatch"), patchKegTap, ref applied, ref notFound, ref errorCount);
+}
+
     private void ApplyTunPatch(ICoreAPI api, string jsonFilePath, float capacityLitres, float spoilRate)
     {
-        JsonPatch patch = new JsonPatch
+        JsonPatch patchCapacity = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
-            Path = "/attributes",
-            Value = new JsonObject(JObject.FromObject(new
-            {
-                TunCapacityLitres = capacityLitres,
-                spoilRate = spoilRate
-            })),
+            Path = "/attributes/tunCapacityLitres",
+            Value = new JsonObject(JToken.FromObject(capacityLitres)),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+        JsonPatch patchSpoilRate = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/spoilRate",
+            Value = new JsonObject(JToken.FromObject(spoilRate)),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
 
-        int applied = 0;
-        int notFound = 0;
-        int errorCount = 0;
+        int applied = 0, notFound = 0, errorCount = 0;
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamictunpatch"), patch, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamictuncapacitypatch"), patchCapacity, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamictunspoilratepatch"), patchSpoilRate, ref applied, ref notFound, ref errorCount);
     }
+
 
     private void LoadAndApplyHydrationPatches(ICoreAPI api)
     {
@@ -191,11 +235,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         if (LoadedConfig.EnableThirstMechanics)
         {
-            List<JObject> loadedPatches = BlockHydrationConfigLoader.LoadBlockHydrationConfig(api);
-            BlockHydrationManager.ApplyBlockHydrationPatches(loadedPatches);
+            List<JsonObject> loadedPatches = BlockHydrationConfigLoader.LoadBlockHydrationConfig(api)
+                .ConvertAll(jObject => new JsonObject(jObject));
+            BlockHydrationManager.ApplyBlockHydrationPatches(api, loadedPatches, api.World.Blocks);
         }
     }
-
     private void LoadAndApplyCoolingPatches(ICoreAPI api)
     {
         List<JObject> coolingPatches = CoolingConfigLoader.LoadCoolingPatches(api);
@@ -215,10 +259,13 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
-        
+        api.RegisterItemClass("DigWellToolMode", typeof(DigWellToolMode));
         api.RegisterBlockClass("BlockTun", typeof(BlockTun));
         api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
-
+        api.RegisterBlockEntityClass("BlockEntityWellWaterData", typeof(BlockEntityWellWaterData));
+        api.RegisterBlockBehaviorClass("BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
+        api.RegisterBlockClass("BlockWellSpring", typeof(blockWellSpring));
+        api.RegisterBlockEntityClass("BlockEntityWellSpring", typeof(BlockEntityWellSpring));
         if (LoadedConfig.EnableThirstMechanics)
         {
             api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
@@ -235,7 +282,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             InitializeClient(api as ICoreClientAPI);
         }
 
-        if (api.ModLoader.IsModEnabled("xlib"))
+        if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibpatch"))
         {
             xLibSkills = new XLibSkills();
             xLibSkills.Initialize(api);
@@ -249,6 +296,19 @@ public class HydrateOrDiedrateModSystem : ModSystem
             {
                 AddBehaviorToBlock(block, api);
             }
+        }
+        if (api.Side == EnumAppSide.Server)
+        {
+            HydrateOrDiedrateGlobals.InitializeAquiferSystem(api as ICoreServerAPI);
+        }
+    }
+    public static class HydrateOrDiedrateGlobals
+    {
+        public static AquiferManager AquiferManager { get; private set; }
+
+        public static void InitializeAquiferSystem(ICoreServerAPI api)
+        {
+            AquiferManager = new AquiferManager(api);
         }
     }
     private void RegisterEmptyCarryBehaviors(ICoreAPI api)
@@ -287,6 +347,27 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             ThirstCommands.Register(api, LoadedConfig);
         }
+        RegisterClearAquiferCommand(api);
+    }
+    private void RegisterClearAquiferCommand(ICoreServerAPI api)
+    {
+        api.RegisterCommand(
+            "clearaquiferdata", 
+            "Clears all saved aquifer data", 
+            "", 
+            (player, groupId, args) =>
+            {
+                if (HydrateOrDiedrateGlobals.AquiferManager == null)
+                {
+                    api.SendMessage(player, groupId, "Aquifer system is not initialized.", EnumChatType.Notification);
+                    return;
+                }
+
+                HydrateOrDiedrateGlobals.AquiferManager.ClearAquiferData();
+                api.SendMessage(player, groupId, "Aquifer data has been cleared successfully.", EnumChatType.Notification);
+            }, 
+            Privilege.controlserver 
+        );
     }
     private void InitializeClient(ICoreClientAPI api)
     {
@@ -363,6 +444,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             BoilingWaterSatiety = packet.ServerConfig.BoilingWaterSatiety,
             RainWaterSatiety = packet.ServerConfig.RainWaterSatiety,
             DistilledWaterSatiety = packet.ServerConfig.DistilledWaterSatiety,
+            BoiledWaterSatiety = packet.ServerConfig.BoiledWaterSatiety,
             MaxMovementSpeedPenalty = packet.ServerConfig.MaxMovementSpeedPenalty,
             MovementSpeedPenaltyThreshold = packet.ServerConfig.MovementSpeedPenaltyThreshold,
             HarshHeat = packet.ServerConfig.HarshHeat,
@@ -386,42 +468,35 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 : null,
             EnableRainGathering = packet.ServerConfig.EnableRainGathering,
             RainMultiplier = packet.ServerConfig.RainMultiplier,
-            EnableParticleTicking = packet.ServerConfig.EnableParticleTicking,
             KegCapacityLitres = packet.ServerConfig.KegCapacityLitres,
             SpoilRateUntapped = packet.ServerConfig.SpoilRateUntapped,
             SpoilRateTapped = packet.ServerConfig.SpoilRateTapped,
             KegIronHoopDropChance = packet.ServerConfig.KegIronHoopDropChance,
             KegTapDropChance = packet.ServerConfig.KegTapDropChance,
             TunCapacityLitres = packet.ServerConfig.TunCapacityLitres,
-            TunSpoilRateMultiplier = packet.ServerConfig.TunSpoilRateMultiplier
+            TunSpoilRateMultiplier = packet.ServerConfig.TunSpoilRateMultiplier,
+            DisableDrunkSway = packet.ServerConfig.DisableDrunkSway
         };
-
         ReloadComponents();
-
-
         var currentHydrationPatches = HydrationManager.GetLastAppliedPatches() ?? new List<JObject>();
         var packetHydrationPatches = packet.HydrationPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
         bool hydrationPatchesChanged = !ArePatchesEqual(packetHydrationPatches, currentHydrationPatches);
-
-        var currentBlockHydrationPatches = BlockHydrationManager.GetLastAppliedPatches() ?? new List<JObject>();
-        var packetBlockHydrationPatches =
-            packet.BlockHydrationPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
+        var currentBlockHydrationPatches = BlockHydrationManager.GetLastAppliedPatches()?.ConvertAll(jsonObj => jsonObj.Token as JObject) ?? new List<JObject>();
+        var packetBlockHydrationPatches = packet.BlockHydrationPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
         bool blockHydrationPatchesChanged = !ArePatchesEqual(packetBlockHydrationPatches, currentBlockHydrationPatches);
-
         var currentCoolingPatches = CoolingManager.GetLastAppliedPatches() ?? new List<JObject>();
         var packetCoolingPatches = packet.CoolingPatches?.ConvertAll(JObject.Parse) ?? new List<JObject>();
         bool coolingPatchesChanged = !ArePatchesEqual(packetCoolingPatches, currentCoolingPatches);
-
         if (hydrationPatchesChanged)
         {
             HydrationManager.ApplyHydrationPatches(_clientApi, packetHydrationPatches);
         }
-
         if (blockHydrationPatchesChanged)
         {
-            BlockHydrationManager.ApplyBlockHydrationPatches(packetBlockHydrationPatches);
+            var convertedBlockHydrationPatches = packetBlockHydrationPatches
+                .ConvertAll(jObj => new Vintagestory.API.Datastructures.JsonObject(jObj));
+            BlockHydrationManager.ApplyBlockHydrationPatches(_clientApi, convertedBlockHydrationPatches, _clientApi.World.Blocks);
         }
-
         if (coolingPatchesChanged)
         {
             CoolingManager.ApplyCoolingPatches(_clientApi, packetCoolingPatches);
@@ -636,13 +711,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
-
-
-    public static bool XSkillActive(ICoreAPI api)
-    {
-        return api.ModLoader.IsModEnabled("xskills");
-    }
-
     private void AddBehaviorToBlock(Block block, ICoreAPI api)
     {
         if (block.BlockEntityBehaviors == null)

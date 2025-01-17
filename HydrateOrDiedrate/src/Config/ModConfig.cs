@@ -26,6 +26,8 @@ namespace HydrateOrDiedrate.Config
                     hydrateConfig.BoilingWaterSatiety = 0f;
                     hydrateConfig.RainWaterSatiety = -50f;
                     hydrateConfig.DistilledWaterSatiety = 0f;
+                    hydrateConfig.BoiledWaterSatiety = 0f;
+                    hydrateConfig.BoiledRainWaterSatiety = 0f;
                     hydrateConfig.SprintThirstMultiplier = 1.5f;
                     hydrateConfig.EnableBoilingWaterDamage = true;
                     hydrateConfig.BoilingWaterDamage = 5.0f;
@@ -60,7 +62,6 @@ namespace HydrateOrDiedrate.Config
                     // Rain Gathering Settings
                     hydrateConfig.EnableRainGathering = true;
                     hydrateConfig.RainMultiplier = 1.0f;
-                    hydrateConfig.EnableParticleTicking = true;
 
                     // Keg Settings
                     hydrateConfig.KegCapacityLitres = 100.0f;
@@ -71,7 +72,7 @@ namespace HydrateOrDiedrate.Config
 
                     // Tun Settings
                     hydrateConfig.TunCapacityLitres = 950f;
-                    hydrateConfig.TunSpoilRateMultiplier = 0.5f;
+                    hydrateConfig.TunSpoilRateMultiplier = 1.0f;
                 }
                 WriteConfig(api, jsonConfig, config);
             }

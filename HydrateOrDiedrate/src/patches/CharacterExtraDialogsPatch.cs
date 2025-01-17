@@ -11,6 +11,7 @@ using Vintagestory.GameContent;
 namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch(typeof(CharacterExtraDialogs))]
+    [HarmonyPriority(Priority.Low)]
     public static class CharacterExtraDialogs_Patch
     {
         private static bool ShouldSkipPatch()
@@ -159,6 +160,7 @@ namespace HydrateOrDiedrate.patches
 
         [HarmonyPatch("UpdateStats")]
         [HarmonyPostfix]
+        [HarmonyPriority(Priority.Low)]
         public static void UpdateStats_Postfix(object __instance)
         {
             if (ShouldSkipPatch())

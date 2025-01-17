@@ -1,0 +1,12 @@
+﻿[
+  {
+    "op": "addmerge",
+    "path": "/attributes/waterTightContainerProps/nutritionPropsPerLitre",
+    "value": {
+      "satiety": 50,
+      "foodcategory": "Protein"
+    },
+    "file": "butchering:itemtypes/liquids/bloodportion.json",
+    "side": "Server"
+  }
+]

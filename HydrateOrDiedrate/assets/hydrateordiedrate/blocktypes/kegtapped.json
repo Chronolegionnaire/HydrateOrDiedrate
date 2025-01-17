@@ -36,7 +36,8 @@
       "properties": {
         "interactDelay": 1.5
       }
-    }
+    },
+    { "name": "Lockable" }
   ],
   "shape": { "base": "hydrateordiedrate:block/kegtapped", "rotateY": 180 },
   "textures": {
