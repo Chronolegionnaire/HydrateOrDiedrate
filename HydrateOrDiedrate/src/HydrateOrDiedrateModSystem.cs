@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate.Config;
@@ -6,12 +7,13 @@ using HydrateOrDiedrate.encumbrance;
 using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
+using HydrateOrDiedrate.src.Commands;
+using HydrateOrDiedrate.src.Config.Sync;
 using HydrateOrDiedrate.Tun;
 using HydrateOrDiedrate.wellwater;
 using HydrateOrDiedrate.Wellwater;
 using HydrateOrDiedrate.XSkill;
 using Newtonsoft.Json.Linq;
-using ProtoBuf;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -27,6 +29,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
 {
     private ICoreServerAPI _serverApi;
     private ICoreClientAPI _clientApi;
+
     private HudElementThirstBar _thirstHud;
     private HudElementHungerReductionBar _hungerReductionHud;
     public static Config.Config LoadedConfig { get; set; }
@@ -36,8 +39,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private XLibSkills xLibSkills;
     private RainHarvesterManager rainHarvesterManager;
     private DrinkHudOverlayRenderer hudOverlayRenderer;
+
     private IClientNetworkChannel clientChannel;
     private IServerNetworkChannel serverChannel;
+
     private long customHudListenerId;
     private AquiferManager _aquiferManager;
 
@@ -311,11 +316,14 @@ public class HydrateOrDiedrateModSystem : ModSystem
             AquiferManager = new AquiferManager(api);
         }
     }
+
     private void RegisterEmptyCarryBehaviors(ICoreAPI api)
     {
         api.RegisterBlockBehaviorClass("Carryable", typeof(EmptyBlockBehavior));
         api.RegisterBlockBehaviorClass("CarryableInteract", typeof(EmptyBlockBehavior));
+        //TODO carryon behaviors should just only be added when CarryOn is available
     }
+
     public class EmptyBlockBehavior : BlockBehavior
     {
         public EmptyBlockBehavior(Block block) : base(block)
@@ -327,6 +335,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             base.Initialize(properties);
         }
     }
+    
     private void InitializeServer(ICoreServerAPI api)
     {
         _serverApi = api;
@@ -338,37 +347,19 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .SetMessageHandler<ConfigSyncRequestPacket>(OnConfigSyncRequestReceived);
         
         _waterInteractionHandler.Initialize(serverChannel);
+        
         rainHarvesterManager = new RainHarvesterManager(_serverApi, LoadedConfig);
+        
         api.Event.PlayerJoin += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerNowPlaying += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerRespawn += OnPlayerRespawn;
-        api.Event.RegisterGameTickListener(OnServerTick, 1000);
-        if (LoadedConfig.EnableThirstMechanics)
-        {
-            ThirstCommands.Register(api, LoadedConfig);
-        }
-        RegisterClearAquiferCommand(api);
-    }
-    private void RegisterClearAquiferCommand(ICoreServerAPI api)
-    {
-        api.RegisterCommand(
-            "clearaquiferdata", 
-            "Clears all saved aquifer data", 
-            "", 
-            (player, groupId, args) =>
-            {
-                if (HydrateOrDiedrateGlobals.AquiferManager == null)
-                {
-                    api.SendMessage(player, groupId, "Aquifer system is not initialized.", EnumChatType.Notification);
-                    return;
-                }
 
-                HydrateOrDiedrateGlobals.AquiferManager.ClearAquiferData();
-                api.SendMessage(player, groupId, "Aquifer data has been cleared successfully.", EnumChatType.Notification);
-            }, 
-            Privilege.controlserver 
-        );
+        api.Event.RegisterGameTickListener(OnServerTick, 1000);
+        
+        ThirstCommands.Register(api, LoadedConfig);
+        AquiferCommands.Register(api);
     }
+
     private void InitializeClient(ICoreClientAPI api)
     {
         _clientApi = api;
@@ -395,24 +386,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
         }
-        _configLibCompatibility = new ConfigLibCompatibility((ICoreClientAPI)api);
-    }
 
-    [ProtoContract]
-    public class ConfigSyncPacket
-    {
-        [ProtoMember(1)] public Config.Config ServerConfig { get; set; }
-
-        [ProtoMember(2)] public List<string> HydrationPatches { get; set; }
-
-        [ProtoMember(3)] public List<string> BlockHydrationPatches { get; set; }
-
-        [ProtoMember(4)] public List<string> CoolingPatches { get; set; }
-    }
-
-    [ProtoContract]
-    public class ConfigSyncRequestPacket
-    {
+        _configLibCompatibility = new ConfigLibCompatibility(api);
     }
 
     private void OnConfigSyncRequestReceived(IServerPlayer fromPlayer, ConfigSyncRequestPacket packet)
@@ -623,7 +598,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
         
         entity.WatchedAttributes.SetBool("isFullyInitialized", true);
-        
         _serverApi.Event.RegisterGameTickListener(
             (dt) => _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, byPlayer), 100
         );
