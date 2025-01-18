@@ -192,7 +192,7 @@ namespace HydrateOrDiedrate.patches
             float maxThirst = entity.WatchedAttributes.GetFloat("maxThirst", 1500f);
             float thirstPenalty = entity.WatchedAttributes.GetFloat("thirstPenalty", 0f);
             float currentThirstRate = entity.WatchedAttributes.GetFloat("thirstRate", 0.01f);
-            float normalThirstRate = entity.WatchedAttributes.GetFloat("normalThirstRate", 0.01f);
+            float normalThirstRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
             float thirstRatePercentage = (currentThirstRate / normalThirstRate) * 100;
             thirstRatePercentage = Math.Max(0, thirstRatePercentage);
             var thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst");

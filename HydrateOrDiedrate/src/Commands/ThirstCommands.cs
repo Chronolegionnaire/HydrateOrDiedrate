@@ -8,7 +8,7 @@ namespace HydrateOrDiedrate.src.Commands
     {
         public static void Register(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig)
         {
-            if(loadedConfig.EnableThirstMechanics) return; //no need to register when thirtst is disabled
+            if(!loadedConfig.EnableThirstMechanics) return; //no need to register when thirtst is disabled
 
             api.ChatCommands
                 .Create("setthirst")
@@ -49,7 +49,6 @@ namespace HydrateOrDiedrate.src.Commands
             if (thirstBehavior == null) return TextCommandResult.Error("Thirst behavior not found.");
 
             thirstBehavior.CurrentThirst = thirstValue;
-            thirstBehavior.UpdateThirstAttributes();
 
             return TextCommandResult.Success($"Thirst set to {thirstValue} for player '{targetPlayer.PlayerName}'.");
         }

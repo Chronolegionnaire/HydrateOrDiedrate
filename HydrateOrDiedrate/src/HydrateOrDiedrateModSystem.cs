@@ -35,8 +35,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public static Config.Config LoadedConfig { get; set; }
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
+
     private ConfigLibCompatibility _configLibCompatibility;
     private XLibSkills xLibSkills;
+
     private RainHarvesterManager rainHarvesterManager;
     private DrinkHudOverlayRenderer hudOverlayRenderer;
 
@@ -353,8 +355,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.Event.PlayerJoin += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerNowPlaying += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerRespawn += OnPlayerRespawn;
-
-        api.Event.RegisterGameTickListener(OnServerTick, 1000);
         
         ThirstCommands.Register(api, LoadedConfig);
         AquiferCommands.Register(api);
@@ -515,7 +515,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             encumbranceBehavior?.Reset(LoadedConfig);
         }
         
-        if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics)
+        if (!LoadedConfig.EnableThirstMechanics)
         {
             _thirstHud?.TryClose();
             _thirstHud = null;
@@ -588,15 +588,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         var entity = byPlayer.Entity;
         if (entity == null) return;
-
-        EnsureBodyTemperatureHotBehavior(entity);
-        EnsureLiquidEncumbranceBehavior(entity);
-
-        if (LoadedConfig.EnableThirstMechanics)
-        {
-            EnsureThirstBehavior(entity);
-        }
-        
+        //TODO revamp (this shouldn't be registered per player and definitly not every time player joins/respawns)
         entity.WatchedAttributes.SetBool("isFullyInitialized", true);
         _serverApi.Event.RegisterGameTickListener(
             (dt) => _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, byPlayer), 100
@@ -609,13 +601,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
         var entity = byPlayer.Entity;
         if (entity == null) return;
 
-        EnsureBodyTemperatureHotBehavior(entity);
-        EnsureLiquidEncumbranceBehavior(entity);
-
         if (LoadedConfig.EnableThirstMechanics)
         {
-            var thirstBehavior = EnsureThirstBehavior(entity);
-            thirstBehavior.ResetThirstOnRespawn();
+            var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
+            thirstBehavior.OnRespawn();
         }
 
         entity.WatchedAttributes.SetBool("isFullyInitialized", true);
@@ -625,66 +614,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         );
     }
 
-    private EntityBehaviorThirst EnsureThirstBehavior(Entity entity)
-    {
-        var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
-        if (thirstBehavior == null)
-        {
-            thirstBehavior = new EntityBehaviorThirst(entity, LoadedConfig);
-            entity.AddBehavior(thirstBehavior);
-        }
-
-        if (!entity.WatchedAttributes.HasAttribute("currentThirst"))
-        {
-            thirstBehavior.SetInitialThirst();
-        }
-        else
-        {
-            thirstBehavior.LoadThirst();
-        }
-
-        return thirstBehavior;
-    }
-
-    private void EnsureBodyTemperatureHotBehavior(Entity entity)
-    {
-        var bodyTemperatureHotBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
-        if (bodyTemperatureHotBehavior == null)
-        {
-            bodyTemperatureHotBehavior = new EntityBehaviorBodyTemperatureHot(entity, LoadedConfig);
-            entity.AddBehavior(bodyTemperatureHotBehavior);
-        }
-    }
-
-    private void EnsureLiquidEncumbranceBehavior(Entity entity)
-    {
-        var liquidEncumbranceBehavior = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
-        if (liquidEncumbranceBehavior == null)
-        {
-            liquidEncumbranceBehavior = new EntityBehaviorLiquidEncumbrance(entity, LoadedConfig);
-            entity.AddBehavior(liquidEncumbranceBehavior);
-        }
-    }
-
-    private void OnServerTick(float dt)
-    {
-        if (LoadedConfig.EnableThirstMechanics)
-        {
-            foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
-            {
-                if (player.Entity != null && player.Entity.Alive)
-                {
-                    if (!player.Entity.WatchedAttributes.GetBool("isFullyInitialized", false)) continue;
-
-                    var gameMode = player.WorldData.CurrentGameMode;
-                    if (gameMode != EnumGameMode.Creative && gameMode != EnumGameMode.Spectator && gameMode != EnumGameMode.Guest)
-                    {
-                        EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, LoadedConfig);
-                    }
-                }
-            }
-        }
-    }
     private void AddBehaviorToBlock(Block block, ICoreAPI api)
     {
         if (block.BlockEntityBehaviors == null)

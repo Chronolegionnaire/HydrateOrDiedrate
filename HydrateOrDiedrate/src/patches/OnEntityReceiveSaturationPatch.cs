@@ -43,8 +43,6 @@ namespace HydrateOrDiedrate.patches
 
                         applyNutrition = false;
                     }
-
-                    thirstBehavior.HasProcessedSaturation = true;
                 }
 
                 float maxsat = __instance.MaxSaturation;
