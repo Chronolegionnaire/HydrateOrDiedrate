@@ -352,10 +352,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
         
         rainHarvesterManager = new RainHarvesterManager(_serverApi, LoadedConfig);
         
-        api.Event.PlayerJoin += OnPlayerJoinOrNowPlaying;
-        api.Event.PlayerNowPlaying += OnPlayerJoinOrNowPlaying;
         api.Event.PlayerRespawn += OnPlayerRespawn;
-        
+        api.Event.RegisterGameTickListener(CheckPlayerInteraction, 100);
+
         ThirstCommands.Register(api, LoadedConfig);
         AquiferCommands.Register(api);
     }
@@ -584,17 +583,14 @@ public class HydrateOrDiedrateModSystem : ModSystem
         return null;
     }
 
-    private void OnPlayerJoinOrNowPlaying(IServerPlayer byPlayer)
+    public void CheckPlayerInteraction(float dt)
     {
-        var entity = byPlayer.Entity;
-        if (entity == null) return;
-        //TODO revamp (this shouldn't be registered per player and definitly not every time player joins/respawns)
-        entity.WatchedAttributes.SetBool("isFullyInitialized", true);
-        _serverApi.Event.RegisterGameTickListener(
-            (dt) => _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, byPlayer), 100
-        );
+        foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
+        {
+            if(player.ConnectionState != EnumClientState.Playing) return;
+            _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, player);
+        }
     }
-
 
     private void OnPlayerRespawn(IServerPlayer byPlayer)
     {
@@ -606,12 +602,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
             thirstBehavior.OnRespawn();
         }
-
-        entity.WatchedAttributes.SetBool("isFullyInitialized", true);
-        
-        _serverApi.Event.RegisterGameTickListener(
-            (dt) => _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, byPlayer), 100
-        );
     }
 
     private void AddBehaviorToBlock(Block block, ICoreAPI api)
