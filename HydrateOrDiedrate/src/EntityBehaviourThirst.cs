@@ -49,8 +49,8 @@ namespace HydrateOrDiedrate
                 value = GameMath.Clamp(value, 0, HydrateOrDiedrateModSystem.LoadedConfig.MaxMovementSpeedPenalty);
                 if(_movementPenalty != value)
                 {
-                    UpdateWalkSpeed();
                     _movementPenalty = value;
+                    UpdateWalkSpeed();
                 }
             }
         }
