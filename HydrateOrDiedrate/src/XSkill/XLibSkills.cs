@@ -78,7 +78,6 @@ namespace HydrateOrDiedrate.XSkill
             float newMaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst * multiplier;
             behavior.CurrentThirst = behavior.CurrentThirst / behavior.MaxThirst * newMaxThirst;
             behavior.MaxThirst = newMaxThirst;
-            behavior.UpdateThirstAttributes();
         }
 
         private void OnEquatidian(PlayerAbility playerAbility, int oldTier)

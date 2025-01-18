@@ -2,12 +2,14 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-namespace HydrateOrDiedrate
+namespace HydrateOrDiedrate.src.Commands
 {
     public static class ThirstCommands
     {
-        public static void Register(ICoreServerAPI api, Config.Config loadedConfig)
+        public static void Register(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig)
         {
+            if(!loadedConfig.EnableThirstMechanics) return; //no need to register when thirtst is disabled
+
             api.ChatCommands
                 .Create("setthirst")
                 .WithDescription("Sets the player's thirst level.")
@@ -23,7 +25,7 @@ namespace HydrateOrDiedrate
                 .HandleWith((args) => OnSetNutriDefCommand(api, loadedConfig, args));
         }
 
-        private static TextCommandResult OnSetThirstCommand(ICoreServerAPI api, Config.Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnSetThirstCommand(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
             float thirstValue = (float)args[1];
@@ -47,12 +49,11 @@ namespace HydrateOrDiedrate
             if (thirstBehavior == null) return TextCommandResult.Error("Thirst behavior not found.");
 
             thirstBehavior.CurrentThirst = thirstValue;
-            thirstBehavior.UpdateThirstAttributes();
 
             return TextCommandResult.Success($"Thirst set to {thirstValue} for player '{targetPlayer.PlayerName}'.");
         }
 
-        private static TextCommandResult OnSetNutriDefCommand(ICoreServerAPI api, Config.Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnSetNutriDefCommand(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
             float nutriDeficitValue = (float)args[1];
@@ -74,12 +75,12 @@ namespace HydrateOrDiedrate
 
             var thirstBehavior = targetPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior == null) return TextCommandResult.Error("Thirst behavior not found.");
-            
+
             thirstBehavior.HungerReductionAmount = nutriDeficitValue;
 
             return TextCommandResult.Success($"Nutrition deficit set to {nutriDeficitValue} for player '{targetPlayer.PlayerName}'.");
         }
-        
+
         private static IServerPlayer GetPlayerByName(ICoreServerAPI api, string playerName)
         {
             foreach (IServerPlayer player in api.World.AllOnlinePlayers)

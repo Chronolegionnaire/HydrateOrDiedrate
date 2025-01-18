@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate.Config;
@@ -6,12 +7,13 @@ using HydrateOrDiedrate.encumbrance;
 using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
+using HydrateOrDiedrate.src.Commands;
+using HydrateOrDiedrate.src.Config.Sync;
 using HydrateOrDiedrate.Tun;
 using HydrateOrDiedrate.wellwater;
 using HydrateOrDiedrate.Wellwater;
 using HydrateOrDiedrate.XSkill;
 using Newtonsoft.Json.Linq;
-using ProtoBuf;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -27,17 +29,22 @@ public class HydrateOrDiedrateModSystem : ModSystem
 {
     private ICoreServerAPI _serverApi;
     private ICoreClientAPI _clientApi;
+
     private HudElementThirstBar _thirstHud;
     private HudElementHungerReductionBar _hungerReductionHud;
     public static Config.Config LoadedConfig { get; set; }
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
+
     private ConfigLibCompatibility _configLibCompatibility;
     private XLibSkills xLibSkills;
+
     private RainHarvesterManager rainHarvesterManager;
     private DrinkHudOverlayRenderer hudOverlayRenderer;
+
     private IClientNetworkChannel clientChannel;
     private IServerNetworkChannel serverChannel;
+
     private long customHudListenerId;
     private AquiferManager _aquiferManager;
 
@@ -311,11 +318,14 @@ public class HydrateOrDiedrateModSystem : ModSystem
             AquiferManager = new AquiferManager(api);
         }
     }
+
     private void RegisterEmptyCarryBehaviors(ICoreAPI api)
     {
         api.RegisterBlockBehaviorClass("Carryable", typeof(EmptyBlockBehavior));
         api.RegisterBlockBehaviorClass("CarryableInteract", typeof(EmptyBlockBehavior));
+        //TODO carryon behaviors should just only be added when CarryOn is available
     }
+
     public class EmptyBlockBehavior : BlockBehavior
     {
         public EmptyBlockBehavior(Block block) : base(block)
@@ -327,6 +337,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             base.Initialize(properties);
         }
     }
+    
     private void InitializeServer(ICoreServerAPI api)
     {
         _serverApi = api;
@@ -338,37 +349,16 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .SetMessageHandler<ConfigSyncRequestPacket>(OnConfigSyncRequestReceived);
         
         _waterInteractionHandler.Initialize(serverChannel);
+        
         rainHarvesterManager = new RainHarvesterManager(_serverApi, LoadedConfig);
-        api.Event.PlayerJoin += OnPlayerJoinOrNowPlaying;
-        api.Event.PlayerNowPlaying += OnPlayerJoinOrNowPlaying;
+        
         api.Event.PlayerRespawn += OnPlayerRespawn;
-        api.Event.RegisterGameTickListener(OnServerTick, 1000);
-        if (LoadedConfig.EnableThirstMechanics)
-        {
-            ThirstCommands.Register(api, LoadedConfig);
-        }
-        RegisterClearAquiferCommand(api);
-    }
-    private void RegisterClearAquiferCommand(ICoreServerAPI api)
-    {
-        api.RegisterCommand(
-            "clearaquiferdata", 
-            "Clears all saved aquifer data", 
-            "", 
-            (player, groupId, args) =>
-            {
-                if (HydrateOrDiedrateGlobals.AquiferManager == null)
-                {
-                    api.SendMessage(player, groupId, "Aquifer system is not initialized.", EnumChatType.Notification);
-                    return;
-                }
+        api.Event.RegisterGameTickListener(CheckPlayerInteraction, 100);
 
-                HydrateOrDiedrateGlobals.AquiferManager.ClearAquiferData();
-                api.SendMessage(player, groupId, "Aquifer data has been cleared successfully.", EnumChatType.Notification);
-            }, 
-            Privilege.controlserver 
-        );
+        ThirstCommands.Register(api, LoadedConfig);
+        AquiferCommands.Register(api);
     }
+
     private void InitializeClient(ICoreClientAPI api)
     {
         _clientApi = api;
@@ -395,24 +385,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
         }
-        _configLibCompatibility = new ConfigLibCompatibility((ICoreClientAPI)api);
-    }
 
-    [ProtoContract]
-    public class ConfigSyncPacket
-    {
-        [ProtoMember(1)] public Config.Config ServerConfig { get; set; }
-
-        [ProtoMember(2)] public List<string> HydrationPatches { get; set; }
-
-        [ProtoMember(3)] public List<string> BlockHydrationPatches { get; set; }
-
-        [ProtoMember(4)] public List<string> CoolingPatches { get; set; }
-    }
-
-    [ProtoContract]
-    public class ConfigSyncRequestPacket
-    {
+        _configLibCompatibility = new ConfigLibCompatibility(api);
     }
 
     private void OnConfigSyncRequestReceived(IServerPlayer fromPlayer, ConfigSyncRequestPacket packet)
@@ -540,7 +514,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             encumbranceBehavior?.Reset(LoadedConfig);
         }
         
-        if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics)
+        if (!LoadedConfig.EnableThirstMechanics)
         {
             _thirstHud?.TryClose();
             _thirstHud = null;
@@ -609,108 +583,27 @@ public class HydrateOrDiedrateModSystem : ModSystem
         return null;
     }
 
-    private void OnPlayerJoinOrNowPlaying(IServerPlayer byPlayer)
+    public void CheckPlayerInteraction(float dt)
     {
-        var entity = byPlayer.Entity;
-        if (entity == null) return;
-
-        EnsureBodyTemperatureHotBehavior(entity);
-        EnsureLiquidEncumbranceBehavior(entity);
-
-        if (LoadedConfig.EnableThirstMechanics)
+        foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
         {
-            EnsureThirstBehavior(entity);
+            if(player.ConnectionState != EnumClientState.Playing) return;
+            _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, player);
         }
-        
-        entity.WatchedAttributes.SetBool("isFullyInitialized", true);
-        
-        _serverApi.Event.RegisterGameTickListener(
-            (dt) => _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, byPlayer), 100
-        );
     }
-
 
     private void OnPlayerRespawn(IServerPlayer byPlayer)
     {
         var entity = byPlayer.Entity;
         if (entity == null) return;
 
-        EnsureBodyTemperatureHotBehavior(entity);
-        EnsureLiquidEncumbranceBehavior(entity);
-
         if (LoadedConfig.EnableThirstMechanics)
         {
-            var thirstBehavior = EnsureThirstBehavior(entity);
-            thirstBehavior.ResetThirstOnRespawn();
-        }
-
-        entity.WatchedAttributes.SetBool("isFullyInitialized", true);
-        
-        _serverApi.Event.RegisterGameTickListener(
-            (dt) => _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, byPlayer), 100
-        );
-    }
-
-    private EntityBehaviorThirst EnsureThirstBehavior(Entity entity)
-    {
-        var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
-        if (thirstBehavior == null)
-        {
-            thirstBehavior = new EntityBehaviorThirst(entity, LoadedConfig);
-            entity.AddBehavior(thirstBehavior);
-        }
-
-        if (!entity.WatchedAttributes.HasAttribute("currentThirst"))
-        {
-            thirstBehavior.SetInitialThirst();
-        }
-        else
-        {
-            thirstBehavior.LoadThirst();
-        }
-
-        return thirstBehavior;
-    }
-
-    private void EnsureBodyTemperatureHotBehavior(Entity entity)
-    {
-        var bodyTemperatureHotBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
-        if (bodyTemperatureHotBehavior == null)
-        {
-            bodyTemperatureHotBehavior = new EntityBehaviorBodyTemperatureHot(entity, LoadedConfig);
-            entity.AddBehavior(bodyTemperatureHotBehavior);
+            var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
+            thirstBehavior.OnRespawn();
         }
     }
 
-    private void EnsureLiquidEncumbranceBehavior(Entity entity)
-    {
-        var liquidEncumbranceBehavior = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
-        if (liquidEncumbranceBehavior == null)
-        {
-            liquidEncumbranceBehavior = new EntityBehaviorLiquidEncumbrance(entity, LoadedConfig);
-            entity.AddBehavior(liquidEncumbranceBehavior);
-        }
-    }
-
-    private void OnServerTick(float dt)
-    {
-        if (LoadedConfig.EnableThirstMechanics)
-        {
-            foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
-            {
-                if (player.Entity != null && player.Entity.Alive)
-                {
-                    if (!player.Entity.WatchedAttributes.GetBool("isFullyInitialized", false)) continue;
-
-                    var gameMode = player.WorldData.CurrentGameMode;
-                    if (gameMode != EnumGameMode.Creative && gameMode != EnumGameMode.Spectator && gameMode != EnumGameMode.Guest)
-                    {
-                        EntityBehaviorThirst.UpdateThirstOnServerTick(player, dt, LoadedConfig);
-                    }
-                }
-            }
-        }
-    }
     private void AddBehaviorToBlock(Block block, ICoreAPI api)
     {
         if (block.BlockEntityBehaviors == null)
