@@ -351,7 +351,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _waterInteractionHandler.Initialize(serverChannel);
         
         rainHarvesterManager = new RainHarvesterManager(_serverApi, LoadedConfig);
-        
+        api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
         api.Event.PlayerRespawn += OnPlayerRespawn;
         api.Event.RegisterGameTickListener(CheckPlayerInteraction, 100);
 
@@ -591,7 +591,44 @@ public class HydrateOrDiedrateModSystem : ModSystem
             _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, player);
         }
     }
+    private void OnPlayerNowPlaying(IServerPlayer byPlayer)
+    {
+        var entity = byPlayer.Entity;
+        if (entity == null) return;
 
+        var bodyTemperatureHotBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
+        if (bodyTemperatureHotBehavior == null)
+        {
+            bodyTemperatureHotBehavior = new EntityBehaviorBodyTemperatureHot(entity, LoadedConfig);
+            entity.AddBehavior(bodyTemperatureHotBehavior);
+        }
+
+        var liquidEncumbranceBehavior = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
+        if (liquidEncumbranceBehavior == null)
+        {
+            liquidEncumbranceBehavior = new EntityBehaviorLiquidEncumbrance(entity, LoadedConfig);
+            entity.AddBehavior(liquidEncumbranceBehavior);
+        }
+
+        if (LoadedConfig.EnableThirstMechanics)
+        {
+            var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
+            if (thirstBehavior == null)
+            {
+                thirstBehavior = new EntityBehaviorThirst(entity);
+                entity.AddBehavior(thirstBehavior);
+            }
+            if (!entity.WatchedAttributes.HasAttribute("currentThirst"))
+            {
+                thirstBehavior.CurrentThirst = thirstBehavior.MaxThirst;
+                thirstBehavior.MovementPenalty = 0f; 
+            }
+            if (thirstBehavior.HungerReductionAmount < 0)
+            {
+                thirstBehavior.HungerReductionAmount = 0;
+            }
+        }
+    }
     private void OnPlayerRespawn(IServerPlayer byPlayer)
     {
         var entity = byPlayer.Entity;
