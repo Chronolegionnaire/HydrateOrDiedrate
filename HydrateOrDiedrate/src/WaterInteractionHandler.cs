@@ -80,9 +80,6 @@ namespace HydrateOrDiedrate
         public void CheckShiftRightClickBeforeInteractionForPlayer(float dt, IServerPlayer player)
         {
             if (player == null || player.Entity == null) return;
-
-            if (!player.Entity.WatchedAttributes.GetBool("isFullyInitialized", false)) return;
-
             CheckPlayerInteraction(dt, player);
         }
         private void StopDrinking(IServerPlayer player, PlayerDrinkData drinkData)
