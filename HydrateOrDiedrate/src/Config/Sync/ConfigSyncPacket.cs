@@ -1,7 +1,7 @@
-﻿using ProtoBuf;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using ProtoBuf;
 
-namespace HydrateOrDiedrate.src.Config.Sync;
+namespace HydrateOrDiedrate.Config.Sync;
 
 
 [ProtoContract]

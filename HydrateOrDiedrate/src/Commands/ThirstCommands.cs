@@ -2,7 +2,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-namespace HydrateOrDiedrate.src.Commands
+namespace HydrateOrDiedrate.Commands
 {
     public static class ThirstCommands
     {

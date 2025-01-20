@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
+namespace HydrateOrDiedrate.Hot_Weather;
+
 public static class CoolingManager
 {
     public const string CoolingAttributeKey = "cooling";
-    public static List<JObject> _lastAppliedPatches = new List<JObject>();
+    private static List<JObject> _lastAppliedPatches = new List<JObject>();
 
     public static void SetCooling(ICoreAPI api, CollectibleObject collectible, float coolingValue)
     {
@@ -23,7 +24,7 @@ public static class CoolingManager
 
     public static float GetCooling(ItemStack itemStack)
     {
-        CollectibleObject collectible = itemStack?.Collectible;
+        var collectible = itemStack?.Collectible;
         if (collectible?.Attributes == null)
         {
             return 0f;
@@ -32,33 +33,39 @@ public static class CoolingManager
         return collectible.Attributes.Token[CoolingAttributeKey]?.ToObject<float>() ?? 0f;
     }
 
+    public static List<JObject> GetLastAppliedPatches()
+    {
+        return _lastAppliedPatches;
+    }
+
     public static void ApplyCoolingPatches(ICoreAPI api, List<JObject> patches)
     {
-        foreach (var patch in patches)
+        var compiledPatches = PreCompilePatches(patches);
+        var allPrefixes = compiledPatches
+            .Where(cp => cp.Prefix != null)
+            .Select(cp => cp.Prefix!)
+            .ToHashSet();
+
+        var prefixItemMap = BuildPrefixItemMap(api, allPrefixes);
+        foreach (var cp in compiledPatches)
         {
-            string itemName = patch["itemname"]?.ToString();
-            if (string.IsNullOrEmpty(itemName)) continue;
-
-            var matchingCollectibles = GetMatchingCollectibles(api, itemName);
-            foreach (var collectible in matchingCollectibles)
+            if (cp.Prefix != null && prefixItemMap.TryGetValue(cp.Prefix, out var items))
             {
-                if (patch.ContainsKey(CoolingAttributeKey))
+                foreach (var collectible in items)
                 {
-                    float coolingValue = patch[CoolingAttributeKey].ToObject<float>();
-                    SetCooling(api, collectible, coolingValue);
-                }
-                else if (patch.ContainsKey("coolingByType"))
-                {
-                    var coolingByType = patch["coolingByType"].ToObject<Dictionary<string, float>>();
-                    foreach (var entry in coolingByType)
+                    if (cp.MainRegex.IsMatch(collectible.Code.ToString()))
                     {
-                        string typeKey = entry.Key;
-                        float coolingValue = entry.Value;
-
-                        if (IsMatch(collectible.Code.ToString(), typeKey))
-                        {
-                            SetCooling(api, collectible, coolingValue);
-                        }
+                        ApplyCompiledPatchToItem(api, collectible, cp);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var collectible in api.World.Collectibles)
+                {
+                    if (collectible.Code != null && cp.MainRegex.IsMatch(collectible.Code.ToString()))
+                    {
+                        ApplyCompiledPatchToItem(api, collectible, cp);
                     }
                 }
             }
@@ -67,38 +74,115 @@ public static class CoolingManager
         _lastAppliedPatches = patches;
     }
 
-    public static List<JObject> GetLastAppliedPatches()
+    private class CompiledPatch
     {
-        return _lastAppliedPatches;
+        public Regex MainRegex;
+        public string? Prefix;
+        public float? DirectCooling;
+        public Dictionary<string, float> SubExactMatches = new();
+        public List<(Regex SubRegex, float Value)> SubWildcard = new();
+        public float? CatchAll;
     }
 
-    private static List<CollectibleObject> GetMatchingCollectibles(ICoreAPI api, string pattern)
+    private static List<CompiledPatch> PreCompilePatches(List<JObject> patches)
     {
-        var matchingCollectibles = new List<CollectibleObject>();
-        string regexPattern = "^" + Regex.Escape(pattern).Replace("\\*", ".*") + "$";
-        var regex = new Regex(regexPattern);
+        var list = new List<CompiledPatch>();
+
+        foreach (var patch in patches)
+        {
+            var itemNamePattern = patch["itemname"]?.ToString();
+            if (string.IsNullOrEmpty(itemNamePattern)) continue;
+
+            var cp = new CompiledPatch
+            {
+                MainRegex = new Regex("^" + Regex.Escape(itemNamePattern).Replace("\\*", ".*") + "$", RegexOptions.Compiled)
+            };
+
+            if (itemNamePattern.EndsWith("-*"))
+            {
+                cp.Prefix = itemNamePattern.Substring(0, itemNamePattern.Length - 1);
+            }
+
+            if (patch.ContainsKey(CoolingAttributeKey))
+            {
+                cp.DirectCooling = patch[CoolingAttributeKey].ToObject<float>();
+            }
+            else if (patch.ContainsKey("coolingByType"))
+            {
+                var coolingByType = patch["coolingByType"].ToObject<Dictionary<string, float>>();
+                foreach (var kvp in coolingByType)
+                {
+                    if (kvp.Key == "*")
+                    {
+                        cp.CatchAll = kvp.Value;
+                    }
+                    else if (kvp.Key.Contains("*"))
+                    {
+                        var subPattern = "^" + Regex.Escape(kvp.Key).Replace("\\*", ".*") + "$";
+                        cp.SubWildcard.Add((new Regex(subPattern, RegexOptions.Compiled), kvp.Value));
+                    }
+                    else
+                    {
+                        cp.SubExactMatches[kvp.Key] = kvp.Value;
+                    }
+                }
+            }
+
+            list.Add(cp);
+        }
+
+        return list;
+    }
+
+    private static Dictionary<string, List<CollectibleObject>> BuildPrefixItemMap(ICoreAPI api, HashSet<string> allPrefixes)
+    {
+        var map = allPrefixes.ToDictionary(prefix => prefix, _ => new List<CollectibleObject>());
 
         foreach (var collectible in api.World.Collectibles)
         {
-            if (collectible.Code != null && regex.IsMatch(collectible.Code.ToString()))
+            if (collectible.Code == null) continue;
+
+            var code = collectible.Code.ToString();
+            foreach (var prefix in allPrefixes)
             {
-                matchingCollectibles.Add(collectible);
+                if (code.StartsWith(prefix))
+                {
+                    map[prefix].Add(collectible);
+                }
             }
         }
 
-        return matchingCollectibles;
+        return map;
     }
 
-    private static bool IsMatch(string itemName, string pattern)
+    private static void ApplyCompiledPatchToItem(ICoreAPI api, CollectibleObject collectible, CompiledPatch cp)
     {
-        if (string.IsNullOrEmpty(pattern)) return false;
-
-        if (pattern.Contains("*"))
+        if (cp.DirectCooling.HasValue)
         {
-            string regexPattern = "^" + pattern.Replace("*", ".*") + "$";
-            return Regex.IsMatch(itemName, regexPattern);
+            SetCooling(api, collectible, cp.DirectCooling.Value);
+            return;
         }
 
-        return itemName == pattern;
+        var code = collectible.Code.ToString();
+
+        if (cp.SubExactMatches.TryGetValue(code, out var exactValue))
+        {
+            SetCooling(api, collectible, exactValue);
+            return;
+        }
+
+        foreach (var (subRegex, value) in cp.SubWildcard)
+        {
+            if (subRegex.IsMatch(code))
+            {
+                SetCooling(api, collectible, value);
+                return;
+            }
+        }
+
+        if (cp.CatchAll.HasValue)
+        {
+            SetCooling(api, collectible, cp.CatchAll.Value);
+        }
     }
 }

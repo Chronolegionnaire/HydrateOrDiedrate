@@ -1,7 +1,8 @@
-﻿using System.Reflection;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
+
+namespace HydrateOrDiedrate.patches;
 
 [HarmonyPatch(typeof(BlockCookingContainer), "DoSmelt")]
 public static class BlockCookingContainerPatch

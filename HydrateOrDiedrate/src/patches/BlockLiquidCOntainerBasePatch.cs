@@ -6,7 +6,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.HarmonyPatches
+namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatch(typeof(BlockLiquidContainerBase))]
     [HarmonyPatch("TryFillFromBlock", new Type[] { typeof(ItemSlot), typeof(EntityAgent), typeof(BlockPos) })]

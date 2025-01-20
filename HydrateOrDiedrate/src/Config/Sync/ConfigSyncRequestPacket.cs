@@ -1,6 +1,6 @@
 ﻿using ProtoBuf;
 
-namespace HydrateOrDiedrate.src.Config.Sync;
+namespace HydrateOrDiedrate.Config.Sync;
 
 [ProtoContract]
 public class ConfigSyncRequestPacket

@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using HydrateOrDiedrate.wellwater;
 using Vintagestory.API.Common;
-using Vintagestory.API.MathTools;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-namespace HydrateOrDiedrate.Wellwater
+namespace HydrateOrDiedrate.wellwater
 {
     public class BlockEntityWellSpring : BlockEntity
     {

@@ -2,7 +2,7 @@
 using Vintagestory.API.Client;
 using Vintagestory.API.MathTools;
 
-namespace HydrateOrDiedrate
+namespace HydrateOrDiedrate.HUD
 {
     public class DrinkHudOverlayRenderer : IRenderer, IDisposable
     {

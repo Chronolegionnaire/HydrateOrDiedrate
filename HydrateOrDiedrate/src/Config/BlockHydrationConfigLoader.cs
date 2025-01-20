@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
@@ -61,7 +60,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "boilingwater*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["boilingwater-*"] = 600,
                             ["*"] = 600
                         },
                         ["HoDisBoiling"] = true,
@@ -72,7 +70,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "water*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["water-*"] = 600,
                             ["*"] = 600
                         },
                         ["HoDisBoiling"] = false,
@@ -83,7 +80,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "wellwaterfresh*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["wellwaterfresh-*"] = 750,
                             ["*"] = 750
                         },
                         ["HoDisBoiling"] = false,
@@ -94,7 +90,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "wellwatersalt*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["wellwatersalt-*"] = -600,
                             ["*"] = -600
                         },
                         ["HoDisBoiling"] = false,
@@ -105,7 +100,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "wellwatermuddy*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["wellwatermuddy-*"] = 600,
                             ["*"] = 600
                         },
                         ["HoDisBoiling"] = false,
@@ -116,7 +110,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "wellwatertainted*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["wellwatertainted-*"] = 750,
                             ["*"] = 750
                         },
                         ["HoDisBoiling"] = false,
@@ -128,7 +121,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "wellwaterpoisoned*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["wellwaterpoisoned-*"] = 750,
                             ["*"] = 750
                         },
                         ["HoDisBoiling"] = false,
@@ -140,7 +132,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "wellwatermuddysalt*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["wellwatermuddysalt-*"] = -600,
                             ["*"] = -600
                         },
                         ["HoDisBoiling"] = false,
@@ -151,7 +142,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "wellwatertaintedsalt*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["wellwatertaintedsalt-*"] = -600,
                             ["*"] = -600
                         },
                         ["HoDisBoiling"] = false,
@@ -163,7 +153,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "wellwaterpoisonedsalt*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["wellwaterpoisonedsalt-*"] = -600,
                             ["*"] = -600
                         },
                         ["HoDisBoiling"] = false,
@@ -175,7 +164,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "saltwater*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["saltwater-*"] = -600,
                             ["*"] = -600
                         },
                         ["HoDisBoiling"] = false,
@@ -186,7 +174,6 @@ namespace HydrateOrDiedrate.Config
                         ["blockCode"] = "distilledwater*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["distilledwater-*"] = 600,
                             ["*"] = 600
                         },
                         ["HoDisBoiling"] = false,

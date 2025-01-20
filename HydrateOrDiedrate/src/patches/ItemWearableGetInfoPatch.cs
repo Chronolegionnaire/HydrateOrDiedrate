@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
+using HydrateOrDiedrate.Hot_Weather;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -114,7 +115,7 @@ namespace HydrateOrDiedrate.patches
 
                     dsc.Replace(maxWarmthLine, updatedMaxWarmthLine);
                 }
-                else
+                else if (maxCooling > 0)
                 {
                     dsc.AppendLine($"Max Cooling: {maxCooling:0.#}°C");
                 }

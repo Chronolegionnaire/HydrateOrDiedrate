@@ -62,17 +62,17 @@ namespace HydrateOrDiedrate.patches
             int effectiveRating = (int)Math.Round(rating * depthFactor);
             string aquiferType = isSalty ? "salt" : "fresh";
             if (effectiveRating <= 0)
-                return $"No aquifer detected. Actual {rating}.";
+                return $"No aquifer detected.";
             else if (effectiveRating <= 10)
-                return $"Very poor {aquiferType} water aquifer detected. Actual {rating}.";
+                return $"Very poor {aquiferType} water aquifer detected.";
             else if (effectiveRating <= 20)
-                return $"Poor {aquiferType} water aquifer detected. Actual {rating}.";
+                return $"Poor {aquiferType} water aquifer detected.";
             else if (effectiveRating <= 40)
-                return $"Light {aquiferType} water aquifer detected. Actual {rating}.";
+                return $"Light {aquiferType} water aquifer detected.";
             else if (effectiveRating <= 60)
-                return $"Moderate {aquiferType} water aquifer detected. Actual {rating}.";
+                return $"Moderate {aquiferType} water aquifer detected.";
             else
-                return $"Heavy {aquiferType} water aquifer detected. Actual {rating}.";
+                return $"Heavy {aquiferType} water aquifer detected.";
         }
 
         private static void SendMessageToPlayer(IWorldAccessor world, IServerPlayer splr, string message)

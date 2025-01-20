@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Vintagestory.API.Common;
+﻿using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using static HydrateOrDiedrate.HydrateOrDiedrateModSystem;
 
-namespace HydrateOrDiedrate.src.Commands
+namespace HydrateOrDiedrate.Commands
 {
     public static class AquiferCommands
     {

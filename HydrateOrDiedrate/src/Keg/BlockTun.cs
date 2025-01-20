@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.MathTools;
-using Vintagestory.API.Client;
-using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.Tun
+namespace HydrateOrDiedrate.Keg
 {
     public class BlockTun : BlockLiquidContainerBase
     {
