@@ -29,7 +29,7 @@
     "base": "hydrateordiedrate:block/wellspring"
   },
   "textures": {
-    "ground": { "base": "game:block/soil/fertmedium" },
+    "all": { "base": "game:block/soil/fertmedium" },
     "stoney1": { "base": "game:block/stone/dirtygravel/wet/stoney1" },
     "waterportiontransparent": { "base":  "hydrateordiedrate:waterportiontransparent" }
   },

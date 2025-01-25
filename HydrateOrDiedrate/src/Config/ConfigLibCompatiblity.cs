@@ -64,6 +64,22 @@ namespace HydrateOrDiedrate.Config
         // Tun Settings
         private const string settingTunCapacityLitres = "hydrateordiedrate:Config.Setting.TunCapacityLitres";
         private const string settingTunSpoilRateMultiplier = "hydrateordiedrate:Config.Setting.TunSpoilRateMultiplier";
+        
+        // Misc Settings
+        private const string settingDisableDrunkSway = "hydrateirduedrate:Config.Settings.DisableDrunkSway";
+        
+        // Well Settings
+
+        private const string settingWellSpringOutputMultiplier =
+            "hydrateordiedrate:Config.Settings.WellSpringOutputMultiplier";
+        private const string settingWellwaterDepthMaxBase = "hydrateordiedrate:Config.Setting.WellwaterDepthMaxBase";
+        private const string settingWellwaterDepthMaxClay = "hydrateordiedrate:Config.Setting.WellwaterDepthMaxClay";
+        private const string settingWellwaterDepthMaxStone = "hydrateordiedrate:Config.Setting.WellwaterDepthMaxStone";
+        private const string settingAquiferRandomMultiplierChance = "hydrateordiedrate:Config.Settings.AquiferRandomMultiplierChance";
+        private const string settingAquiferStep = "hydrateordiedrate:Config.Settings.AquiferStep";
+        private const string settingAquiferWaterBlockMultiplier = "hydrateordiedrate:Config.Settings.AquiferWaterBlockMultiplier";
+        private const string settingAquiferSaltWaterMultiplier = "hydrateordiedrate:Config.Settings.AquiferSaltWaterMultiplier";
+        private const string settingAquiferBoilingWaterMultiplier = "hydrateordiedrate:Config.Settings.AquiferBoilingWaterMultiplier";
 
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
@@ -299,6 +315,62 @@ namespace HydrateOrDiedrate.Config
             float tunSpoilRateMultiplier = config.TunSpoilRateMultiplier;
             ImGui.DragFloat(Lang.Get(settingTunSpoilRateMultiplier) + $"##tunSpoilRateMultiplier-{id}", ref tunSpoilRateMultiplier, 0.01f, 0.1f, 5.0f);
             config.TunSpoilRateMultiplier = tunSpoilRateMultiplier;
+            
+            // Misc Settings
+            ImGui.SeparatorText("Misc Settings");
+            
+            bool disableDrunkSway = config.DisableDrunkSway;
+            ImGui.Checkbox(Lang.Get(settingDisableDrunkSway) + $"##disableDrunkSway-{id}", ref disableDrunkSway);
+            config.DisableDrunkSway = disableDrunkSway;
+            
+            // Well Settings
+            ImGui.SeparatorText("Well Settings");
+
+            // WellSpringOutputMultiplier
+            float wellSpringOutputMultiplier = config.WellSpringOutputMultiplier;
+            ImGui.DragFloat(Lang.Get(settingWellSpringOutputMultiplier) + $"##wellSpringOutputMultiplier-{id}", ref wellSpringOutputMultiplier, 0.1f, 0.1f, 10.0f);
+            config.WellSpringOutputMultiplier = wellSpringOutputMultiplier;
+            
+            // RandomMultiplierChance
+            float aquiferRandomMultiplierChance = (float)config.AquiferRandomMultiplierChance;
+            ImGui.DragFloat(Lang.Get(settingAquiferRandomMultiplierChance) + $"##aquiferRandomMultiplierChance-{id}", ref aquiferRandomMultiplierChance, 0.001f, 0.0f, 1.0f);
+            config.AquiferRandomMultiplierChance = aquiferRandomMultiplierChance;
+
+            // Wellwater Depth Max Base
+            int wellwaterDepthMaxBase = config.WellwaterDepthMaxBase;
+            ImGui.DragInt(Lang.Get(settingWellwaterDepthMaxBase) + $"##wellwaterDepthMaxBase-{id}", ref wellwaterDepthMaxBase, 1, 1, 20);
+            config.WellwaterDepthMaxBase = wellwaterDepthMaxBase;
+
+            // Wellwater Depth Max Clay
+            int wellwaterDepthMaxClay = config.WellwaterDepthMaxClay;
+            ImGui.DragInt(Lang.Get(settingWellwaterDepthMaxClay) + $"##wellwaterDepthMaxClay-{id}", ref wellwaterDepthMaxClay, 1, 1, 20);
+            config.WellwaterDepthMaxClay = wellwaterDepthMaxClay;
+
+            // Wellwater Depth Max Stone
+            int wellwaterDepthMaxStone = config.WellwaterDepthMaxStone;
+            ImGui.DragInt(Lang.Get(settingWellwaterDepthMaxStone) + $"##wellwaterDepthMaxStone-{id}", ref wellwaterDepthMaxStone, 1, 1, 20);
+            config.WellwaterDepthMaxStone = wellwaterDepthMaxStone;
+
+            
+            // Step
+            int aquiferStep = config.AquiferStep;
+            ImGui.DragInt(Lang.Get(settingAquiferStep) + $"##aquiferStep-{id}", ref aquiferStep, 1, 1, 32);
+            config.AquiferStep = aquiferStep;
+
+            // WaterBlockMultiplier
+            float aquiferWaterBlockMultiplier = (float)config.AquiferWaterBlockMultiplier;
+            ImGui.DragFloat(Lang.Get(settingAquiferWaterBlockMultiplier) + $"##aquiferWaterBlockMultiplier-{id}", ref aquiferWaterBlockMultiplier, 0.1f, 0.1f, 10.0f);
+            config.AquiferWaterBlockMultiplier = aquiferWaterBlockMultiplier;
+
+            // SaltWaterMultiplier
+            float aquiferSaltWaterMultiplier = (float)config.AquiferSaltWaterMultiplier;
+            ImGui.DragFloat(Lang.Get(settingAquiferSaltWaterMultiplier) + $"##aquiferSaltWaterMultiplier-{id}", ref aquiferSaltWaterMultiplier, 0.1f, 0.1f, 10.0f);
+            config.AquiferSaltWaterMultiplier = aquiferSaltWaterMultiplier;
+
+            // BoilingWaterMultiplier
+            int aquiferBoilingWaterMultiplier = config.AquiferBoilingWaterMultiplier;
+            ImGui.DragInt(Lang.Get(settingAquiferBoilingWaterMultiplier) + $"##aquiferBoilingWaterMultiplier-{id}", ref aquiferBoilingWaterMultiplier, 1, 1, 500);
+            config.AquiferBoilingWaterMultiplier = aquiferBoilingWaterMultiplier;
         }
     }
 }

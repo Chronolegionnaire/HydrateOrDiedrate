@@ -72,6 +72,17 @@ namespace HydrateOrDiedrate.Config
                     // Tun Settings
                     hydrateConfig.TunCapacityLitres = 950f;
                     hydrateConfig.TunSpoilRateMultiplier = 1.0f;
+                    
+                    // Well Settings
+                    hydrateConfig.WellSpringOutputMultiplier = 1.0f;
+                    hydrateConfig.WellwaterDepthMaxBase = 5;
+                    hydrateConfig.WellwaterDepthMaxClay = 7;
+                    hydrateConfig.WellwaterDepthMaxStone = 10;
+                    hydrateConfig.AquiferRandomMultiplierChance = 0.02;
+                    hydrateConfig.AquiferStep = 4;
+                    hydrateConfig.AquiferWaterBlockMultiplier = 4.0f;
+                    hydrateConfig.AquiferSaltWaterMultiplier = 4.0f;
+                    hydrateConfig.AquiferBoilingWaterMultiplier = 100;
                 }
                 WriteConfig(api, jsonConfig, config);
             }

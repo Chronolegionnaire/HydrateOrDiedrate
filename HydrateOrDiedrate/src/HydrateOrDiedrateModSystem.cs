@@ -82,15 +82,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
             LoadAndApplyHydrationPatches(api);
             LoadAndApplyBlockHydrationPatches(api);
         }
-
         foreach (var block in api.World.Blocks)
         {
-            if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
+            if (block is BlockLiquidContainerTopOpened || block is BlockGroundStorage)
             {
-                if (block is BlockKeg)
-                {
-                    return;
-                }
                 AddBehaviorToBlock(block, api);
             }
         }
@@ -267,7 +262,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
         api.RegisterBlockEntityClass("BlockEntityWellWaterData", typeof(BlockEntityWellWaterData));
         api.RegisterBlockBehaviorClass("BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
-        api.RegisterBlockClass("BlockWellSpring", typeof(blockWellSpring));
+        api.RegisterBlockClass("BlockWellSpring", typeof(BlockWellSpring));
         api.RegisterBlockEntityClass("BlockEntityWellSpring", typeof(BlockEntityWellSpring));
         if (LoadedConfig.EnableThirstMechanics)
         {
@@ -292,14 +287,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
 
         api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RegisterRainHarvester));
-
-        foreach (var block in api.World.Blocks)
-        {
-            if (block is BlockLiquidContainerBase || block is BlockGroundStorage)
-            {
-                AddBehaviorToBlock(block, api);
-            }
-        }
         if (api.Side == EnumAppSide.Server)
         {
             HydrateOrDiedrateGlobals.InitializeAquiferSystem(api as ICoreServerAPI);
@@ -445,7 +432,16 @@ public class HydrateOrDiedrateModSystem : ModSystem
             KegTapDropChance = packet.ServerConfig.KegTapDropChance,
             TunCapacityLitres = packet.ServerConfig.TunCapacityLitres,
             TunSpoilRateMultiplier = packet.ServerConfig.TunSpoilRateMultiplier,
-            DisableDrunkSway = packet.ServerConfig.DisableDrunkSway
+            DisableDrunkSway = packet.ServerConfig.DisableDrunkSway,
+            WellSpringOutputMultiplier = packet.ServerConfig.WellSpringOutputMultiplier,
+            WellwaterDepthMaxBase = packet.ServerConfig.WellwaterDepthMaxBase,
+            WellwaterDepthMaxClay = packet.ServerConfig.WellwaterDepthMaxClay,
+            WellwaterDepthMaxStone = packet.ServerConfig.WellwaterDepthMaxStone,
+            AquiferRandomMultiplierChance = packet.ServerConfig.AquiferRandomMultiplierChance,
+            AquiferStep = packet.ServerConfig.AquiferStep,
+            AquiferWaterBlockMultiplier = packet.ServerConfig.AquiferWaterBlockMultiplier,
+            AquiferSaltWaterMultiplier = packet.ServerConfig.AquiferSaltWaterMultiplier,
+            AquiferBoilingWaterMultiplier = packet.ServerConfig.AquiferBoilingWaterMultiplier
         };
         ReloadComponents();
         var currentHydrationPatches = HydrationManager.GetLastAppliedPatches() ?? new List<JObject>();
@@ -472,7 +468,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             CoolingManager.ApplyCoolingPatches(_clientApi, packetCoolingPatches);
         }
     }
-
     private bool ArePatchesEqual(List<JObject> patches1, List<JObject> patches2)
     {
         if (patches1.Count != patches2.Count) return false;
@@ -483,7 +478,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 return false;
             }
         }
-
         return true;
     }
     

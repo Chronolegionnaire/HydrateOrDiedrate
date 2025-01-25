@@ -3,7 +3,7 @@ using Vintagestory.API.MathTools;
 
 namespace HydrateOrDiedrate.wellwater
 {
-    public class blockWellSpring : Block
+    public class BlockWellSpring : Block
     {
         public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
         {

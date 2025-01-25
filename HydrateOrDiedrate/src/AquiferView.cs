@@ -88,7 +88,7 @@ namespace HydrateOrDiedrate
 
                                 if (aquiferData == null) continue;
 
-                                int color = GetColorForRating(aquiferData.AquiferRating);
+                                int color = GetColorForRating(aquiferData.AquiferRating, aquiferData.IsSalty);
                                 if (color == 0) continue;
 
                                 highlightPositions.Add(currentPos);
@@ -141,13 +141,24 @@ namespace HydrateOrDiedrate
             return HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager?.GetAquiferData(chunkCoord);
         }
 
-        private int GetColorForRating(int rating)
+        private int GetColorForRating(int rating, bool isSalty)
         {
-            if (rating <= 20) return ColorUtil.ToRgba(128, 255, 200, 100); // Light Blue
-            else if (rating <= 40) return ColorUtil.ToRgba(128, 0, 200, 0); // Green
-            else if (rating <= 60) return ColorUtil.ToRgba(128, 0, 255, 255); // Yellow
-            else if (rating <= 80) return ColorUtil.ToRgba(128, 0, 140, 255); // Orange
-            else if (rating <= 100) return ColorUtil.ToRgba(128, 0, 0, 255); // Red
+            if (isSalty)
+            {
+                if (rating <= 20) return ColorUtil.ToRgba(128, 200, 100, 255); // Purple
+                else if (rating <= 40) return ColorUtil.ToRgba(128, 150, 0, 255); // Deep Blue
+                else if (rating <= 60) return ColorUtil.ToRgba(128, 255, 140, 50); // Reddish Orange
+                else if (rating <= 80) return ColorUtil.ToRgba(128, 255, 80, 0); // Bright Orange
+                else if (rating <= 100) return ColorUtil.ToRgba(128, 255, 0, 0); // Red
+            }
+            else
+            {
+                if (rating <= 20) return ColorUtil.ToRgba(128, 255, 200, 100); // Light Blue
+                else if (rating <= 40) return ColorUtil.ToRgba(128, 0, 200, 0); // Green
+                else if (rating <= 60) return ColorUtil.ToRgba(128, 0, 255, 255); // Yellow
+                else if (rating <= 80) return ColorUtil.ToRgba(128, 0, 140, 255); // Orange
+                else if (rating <= 100) return ColorUtil.ToRgba(128, 0, 0, 255); // Red
+            }
             return 0;
         }
     }
