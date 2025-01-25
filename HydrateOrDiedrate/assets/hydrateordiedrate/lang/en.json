@@ -98,5 +98,6 @@
   "hydrateordiedrate:block-wellwaterpoison-*": "Poisoned Well Water",
   "hydrateordiedrate:block-wellwaterpoisonsalt-*": "Poisoned Salty Well Water",
   "hydrateordiedrate:block-wellwatertainted-*": "Tainted Well Water",
-  "hydrateordiedrate:block-wellwatertaintedsalt-*": "Tainted Salty Well Water"
+  "hydrateordiedrate:block-wellwatertaintedsalt-*": "Tainted Salty Well Water",
+  "hydrateordiedrate:block-wellspring-description": "A hand-dug spring that allows filtered water to seep through from nearby water or aquifers."
 }

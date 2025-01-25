@@ -8,6 +8,7 @@ using HydrateOrDiedrate.encumbrance;
 using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
+using HydrateOrDiedrate.patches;
 using HydrateOrDiedrate.wellwater;
 using HydrateOrDiedrate.XSkill;
 using Newtonsoft.Json.Linq;
@@ -290,6 +291,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
         if (api.Side == EnumAppSide.Server)
         {
             HydrateOrDiedrateGlobals.InitializeAquiferSystem(api as ICoreServerAPI);
+        }
+        if (api.ModLoader.IsModEnabled("BetterProspecting"))
+        {
+            BetterProspectingAquiferPatch.Apply(api);
         }
     }
     public static class HydrateOrDiedrateGlobals

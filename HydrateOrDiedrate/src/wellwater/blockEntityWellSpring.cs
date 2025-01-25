@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
@@ -306,7 +307,8 @@ namespace HydrateOrDiedrate.wellwater
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             base.GetBlockInfo(forPlayer, dsc);
-            dsc.AppendLine("A hand-dug spring that allows filtered water to seep through from nearby water or aquifers.");
+            string description = Lang.Get("hydrateordiedrate:block-wellspring-description");
+            dsc.AppendLine(description);
         }
 
         private (bool isSalty, bool isFresh) CheckForNearbyGameWater(IBlockAccessor blockAccessor, BlockPos centerPos)

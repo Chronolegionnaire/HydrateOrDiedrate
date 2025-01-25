@@ -98,6 +98,7 @@ namespace HydrateOrDiedrate
             var block = _api.World.BlockAccessor.GetBlock(headBlockPos);
             return block.BlockMaterial == EnumBlockMaterial.Liquid;
         }
+
         public void CheckPlayerInteraction(float dt, IServerPlayer player)
         {
             long currentTime = _api.World.ElapsedMilliseconds;
@@ -106,52 +107,56 @@ namespace HydrateOrDiedrate
                 drinkData = new PlayerDrinkData();
                 playerDrinkData[player.PlayerUID] = drinkData;
             }
+
             if (player.Entity.Controls.Sneak && player.Entity.Controls.RightMouseDown)
             {
+                var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
+                var hungerBehavior = player.Entity.GetBehavior<EntityBehaviorHunger>();
                 var blockSel = RayCastForFluidBlocks(player);
-
                 if (blockSel == null)
                 {
-                    var block = _api.World.BlockAccessor.GetBlock(blockSel.Position);
-                    if (block.BlockMaterial == EnumBlockMaterial.Liquid)
-                    {
-                        if (player.Entity.RightHandItemSlot?.Itemstack != null ||
-                            player.Entity.LeftHandItemSlot?.Itemstack != null)
-                        {
-                            player.SendIngameError("handsfull", "You must have both hands free to drink.");
-                            StopDrinking(player, drinkData);
-                            return;
-                        }
-                        var collectible = GetCollectibleObject(block);
-                        if (collectible == null)
-                        {
-                            StopDrinking(player, drinkData);
-                            return;
-                        }
-                        float hydrationValue = BlockHydrationManager.GetHydrationValue(collectible, "*");
-                        if (hydrationValue != 0)
-                        {
-                            float hungerReduction = BlockHydrationManager.GetBlockHungerReduction(collectible);
-                            var hungerBehavior = player.Entity.GetBehavior<EntityBehaviorHunger>();
+                    StopDrinking(player, drinkData);
+                    return;
+                }
+                var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
+                if (block.BlockMaterial == EnumBlockMaterial.Liquid &&
+                    ((player.Entity.RightHandItemSlot?.Itemstack != null) ||
+                     (player.Entity.LeftHandItemSlot?.Itemstack != null)))
+                {
+                    player.SendIngameError("handsfull", "You must have both hands free to drink.");
+                    StopDrinking(player, drinkData);
+                    return;
+                }
+                if (IsHeadInWater(player))
+                {
+                    StopDrinking(player, drinkData);
+                    return;
+                }
 
-                            if (hungerBehavior != null && (hungerBehavior.Saturation <= 0 ||
-                                                           hungerBehavior.Saturation < hungerReduction))
-                            {
-                                StopDrinking(player, drinkData);
-                                return;
-                            }
-                            if (!drinkData.IsDrinking)
-                            {
-                                drinkData.IsDrinking = true;
-                                drinkData.DrinkStartTime = currentTime;
-                            }
-                            HandleDrinkingStep(player, blockSel, currentTime, collectible, drinkData);
-                        }
-                        else
-                        {
-                            StopDrinking(player, drinkData);
-                        }
+                var collectible = GetCollectibleObject(block);
+                if (collectible == null)
+                {
+                    StopDrinking(player, drinkData);
+                    return;
+                }
+
+                float hydrationValue = BlockHydrationManager.GetHydrationValue(collectible, "*");
+                if (hydrationValue != 0)
+                {
+                    float hungerReduction = BlockHydrationManager.GetBlockHungerReduction(collectible);
+                    if (hungerBehavior.Saturation <= 0 || hungerBehavior.Saturation < hungerReduction)
+                    {
+                        StopDrinking(player, drinkData);
+                        return;
                     }
+
+                    if (!drinkData.IsDrinking)
+                    {
+                        drinkData.IsDrinking = true;
+                        drinkData.DrinkStartTime = currentTime;
+                    }
+
+                    HandleDrinkingStep(player, blockSel, currentTime, collectible, drinkData);
                 }
                 else
                 {
@@ -200,6 +205,7 @@ namespace HydrateOrDiedrate
 
                 if (thirstBehavior == null || thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
                 {
+                    player.SendIngameError("fullhydration", "You are already fully hydrated!");
                     StopDrinking(player, drinkData);
                     return;
                 }
