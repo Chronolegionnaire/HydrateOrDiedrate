@@ -232,30 +232,37 @@ namespace HydrateOrDiedrate
         {
             try
             {
+                var config = HydrateOrDiedrateModSystem.LoadedConfig;
+
                 int normalWaterBlockCount = 0;
                 int saltWaterBlockCount = 0;
                 int boilingWaterBlockCount = 0;
                 int chunkSize = GlobalConstants.ChunkSize;
-                const int step = 4;
-                const double waterBlockMultiplier = 4.0;
-                const double saltWaterMultiplier = 4.0;
-                const int boilingWaterMultiplier = 100;
-                const double randomMultiplierChance = 0.02;
+                int step = config.AquiferStep;
+                double waterBlockMultiplier = config.AquiferWaterBlockMultiplier;
+                double saltWaterMultiplier = config.AquiferSaltWaterMultiplier;
+                int boilingWaterMultiplier = config.AquiferBoilingWaterMultiplier;
+                double randomMultiplierChance = config.AquiferRandomMultiplierChance;
                 int worldSeed = serverAPI.WorldManager.SaveGame.Seed;
                 int chunkSeed = worldSeed ^ (chunkCoord.X * 73856093) ^ (chunkCoord.Y * 19349663);
                 Random random = new Random(chunkSeed);
                 object lockObj = new object();
-                BlockPos center = new BlockPos(chunkCoord.X * chunkSize + chunkSize / 2, 0, chunkCoord.Y * chunkSize + chunkSize / 2);
-                ClimateCondition climate = serverAPI.World.BlockAccessor.GetClimateAt(center, EnumGetClimateMode.WorldGenValues);
+                BlockPos center = new BlockPos(chunkCoord.X * chunkSize + chunkSize / 2, 0,
+                    chunkCoord.Y * chunkSize + chunkSize / 2);
+                ClimateCondition climate =
+                    serverAPI.World.BlockAccessor.GetClimateAt(center, EnumGetClimateMode.WorldGenValues);
                 float rainMul = 0.75f + (climate?.Rainfall ?? 0f);
+
                 Parallel.For(0, chunks.Length,
                     () => new LocalCounts(),
                     (index, state, localCounts) =>
                     {
                         var chunk = chunks[index];
-                        if (chunk == null || chunk.Disposed || chunk.Data == null || chunk.Data.Length == 0) return localCounts;
+                        if (chunk == null || chunk.Disposed || chunk.Data == null || chunk.Data.Length == 0)
+                            return localCounts;
                         var chunkData = chunk.Data;
                         int blockCount = chunkData.Length;
+
                         for (int y = 0; y < chunkSize; y += step)
                         {
                             for (int x = 0; x < chunkSize; x += step)
@@ -266,17 +273,26 @@ namespace HydrateOrDiedrate
                                     if (idx < 0 || idx >= blockCount) continue;
                                     int blockId = chunkData[idx];
                                     if (blockId < 0) continue;
+
                                     Block block = serverAPI.World.GetBlock(blockId);
                                     if (block?.Code?.Path == null) continue;
-                                    if (block.Code.Path.Contains("boilingwater")) localCounts.BoilingCount++;
+
+                                    if (block.Code.Path.Contains("boilingwater"))
+                                    {
+                                        localCounts.BoilingCount++;
+                                    }
                                     else if (block.Code.Path.Contains("water"))
                                     {
                                         localCounts.NormalCount++;
-                                        if (block.Code.Path.Contains("saltwater")) localCounts.SaltCount++;
+                                        if (block.Code.Path.Contains("saltwater"))
+                                        {
+                                            localCounts.SaltCount++;
+                                        }
                                     }
                                 }
                             }
                         }
+
                         return localCounts;
                     },
                     localCounts =>
@@ -289,6 +305,7 @@ namespace HydrateOrDiedrate
                         }
                     }
                 );
+
                 double GetDiminishing(int count, double startV, double minV, double decayR)
                 {
                     double t = 0;
@@ -296,12 +313,16 @@ namespace HydrateOrDiedrate
                     {
                         t += Math.Max(minV, startV / (1 + decayR * (i - 1)));
                     }
+
                     return t;
                 }
+
                 double weightedNormal = GetDiminishing(normalWaterBlockCount, 300.0, 1.0, 0.99) * waterBlockMultiplier;
                 double weightedSalt = GetDiminishing(saltWaterBlockCount, 300.0, 1.0, 0.99) * saltWaterMultiplier;
-                double weightedBoiling = GetDiminishing(boilingWaterBlockCount, 1000.0, 10.0, 0.5) * boilingWaterMultiplier;
+                double weightedBoiling =
+                    GetDiminishing(boilingWaterBlockCount, 1000.0, 10.0, 0.5) * boilingWaterMultiplier;
                 double totalWeighted = (weightedNormal + weightedSalt + weightedBoiling) * rainMul;
+
                 int rating = NormalizeAquiferRating(totalWeighted);
                 if (random.NextDouble() < randomMultiplierChance)
                 {
@@ -311,7 +332,9 @@ namespace HydrateOrDiedrate
                     rating = (int)(rating * rndMul);
                     rating = Math.Clamp(rating, 0, 100);
                 }
+
                 bool salty = saltWaterBlockCount > normalWaterBlockCount * 0.5;
+
                 return new AquiferData
                 {
                     AquiferRating = rating,

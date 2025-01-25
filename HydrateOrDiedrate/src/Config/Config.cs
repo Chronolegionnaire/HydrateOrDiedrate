@@ -72,6 +72,33 @@ public class Config : IModConfig
     // Misc Settings
     [ProtoMember(43)] public bool DisableDrunkSway { get; set; }
 
+    // Well/Aquifer Settings
+    [ProtoMember(44)]
+    public float WellSpringOutputMultiplier { get; set; }
+    
+    [ProtoMember(45)]
+    public int WellwaterDepthMaxBase { get; set; }
+    
+    [ProtoMember(46)]
+    public int WellwaterDepthMaxClay { get; set; }
+    
+    [ProtoMember(47)]
+    public int WellwaterDepthMaxStone { get; set; }
+    
+    [ProtoMember(48)]
+    public double AquiferRandomMultiplierChance { get; set; }
+    
+    [ProtoMember(49)]
+    public int AquiferStep { get; set; }
+
+    [ProtoMember(50)]
+    public double AquiferWaterBlockMultiplier { get; set; }
+
+    [ProtoMember(51)]
+    public double AquiferSaltWaterMultiplier { get; set; }
+
+    [ProtoMember(52)]
+    public int AquiferBoilingWaterMultiplier { get; set; }
 
     public Config()
     {
@@ -138,8 +165,19 @@ public class Config : IModConfig
         // Tun Settings
         TunCapacityLitres = previousConfig?.TunCapacityLitres ?? 950.0f;
         TunSpoilRateMultiplier = previousConfig?.TunSpoilRateMultiplier ?? 1.0f;
-        
+
         // Misc Settings
         DisableDrunkSway = previousConfig?.DisableDrunkSway ?? true;
+
+        // Well/Aquifer Settings
+        WellSpringOutputMultiplier = previousConfig?.WellSpringOutputMultiplier ?? 1f;
+        WellwaterDepthMaxBase = previousConfig?.WellwaterDepthMaxBase ?? 5;
+        WellwaterDepthMaxClay = previousConfig?.WellwaterDepthMaxClay ?? 7;
+        WellwaterDepthMaxStone = previousConfig?.WellwaterDepthMaxStone ?? 10;
+        AquiferRandomMultiplierChance = previousConfig?.AquiferRandomMultiplierChance ?? 0.02;
+        AquiferStep = previousConfig?.AquiferStep ?? 4;
+        AquiferWaterBlockMultiplier = previousConfig?.AquiferWaterBlockMultiplier ?? 4.0;
+        AquiferSaltWaterMultiplier = previousConfig?.AquiferSaltWaterMultiplier ?? 4.0;
+        AquiferBoilingWaterMultiplier = previousConfig?.AquiferBoilingWaterMultiplier ?? 100;
     }
 }

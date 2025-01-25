@@ -12,8 +12,6 @@ namespace HydrateOrDiedrate.wellwater
 {
 	public class BlockBehaviorWellWaterFinite : BlockBehavior
 	{
-		private const int MAXLEVEL = 7;
-		private const float MAXLEVEL_float = 7f;
 		public static Vec2i[] downPaths = ShapeUtil.GetSquarePointsSortedByMDist(3);
 		public static SimpleParticleProperties steamParticles;
 		public static int ReplacableThreshold = 5000;
