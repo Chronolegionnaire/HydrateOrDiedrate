@@ -70,8 +70,8 @@
   "hydrateordiedrate:abilitydesc-equatidian": "Fournit un multiplicateur de raffraîchissement.",
   "hydrateordiedrate:item-distilledwaterportion": "Eau distillée",
   "hydrateordiedrate:incontainer-item-distilledwaterportion": "Eau distillée",
-  "hydrateordiedrate:item-boiledwaterportion": "Eau bouillante",
-  "hydrateordiedrate:incontainer-item-boiledwaterportion": "Eau bouillante",
+  "hydrateordiedrate:item-boiledwaterportion": "Eau bouillie",
+  "hydrateordiedrate:incontainer-item-boiledwaterportion": "Eau bouillie",
   "hydrateordiedrate:item-rainwaterportion": "Eau de pluie",
   "hydrateordiedrate:incontainer-item-rainwaterportion": "Eau de pluie",
   "hydrateordiedrate:block-keg": "Fût",
@@ -98,5 +98,6 @@
   "hydrateordiedrate:block-wellwaterpoison-*": "Eau de puits empoisonnée",
   "hydrateordiedrate:block-wellwaterpoisonsalt-*": "Eau de puits salée et empoisonnée",
   "hydrateordiedrate:block-wellwatertainted-*": "Eau de puits contaminée",
-  "hydrateordiedrate:block-wellwatertaintedsalt-*": "Eau de puits salée et contaminée"
+  "hydrateordiedrate:block-wellwatertaintedsalt-*": "Eau de puits salée et contaminée",
+   "hydrateordiedrate:block-wellspring-description": "Une source creusée à la main qui permet à l'eau filtrée de s'infiltrer à partir des eaux ou des aquifères voisins"
 }
