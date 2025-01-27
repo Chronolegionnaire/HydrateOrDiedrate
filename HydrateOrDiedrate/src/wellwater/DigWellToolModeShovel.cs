@@ -5,7 +5,7 @@ using Vintagestory.API.Common.Entities;
 
 namespace HydrateOrDiedrate.wellwater
 {
-    public class DigWellToolMode : Item
+    public class DigWellToolModeShovel : Item
     {
         private SkillItem[] toolModes;
 
@@ -56,14 +56,10 @@ namespace HydrateOrDiedrate.wellwater
 
             if (toolMode == 1 && blockSel != null)
             {
-                string heldItemName = itemslot.Itemstack?.Item?.Code?.Path ?? "";
                 string blockCode = world.BlockAccessor.GetBlock(blockSel.Position).Code.Path;
+                bool isShovel = itemslot.Itemstack?.Item?.Code?.Path?.Contains("shovel") ?? false;
 
-                bool isPickaxe = heldItemName.Contains("pickaxe");
-                bool isShovel = heldItemName.Contains("shovel");
-
-                if ((isPickaxe && blockCode.StartsWith("rock-")) ||
-                    (isShovel && (blockCode.StartsWith("soil-") || blockCode.StartsWith("gravel-") || blockCode.StartsWith("sand-"))))
+                if (isShovel && (blockCode.StartsWith("soil-") || blockCode.StartsWith("gravel-") || blockCode.StartsWith("sand-")))
                 {
                     Block wellSpringBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:wellspring"));
                     if (wellSpringBlock != null)

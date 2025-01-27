@@ -73,7 +73,9 @@
   "hydrateordiedrate:item-boiledwaterportion": "Boiled Water",
   "hydrateordiedrate:incontainer-item-boiledwaterportion": "Boiled Water",
   "hydrateordiedrate:item-rainwaterportion": "Rain Water",
+  "hydrateordiedrate:item-boiledrainwaterportion": "Boiled Rain Water",
   "hydrateordiedrate:incontainer-item-rainwaterportion": "Rain Water",
+  "hydrateordiedrate:incontainer-item-boiledrainwaterportion": "Boiled Rain Water",
   "hydrateordiedrate:block-keg": "Keg",
   "hydrateordiedrate:block-kegtapped": "Tapped Keg",
   "hydrateordiedrate:item-kegtap": "Keg Tap",
@@ -98,5 +100,6 @@
   "hydrateordiedrate:block-wellwaterpoison-*": "Poisoned Well Water",
   "hydrateordiedrate:block-wellwaterpoisonsalt-*": "Poisoned Salty Well Water",
   "hydrateordiedrate:block-wellwatertainted-*": "Tainted Well Water",
-  "hydrateordiedrate:block-wellwatertaintedsalt-*": "Tainted Salty Well Water"
+  "hydrateordiedrate:block-wellwatertaintedsalt-*": "Tainted Salty Well Water",
+  "hydrateordiedrate:block-wellspring-description": "A hand-dug spring that allows filtered water to seep through from nearby water or aquifers."
 }

@@ -2,7 +2,7 @@
   {
     "op": "add",
     "path": "/class",
-    "value": "DigWellToolMode",
+    "value": "DigWellToolModeShovel",
     "file": "game:itemtypes/tool/shovel.json",
     "side": "Server"
   }

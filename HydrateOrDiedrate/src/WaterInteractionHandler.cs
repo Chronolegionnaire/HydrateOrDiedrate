@@ -143,13 +143,6 @@ namespace HydrateOrDiedrate
                 float hydrationValue = BlockHydrationManager.GetHydrationValue(collectible, "*");
                 if (hydrationValue != 0)
                 {
-                    float hungerReduction = BlockHydrationManager.GetBlockHungerReduction(collectible);
-                    if (hungerBehavior.Saturation <= 0 || hungerBehavior.Saturation < hungerReduction)
-                    {
-                        StopDrinking(player, drinkData);
-                        return;
-                    }
-
                     if (!drinkData.IsDrinking)
                     {
                         drinkData.IsDrinking = true;
@@ -219,16 +212,11 @@ namespace HydrateOrDiedrate
                         hungerBehavior.Saturation -= hungerReduction;
                         thirstBehavior.HungerReductionAmount += hungerReduction;
                     }
-                    else if (hungerBehavior.Saturation > 0)
-                    {
-                        thirstBehavior.HungerReductionAmount += hungerBehavior.Saturation;
-                        hungerBehavior.Saturation = 0;
-                    }
                     else
                     {
-                        StopDrinking(player, drinkData);
-                        return;
+                        thirstBehavior.HungerReductionAmount += hungerReduction;
                     }
+
                 }
 
                 if (healthEffect != 0)

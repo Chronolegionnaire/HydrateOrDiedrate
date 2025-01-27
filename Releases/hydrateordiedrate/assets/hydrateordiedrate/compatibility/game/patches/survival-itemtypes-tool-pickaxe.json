@@ -2,7 +2,7 @@
   {
     "op": "add",
     "path": "/class",
-    "value": "DigWellToolMode",
+    "value": "DigWellToolModePickaxe",
     "file": "game:itemtypes/tool/pickaxe.json",
     "side": "Server"
   }

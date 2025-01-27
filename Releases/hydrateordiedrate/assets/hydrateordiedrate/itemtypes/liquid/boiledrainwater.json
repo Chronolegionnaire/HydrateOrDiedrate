@@ -63,7 +63,7 @@
       "type": "Perish",
       "freshHours": { "avg": 75 },
       "transitionHours": { "avg": 18 },
-      "transitionedStack": { "type": "item", "code": "game:waterportion" },
+      "transitionedStack": { "type": "item", "code": "hydrateordiedrate:rainwaterportion" },
       "transitionRatio": 1.0
     }
   ]

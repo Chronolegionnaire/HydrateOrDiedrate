@@ -85,7 +85,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         }
         foreach (var block in api.World.Blocks)
         {
-            if (block is BlockLiquidContainerTopOpened || block is BlockGroundStorage)
+            if (block is BlockLiquidContainerTopOpened || block is BlockBarrel || block is BlockGroundStorage)
             {
                 AddBehaviorToBlock(block, api);
             }
@@ -258,7 +258,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
-        api.RegisterItemClass("DigWellToolMode", typeof(DigWellToolMode));
+        api.RegisterItemClass("DigWellToolModePickaxe", typeof(DigWellToolModePickaxe));
+        api.RegisterItemClass("DigWellToolModeShovel", typeof(DigWellToolModeShovel));
         api.RegisterBlockClass("BlockTun", typeof(BlockTun));
         api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
         api.RegisterBlockEntityClass("BlockEntityWellWaterData", typeof(BlockEntityWellWaterData));
