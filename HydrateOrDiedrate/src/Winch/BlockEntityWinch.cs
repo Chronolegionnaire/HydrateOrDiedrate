@@ -159,7 +159,6 @@ namespace HydrateOrDiedrate.winch
 
             if (api.Side == EnumAppSide.Client)
             {
-                // Pass Direction to the renderer
                 this.renderer = new WinchTopRenderer(api as ICoreClientAPI, this.Pos, this.GenMesh("top"), this.Direction);
                 this.renderer.mechPowerPart = this.mpc;
 

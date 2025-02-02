@@ -47,7 +47,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private long customHudListenerId;
     private AquiferManager _aquiferManager;
-    public static SkillItem WellModeSkillItem;
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
@@ -324,7 +323,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         api.RegisterBlockBehaviorClass("Carryable", typeof(EmptyBlockBehavior));
         api.RegisterBlockBehaviorClass("CarryableInteract", typeof(EmptyBlockBehavior));
-        //TODO carryon behaviors should just only be added when CarryOn is available
     }
 
     public class EmptyBlockBehavior : BlockBehavior
@@ -392,20 +390,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void StartClientSide(ICoreClientAPI capi)
     {
         base.StartClientSide(capi);
-
-        // Create a single skill item for Well Dig, with one texture
-        WellModeSkillItem = new SkillItem
-        {
-            Code = new AssetLocation("digwellspring"),
-            Name = Lang.Get("Dig Well Spring")
-        }.WithIcon(
-            capi,
-            capi.Gui.LoadSvgWithPadding(
-                new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
-                48, 48, 5,
-                ColorUtil.WhiteArgb
-            )
-        );
 
         harmony = new Harmony("hydrateordiedrate.xskillscompat");
         harmony.PatchAll();
@@ -691,8 +675,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void Dispose()
     {
         harmony.UnpatchAll("com.chronolegionnaire.hydrateordiedrate");
-        WellModeSkillItem?.Dispose();
-        WellModeSkillItem = null;
         base.Dispose();
     }
 }

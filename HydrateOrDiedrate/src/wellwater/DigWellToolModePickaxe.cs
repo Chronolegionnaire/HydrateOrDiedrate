@@ -24,13 +24,10 @@ namespace HydrateOrDiedrate.wellwater
         {
             this.api = api;
             base.OnLoaded(api);
-
-            // Check if XSkills is enabled.
             bool xskillsEnabled = api.ModLoader.IsModEnabled("xskills");
 
             if (!xskillsEnabled)
             {
-                // Without XSkills we want two modes: dig mode and well spring mode.
                 if (api.Side == EnumAppSide.Client)
                 {
                     ICoreClientAPI capi = api as ICoreClientAPI;
@@ -52,7 +49,6 @@ namespace HydrateOrDiedrate.wellwater
                 }
                 else
                 {
-                    // Server side: create SkillItems without icons.
                     digMode = new SkillItem
                     {
                         Code = new AssetLocation("digmode"),
@@ -69,7 +65,6 @@ namespace HydrateOrDiedrate.wellwater
             }
             else
             {
-                // When XSkills is enabled we only add our well spring mode.
                 if (api.Side == EnumAppSide.Client)
                 {
                     ICoreClientAPI capi = api as ICoreClientAPI;
@@ -81,17 +76,13 @@ namespace HydrateOrDiedrate.wellwater
                         new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
                         48, 48, 5, ColorUtil.WhiteArgb));
                     customModes.Add(wellMode);
-
-                    // Merge our custom mode into the XSkills tool mode cache.
                     SkillItem[] xSkillsModes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
                     if (xSkillsModes == null)
                     {
-                        // Use reflection to call XSkills.PickaxeBehaivor.CreateToolModes(api)
                         IEnumerable<SkillItem> combined = CreateXSkillsToolModes(api);
                         if (combined != null)
                         {
                             List<SkillItem> list = combined.ToList();
-                            // Append our custom mode if not already present.
                             foreach (SkillItem mode in customModes)
                             {
                                 if (!list.Any(cm => cm.Code.Path == mode.Code.Path))
@@ -117,7 +108,6 @@ namespace HydrateOrDiedrate.wellwater
                 }
                 else
                 {
-                    // Server side: create well spring mode without icons.
                     wellMode = new SkillItem
                     {
                         Code = new AssetLocation("digwellspring"),
@@ -127,15 +117,10 @@ namespace HydrateOrDiedrate.wellwater
                 }
             }
         }
-
-        /// <summary>
-        /// Uses reflection to call XSkills.PickaxeBehaivor.CreateToolModes(api) if available.
-        /// </summary>
         private IEnumerable<SkillItem> CreateXSkillsToolModes(ICoreAPI api)
         {
             try
             {
-                // Attempt to get the type from the XSkills assembly.
                 Type pickaxeBehaviorType = Type.GetType("XSkills.PickaxeBehaivor, xskills");
                 if (pickaxeBehaviorType != null)
                 {
@@ -156,7 +141,6 @@ namespace HydrateOrDiedrate.wellwater
 
         public override void OnUnloaded(ICoreAPI api)
         {
-            // Dispose of custom modes to prevent memory leaks.
             foreach (SkillItem mode in customModes)
             {
                 mode?.Dispose();
@@ -187,7 +171,6 @@ namespace HydrateOrDiedrate.wellwater
                 SkillItem[] combined = GetToolModes(slot, byPlayer as IClientPlayer, blockSel);
                 if (combined == null || combined.Length == 0)
                 {
-                    // Fallback in case customModes is empty.
                     slot.Itemstack.Attributes.SetString("toolMode", "digmode");
                 }
                 else
@@ -257,9 +240,7 @@ namespace HydrateOrDiedrate.wellwater
                     Block wellSpringBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:wellspring"));
                     if (wellSpringBlock != null)
                     {
-                        // Prevent default block break behavior.
                         bhHandling = EnumHandling.PreventDefault;
-                        // Delay placement so the break process finishes.
                         world.RegisterCallback(dt =>
                         {
                             world.BlockAccessor.SetBlock(wellSpringBlock.BlockId, blockSel.Position);

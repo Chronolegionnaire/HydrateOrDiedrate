@@ -54,8 +54,6 @@ namespace HydrateOrDiedrate.winch
 			IStandardShaderProgram standardShaderProgram = rpi.PreparedStandardShader(this.pos.X, this.pos.Y, this.pos.Z, null);
 
 			standardShaderProgram.Tex2D = this.api.BlockTextureAtlas.AtlasTextures[0].TextureId;
-
-			// Determine Y-rotation based on block Direction
 			float yRotation = 0f;
 			switch (Direction)
 			{
@@ -69,14 +67,12 @@ namespace HydrateOrDiedrate.winch
 					yRotation = GameMath.PI + GameMath.PIHALF;
 					break;
 			}
-
-			// Apply transformations: Translate -> Rotate Y -> Rotate X (animation) -> Translate Back
 			standardShaderProgram.ModelMatrix = this.ModelMat.Identity()
-				.Translate(this.pos.X - camPos.X, this.pos.Y - camPos.Y, this.pos.Z - camPos.Z) // Translate to block position
-				.Translate(0.5f, 0.5f, 0.5f)  // Center for rotation
-				.RotateY(yRotation)           // Apply directional rotation
-				.RotateX(this.AngleRad)       // Apply dynamic animation
-				.Translate(-0.5f, -0.0f, -0.5f) // Translate back
+				.Translate(this.pos.X - camPos.X, this.pos.Y - camPos.Y, this.pos.Z - camPos.Z)
+				.Translate(0.5f, 0.5f, 0.5f)
+				.RotateY(yRotation)
+				.RotateX(this.AngleRad)
+				.Translate(-0.5f, -0.0f, -0.5f)
 				.Values;
 
 			standardShaderProgram.ViewMatrix = rpi.CameraMatrixOriginf;
@@ -87,7 +83,7 @@ namespace HydrateOrDiedrate.winch
 
 			if (this.ShouldRotateManual)
 			{
-				this.AngleRad += deltaTime * 40f * GameMath.DEG2RAD; // Rotate manually
+				this.AngleRad += deltaTime * 40f * GameMath.DEG2RAD;
 			}
 
 			if (this.ShouldRotateAutomated)
