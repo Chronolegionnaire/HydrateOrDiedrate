@@ -16,6 +16,8 @@ public class RainHarvesterManager
     private Dictionary<BlockPos, RainHarvesterData> inactiveHarvesters;
     private long tickListenerId;
     private int globalTickCounter = 1;
+    private bool enableParticleTicking;
+
     private ConcurrentQueue<Action> taskQueue;
     private CancellationTokenSource cancellationTokenSource;
     private Thread workerThread;
@@ -26,6 +28,8 @@ public class RainHarvesterManager
         _config = config;
         activeHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
         inactiveHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
+        
+        enableParticleTicking = config.EnableParticleTicking;
         taskQueue = new ConcurrentQueue<Action>();
         cancellationTokenSource = new CancellationTokenSource();
         workerThread = new Thread(ProcessTaskQueue)
@@ -44,6 +48,8 @@ public class RainHarvesterManager
     public void Reset(Config.Config newConfig)
     {
         _config = newConfig;
+        enableParticleTicking = _config.EnableParticleTicking;
+        
         serverAPI.Event.UnregisterGameTickListener(tickListenerId);
 
         if (_config.EnableRainGathering)
@@ -77,9 +83,21 @@ public class RainHarvesterManager
         }
     }
 
+    public void OnBlockRemoved(BlockPos position)
+    {
+        UnregisterHarvester(position);
+    }
+
+    public void OnBlockUnloaded(BlockPos position)
+    {
+        UnregisterHarvester(position);
+    }
+
     private void ScheduleTickProcessing(float deltaTime)
     {
         if (!serverAPI.World.AllOnlinePlayers.Any()) return;
+
+        // Add a task to the queue for processing the active harvesters
         taskQueue.Enqueue(() => ProcessTick(deltaTime));
     }
 
@@ -87,6 +105,7 @@ public class RainHarvesterManager
     {
         globalTickCounter++;
         if (globalTickCounter > 10) globalTickCounter = 1;
+        
 
         List<BlockPos> toRemove = new List<BlockPos>();
         
@@ -97,7 +116,10 @@ public class RainHarvesterManager
                 BlockPos position = entry.Key;
                 RainHarvesterData harvesterData = entry.Value;
                 float rainIntensity = harvesterData.GetRainIntensity();
-
+                if (enableParticleTicking)
+                {
+                    harvesterData.OnParticleTickUpdate(deltaTime);
+                }
                 harvesterData.UpdateCalculatedTickInterval(deltaTime, serverAPI.World.Calendar.SpeedOfTime,
                     serverAPI.World.Calendar.CalendarSpeedMul, rainIntensity);
 
@@ -136,6 +158,7 @@ public class RainHarvesterManager
                 }
             }
         }
+
         lock (activeHarvesters)
         {
             foreach (var pos in toRemove)

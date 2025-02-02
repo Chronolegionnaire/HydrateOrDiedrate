@@ -57,47 +57,48 @@ public class Config : IModConfig
     // Rain Gathering Settings
     [ProtoMember(34)] public bool EnableRainGathering { get; set; }
     [ProtoMember(35)] public float RainMultiplier { get; set; }
+    [ProtoMember(36)] public bool EnableParticleTicking { get; set; }
 
     // Keg Settings
-    [ProtoMember(36)] public float KegCapacityLitres { get; set; }
-    [ProtoMember(37)] public float SpoilRateUntapped { get; set; }
-    [ProtoMember(38)] public float SpoilRateTapped { get; set; }
-    [ProtoMember(39)] public float KegIronHoopDropChance { get; set; }
-    [ProtoMember(40)] public float KegTapDropChance { get; set; }
+    [ProtoMember(37)] public float KegCapacityLitres { get; set; }
+    [ProtoMember(38)] public float SpoilRateUntapped { get; set; }
+    [ProtoMember(39)] public float SpoilRateTapped { get; set; }
+    [ProtoMember(40)] public float KegIronHoopDropChance { get; set; }
+    [ProtoMember(41)] public float KegTapDropChance { get; set; }
 
     // Tun Settings
-    [ProtoMember(41)] public float TunCapacityLitres { get; set; }
-    [ProtoMember(42)] public float TunSpoilRateMultiplier { get; set; }
+    [ProtoMember(42)] public float TunCapacityLitres { get; set; }
+    [ProtoMember(43)] public float TunSpoilRateMultiplier { get; set; }
 
     // Misc Settings
-    [ProtoMember(43)] public bool DisableDrunkSway { get; set; }
+    [ProtoMember(44)] public bool DisableDrunkSway { get; set; }
 
     // Well/Aquifer Settings
-    [ProtoMember(44)]
+    [ProtoMember(45)]
     public float WellSpringOutputMultiplier { get; set; }
     
-    [ProtoMember(45)]
+    [ProtoMember(46)]
     public int WellwaterDepthMaxBase { get; set; }
     
-    [ProtoMember(46)]
+    [ProtoMember(47)]
     public int WellwaterDepthMaxClay { get; set; }
     
-    [ProtoMember(47)]
+    [ProtoMember(48)]
     public int WellwaterDepthMaxStone { get; set; }
     
-    [ProtoMember(48)]
+    [ProtoMember(49)]
     public double AquiferRandomMultiplierChance { get; set; }
     
-    [ProtoMember(49)]
+    [ProtoMember(50)]
     public int AquiferStep { get; set; }
 
-    [ProtoMember(50)]
+    [ProtoMember(51)]
     public double AquiferWaterBlockMultiplier { get; set; }
 
-    [ProtoMember(51)]
+    [ProtoMember(52)]
     public double AquiferSaltWaterMultiplier { get; set; }
 
-    [ProtoMember(52)]
+    [ProtoMember(53)]
     public int AquiferBoilingWaterMultiplier { get; set; }
 
     public Config()
@@ -154,6 +155,7 @@ public class Config : IModConfig
         // Rain Gathering Settings
         EnableRainGathering = previousConfig?.EnableRainGathering ?? true;
         RainMultiplier = previousConfig?.RainMultiplier ?? 1.0f;
+        EnableParticleTicking = previousConfig?.EnableParticleTicking ?? false;
 
         // Keg Settings
         KegCapacityLitres = previousConfig?.KegCapacityLitres ?? 100.0f;

@@ -67,6 +67,10 @@
             <HintPath>lib\dlls\xlib.dll</HintPath>
             <Private>false</Private>
         </Reference>
+        <Reference Include="xskills">
+          <HintPath>..\..\..\Documents\xskills.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>

@@ -1,0 +1,82 @@
+{
+	"code": "winch",
+	"class": "BlockWinch",
+	"entityclass": "BlockEntityWinch",
+	"entityBehaviors": [{ "name": "MPConsumer" }],
+	"behaviors": [
+		{"name": "Container"}
+	],
+	"variantgroups": [
+		{ "code": "wood", "loadFromProperties": "floralzonescentralaustralianregion:block/wood" }
+	],
+	"shape": { "base": "hydrateordiedrate:block/winch/complete", "rotateY": 180 },
+	"textures": {
+		"spindle":  { "base": "game:block/wood/debarked/{wood}" },
+		"plank": { "base": "game:block/wood/planks/{wood}1" },
+		"rope": { "base": "game:entity/erel/pristine/rope" }
+	},
+	"attributes": {
+		"mapColorCode": "settlement",
+		"rotatatableInterval": {
+			"default": "45deg"
+		}
+	},
+	"creativeinventory": {
+		"general": [ "*" ],
+		"decorative": [ "*" ],
+		"mechanics": ["*"]
+	},
+	"blockmaterial": "Wood",
+	"replaceable": 900,
+	"resistance": 1.5,
+	"lightAbsorption": 1,
+	"maxStackSize": 1,
+	"sounds": {
+		"place": "game:block/planks",
+		"hit": "game:block/planks",
+		"break": "game:block/planks",
+		"walk": "game:walk/wood"
+	},
+	"sidesolid": {
+		"all": false
+	},
+	"sideopaque": {
+		"all": false
+	},
+	"emitsideao": {
+		"all": false
+	},
+	"heldTpIdleAnimation": "holdbothhandslarge",
+	"heldTpUseAnimation": "twohandplaceblock",
+	"collisionbox": {
+		"x1": 0,
+		"y1": 0,
+		"z1": 0,
+		"x2": 1,
+		"y2": 0.9375,
+		"z2": 1
+	},
+	"selectionbox": {
+		"x1": 0,
+		"y1": 0,
+		"z1": 0,
+		"x2": 1,
+		"y2": 0.9375,
+		"z2": 1
+	},
+	"tpHandTransform": {
+		"translation": { "x": -0.29, "y": -1.19, "z": -0.19 },
+		"rotation": { "x": 96, "y": -19, "z": -76 },
+		"origin": { "x": 0.48, "y": 0.55, "z": 0.24 },
+		"scale": 0.8
+	},
+	"groundTransform": {
+		"translation": { "x": 0, "y": 0, "z": 0 },
+		"rotation": { "x": 0, "y": 0, "z": 0 },
+		"origin": { "x": 0, "y": 0, "z": 0 },
+		"scale": 3.5
+	},
+	"guiTransform": {
+		"scale": 1.39
+	}
+}

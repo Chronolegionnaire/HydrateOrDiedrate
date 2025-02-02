@@ -319,6 +319,11 @@ namespace HydrateOrDiedrate.Config
                     },
                     new JObject
                     {
+                        ["itemname"] = "hydrateordiedrate:boiledrainwaterportion",
+                        ["hydration"] = 800
+                    },
+                    new JObject
+                    {
                         ["itemname"] = "hydrateordiedrate:distilledwaterportion",
                         ["hydration"] = 900
                     },

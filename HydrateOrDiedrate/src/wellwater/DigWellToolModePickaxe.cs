@@ -1,168 +1,283 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Config;
+using Vintagestory.API.Util;
 
 namespace HydrateOrDiedrate.wellwater
 {
-    public class DigWellToolModePickaxe : Item
+    public class BehaviorPickaxeWellMode : CollectibleBehavior, IDisposable
     {
-        private SkillItem[] toolModes;
+        private static SkillItem digMode;
+        private static SkillItem wellMode;
+        private ICoreAPI api;
+        private List<SkillItem> customModes = new List<SkillItem>();
+
+        public BehaviorPickaxeWellMode(CollectibleObject collObj) : base(collObj) { }
 
         public override void OnLoaded(ICoreAPI api)
         {
+            this.api = api;
             base.OnLoaded(api);
-            ICoreClientAPI capi = api as ICoreClientAPI;
-            toolModes = new SkillItem[]
+
+            // Check if XSkills is enabled.
+            bool xskillsEnabled = api.ModLoader.IsModEnabled("xskills");
+
+            if (!xskillsEnabled)
             {
-                new SkillItem
+                // Without XSkills we want two modes: dig mode and well spring mode.
+                if (api.Side == EnumAppSide.Client)
                 {
-                    Code = new AssetLocation("digmode"),
-                    Name = "Dig Mode"
-                },
-                new SkillItem
-                {
-                    Code = new AssetLocation("digwellspring"),
-                    Name = "Dig Well Spring"
-                }
-            };
-
-            if (capi != null)
-            {
-                toolModes[0].WithIcon(
-                    capi,
-                    capi.Gui.LoadSvgWithPadding(
-                        new AssetLocation("game:textures/icons/rocks.svg"), 48, 48, 5, null
-                    )
-                );
-                toolModes[1].WithIcon(
-                    capi,
-                    capi.Gui.LoadSvgWithPadding(
-                        new AssetLocation("hydrateordiedrate:textures/icons/well.svg"), 48, 48, 5, null
-                    )
-                );
-            }
-        }
-        public override SkillItem[] GetToolModes(ItemSlot slot, IClientPlayer forPlayer, BlockSelection blockSel)
-        {
-            if (!api.ModLoader.IsModEnabled("xskills"))
-            {
-                return toolModes;
-            }
-            SkillItem[] xskillsModes = base.GetToolModes(slot, forPlayer, blockSel);
-            if (xskillsModes == null || xskillsModes.Length == 0)
-            {
-                return toolModes;
-            }
-            int xCount = xskillsModes.Length;
-            SkillItem digWellSpring = toolModes[1];
-            SkillItem[] combined = new SkillItem[xCount + 1];
-            Array.Copy(xskillsModes, combined, xCount);
-            combined[xCount] = digWellSpring;
-
-            return combined;
-        }
-        public override int GetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel)
-        {
-            if (slot?.Itemstack == null) return 0;
-            if (!api.ModLoader.IsModEnabled("xskills"))
-            {
-                return Math.Min(toolModes.Length - 1, slot.Itemstack.Attributes.GetInt("toolMode", 0));
-            }
-            SkillItem[] mergedModes = GetToolModes(slot, byPlayer as IClientPlayer, blockSel);
-            if (mergedModes == null || mergedModes.Length == 0)
-            {
-                return 0;
-            }
-            int storedMode = slot.Itemstack.Attributes.GetInt("toolMode", 0);
-            int clampedMode = GameMath.Clamp(storedMode, 0, mergedModes.Length - 1);
-            return clampedMode;
-        }
-        public override void SetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel, int toolMode)
-        {
-            if (slot?.Itemstack == null) return;
-
-            if (!api.ModLoader.IsModEnabled("xskills"))
-            {
-                slot.Itemstack.Attributes.SetInt("toolMode", GameMath.Clamp(toolMode, 0, toolModes.Length - 1));
-                return;
-            }
-            SkillItem[] mergedModes = GetToolModes(slot, byPlayer as IClientPlayer, blockSel);
-            if (mergedModes == null || mergedModes.Length == 0)
-            {
-                slot.Itemstack.Attributes.SetInt("toolMode", Math.Min(toolModes.Length - 1, toolMode));
-                return;
-            }
-            int finalMode = GameMath.Clamp(toolMode, 0, mergedModes.Length - 1);
-            slot.Itemstack.Attributes.SetInt("toolMode", finalMode);
-        }
-        public override bool OnBlockBrokenWith(IWorldAccessor world, Entity byEntity, ItemSlot itemslot,
-            BlockSelection blockSel, float dropQuantityMultiplier = 1f)
-        {
-            if (blockSel == null) return base.OnBlockBrokenWith(world, byEntity, itemslot, blockSel, dropQuantityMultiplier);
-            int modeIndex = GetToolMode(itemslot, (byEntity as EntityPlayer)?.Player, blockSel);
-
-            if (api.ModLoader.IsModEnabled("xskills"))
-            {
-                SkillItem[] mergedModes = GetToolModes(itemslot, (byEntity as EntityPlayer) as IClientPlayer, blockSel);
-                if (mergedModes == null || mergedModes.Length == 0)
-                {
-                    return base.OnBlockBrokenWith(world, byEntity, itemslot, blockSel, dropQuantityMultiplier);
-                }
-                if (modeIndex == mergedModes.Length - 1)
-                {
-                    string blockCode = world.BlockAccessor.GetBlock(blockSel.Position).Code.Path;
-
-                    if (blockCode.StartsWith("rock-"))
+                    ICoreClientAPI capi = api as ICoreClientAPI;
+                    digMode = new SkillItem
                     {
-                        Block wellSpringBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:wellspring"));
-                        if (wellSpringBlock != null)
+                        Code = new AssetLocation("digmode"),
+                        Name = Lang.Get("Dig Mode")
+                    }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
+                        new AssetLocation("game:textures/icons/rocks.svg"),
+                        48, 48, 5, ColorUtil.WhiteArgb));
+
+                    wellMode = new SkillItem
+                    {
+                        Code = new AssetLocation("digwellspring"),
+                        Name = Lang.Get("Dig Well Spring")
+                    }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
+                        new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
+                        48, 48, 5, ColorUtil.WhiteArgb));
+                }
+                else
+                {
+                    // Server side: create SkillItems without icons.
+                    digMode = new SkillItem
+                    {
+                        Code = new AssetLocation("digmode"),
+                        Name = "Dig Mode"
+                    };
+
+                    wellMode = new SkillItem
+                    {
+                        Code = new AssetLocation("digwellspring"),
+                        Name = "Dig Well Spring"
+                    };
+                }
+                customModes.AddRange(new[] { digMode, wellMode });
+            }
+            else
+            {
+                // When XSkills is enabled we only add our well spring mode.
+                if (api.Side == EnumAppSide.Client)
+                {
+                    ICoreClientAPI capi = api as ICoreClientAPI;
+                    wellMode = new SkillItem
+                    {
+                        Code = new AssetLocation("digwellspring"),
+                        Name = Lang.Get("Dig Well Spring")
+                    }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
+                        new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
+                        48, 48, 5, ColorUtil.WhiteArgb));
+                    customModes.Add(wellMode);
+
+                    // Merge our custom mode into the XSkills tool mode cache.
+                    SkillItem[] xSkillsModes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
+                    if (xSkillsModes == null)
+                    {
+                        // Use reflection to call XSkills.PickaxeBehaivor.CreateToolModes(api)
+                        IEnumerable<SkillItem> combined = CreateXSkillsToolModes(api);
+                        if (combined != null)
                         {
-                            world.BlockAccessor.SetBlock(wellSpringBlock.BlockId, blockSel.Position);
-                            return true;
+                            List<SkillItem> list = combined.ToList();
+                            // Append our custom mode if not already present.
+                            foreach (SkillItem mode in customModes)
+                            {
+                                if (!list.Any(cm => cm.Code.Path == mode.Code.Path))
+                                {
+                                    list.Add(mode);
+                                }
+                            }
+                            ObjectCacheUtil.GetOrCreate<SkillItem[]>(api, "pickaxeToolModes", () => list.ToArray());
                         }
+                    }
+                    else
+                    {
+                        List<SkillItem> list = xSkillsModes.ToList();
+                        foreach (SkillItem mode in customModes)
+                        {
+                            if (!list.Any(m => m.Code.Path == mode.Code.Path))
+                            {
+                                list.Add(mode);
+                            }
+                        }
+                        api.ObjectCache["pickaxeToolModes"] = list.ToArray();
                     }
                 }
                 else
                 {
-                    return base.OnBlockBrokenWith(world, byEntity, itemslot, blockSel, dropQuantityMultiplier);
+                    // Server side: create well spring mode without icons.
+                    wellMode = new SkillItem
+                    {
+                        Code = new AssetLocation("digwellspring"),
+                        Name = "Dig Well Spring"
+                    };
+                    customModes.Add(wellMode);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Uses reflection to call XSkills.PickaxeBehaivor.CreateToolModes(api) if available.
+        /// </summary>
+        private IEnumerable<SkillItem> CreateXSkillsToolModes(ICoreAPI api)
+        {
+            try
+            {
+                // Attempt to get the type from the XSkills assembly.
+                Type pickaxeBehaviorType = Type.GetType("XSkills.PickaxeBehaivor, xskills");
+                if (pickaxeBehaviorType != null)
+                {
+                    MethodInfo method = pickaxeBehaviorType.GetMethod("CreateToolModes", BindingFlags.Public | BindingFlags.Static);
+                    if (method != null)
+                    {
+                        object result = method.Invoke(null, new object[] { api });
+                        return result as IEnumerable<SkillItem>;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                api.Logger.Error("Error invoking XSkills.PickaxeBehaivor.CreateToolModes: " + e);
+            }
+            return null;
+        }
+
+        public override void OnUnloaded(ICoreAPI api)
+        {
+            // Dispose of custom modes to prevent memory leaks.
+            foreach (SkillItem mode in customModes)
+            {
+                mode?.Dispose();
+            }
+            customModes.Clear();
+        }
+
+        public override SkillItem[] GetToolModes(ItemSlot slot, IClientPlayer forPlayer, BlockSelection blockSel)
+        {
+            if (api.ModLoader.IsModEnabled("xskills"))
+            {
+                return ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
+            }
+            else
+            {
+                return customModes.ToArray();
+            }
+        }
+
+        public override void SetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel, int toolMode)
+        {
+            if (api.ModLoader.IsModEnabled("xskills"))
+            {
+                slot.Itemstack.Attributes.SetInt("toolMode", toolMode);
+            }
+            else
+            {
+                SkillItem[] combined = GetToolModes(slot, byPlayer as IClientPlayer, blockSel);
+                if (combined == null || combined.Length == 0)
+                {
+                    // Fallback in case customModes is empty.
+                    slot.Itemstack.Attributes.SetString("toolMode", "digmode");
+                }
+                else
+                {
+                    toolMode = GameMath.Clamp(toolMode, 0, combined.Length - 1);
+                    string modeName = combined[toolMode].Code.Path;
+                    slot.Itemstack.Attributes.SetString("toolMode", modeName);
+                }
+            }
+            slot.MarkDirty();
+        }
+
+        public override int GetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel)
+        {
+            if (api.ModLoader.IsModEnabled("xskills"))
+            {
+                return slot.Itemstack.Attributes.GetInt("toolMode", 0);
+            }
+            else
+            {
+                string storedMode = slot.Itemstack.Attributes.GetString("toolMode", "digmode");
+                SkillItem[] combined = GetToolModes(slot, byPlayer as IClientPlayer, blockSel);
+                if (combined == null || combined.Length == 0)
+                {
+                    return 0;
+                }
+                for (int i = 0; i < combined.Length; i++)
+                {
+                    if (combined[i].Code.Path == storedMode)
+                        return i;
+                }
+                return 0;
+            }
+        }
+
+        public override bool OnBlockBrokenWith(
+            IWorldAccessor world,
+            Entity byEntity,
+            ItemSlot itemslot,
+            BlockSelection blockSel,
+            float dropQuantityMultiplier,
+            ref EnumHandling bhHandling)
+        {
+            if (blockSel == null || byEntity == null)
+                return false;
+
+            string modeName = "";
+            if (api.ModLoader.IsModEnabled("xskills"))
+            {
+                int modeIndex = itemslot.Itemstack.Attributes.GetInt("toolMode", 0);
+                SkillItem[] modes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
+                if (modes != null && modeIndex >= 0 && modeIndex < modes.Length)
+                {
+                    modeName = modes[modeIndex].Code.Path;
                 }
             }
             else
             {
-                if (modeIndex == 1)
-                {
-                    string blockCode = world.BlockAccessor.GetBlock(blockSel.Position).Code.Path;
+                modeName = itemslot.Itemstack.Attributes.GetString("toolMode", "digmode");
+            }
 
-                    if (blockCode.StartsWith("rock-"))
+            if (modeName == "digwellspring")
+            {
+                Block targetBlock = world.BlockAccessor.GetBlock(blockSel.Position);
+                if (targetBlock?.Code.Path.StartsWith("rock-") == true)
+                {
+                    Block wellSpringBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:wellspring"));
+                    if (wellSpringBlock != null)
                     {
-                        Block wellSpringBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:wellspring"));
-                        if (wellSpringBlock != null)
+                        // Prevent default block break behavior.
+                        bhHandling = EnumHandling.PreventDefault;
+                        // Delay placement so the break process finishes.
+                        world.RegisterCallback(dt =>
                         {
                             world.BlockAccessor.SetBlock(wellSpringBlock.BlockId, blockSel.Position);
-                            return true;
-                        }
+                        }, 50);
+                        return true;
                     }
                 }
             }
-            return base.OnBlockBrokenWith(world, byEntity, itemslot, blockSel, dropQuantityMultiplier);
+            return base.OnBlockBrokenWith(world, byEntity, itemslot, blockSel, dropQuantityMultiplier, ref bhHandling);
         }
-        public override WorldInteraction[] GetHeldInteractionHelp(ItemSlot inSlot)
+
+        public void Dispose()
         {
-            if (!api.ModLoader.IsModEnabled("xskills"))
+            foreach (SkillItem mode in customModes)
             {
-                return new WorldInteraction[]
-                {
-                    new WorldInteraction
-                    {
-                        ActionLangCode = "Change tool mode",
-                        HotKeyCodes = new string[] { "toolmodeselect" },
-                        MouseButton = EnumMouseButton.None
-                    }
-                };
+                mode?.Dispose();
             }
-            return base.GetHeldInteractionHelp(inSlot);
+            customModes.Clear();
         }
     }
 }

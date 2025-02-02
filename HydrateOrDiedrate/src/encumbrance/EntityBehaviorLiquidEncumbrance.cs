@@ -12,8 +12,6 @@ namespace HydrateOrDiedrate.encumbrance
         private float _currentPenaltyAmount;
         private bool _isPenaltyApplied;
         private ICoreServerAPI _serverApi;
-
-        public bool IsPenaltyApplied => _isPenaltyApplied;
         
         public EntityBehaviorLiquidEncumbrance(Entity entity) : base(entity)
         {
@@ -39,18 +37,33 @@ namespace HydrateOrDiedrate.encumbrance
         }
         public override void OnGameTick(float deltaTime)
         {
-            if (!entity.Alive || !_config.EnableLiquidEncumbrance) return;
+            if (!entity.Alive) return;
 
             var player = entity as EntityPlayer;
-            if (player?.Player?.WorldData?.CurrentGameMode != EnumGameMode.Survival) return;
+            if (player == null) return;
 
-            _tickCounter++;
-            if (_tickCounter >= 30)
+            var currentGameMode = player.Player?.WorldData?.CurrentGameMode;
+            if (currentGameMode == EnumGameMode.Creative)
             {
-                CheckInventoryForEncumbrance();
-                _tickCounter = 0;
+                RemoveMovementSpeedPenalty();
+                return;
+            }
+            if (!_config.EnableLiquidEncumbrance)
+            {
+                RemoveMovementSpeedPenalty();
+                return;
+            }
+            if (currentGameMode == EnumGameMode.Survival)
+            {
+                _tickCounter++;
+                if (_tickCounter >= 30)
+                {
+                    CheckInventoryForEncumbrance();
+                    _tickCounter = 0;
+                }
             }
         }
+
 
         private void CheckInventoryForEncumbrance()
         {
@@ -119,16 +132,6 @@ namespace HydrateOrDiedrate.encumbrance
 
             return litresPerContainer * stackSize;
         }
-
-
-        private float GetCurrentLitres(ItemStack itemStack)
-        {
-            BlockLiquidContainerBase block = itemStack.Block as BlockLiquidContainerBase;
-            if (block == null) return 0f;
-
-            return block.GetCurrentLitres(itemStack);
-        }
-
         private void ApplyMovementSpeedPenalty(float penaltyAmount)
         {
             if (_currentPenaltyAmount == penaltyAmount && _isPenaltyApplied) return;

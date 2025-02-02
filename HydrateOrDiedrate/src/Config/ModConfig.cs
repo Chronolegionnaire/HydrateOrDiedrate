@@ -61,6 +61,7 @@ namespace HydrateOrDiedrate.Config
                     // Rain Gathering Settings
                     hydrateConfig.EnableRainGathering = true;
                     hydrateConfig.RainMultiplier = 1.0f;
+                    hydrateConfig.EnableParticleTicking = false;
 
                     // Keg Settings
                     hydrateConfig.KegCapacityLitres = 100.0f;

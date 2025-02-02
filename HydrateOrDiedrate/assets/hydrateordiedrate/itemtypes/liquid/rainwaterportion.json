@@ -18,11 +18,11 @@
       "whenSpilled": {
         "action": "DropContents",
         "stack": { "type": "item", "code": "game:waterportion" }
+      },
+      "nutritionPropsPerLitre": {
+        "satiety": -50,
+        "foodcategory": "NoNutrition"
       }
-    },
-    "nutritionPropsPerLitre": {
-      "satiety": -50,
-      "foodcategory": "NoNutrition"
     }
   },
   "shape": { "base": "game:item/liquid" },

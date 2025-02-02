@@ -10,11 +10,14 @@ using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.patches;
 using HydrateOrDiedrate.wellwater;
+using HydrateOrDiedrate.winch;
 using HydrateOrDiedrate.XSkill;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.Client.NoObf;
 using Vintagestory.GameContent;
@@ -39,12 +42,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private RainHarvesterManager rainHarvesterManager;
     private DrinkHudOverlayRenderer hudOverlayRenderer;
 
-    private IClientNetworkChannel clientChannel;
+    public static IClientNetworkChannel clientChannel;
     private IServerNetworkChannel serverChannel;
 
     private long customHudListenerId;
     private AquiferManager _aquiferManager;
-
+    public static SkillItem WellModeSkillItem;
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
@@ -152,48 +155,53 @@ public class HydrateOrDiedrateModSystem : ModSystem
         ApplyTunPatch(api, "hydrateordiedrate:blocktypes/tun.json", LoadedConfig.TunCapacityLitres, LoadedConfig.TunSpoilRateMultiplier);
     }
 
-    private void ApplyKegPatch(ICoreAPI api, string jsonFilePath, float kegCapacityLitres, float spoilRate, float ironHoopDropChance, float kegTapDropChance)
-{
-    JsonPatch patchKegCapacity = new JsonPatch
+    private void ApplyKegPatch(ICoreAPI api, string jsonFilePath, float kegCapacityLitres, float spoilRate,
+        float ironHoopDropChance, float kegTapDropChance)
     {
-        Op = EnumJsonPatchOp.AddMerge,
-        Path = "/attributes/kegCapacityLitres",
-        Value = new JsonObject(JToken.FromObject(kegCapacityLitres)),
-        File = new AssetLocation(jsonFilePath),
-        Side = EnumAppSide.Server
-    };
-    JsonPatch patchSpoilRate = new JsonPatch
-    {
-        Op = EnumJsonPatchOp.AddMerge,
-        Path = "/attributes/spoilRate",
-        Value = new JsonObject(JToken.FromObject(spoilRate)),
-        File = new AssetLocation(jsonFilePath),
-        Side = EnumAppSide.Server
-    };
-    JsonPatch patchIronHoop = new JsonPatch
-    {
-        Op = EnumJsonPatchOp.AddMerge,
-        Path = "/attributes/ironHoopDropChance",
-        Value = new JsonObject(JToken.FromObject(ironHoopDropChance)),
-        File = new AssetLocation(jsonFilePath),
-        Side = EnumAppSide.Server
-    };
-    JsonPatch patchKegTap = new JsonPatch
-    {
-        Op = EnumJsonPatchOp.AddMerge,
-        Path = "/attributes/kegTapDropChance",
-        Value = new JsonObject(JToken.FromObject(kegTapDropChance)),
-        File = new AssetLocation(jsonFilePath),
-        Side = EnumAppSide.Server
-    };
+        JsonPatch patchKegCapacity = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/kegCapacityLitres",
+            Value = new JsonObject(JToken.FromObject(kegCapacityLitres)),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+        JsonPatch patchSpoilRate = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/spoilRate",
+            Value = new JsonObject(JToken.FromObject(spoilRate)),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+        JsonPatch patchIronHoop = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/ironHoopDropChance",
+            Value = new JsonObject(JToken.FromObject(ironHoopDropChance)),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+        JsonPatch patchKegTap = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/attributes/kegTapDropChance",
+            Value = new JsonObject(JToken.FromObject(kegTapDropChance)),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
 
-    int applied = 0, notFound = 0, errorCount = 0;
-    ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegcapacitypatch"), patchKegCapacity, ref applied, ref notFound, ref errorCount);
-    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegspoilratepatch"), patchSpoilRate, ref applied, ref notFound, ref errorCount);
-    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicironhooppatch"), patchIronHoop, ref applied, ref notFound, ref errorCount);
-    patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegtappatch"), patchKegTap, ref applied, ref notFound, ref errorCount);
-}
+        int applied = 0, notFound = 0, errorCount = 0;
+        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegcapacitypatch"), patchKegCapacity,
+            ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegspoilratepatch"), patchSpoilRate,
+            ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicironhooppatch"), patchIronHoop,
+            ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamickegtappatch"), patchKegTap, ref applied,
+            ref notFound, ref errorCount);
+    }
 
     private void ApplyTunPatch(ICoreAPI api, string jsonFilePath, float capacityLitres, float spoilRate)
     {
@@ -258,7 +266,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
-        api.RegisterItemClass("DigWellToolModePickaxe", typeof(DigWellToolModePickaxe));
+        api.RegisterCollectibleBehaviorClass("BehaviorPickaxeWellMode", typeof(BehaviorPickaxeWellMode));
         api.RegisterItemClass("DigWellToolModeShovel", typeof(DigWellToolModeShovel));
         api.RegisterBlockClass("BlockTun", typeof(BlockTun));
         api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
@@ -266,6 +274,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockBehaviorClass("BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
         api.RegisterBlockClass("BlockWellSpring", typeof(BlockWellSpring));
         api.RegisterBlockEntityClass("BlockEntityWellSpring", typeof(BlockEntityWellSpring));
+        api.RegisterBlockClass("BlockWinch", typeof(BlockWinch));
+        api.RegisterBlockEntityClass("BlockEntityWinch", typeof(BlockEntityWinch));
+
         if (LoadedConfig.EnableThirstMechanics)
         {
             api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
@@ -287,6 +298,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             xLibSkills = new XLibSkills();
             xLibSkills.Initialize(api);
         }
+
 
         api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RegisterRainHarvester));
         if (api.Side == EnumAppSide.Server)
@@ -377,7 +389,27 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         _configLibCompatibility = new ConfigLibCompatibility(api);
     }
+    public override void StartClientSide(ICoreClientAPI capi)
+    {
+        base.StartClientSide(capi);
 
+        // Create a single skill item for Well Dig, with one texture
+        WellModeSkillItem = new SkillItem
+        {
+            Code = new AssetLocation("digwellspring"),
+            Name = Lang.Get("Dig Well Spring")
+        }.WithIcon(
+            capi,
+            capi.Gui.LoadSvgWithPadding(
+                new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
+                48, 48, 5,
+                ColorUtil.WhiteArgb
+            )
+        );
+
+        harmony = new Harmony("hydrateordiedrate.xskillscompat");
+        harmony.PatchAll();
+    }
     private void OnConfigSyncRequestReceived(IServerPlayer fromPlayer, ConfigSyncRequestPacket packet)
     {
         var configSyncPacket = new ConfigSyncPacket
@@ -431,6 +463,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 : null,
             EnableRainGathering = packet.ServerConfig.EnableRainGathering,
             RainMultiplier = packet.ServerConfig.RainMultiplier,
+            EnableParticleTicking = packet.ServerConfig.EnableParticleTicking,
             KegCapacityLitres = packet.ServerConfig.KegCapacityLitres,
             SpoilRateUntapped = packet.ServerConfig.SpoilRateUntapped,
             SpoilRateTapped = packet.ServerConfig.SpoilRateTapped,
@@ -655,10 +688,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
             block.BlockEntityBehaviors = behaviorsList.ToArray();
         }
     }
-
     public override void Dispose()
     {
         harmony.UnpatchAll("com.chronolegionnaire.hydrateordiedrate");
+        WellModeSkillItem?.Dispose();
+        WellModeSkillItem = null;
         base.Dispose();
     }
 }

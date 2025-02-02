@@ -17,7 +17,8 @@ public class RegisterRainHarvester : BlockEntityBehavior
         if (api.Side == EnumAppSide.Server)
         {
             harvesterManager = api.ModLoader.GetModSystem<HydrateOrDiedrateModSystem>().GetRainHarvesterManager();
-            harvesterData = new RainHarvesterData(Blockentity, 1.0f);
+            float configRainMultiplier = HydrateOrDiedrateModSystem.LoadedConfig.RainMultiplier;
+            harvesterData = new RainHarvesterData(Blockentity, configRainMultiplier);
             harvesterManager.RegisterHarvester(Blockentity.Pos, harvesterData);
         }
     }

@@ -8,7 +8,7 @@ namespace HydrateOrDiedrate.patches;
 public static class BlockCookingContainerPatch
 {
     [HarmonyPrefix]
-    [HarmonyPriority(Priority.Low)]
+    [HarmonyPriority(Priority.VeryLow)]
     public static bool Prefix(IWorldAccessor world, ISlotProvider cookingSlotsProvider, ItemSlot inputSlot, ItemSlot outputSlot, BlockCookingContainer __instance)
     {
         ItemStack[] stacks = __instance.GetCookingStacks(cookingSlotsProvider, true);
