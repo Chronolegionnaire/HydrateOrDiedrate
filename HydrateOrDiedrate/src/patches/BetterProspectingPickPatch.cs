@@ -86,19 +86,34 @@ namespace HydrateOrDiedrate.patches
             {
                 double worldHeight = world.BlockAccessor.MapSizeY;
                 double posY = pos.Y;
-                string aquiferInfo = aquiferData.AquiferRating == 0
-                    ? "There is no aquifer here."
-                    : GetAquiferDescription(aquiferData.IsSalty, aquiferData.AquiferRating, worldHeight, posY);
+
+                string aquiferInfo;
+                if (HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
+                {
+                    aquiferInfo = GetAquiferDescription(aquiferData.IsSalty, aquiferData.AquiferRating, worldHeight, posY);
+                }
+                else
+                {
+                    aquiferInfo = aquiferData.AquiferRating == 0
+                        ? "There is no aquifer here."
+                        : $"This area has an aquifer rating of {aquiferData.AquiferRating}.";
+                }
+
                 SendMessageToPlayer(world, serverPlayer, aquiferInfo);
             }
         }
 
         private static string GetAquiferDescription(bool isSalty, int rating, double worldHeight, double posY)
         {
-            double waterLineY = Math.Round(0.4296875 * worldHeight);
-            double depthFactor = (waterLineY - posY) / (waterLineY - 1);
+            int effectiveRating = rating;
 
-            int effectiveRating = (int)Math.Round(rating * depthFactor);
+            if (HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
+            {
+                double waterLineY = Math.Round(0.4296875 * worldHeight);
+                double depthFactor = (waterLineY - posY) / (waterLineY - 1);
+                effectiveRating = (int)Math.Round(rating * depthFactor);
+            }
+
             string aquiferType = isSalty ? "salt" : "fresh";
 
             return effectiveRating switch

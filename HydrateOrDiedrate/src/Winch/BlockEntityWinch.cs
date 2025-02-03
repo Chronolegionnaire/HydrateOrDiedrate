@@ -1,7 +1,9 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using HydrateOrDiedrate.Config;
+using Newtonsoft.Json;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -94,7 +96,7 @@ namespace HydrateOrDiedrate.winch
         
         public virtual float maxTurningTime()
         {
-            return 15f;
+            return 5f;
         }
         
         public override string InventoryClassName
@@ -217,57 +219,190 @@ namespace HydrateOrDiedrate.winch
         }
         
         private void Every100ms(float dt)
-		{
-			float turnSpeed = this.TurnSpeed;
-			if (this.Api.Side != EnumAppSide.Client)
-			{
-				if (this.CanTurn() && turnSpeed > 0f)
-				{
-					this.inputTurnTime += dt * turnSpeed;
-					if (this.inputTurnTime >= this.maxTurningTime())
-					{
-						this.turnInput();
-						this.inputTurnTime = 0f;
-					}
-					this.MarkDirty(false, null);
-				}
-				return;
-			}
-			if (this.ambientSound != null && this.automated && this.mpc.TrueSpeed != this.prevSpeed)
-			{
-				this.prevSpeed = this.mpc.TrueSpeed;
-				this.ambientSound.SetPitch((0.5f + this.prevSpeed) * 0.9f);
-				this.ambientSound.SetVolume(Math.Min(1f, this.prevSpeed * 3f));
-				return;
-			}
-			this.prevSpeed = float.NaN;
-		}
+        {
+            float turnSpeed = this.TurnSpeed;
+            if (this.Api.Side != EnumAppSide.Client)
+            {
+                // Only allow turning if the input slot contains an empty wood bucket.
+                if (this.CanTurn() && turnSpeed > 0f)
+                {
+                    this.inputTurnTime += dt * turnSpeed;
+                    if (this.inputTurnTime >= this.maxTurningTime())
+                    {
+                        this.turnInput();
+                        this.inputTurnTime = 0f;
+                    }
+                    this.MarkDirty(false, null);
+                }
+                return;
+            }
+            if (this.ambientSound != null && this.automated && this.mpc.TrueSpeed != this.prevSpeed)
+            {
+                this.prevSpeed = this.mpc.TrueSpeed;
+                this.ambientSound.SetPitch((0.5f + this.prevSpeed) * 0.9f);
+                this.ambientSound.SetVolume(Math.Min(1f, this.prevSpeed * 3f));
+                return;
+            }
+            this.prevSpeed = float.NaN;
+        }
+
         private void turnInput()
         {
-            ItemStack TurnedStack = this.InputGrindProps.GroundStack.ResolvedItemstack.Clone();
-            if (this.OutputSlot.Itemstack == null)
+            // Extract up to 10 liters of water
+            (string waterType, int extracted) = ExtractWater(10);
+
+            if (extracted > 0)
             {
-                this.OutputSlot.Itemstack = TurnedStack;
-            }
-            else if (this.OutputSlot.Itemstack.Collectible.GetMergableQuantity(this.OutputSlot.Itemstack, TurnedStack, EnumMergePriority.AutoMerge) > 0)
-            {
-                this.OutputSlot.Itemstack.StackSize += TurnedStack.StackSize;
-            }
-            else
-            {
-                BlockFacing face = BlockFacing.HORIZONTALS[this.nowOutputFace];
-                this.nowOutputFace = (this.nowOutputFace + 1) % 4;
-                if (this.Api.World.BlockAccessor.GetBlock(this.Pos.AddCopy(face)).Replaceable < 6000)
+                // Validate the input slot
+                if (this.InputSlot.Itemstack == null || this.InputSlot.Itemstack.Collectible.Code.Path != "woodbucket")
                 {
+                    this.Api.World.Logger.Error("[Winch] Input slot does not contain a valid wood bucket.");
                     return;
                 }
-                this.Api.World.SpawnItemEntity(TurnedStack, this.Pos.ToVec3d().Add(0.5 + (double)face.Normalf.X * 0.7, 0.75, 0.5 + (double)face.Normalf.Z * 0.7), new Vec3d((double)(face.Normalf.X * 0.02f), 0.0, (double)(face.Normalf.Z * 0.02f)));
+
+                ItemStack filledBucket = this.InputSlot.Itemstack.Clone();
+                this.Api.World.Logger.Debug("[Winch] Setting contents attribute for filled bucket");
+
+                TreeAttribute contents = new TreeAttribute();
+
+                // Ensure correct quantity (100 items per liter)
+                int totalWaterItems = extracted * 100;
+
+                // Create an ItemStack for the extracted water portion
+                ItemStack waterStack = new ItemStack(
+                    this.Api.World.GetItem(new AssetLocation($"hydrateordiedrate:wellwaterportion-{waterType}")),
+                    totalWaterItems // Apply the correct quantity
+                );
+
+                // Store it as an ItemstackAttribute
+                contents["0"] = new ItemstackAttribute(waterStack);
+
+                this.Api.World.Logger.Debug("[Winch] Generated contents attribute: {0}", contents.ToString());
+
+                // Assign the proper contents attribute
+                filledBucket.Attributes["contents"] = contents;
+
+                this.Api.World.Logger.Debug(
+                    "[Winch] Successfully filled the bucket with {0} liters of {1} ({2} items).",
+                    extracted, waterType, totalWaterItems);
+
+                // Place the filled bucket in the output slot or spawn it if the slot is full
+                if (this.OutputSlot.Itemstack == null)
+                {
+                    this.OutputSlot.Itemstack = filledBucket;
+                }
+                else if (this.OutputSlot.Itemstack.Collectible.GetMergableQuantity(this.OutputSlot.Itemstack,
+                             filledBucket, EnumMergePriority.AutoMerge) > 0)
+                {
+                    this.OutputSlot.Itemstack.StackSize += filledBucket.StackSize;
+                }
+                else
+                {
+                    BlockFacing face = BlockFacing.HORIZONTALS[this.nowOutputFace];
+                    this.nowOutputFace = (this.nowOutputFace + 1) % 4;
+
+                    if (this.Api.World.BlockAccessor.GetBlock(this.Pos.AddCopy(face)).Replaceable < 6000)
+                    {
+                        return;
+                    }
+
+                    this.Api.World.SpawnItemEntity(
+                        filledBucket,
+                        this.Pos.ToVec3d().Add(0.5 + face.Normalf.X * 0.7, 0.75, 0.5 + face.Normalf.Z * 0.7),
+                        new Vec3d(face.Normalf.X * 0.02, 0.0, face.Normalf.Z * 0.02)
+                    );
+                }
+
+                // Consume the input bucket
+                this.InputSlot.TakeOut(1);
+                this.InputSlot.MarkDirty();
+                this.OutputSlot.MarkDirty();
             }
-            this.InputSlot.TakeOut(1);
-            this.InputSlot.MarkDirty();
-            this.OutputSlot.MarkDirty();
+
+            this.inputTurnTime = 0f;
         }
-        
+
+        private (string, int) ExtractWater(int litersNeeded)
+        {
+            int remaining = litersNeeded;
+            int totalExtracted = 0;
+            string waterType = null;
+            BlockPos currentPos = this.Pos.Copy().DownCopy();
+
+            while (remaining > 0)
+            {
+                Block currentBlock = this.Api.World.BlockAccessor.GetBlock(currentPos);
+                string codePath = currentBlock.Code.Path.ToLowerInvariant();
+
+                // Check for vanilla water sources
+                if (codePath.StartsWith("game:water"))
+                {
+                    waterType = "water";
+                    totalExtracted = litersNeeded; // Vanilla water is infinite
+                    break;
+                }
+                else if (codePath.StartsWith("game:saltwater"))
+                {
+                    waterType = "saltwater";
+                    totalExtracted = litersNeeded; // Vanilla saltwater is infinite
+                    break;
+                }
+                else if (codePath.StartsWith("game:boilingwater"))
+                {
+                    waterType = "water"; // Boiling water should convert to regular water
+                    totalExtracted = litersNeeded;
+                    break;
+                }
+
+                // If not a vanilla water block, check wellwater blocks
+                if (!codePath.Contains("wellwater"))
+                {
+                    break;
+                }
+
+                BlockEntity be = this.Api.World.BlockAccessor.GetBlockEntity(currentPos);
+                if (be is HydrateOrDiedrate.wellwater.BlockEntityWellWaterData wellData)
+                {
+                    int available = wellData.Volume;
+                    if (available > 0)
+                    {
+                        int extract = Math.Min(available, remaining);
+                        wellData.Volume -= extract;
+                        wellData.MarkDirty(true);
+                        totalExtracted += extract;
+                        remaining -= extract;
+
+                        if (waterType == null)
+                        {
+                            // Determine water type based on block code
+                            if (codePath.Contains("muddy") && codePath.Contains("salt"))
+                                waterType = "muddysalt";
+                            else if (codePath.Contains("tainted") && codePath.Contains("salt"))
+                                waterType = "taintedsalt";
+                            else if (codePath.Contains("poisoned") && codePath.Contains("salt"))
+                                waterType = "poisonedsalt";
+                            else if (codePath.Contains("fresh"))
+                                waterType = "fresh";
+                            else if (codePath.Contains("salt"))
+                                waterType = "salt";
+                            else if (codePath.Contains("muddy"))
+                                waterType = "muddy";
+                            else if (codePath.Contains("tainted"))
+                                waterType = "tainted";
+                            else if (codePath.Contains("poisoned"))
+                                waterType = "poisoned";
+                            else
+                                waterType = "fresh";
+                        }
+                    }
+                }
+
+                currentPos = currentPos.DownCopy();
+            }
+
+            return (waterType ?? "fresh", totalExtracted);
+        }
+
         private void Every500ms(float dt)
         {
             if (this.Api.Side == EnumAppSide.Server && (this.TurnSpeed > 0f || this.prevInputTurnTime != this.inputTurnTime))
@@ -334,8 +469,16 @@ namespace HydrateOrDiedrate.winch
         }
         public bool CanTurn()
         {
-            return this.InputGrindProps != null;
+            ItemSlot slot = this.InputSlot;
+            if (slot.Itemstack == null) return false;
+
+            string itemCode = slot.Itemstack.Collectible.Code.ToString();
+
+            // Allow both the vanilla wood bucket and modded vanvar:bucket-* buckets
+            return (itemCode == "game:woodbucket" || itemCode.StartsWith("vanvar:bucket-")) &&
+                   (slot.Itemstack.Attributes == null || !slot.Itemstack.Attributes.HasAttribute("contents"));
         }
+
         internal MeshData GenMesh(string type = "base")
         {
             Block block = this.Api.World.BlockAccessor.GetBlock(this.Pos);
@@ -387,6 +530,7 @@ namespace HydrateOrDiedrate.winch
         }
         public override bool OnPlayerRightClick(IPlayer byPlayer, BlockSelection blockSel)
         {
+            LogInputSlotContents(); 
             if (blockSel.SelectionBoxIndex == 1)
             {
                 return false;
@@ -529,9 +673,82 @@ namespace HydrateOrDiedrate.winch
             get
             {
                 return this.inventory[0];
+                
             }
         }
         
+        public void LogInputSlotContents()
+{
+    if (this.InputSlot.Itemstack == null)
+    {
+        this.Api.World.Logger.Debug("[Winch] InputSlot is empty.");
+        return;
+    }
+
+    // Log basic item details
+    this.Api.World.Logger.Debug("[Winch] InputSlot contains: {0}", this.InputSlot.Itemstack.ToString());
+
+    // Check if attributes exist
+    if (this.InputSlot.Itemstack.Attributes == null)
+    {
+        this.Api.World.Logger.Debug("[Winch] InputSlot has no attributes.");
+        return;
+    }
+
+    try
+    {
+        string attributesStr = ConvertTreeAttributeToString(this.InputSlot.Itemstack.Attributes, 0);
+        this.Api.World.Logger.Debug("[Winch] InputSlot attributes:\n{0}", attributesStr);
+    }
+    catch (Exception ex)
+    {
+        this.Api.World.Logger.Error("[Winch] Error converting InputSlot attributes to string: {0}", ex);
+    }
+}
+
+private string ConvertTreeAttributeToString(ITreeAttribute treeAttr, int indent)
+{
+    StringBuilder sb = new StringBuilder();
+    string indentStr = new string(' ', indent * 2); // Indentation for nested structures
+
+    foreach (var kvp in treeAttr)
+    {
+        try
+        {
+            string key = kvp.Key;
+            string valueStr = "";
+
+            if (kvp.Value is ITreeAttribute nestedTree)
+            {
+                // Recursively process nested attributes
+                valueStr = "\n" + ConvertTreeAttributeToString(nestedTree, indent + 1);
+            }
+            else if (kvp.Value is IAttribute attr)
+            {
+                try
+                {
+                    object val = attr.GetValue();
+                    valueStr = val != null ? val.ToString() : "null";
+                }
+                catch (Exception ex)
+                {
+                    valueStr = $"[Error: {ex.Message}]";
+                }
+            }
+            else
+            {
+                valueStr = kvp.Value?.ToString() ?? "null";
+            }
+
+            sb.AppendLine($"{indentStr}{key}: {valueStr}");
+        }
+        catch (Exception ex)
+        {
+            sb.AppendLine($"{indentStr}{kvp.Key}: [Error processing attribute: {ex.Message}]");
+        }
+    }
+    return sb.ToString();
+}
         public ItemSlot OutputSlot
         {
             get
@@ -563,19 +780,6 @@ namespace HydrateOrDiedrate.winch
             {
                 this.inventory[1].Itemstack = value;
                 this.inventory[1].MarkDirty();
-            }
-        }
-        
-        public GrindingProperties InputGrindProps
-        {
-            get
-            {
-                ItemSlot slot = this.inventory[0];
-                if (slot.Itemstack == null)
-                {
-                    return null;
-                }
-                return slot.Itemstack.Collectible.GrindingProps;
             }
         }
         

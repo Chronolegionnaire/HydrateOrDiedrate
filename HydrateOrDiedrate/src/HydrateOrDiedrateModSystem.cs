@@ -72,6 +72,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.AssetsLoaded(api);
         ApplyWaterSatietyPatches(api);
+        ApplyWellWaterSatietyPatches(api);
         ApplyKegTunConfigPatches(api);
     }
 
@@ -95,7 +96,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     }
     public void ApplyWaterSatietyPatches(ICoreAPI api)
     {
-
+        // Patch the default water types.
         float waterSatiety = LoadedConfig.WaterSatiety;
         float saltWaterSatiety = LoadedConfig.SaltWaterSatiety;
         float boilingWaterSatiety = LoadedConfig.BoilingWaterSatiety;
@@ -112,6 +113,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", boiledWaterSatiety);
         ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", boiledRainWaterSatiety);
     }
+
     private void ApplySatietyPatch(ICoreAPI api, string jsonFilePath, float satietyValue)
     {
         JsonPatch ensureNutritionProps = new JsonPatch
@@ -146,6 +148,66 @@ public class HydrateOrDiedrateModSystem : ModSystem
         patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:ensureNutritionProps"), ensureNutritionProps, ref applied, ref notFound, ref errorCount);
         patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicsatietypatch"), patchSatiety, ref applied, ref notFound, ref errorCount);
         patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicfoodcategorypatch"), patchFoodCategory, ref applied, ref notFound, ref errorCount);
+    }
+
+    public void ApplyWellWaterSatietyPatches(ICoreAPI api)
+    {
+        var wellWaterSatietyValues = new Dictionary<string, float>
+        {
+            { "fresh", LoadedConfig.WellWaterFreshSatiety },
+            { "salt", LoadedConfig.WellWaterSaltSatiety },
+            { "muddy", LoadedConfig.WellWaterMuddySatiety },
+            { "tainted", LoadedConfig.WellWaterTaintedSatiety },
+            { "poisoned", LoadedConfig.WellWaterPoisonedSatiety },
+            { "muddysalt", LoadedConfig.WellWaterMuddySaltSatiety },
+            { "taintedsalt", LoadedConfig.WellWaterTaintedSaltSatiety },
+            { "poisonedsalt", LoadedConfig.WellWaterPoisonedSaltSatiety }
+        };
+
+        // The well water JSON file holds all variants under attributesByType.
+        // For each type, patch the satiety and food category.
+        foreach (var kvp in wellWaterSatietyValues)
+        {
+            ApplyWellWaterSatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/wellwaterportion.json", kvp.Key, kvp.Value);
+        }
+    }
+
+    private void ApplyWellWaterSatietyPatch(ICoreAPI api, string jsonFilePath, string waterType, float satietyValue)
+    {
+        int applied = 0, notFound = 0, errorCount = 0;
+        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
+
+        // The patch path includes the type key (for example "*-fresh", "*-salt", etc.) to target the correct variant.
+        JsonPatch ensureNutritionProps = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = $"/attributesByType/*-{waterType}/waterTightContainerProps/nutritionPropsPerLitre",
+            Value = new JsonObject(JToken.FromObject(new { })),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        JsonPatch patchSatiety = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = $"/attributesByType/*-{waterType}/waterTightContainerProps/nutritionPropsPerLitre/satiety",
+            Value = new JsonObject(JToken.FromObject(satietyValue)),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        JsonPatch patchFoodCategory = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = $"/attributesByType/*-{waterType}/waterTightContainerProps/nutritionPropsPerLitre/foodcategory",
+            Value = new JsonObject(JToken.FromObject("NoNutrition")),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwaterensure-{waterType}"), ensureNutritionProps, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwatersatiety-{waterType}"), patchSatiety, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwaterfoodcat-{waterType}"), patchFoodCategory, ref applied, ref notFound, ref errorCount);
     }
     public void ApplyKegTunConfigPatches(ICoreAPI api)
     {
@@ -258,10 +320,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot));
         api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
-        if (!api.ModLoader.IsModEnabled("carryon"))
-        {
-            RegisterEmptyCarryBehaviors(api);
-        }
         api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
@@ -316,24 +374,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         public static void InitializeAquiferSystem(ICoreServerAPI api)
         {
             AquiferManager = new AquiferManager(api);
-        }
-    }
-
-    private void RegisterEmptyCarryBehaviors(ICoreAPI api)
-    {
-        api.RegisterBlockBehaviorClass("Carryable", typeof(EmptyBlockBehavior));
-        api.RegisterBlockBehaviorClass("CarryableInteract", typeof(EmptyBlockBehavior));
-    }
-
-    public class EmptyBlockBehavior : BlockBehavior
-    {
-        public EmptyBlockBehavior(Block block) : base(block)
-        {
-        }
-
-        public override void Initialize(JsonObject properties)
-        {
-            base.Initialize(properties);
         }
     }
     
@@ -464,7 +504,16 @@ public class HydrateOrDiedrateModSystem : ModSystem
             AquiferStep = packet.ServerConfig.AquiferStep,
             AquiferWaterBlockMultiplier = packet.ServerConfig.AquiferWaterBlockMultiplier,
             AquiferSaltWaterMultiplier = packet.ServerConfig.AquiferSaltWaterMultiplier,
-            AquiferBoilingWaterMultiplier = packet.ServerConfig.AquiferBoilingWaterMultiplier
+            AquiferBoilingWaterMultiplier = packet.ServerConfig.AquiferBoilingWaterMultiplier,
+            WellWaterFreshSatiety = packet.ServerConfig.WellWaterFreshSatiety,
+            WellWaterSaltSatiety = packet.ServerConfig.WellWaterSaltSatiety,
+            WellWaterMuddySatiety = packet.ServerConfig.WellWaterMuddySatiety,
+            WellWaterTaintedSatiety = packet.ServerConfig.WellWaterTaintedSatiety,
+            WellWaterPoisonedSatiety = packet.ServerConfig.WellWaterPoisonedSatiety,
+            WellWaterMuddySaltSatiety = packet.ServerConfig.WellWaterMuddySaltSatiety,
+            WellWaterTaintedSaltSatiety = packet.ServerConfig.WellWaterTaintedSaltSatiety,
+            WellWaterPoisonedSaltSatiety = packet.ServerConfig.WellWaterPoisonedSaltSatiety,
+            AquiferDepthScaling = packet.ServerConfig.AquiferDepthScaling,
         };
         ReloadComponents();
         var currentHydrationPatches = HydrationManager.GetLastAppliedPatches() ?? new List<JObject>();

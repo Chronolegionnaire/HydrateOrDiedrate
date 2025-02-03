@@ -100,6 +100,34 @@ public class Config : IModConfig
 
     [ProtoMember(53)]
     public int AquiferBoilingWaterMultiplier { get; set; }
+    
+    [ProtoMember(54)] 
+    public float WellWaterFreshSatiety { get; set; }
+    
+    [ProtoMember(55)] 
+    public float WellWaterSaltSatiety { get; set; }
+    
+    [ProtoMember(56)] 
+    public float WellWaterMuddySatiety { get; set; }
+    
+    [ProtoMember(57)] 
+    public float WellWaterTaintedSatiety { get; set; }
+    
+    [ProtoMember(58)] 
+    public float WellWaterPoisonedSatiety { get; set; }
+    
+    [ProtoMember(59)] 
+    public float WellWaterMuddySaltSatiety { get; set; }
+    
+    [ProtoMember(60)] 
+    public float WellWaterTaintedSaltSatiety { get; set; }
+    
+    [ProtoMember(61)] 
+    public float WellWaterPoisonedSaltSatiety { get; set; }
+    
+    [ProtoMember(62)] 
+    public bool AquiferDepthScaling { get; set; }
+
 
     public Config()
     {
@@ -181,5 +209,14 @@ public class Config : IModConfig
         AquiferWaterBlockMultiplier = previousConfig?.AquiferWaterBlockMultiplier ?? 4.0;
         AquiferSaltWaterMultiplier = previousConfig?.AquiferSaltWaterMultiplier ?? 4.0;
         AquiferBoilingWaterMultiplier = previousConfig?.AquiferBoilingWaterMultiplier ?? 100;
+        WellWaterFreshSatiety = previousConfig?.WellWaterFreshSatiety ?? -50f;
+        WellWaterSaltSatiety = previousConfig?.WellWaterSaltSatiety ?? -100f;
+        WellWaterMuddySatiety = previousConfig?.WellWaterMuddySatiety ?? -75f;
+        WellWaterTaintedSatiety = previousConfig?.WellWaterTaintedSatiety ?? -400f;
+        WellWaterPoisonedSatiety = previousConfig?.WellWaterPoisonedSatiety ?? 0f;
+        WellWaterMuddySaltSatiety = previousConfig?.WellWaterMuddySaltSatiety ?? -75f;
+        WellWaterTaintedSaltSatiety = previousConfig?.WellWaterTaintedSaltSatiety ?? -400f;
+        WellWaterPoisonedSaltSatiety = previousConfig?.WellWaterPoisonedSaltSatiety ?? 0f;
+        AquiferDepthScaling = previousConfig?.AquiferDepthScaling ?? true;
     }
 }

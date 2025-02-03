@@ -55,24 +55,26 @@ namespace HydrateOrDiedrate.patches
 
         private static string GetAquiferDescription(bool isSalty, int rating, double worldHeight, double posY)
         {
-            double waterLineY = Math.Round(0.4296875 * worldHeight);
-            double depthFactor;
-            depthFactor = (waterLineY - posY) / (waterLineY - 1);
+            int effectiveRating = rating;
 
-            int effectiveRating = (int)Math.Round(rating * depthFactor);
+            if (HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
+            {
+                double waterLineY = Math.Round(0.4296875 * worldHeight);
+                double depthFactor = (waterLineY - posY) / (waterLineY - 1);
+                effectiveRating = (int)Math.Round(rating * depthFactor);
+            }
+
             string aquiferType = isSalty ? "salt" : "fresh";
-            if (effectiveRating <= 0)
-                return $"No aquifer detected.";
-            else if (effectiveRating <= 10)
-                return $"Very poor {aquiferType} water aquifer detected.";
-            else if (effectiveRating <= 20)
-                return $"Poor {aquiferType} water aquifer detected.";
-            else if (effectiveRating <= 40)
-                return $"Light {aquiferType} water aquifer detected.";
-            else if (effectiveRating <= 60)
-                return $"Moderate {aquiferType} water aquifer detected.";
-            else
-                return $"Heavy {aquiferType} water aquifer detected.";
+
+            return effectiveRating switch
+            {
+                <= 0 => "No aquifer detected.",
+                <= 10 => $"Very poor {aquiferType} water aquifer detected.",
+                <= 20 => $"Poor {aquiferType} water aquifer detected.",
+                <= 40 => $"Light {aquiferType} water aquifer detected.",
+                <= 60 => $"Moderate {aquiferType} water aquifer detected.",
+                _ => $"Heavy {aquiferType} water aquifer detected."
+            };
         }
 
         private static void SendMessageToPlayer(IWorldAccessor world, IServerPlayer splr, string message)

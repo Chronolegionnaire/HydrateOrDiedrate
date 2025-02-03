@@ -84,6 +84,16 @@ namespace HydrateOrDiedrate.Config
                     hydrateConfig.AquiferWaterBlockMultiplier = 4.0f;
                     hydrateConfig.AquiferSaltWaterMultiplier = 4.0f;
                     hydrateConfig.AquiferBoilingWaterMultiplier = 100;
+                    hydrateConfig.WellWaterFreshSatiety = -50f;
+                    hydrateConfig.WellWaterSaltSatiety = -100f;
+                    hydrateConfig.WellWaterMuddySatiety = -75f;
+                    hydrateConfig.WellWaterTaintedSatiety = -400f;
+                    hydrateConfig.WellWaterPoisonedSatiety = 0f;
+                    hydrateConfig.WellWaterMuddySaltSatiety = -75f;
+                    hydrateConfig.WellWaterTaintedSaltSatiety = -400f;
+                    hydrateConfig.WellWaterPoisonedSaltSatiety = 0f;
+                    hydrateConfig.AquiferDepthScaling = true;
+
                 }
                 WriteConfig(api, jsonConfig, config);
             }

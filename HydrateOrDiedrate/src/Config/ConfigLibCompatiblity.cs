@@ -81,6 +81,15 @@ namespace HydrateOrDiedrate.Config
         private const string settingAquiferWaterBlockMultiplier = "hydrateordiedrate:Config.Settings.AquiferWaterBlockMultiplier";
         private const string settingAquiferSaltWaterMultiplier = "hydrateordiedrate:Config.Settings.AquiferSaltWaterMultiplier";
         private const string settingAquiferBoilingWaterMultiplier = "hydrateordiedrate:Config.Settings.AquiferBoilingWaterMultiplier";
+        private const string settingWellWaterFreshSatiety = "hydrateordiedrate:Config.Setting.WellWaterFreshSatiety";
+        private const string settingWellWaterSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterSaltSatiety";
+        private const string settingWellWaterMuddySatiety = "hydrateordiedrate:Config.Setting.WellWaterMuddySatiety";
+        private const string settingWellWaterTaintedSatiety = "hydrateordiedrate:Config.Setting.WellWaterTaintedSatiety";
+        private const string settingWellWaterPoisonedSatiety = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSatiety";
+        private const string settingWellWaterMuddySaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterMuddySaltSatiety";
+        private const string settingWellWaterTaintedSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltSatiety";
+        private const string settingWellWaterPoisonedSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltSatiety";
+        private const string settingAquiferDepthScaling = "hydrateordiedrate:Config.Setting.AquiferDepthScaling";
 
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
@@ -375,6 +384,43 @@ namespace HydrateOrDiedrate.Config
             int aquiferBoilingWaterMultiplier = config.AquiferBoilingWaterMultiplier;
             ImGui.DragInt(Lang.Get(settingAquiferBoilingWaterMultiplier) + $"##aquiferBoilingWaterMultiplier-{id}", ref aquiferBoilingWaterMultiplier, 1, 1, 500);
             config.AquiferBoilingWaterMultiplier = aquiferBoilingWaterMultiplier;
+            
+            float wellWaterFreshSatiety = config.WellWaterFreshSatiety;
+            ImGui.DragFloat(Lang.Get(settingWellWaterFreshSatiety) + $"##wellWaterFreshSatiety-{id}", ref wellWaterFreshSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.WellWaterFreshSatiety = wellWaterFreshSatiety;
+
+            float wellWaterSaltSatiety = config.WellWaterSaltSatiety;
+            ImGui.DragFloat(Lang.Get(settingWellWaterSaltSatiety) + $"##wellWaterSaltSatiety-{id}", ref wellWaterSaltSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.WellWaterSaltSatiety = wellWaterSaltSatiety;
+
+            float wellWaterMuddySatiety = config.WellWaterMuddySatiety;
+            ImGui.DragFloat(Lang.Get(settingWellWaterMuddySatiety) + $"##wellWaterMuddySatiety-{id}", ref wellWaterMuddySatiety, 1.0f, -1000.0f, 1000.0f);
+            config.WellWaterMuddySatiety = wellWaterMuddySatiety;
+
+            float wellWaterTaintedSatiety = config.WellWaterTaintedSatiety;
+            ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSatiety) + $"##wellWaterTaintedSatiety-{id}", ref wellWaterTaintedSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.WellWaterTaintedSatiety = wellWaterTaintedSatiety;
+
+            float wellWaterPoisonedSatiety = config.WellWaterPoisonedSatiety;
+            ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSatiety) + $"##wellWaterPoisonedSatiety-{id}", ref wellWaterPoisonedSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.WellWaterPoisonedSatiety = wellWaterPoisonedSatiety;
+
+            float wellWaterMuddySaltSatiety = config.WellWaterMuddySaltSatiety;
+            ImGui.DragFloat(Lang.Get(settingWellWaterMuddySaltSatiety) + $"##wellWaterMuddySaltSatiety-{id}", ref wellWaterMuddySaltSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.WellWaterMuddySaltSatiety = wellWaterMuddySaltSatiety;
+
+            float wellWaterTaintedSaltSatiety = config.WellWaterTaintedSaltSatiety;
+            ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSaltSatiety) + $"##wellWaterTaintedSaltSatiety-{id}", ref wellWaterTaintedSaltSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.WellWaterTaintedSaltSatiety = wellWaterTaintedSaltSatiety;
+
+            float wellWaterPoisonedSaltSatiety = config.WellWaterPoisonedSaltSatiety;
+            ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltSatiety) + $"##wellWaterPoisonedSaltSatiety-{id}", ref wellWaterPoisonedSaltSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.WellWaterPoisonedSaltSatiety = wellWaterPoisonedSaltSatiety;
+            
+            bool aquiferDepthScaling = config.AquiferDepthScaling;
+            ImGui.Checkbox(Lang.Get(settingAquiferDepthScaling) + $"##aquiferDepthScaling-{id}", ref aquiferDepthScaling);
+            config.AquiferDepthScaling = aquiferDepthScaling;
+            
         }
     }
 }

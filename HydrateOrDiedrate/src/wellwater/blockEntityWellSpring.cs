@@ -29,9 +29,14 @@ namespace HydrateOrDiedrate.wellwater
                 _aquiferManager = HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager;
                 if (_aquiferManager == null) return;
 
-                double maxWorldHeight = sapi.WorldManager.MapSizeY;
-                double waterLineY = Math.Round(0.4296875 * maxWorldHeight);
-                double depthFactor = (waterLineY - Pos.Y) / (waterLineY - 1);
+                double depthFactor = 1.0;
+                if (HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
+                {
+                    double maxWorldHeight = sapi.WorldManager.MapSizeY;
+                    double waterLineY = Math.Round(0.4296875 * maxWorldHeight);
+                    depthFactor = (waterLineY - Pos.Y) / (waterLineY - 1);
+                    if (depthFactor < 0) depthFactor = 0;
+                }
                 if (depthFactor < 0) depthFactor = 0;
 
                 _aquiferManager.RegisterWellspring(Pos, depthFactor);
