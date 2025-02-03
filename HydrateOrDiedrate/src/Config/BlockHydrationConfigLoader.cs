@@ -9,30 +9,32 @@ namespace HydrateOrDiedrate.Config
     {
         public static List<JObject> LoadBlockHydrationConfig(ICoreAPI api)
         {
-            List<JObject> allPatches = new List<JObject>();
             string configName = "HoD.AddBlockHydration.json";
-            JObject config = api.LoadModConfig<JObject>(configName);
-
-            if (config == null)
+            JObject userConfig = api.LoadModConfig<JObject>(configName);
+            if (userConfig == null)
             {
-                config = GenerateDefaultBlockHydrationConfig();
-                api.StoreModConfig(config, configName);
+                userConfig = GenerateDefaultBlockHydrationConfig();
+                api.StoreModConfig(userConfig, configName);
+            }
+            else
+            {
+                JObject defaultConfig = GenerateDefaultBlockHydrationConfig();
+                DeepMerge(defaultConfig, userConfig);
+                api.StoreModConfig(userConfig, configName);
             }
             var sortedPatches = new SortedDictionary<int, List<JObject>>();
-            int priority = config["priority"]?.Value<int>() ?? 5;
+            int priority = userConfig["priority"]?.Value<int>() ?? 5;
 
             if (!sortedPatches.ContainsKey(priority))
             {
                 sortedPatches[priority] = new List<JObject>();
             }
-
-            var patches = config["patches"]?.ToObject<List<JObject>>();
+            var patches = userConfig["patches"]?.ToObject<List<JObject>>();
             if (patches != null)
             {
                 sortedPatches[priority].AddRange(patches);
             }
             Dictionary<string, JObject> mergedPatches = new Dictionary<string, JObject>();
-
             foreach (var priorityLevel in sortedPatches.Keys.OrderByDescending(k => k))
             {
                 foreach (var patch in sortedPatches[priorityLevel])
@@ -44,8 +46,35 @@ namespace HydrateOrDiedrate.Config
                     }
                 }
             }
-
             return mergedPatches.Values.ToList();
+        }
+        
+        private static void DeepMerge(JObject source, JObject target)
+        {
+            foreach (var prop in source.Properties())
+            {
+                if (!target.ContainsKey(prop.Name))
+                {
+                    target[prop.Name] = prop.Value.DeepClone();
+                }
+                else
+                {
+                    if (prop.Value is JObject sourceObj && target[prop.Name] is JObject targetObj)
+                    {
+                        DeepMerge(sourceObj, targetObj);
+                    }
+                    else if (prop.Value is JArray sourceArr && target[prop.Name] is JArray targetArr)
+                    {
+                        foreach (var item in sourceArr)
+                        {
+                            if (!targetArr.Any(x => JToken.DeepEquals(x, item)))
+                            {
+                                targetArr.Add(item.DeepClone());
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public static JObject GenerateDefaultBlockHydrationConfig()
