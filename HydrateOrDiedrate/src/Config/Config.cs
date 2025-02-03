@@ -131,6 +131,89 @@ public class Config : IModConfig
 
     public Config()
     {
+        // Thirst Settings
+        MaxThirst = 1500.0f;
+        ThirstDamage = 1f;
+        ThirstDecayRate = 10f;
+        ThirstDecayRateMax = 5.0f;
+        HydrationLossDelayMultiplier = 0.05f;
+        EnableThirstMechanics = true;
+        WaterSatiety = -100f;
+        SaltWaterSatiety = -100f;
+        BoilingWaterSatiety = 0f;
+        RainWaterSatiety = -50f;
+        DistilledWaterSatiety = 0f;
+        BoiledWaterSatiety = 0f;
+        BoiledRainWaterSatiety = 0f;
+        SprintThirstMultiplier = 1.5f;
+        EnableBoilingWaterDamage = true;
+        BoilingWaterDamage = 5.0f;
+
+        // Movement Speed Penalty Settings
+        MaxMovementSpeedPenalty = 0.3f;
+        MovementSpeedPenaltyThreshold = 600.0f;
+
+        // Liquid Encumbrance
+        EnableLiquidEncumbrance = true;
+        EncumbranceLimit = 4.0f;
+        LiquidEncumbranceMovementSpeedDebuff = 0.4f;
+
+        // Temperature and Heat
+        HarshHeat = true;
+        TemperatureThreshold = 27.0f;
+        ThirstIncreasePerDegreeMultiplier = 5f;
+        HarshHeatExponentialGainMultiplier = 0.2f;
+
+        // Cooling Factors
+        UnequippedSlotCooling = 1.0f;
+        WetnessCoolingFactor = 1.5f;
+        ShelterCoolingFactor = 1.5f;
+        SunlightCoolingFactor = 1.0f;
+        DiurnalVariationAmplitude = 18f;
+        RefrigerationCooling = 20.0f;
+
+        // XSkills
+        DromedaryMultiplierPerLevel = 0.3f;
+        EquatidianCoolingMultipliers = new float[] { 1.25f, 1.5f, 2.0f };
+
+        // Rain Gathering
+        EnableRainGathering = true;
+        RainMultiplier = 1.0f;
+        EnableParticleTicking = false;
+
+        // Keg
+        KegCapacityLitres = 100.0f;
+        SpoilRateUntapped = 0.15f;
+        SpoilRateTapped = 0.65f;
+        KegIronHoopDropChance = 0.8f;
+        KegTapDropChance = 0.9f;
+
+        // Tun
+        TunCapacityLitres = 950f;
+        TunSpoilRateMultiplier = 1.0f;
+
+        // Misc
+        DisableDrunkSway = true;
+
+        // Well/Aquifer
+        WellSpringOutputMultiplier = 1.0f;
+        WellwaterDepthMaxBase = 5;
+        WellwaterDepthMaxClay = 7;
+        WellwaterDepthMaxStone = 10;
+        AquiferRandomMultiplierChance = 0.02;
+        AquiferStep = 4;
+        AquiferWaterBlockMultiplier = 4.0;
+        AquiferSaltWaterMultiplier = 4.0;
+        AquiferBoilingWaterMultiplier = 100;
+        WellWaterFreshSatiety = -50f;
+        WellWaterSaltSatiety = -100f;
+        WellWaterMuddySatiety = -75f;
+        WellWaterTaintedSatiety = -400f;
+        WellWaterPoisonedSatiety = 0f;
+        WellWaterMuddySaltSatiety = -75f;
+        WellWaterTaintedSaltSatiety = -400f;
+        WellWaterPoisonedSaltSatiety = 0f;
+        AquiferDepthScaling = true;
     }
 
     public Config(ICoreAPI api, Config previousConfig = null)
