@@ -1,5 +1,5 @@
 ﻿{
-  pageCode: "hydrateordiedrate:survivalinfo-thirst",
-  title: "hydrateordiedrate:survivalinfo-thirst-title",
-  text: "hydrateordiedrate:survivalinfo-thirst-text"
+  "pageCode": "hydrateordiedrate:survivalinfo-thirst",
+  "title": "hydrateordiedrate:survivalinfo-thirst-title",
+  "text": "hydrateordiedrate:survivalinfo-thirst-text"
 }

@@ -96,7 +96,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     }
     public void ApplyWaterSatietyPatches(ICoreAPI api)
     {
-        // Patch the default water types.
         float waterSatiety = LoadedConfig.WaterSatiety;
         float saltWaterSatiety = LoadedConfig.SaltWaterSatiety;
         float boilingWaterSatiety = LoadedConfig.BoilingWaterSatiety;
@@ -163,9 +162,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             { "taintedsalt", LoadedConfig.WellWaterTaintedSaltSatiety },
             { "poisonedsalt", LoadedConfig.WellWaterPoisonedSaltSatiety }
         };
-
-        // The well water JSON file holds all variants under attributesByType.
-        // For each type, patch the satiety and food category.
         foreach (var kvp in wellWaterSatietyValues)
         {
             ApplyWellWaterSatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/wellwaterportion.json", kvp.Key, kvp.Value);
@@ -176,8 +172,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         int applied = 0, notFound = 0, errorCount = 0;
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-
-        // The patch path includes the type key (for example "*-fresh", "*-salt", etc.) to target the correct variant.
         JsonPatch ensureNutritionProps = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,

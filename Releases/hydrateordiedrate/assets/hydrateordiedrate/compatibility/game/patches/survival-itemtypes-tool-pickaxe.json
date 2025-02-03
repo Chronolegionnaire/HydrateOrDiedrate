@@ -1,8 +1,10 @@
 [
   {
-    "op": "add",
-    "path": "/class",
-    "value": "DigWellToolModePickaxe",
+    "op": "addmerge",
+    "path": "/behaviors",
+    "value":[{
+      "name": "BehaviorPickaxeWellMode"
+    }],
     "file": "game:itemtypes/tool/pickaxe.json",
     "side": "Server"
   }

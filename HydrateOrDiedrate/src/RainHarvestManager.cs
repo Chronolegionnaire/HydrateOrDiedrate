@@ -96,8 +96,6 @@ public class RainHarvesterManager
     private void ScheduleTickProcessing(float deltaTime)
     {
         if (!serverAPI.World.AllOnlinePlayers.Any()) return;
-
-        // Add a task to the queue for processing the active harvesters
         taskQueue.Enqueue(() => ProcessTick(deltaTime));
     }
 

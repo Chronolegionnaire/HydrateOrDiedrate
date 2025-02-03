@@ -67,7 +67,6 @@ namespace HydrateOrDiedrate
         {
             entity.WatchedAttributes.RegisterModifiedListener("currentThirst", OnCurrentThirstModified);
             
-            //Ensuring these values are present in attributes for GUI purposes
             MaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
             if(!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || entity.WatchedAttributes.TryGetFloat("currentThirst") == null) CurrentThirst = MaxThirst;
         }
@@ -200,13 +199,6 @@ namespace HydrateOrDiedrate
         }
 
         private void UpdateWalkSpeed() => entity.Stats.Set("walkspeed", "thirstPenalty", -MovementPenalty, true);
-
-        public void ApplyCustomThirstRate(float rate, int ticks)
-        {
-            //TODO is this maybe used by other mods?
-            _customThirstRate = rate;
-            _customThirstTicks = ticks;
-        }
 
         public void ModifyThirst(float amount, float hydLossDelay = 0)
         {

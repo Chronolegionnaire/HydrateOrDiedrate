@@ -223,7 +223,6 @@ namespace HydrateOrDiedrate.winch
             float turnSpeed = this.TurnSpeed;
             if (this.Api.Side != EnumAppSide.Client)
             {
-                // Only allow turning if the input slot contains an empty wood bucket.
                 if (this.CanTurn() && turnSpeed > 0f)
                 {
                     this.inputTurnTime += dt * turnSpeed;
@@ -248,45 +247,30 @@ namespace HydrateOrDiedrate.winch
 
         private void turnInput()
         {
-            // Extract up to 10 liters of water
             (string waterType, int extracted) = ExtractWater(10);
 
             if (extracted > 0)
             {
-                // Validate the input slot
                 if (this.InputSlot.Itemstack == null || this.InputSlot.Itemstack.Collectible.Code.Path != "woodbucket")
                 {
-                    this.Api.World.Logger.Error("[Winch] Input slot does not contain a valid wood bucket.");
                     return;
                 }
 
                 ItemStack filledBucket = this.InputSlot.Itemstack.Clone();
-                this.Api.World.Logger.Debug("[Winch] Setting contents attribute for filled bucket");
 
                 TreeAttribute contents = new TreeAttribute();
 
-                // Ensure correct quantity (100 items per liter)
                 int totalWaterItems = extracted * 100;
 
-                // Create an ItemStack for the extracted water portion
                 ItemStack waterStack = new ItemStack(
                     this.Api.World.GetItem(new AssetLocation($"hydrateordiedrate:wellwaterportion-{waterType}")),
-                    totalWaterItems // Apply the correct quantity
+                    totalWaterItems
                 );
 
-                // Store it as an ItemstackAttribute
                 contents["0"] = new ItemstackAttribute(waterStack);
 
-                this.Api.World.Logger.Debug("[Winch] Generated contents attribute: {0}", contents.ToString());
-
-                // Assign the proper contents attribute
                 filledBucket.Attributes["contents"] = contents;
 
-                this.Api.World.Logger.Debug(
-                    "[Winch] Successfully filled the bucket with {0} liters of {1} ({2} items).",
-                    extracted, waterType, totalWaterItems);
-
-                // Place the filled bucket in the output slot or spawn it if the slot is full
                 if (this.OutputSlot.Itemstack == null)
                 {
                     this.OutputSlot.Itemstack = filledBucket;
@@ -313,7 +297,6 @@ namespace HydrateOrDiedrate.winch
                     );
                 }
 
-                // Consume the input bucket
                 this.InputSlot.TakeOut(1);
                 this.InputSlot.MarkDirty();
                 this.OutputSlot.MarkDirty();
@@ -334,27 +317,25 @@ namespace HydrateOrDiedrate.winch
                 Block currentBlock = this.Api.World.BlockAccessor.GetBlock(currentPos);
                 string codePath = currentBlock.Code.Path.ToLowerInvariant();
 
-                // Check for vanilla water sources
                 if (codePath.StartsWith("game:water"))
                 {
                     waterType = "water";
-                    totalExtracted = litersNeeded; // Vanilla water is infinite
+                    totalExtracted = litersNeeded;
                     break;
                 }
                 else if (codePath.StartsWith("game:saltwater"))
                 {
                     waterType = "saltwater";
-                    totalExtracted = litersNeeded; // Vanilla saltwater is infinite
+                    totalExtracted = litersNeeded;
                     break;
                 }
                 else if (codePath.StartsWith("game:boilingwater"))
                 {
-                    waterType = "water"; // Boiling water should convert to regular water
+                    waterType = "water";
                     totalExtracted = litersNeeded;
                     break;
                 }
 
-                // If not a vanilla water block, check wellwater blocks
                 if (!codePath.Contains("wellwater"))
                 {
                     break;
@@ -374,7 +355,6 @@ namespace HydrateOrDiedrate.winch
 
                         if (waterType == null)
                         {
-                            // Determine water type based on block code
                             if (codePath.Contains("muddy") && codePath.Contains("salt"))
                                 waterType = "muddysalt";
                             else if (codePath.Contains("tainted") && codePath.Contains("salt"))
@@ -474,7 +454,6 @@ namespace HydrateOrDiedrate.winch
 
             string itemCode = slot.Itemstack.Collectible.Code.ToString();
 
-            // Allow both the vanilla wood bucket and modded vanvar:bucket-* buckets
             return (itemCode == "game:woodbucket" || itemCode.StartsWith("vanvar:bucket-")) &&
                    (slot.Itemstack.Attributes == null || !slot.Itemstack.Attributes.HasAttribute("contents"));
         }
@@ -681,35 +660,27 @@ namespace HydrateOrDiedrate.winch
 {
     if (this.InputSlot.Itemstack == null)
     {
-        this.Api.World.Logger.Debug("[Winch] InputSlot is empty.");
         return;
     }
 
-    // Log basic item details
-    this.Api.World.Logger.Debug("[Winch] InputSlot contains: {0}", this.InputSlot.Itemstack.ToString());
-
-    // Check if attributes exist
     if (this.InputSlot.Itemstack.Attributes == null)
     {
-        this.Api.World.Logger.Debug("[Winch] InputSlot has no attributes.");
         return;
     }
 
     try
     {
         string attributesStr = ConvertTreeAttributeToString(this.InputSlot.Itemstack.Attributes, 0);
-        this.Api.World.Logger.Debug("[Winch] InputSlot attributes:\n{0}", attributesStr);
     }
     catch (Exception ex)
     {
-        this.Api.World.Logger.Error("[Winch] Error converting InputSlot attributes to string: {0}", ex);
     }
 }
 
 private string ConvertTreeAttributeToString(ITreeAttribute treeAttr, int indent)
 {
     StringBuilder sb = new StringBuilder();
-    string indentStr = new string(' ', indent * 2); // Indentation for nested structures
+    string indentStr = new string(' ', indent * 2);
 
     foreach (var kvp in treeAttr)
     {
@@ -720,7 +691,6 @@ private string ConvertTreeAttributeToString(ITreeAttribute treeAttr, int indent)
 
             if (kvp.Value is ITreeAttribute nestedTree)
             {
-                // Recursively process nested attributes
                 valueStr = "\n" + ConvertTreeAttributeToString(nestedTree, indent + 1);
             }
             else if (kvp.Value is IAttribute attr)
@@ -732,7 +702,6 @@ private string ConvertTreeAttributeToString(ITreeAttribute treeAttr, int indent)
                 }
                 catch (Exception ex)
                 {
-                    valueStr = $"[Error: {ex.Message}]";
                 }
             }
             else
@@ -744,7 +713,6 @@ private string ConvertTreeAttributeToString(ITreeAttribute treeAttr, int indent)
         }
         catch (Exception ex)
         {
-            sb.AppendLine($"{indentStr}{kvp.Key}: [Error processing attribute: {ex.Message}]");
         }
     }
     return sb.ToString();

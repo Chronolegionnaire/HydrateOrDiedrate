@@ -1,0 +1,29 @@
+﻿[
+  {
+    "file": "hydrateordiedrate:blocktypes/keg",
+    "side": "Server",
+    "op": "addmerge",
+    "path": "/behaviors/-",
+    "value": {"name": "Carryable",
+      "properties": {
+        "slots": {
+          "Hands": {
+            "transform": {
+              "translation": [0, 0, 0],
+              "rotation": [0, 0, 0],
+              "origin": [0.5, 0.5, 0.5],
+              "scale": [0.5, 0.5, 0.5]
+            },
+            "animation": "carryon:holdheavy",
+            "walkSpeedModifier": -0.25
+          },
+          "Back": {
+            "walkSpeedModifier": -0.15
+          }
+        },
+        "patchPriority": 1
+      }
+    },
+    "dependsOn": [{ "modid": "carryon" }]
+  }
+]

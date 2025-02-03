@@ -8,7 +8,7 @@ namespace HydrateOrDiedrate.Commands
     {
         public static void Register(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig)
         {
-            if(!loadedConfig.EnableThirstMechanics) return; //no need to register when thirtst is disabled
+            if(!loadedConfig.EnableThirstMechanics) return;
 
             api.ChatCommands
                 .Create("setthirst")

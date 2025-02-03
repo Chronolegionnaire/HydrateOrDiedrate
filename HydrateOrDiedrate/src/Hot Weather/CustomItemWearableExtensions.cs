@@ -12,7 +12,7 @@ namespace HydrateOrDiedrate.Hot_Weather
             EnsureConditionExists(inslot, api);
 
             ItemStack itemStack = inslot.Itemstack;
-            float maxCooling = CoolingManager.GetCooling(itemStack); // Using the updated CoolingManager.GetCooling method
+            float maxCooling = CoolingManager.GetCooling(itemStack);
 
             if (float.IsNaN(maxCooling))
             {
