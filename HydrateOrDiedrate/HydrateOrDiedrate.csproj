@@ -82,4 +82,8 @@
         </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="assets\hydrateordiedrate\patches\" />
+    </ItemGroup>
+
 </Project>
