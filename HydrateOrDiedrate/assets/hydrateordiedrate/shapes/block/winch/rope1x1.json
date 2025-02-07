@@ -1,0 +1,29 @@
+{
+	"editor": {
+		"allAngles": false,
+		"entityTextureMode": false
+	},
+	"textureWidth": 16,
+	"textureHeight": 16,
+	"textureSizes": {
+		"rope": [32,32]
+	},
+	"textures": {
+		"rope": "game:entity/erel/pristine/rope"
+	},
+	"elements": [
+		{
+			"name": "Cube1",
+			"from": [ 7.75, 0.0, 7.75 ],
+			"to": [ 8.25, 2.0, 8.25 ],
+			"rotationOrigin": [ 8.2, 0.0, 8.0 ],
+			"faces": {
+				"north": { "texture": "#rope", "uv": [ 0.0, 1.0, 0.5, 3.0 ] },
+				"east": { "texture": "#rope", "uv": [ 0.0, 0.0, 0.5, 2.0 ] },
+				"south": { "texture": "#rope", "uv": [ 0.0, 1.0, 0.5, 3.0 ] },
+				"west": { "texture": "#rope", "uv": [ 0.0, 0.0, 0.5, 2.0 ] },
+				"up": { "texture": "#rope", "uv": [ 0.0, 0.0, 0.5, 0.5 ] },
+				"down": { "texture": "#rope", "uv": [ 0.0, 2.0, 0.5, 2.5 ] }
+			}
+		}
+	]}

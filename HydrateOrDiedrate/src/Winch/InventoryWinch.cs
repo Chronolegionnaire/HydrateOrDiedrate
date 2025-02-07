@@ -8,29 +8,25 @@ namespace HydrateOrDiedrate.winch
     public class InventoryWinch : InventoryBase, ISlotProvider
     {
         private ItemSlot[] slots;
-        
+
         public ItemSlot[] Slots
         {
             get { return this.slots; }
         }
-        
         public InventoryWinch(string inventoryID, ICoreAPI api)
             : base(inventoryID, api)
         {
-            this.slots = base.GenEmptySlots(2);
+            this.slots = base.GenEmptySlots(1);
         }
-        
         public InventoryWinch(string className, string instanceID, ICoreAPI api)
             : base(className, instanceID, api)
         {
-            this.slots = base.GenEmptySlots(2);
+            this.slots = base.GenEmptySlots(1);
         }
-        
         public override int Count
         {
-            get { return 2; }
+            get { return 1; }
         }
-        
         public override ItemSlot this[int slotId]
         {
             get
@@ -45,31 +41,29 @@ namespace HydrateOrDiedrate.winch
             {
                 if (slotId < 0 || slotId >= this.Count)
                 {
-                    throw new ArgumentOutOfRangeException("slotId");
+                    throw new ArgumentOutOfRangeException(nameof(slotId));
                 }
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
                 this.slots[slotId] = value;
             }
         }
-        
+
         public override void FromTreeAttributes(ITreeAttribute tree)
         {
             this.slots = this.SlotsFromTreeAttributes(tree, this.slots, null);
         }
-        
+
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.SlotsToTreeAttributes(this.slots, tree);
         }
-        
         protected override ItemSlot NewSlot(int i)
         {
-            return new ItemSlotSurvival(this);
+            return new ItemSlotWinch(this);
         }
-        
         public override float GetSuitability(ItemSlot sourceSlot, ItemSlot targetSlot, bool isMerge)
         {
             if (targetSlot == this.slots[0] && sourceSlot.Itemstack != null)
@@ -89,9 +83,6 @@ namespace HydrateOrDiedrate.winch
             }
             return base.GetSuitability(sourceSlot, targetSlot, isMerge);
         }
-
-
-        
         public override ItemSlot GetAutoPushIntoSlot(BlockFacing atBlockFace, ItemSlot fromSlot)
         {
             return this.slots[0];

@@ -40,9 +40,8 @@ namespace HydrateOrDiedrate.winch
 			{
 				hoveredSlot = null;
 			}
-			ElementBounds winchBounds = ElementBounds.Fixed(0.0, 0.0, 200.0, 90.0);
-			ElementBounds inputSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 0.0, 30.0, 1, 1);
-			ElementBounds outputSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 153.0, 30.0, 1, 1);
+			ElementBounds winchBounds = ElementBounds.Fixed(0.0, 0.0, 100.0, 90.0);
+			ElementBounds inputSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 30.0, 30.0, 1, 1);
 			ElementBounds bgBounds = ElementBounds.Fill.WithFixedPadding(GuiStyle.ElementToDialogPadding);
 			bgBounds.BothSizing = ElementSizing.FitToChildren;
 			bgBounds.WithChildren(new ElementBounds[] { winchBounds });
@@ -55,7 +54,6 @@ namespace HydrateOrDiedrate.winch
 				.BeginChildElements(bgBounds)
 				.AddDynamicCustomDraw(winchBounds, new DrawDelegateWithBounds(this.OnBgDraw), "symbolDrawer")
 				.AddItemSlotGrid(base.Inventory, new Action<object>(this.SendInvPacket), 1, new int[1], inputSlotBounds, "inputSlot")
-				.AddItemSlotGrid(base.Inventory, new Action<object>(this.SendInvPacket), 1, new int[] { 1 }, outputSlotBounds, "outputslot")
 				.EndChildElements()
 				.Compose(true);
 			this.lastRedrawMs = this.capi.ElapsedMilliseconds;
@@ -64,10 +62,8 @@ namespace HydrateOrDiedrate.winch
 				base.SingleComposer.OnMouseMove(new MouseEvent(this.capi.Input.MouseX, this.capi.Input.MouseY));
 			}
 		}
-		public void Update(float inputTurnTime, float maxTurnTime)
+		public void Update()
 		{
-			this.inputTurnTime = inputTurnTime;
-			this.maxTurnTime = maxTurnTime;
 			if (!this.IsOpened())
 			{
 				return;
@@ -83,23 +79,7 @@ namespace HydrateOrDiedrate.winch
 		}
 		private void OnBgDraw(Context ctx, ImageSurface surface, ElementBounds currentBounds)
 		{
-			double top = 30.0;
-			ctx.Save();
-			Matrix i = ctx.Matrix;
-			i.Translate(GuiElement.scaled(63.0), GuiElement.scaled(top + 2.0));
-			i.Scale(GuiElement.scaled(0.6), GuiElement.scaled(0.6));
-			ctx.Matrix = i;
-			this.capi.Gui.Icons.DrawArrowRight(ctx, 2.0, true, true);
-			double dx = (double)(this.inputTurnTime / this.maxTurnTime);
-			ctx.Rectangle(GuiElement.scaled(5.0), 0.0, GuiElement.scaled(125.0 * dx), GuiElement.scaled(100.0));
-			ctx.Clip();
-			LinearGradient gradient = new LinearGradient(0.0, 0.0, GuiElement.scaled(200.0), 0.0);
-			gradient.AddColorStop(0.0, new Color(0.0, 0.4, 0.0, 1.0));
-			gradient.AddColorStop(1.0, new Color(0.2, 0.6, 0.2, 1.0));
-			ctx.SetSource(gradient);
-			this.capi.Gui.Icons.DrawArrowRight(ctx, 0.0, false, false);
-			gradient.Dispose();
-			ctx.Restore();
+
 		}
 		private void SendInvPacket(object p)
 		{
@@ -118,7 +98,6 @@ namespace HydrateOrDiedrate.winch
 		{
 			base.Inventory.SlotModified -= this.OnInventorySlotModified;
 			base.SingleComposer.GetSlotGrid("inputSlot").OnGuiClosed(this.capi);
-			base.SingleComposer.GetSlotGrid("outputslot").OnGuiClosed(this.capi);
 			base.OnGuiClosed();
 		}
 		private long lastRedrawMs;

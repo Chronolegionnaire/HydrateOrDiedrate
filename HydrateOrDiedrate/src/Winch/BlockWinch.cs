@@ -11,20 +11,16 @@ namespace HydrateOrDiedrate.winch
 {
     public class BlockWinch : BlockMPBase
     {
-
         public override void OnLoaded(ICoreAPI api)
         {
             base.OnLoaded(api);
         }
-        
+
         public string Direction
         {
-            get
-            {
-                return this.LastCodePart(0);
-            }
+            get { return this.LastCodePart(0); }
         }
-        
+
         public override bool DoPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ItemStack byItemStack)
         {
             bool flag = base.DoPlaceBlock(world, byPlayer, blockSel, byItemStack);
@@ -49,6 +45,7 @@ namespace HydrateOrDiedrate.winch
             }
             return flag;
         }
+
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
         {
             if (blockSel != null && !world.Claims.TryAccess(byPlayer, blockSel.Position, EnumBlockAccessFlags.Use))
@@ -56,7 +53,9 @@ namespace HydrateOrDiedrate.winch
                 return false;
             }
             BlockEntityWinch beWinch = world.BlockAccessor.GetBlockEntity(blockSel.Position) as BlockEntityWinch;
-            if (beWinch != null && beWinch.CanTurn() && (blockSel.SelectionBoxIndex == 1 || beWinch.Inventory.openedByPlayerGUIds.Contains(byPlayer.PlayerUID)))
+            if (beWinch != null && beWinch.CanTurn() 
+                && (blockSel.SelectionBoxIndex == 1 
+                    || beWinch.Inventory.openedByPlayerGUIds.Contains(byPlayer.PlayerUID)))
             {
                 beWinch.SetPlayerTurning(byPlayer, true);
                 return true;
@@ -66,13 +65,15 @@ namespace HydrateOrDiedrate.winch
         public override bool OnBlockInteractStep(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
         {
             BlockEntityWinch beWinch = world.BlockAccessor.GetBlockEntity(blockSel.Position) as BlockEntityWinch;
-            if (beWinch != null && (blockSel.SelectionBoxIndex == 1 || beWinch.Inventory.openedByPlayerGUIds.Contains(byPlayer.PlayerUID)))
+            if (beWinch != null 
+                && (blockSel.SelectionBoxIndex == 1 || beWinch.Inventory.openedByPlayerGUIds.Contains(byPlayer.PlayerUID)))
             {
-                beWinch.IsTurning(byPlayer);
+                beWinch.SetPlayerTurning(byPlayer, true);
                 return beWinch.CanTurn();
             }
             return false;
         }
+
         public override void OnBlockInteractStop(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
         {
             BlockEntityWinch beWinch = world.BlockAccessor.GetBlockEntity(blockSel.Position) as BlockEntityWinch;
@@ -81,7 +82,7 @@ namespace HydrateOrDiedrate.winch
                 beWinch.SetPlayerTurning(byPlayer, false);
             }
         }
-        
+
         public override bool OnBlockInteractCancel(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, EnumItemUseCancelReason cancelReason)
         {
             BlockEntityWinch beWinch = world.BlockAccessor.GetBlockEntity(blockSel.Position) as BlockEntityWinch;
@@ -91,6 +92,7 @@ namespace HydrateOrDiedrate.winch
             }
             return true;
         }
+
         public override WorldInteraction[] GetPlacedBlockInteractionHelp(IWorldAccessor world, BlockSelection selection, IPlayer forPlayer)
         {
             if (selection.SelectionBoxIndex == 0)
@@ -110,7 +112,7 @@ namespace HydrateOrDiedrate.winch
                 {
                     ActionLangCode = "blockhelp-winch-turn",
                     MouseButton = EnumMouseButton.Right,
-                    ShouldApply = delegate(WorldInteraction wi, BlockSelection bs, EntitySelection es)
+                    ShouldApply = (wi, bs, es) =>
                     {
                         BlockEntityWinch beWinch = world.BlockAccessor.GetBlockEntity(bs.Position) as BlockEntityWinch;
                         return beWinch != null && beWinch.CanTurn();
@@ -118,29 +120,27 @@ namespace HydrateOrDiedrate.winch
                 }
             }.Append(base.GetPlacedBlockInteractionHelp(world, selection, forPlayer));
         }
+
         public override void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {
         }
+
         public override bool HasMechPowerConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {
             switch (Direction)
             {
-                case "north":
-                    return face == BlockFacing.WEST;
-                case "south":
-                    return face == BlockFacing.EAST;
-                case "east":
-                    return face == BlockFacing.SOUTH;
-                case "west":
-                    return face == BlockFacing.NORTH;
-                default:
-                    return false;
+                case "north": return face == BlockFacing.WEST;
+                case "south": return face == BlockFacing.EAST;
+                case "east":  return face == BlockFacing.SOUTH;
+                case "west":  return face == BlockFacing.NORTH;
+                default:      return false;
             }
         }
 
         public override void OnEntityCollide(IWorldAccessor world, Entity entity, BlockPos pos, BlockFacing facing, Vec3d collideSpeed, bool isImpact)
         {
             base.OnEntityCollide(world, entity, pos, facing, collideSpeed, isImpact);
+
             if (facing == BlockFacing.UP)
             {
                 if (entity.World.Side == EnumAppSide.Server)
@@ -149,8 +149,7 @@ namespace HydrateOrDiedrate.winch
                     BEBehaviorMPConsumer mpc = this.GetBEBehavior<BEBehaviorMPConsumer>(pos);
                     if (mpc != null)
                     {
-                        entity.SidedPos.Yaw += frameTime * mpc.TrueSpeed * 2.5f * (float)(mpc.isRotationReversed() ? (-1) : 1);
-                        return;
+                        entity.SidedPos.Yaw += frameTime * mpc.TrueSpeed * 2.5f * (mpc.isRotationReversed() ? -1 : 1);
                     }
                 }
                 else
@@ -158,20 +157,19 @@ namespace HydrateOrDiedrate.winch
                     float frameTime2 = GlobalConstants.PhysicsFrameTime;
                     BEBehaviorMPConsumer mpc2 = this.GetBEBehavior<BEBehaviorMPConsumer>(pos);
                     ICoreClientAPI capi = this.api as ICoreClientAPI;
-                    if (capi.World.Player.Entity.EntityId == entity.EntityId)
+                    if (capi.World.Player.Entity.EntityId == entity.EntityId && mpc2 != null)
                     {
-                        int sign = (mpc2.isRotationReversed() ? (-1) : 1);
+                        int sign = (mpc2.isRotationReversed() ? -1 : 1);
                         if (capi.World.Player.CameraMode != EnumCameraMode.Overhead)
                         {
-                            capi.Input.MouseYaw += frameTime2 * mpc2.TrueSpeed * 2.5f * (float)sign;
+                            capi.Input.MouseYaw += frameTime2 * mpc2.TrueSpeed * 2.5f * sign;
                         }
-                        capi.World.Player.Entity.BodyYaw += frameTime2 * mpc2.TrueSpeed * 2.5f * (float)sign;
-                        capi.World.Player.Entity.WalkYaw += frameTime2 * mpc2.TrueSpeed * 2.5f * (float)sign;
-                        capi.World.Player.Entity.Pos.Yaw += frameTime2 * mpc2.TrueSpeed * 2.5f * (float)sign;
+                        capi.World.Player.Entity.BodyYaw += frameTime2 * mpc2.TrueSpeed * 2.5f * sign;
+                        capi.World.Player.Entity.WalkYaw += frameTime2 * mpc2.TrueSpeed * 2.5f * sign;
+                        capi.World.Player.Entity.Pos.Yaw  += frameTime2 * mpc2.TrueSpeed * 2.5f * sign;
                     }
                 }
             }
         }
     }
-    
 }
