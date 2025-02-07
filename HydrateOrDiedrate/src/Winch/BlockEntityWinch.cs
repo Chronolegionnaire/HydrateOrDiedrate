@@ -50,13 +50,13 @@ namespace HydrateOrDiedrate.winch
             float nextDepth = bucketDepth + 0.1f;
             BlockPos checkPos = Pos.DownCopy((int)Math.Ceiling(nextDepth));
 
-            if (checkPos.Y < 0) return false; // Prevents moving out of world bounds
+            if (checkPos.Y < 0) return false;
 
             Block blockBelow = Api.World.BlockAccessor.GetBlock(checkPos);
 
-            if (blockBelow == this.Block) return true; // Prevent false positives when lowering in same structure
+            if (blockBelow == this.Block) return true;
 
-            if (blockBelow.Replaceable < 6000 && !IsLiquidBlock(blockBelow)) return false; // Blocked by solid ground
+            if (blockBelow.Replaceable < 6000 && !IsLiquidBlock(blockBelow)) return false;
 
             return true;
         }
@@ -103,7 +103,6 @@ namespace HydrateOrDiedrate.winch
             }
             if (api.Side == EnumAppSide.Client)
             {
-                // Create and set up your renderer as before.
                 winchBaseMesh = GenMesh("base");
                 winchTopMesh  = GenMesh("top");
                 renderer = new WinchTopRenderer(api as ICoreClientAPI, Pos, winchTopMesh, Direction);
@@ -217,14 +216,12 @@ namespace HydrateOrDiedrate.winch
 
                 movementAccumTime += dt;
 
-                // Only update depth if movement is allowed
                 if (StepMovement())
                 {
                     MarkDirty();
                 }
                 else
                 {
-                    // Stop players from turning if movement is blocked
                     playersTurning.Clear();
                     quantityPlayersTurning = 0;
                     updateTurningState();
@@ -245,7 +242,6 @@ namespace HydrateOrDiedrate.winch
 
                 movementAccumTime += dt;
 
-                // Only update depth if movement is allowed
                 if (StepMovement())
                 {
                     MarkDirty();
@@ -298,18 +294,15 @@ namespace HydrateOrDiedrate.winch
             {
                 float nextDepth = bucketDepth + 0.1f;
 
-                // Ensure we can move down before updating depth
                 if (!CanMoveDown()) return false;
 
                 bucketDepth = nextDepth;
             }
 
-            // Ensure bucket depth remains within valid range
             bucketDepth = GameMath.Clamp(bucketDepth, 0.5f, float.MaxValue);
 
             BlockPos belowPos = Pos.DownCopy((int)Math.Ceiling(bucketDepth));
 
-            // Check if we're lowering into water
             if (!isRaising && IsLiquidBlock(Api.World.BlockAccessor.GetBlock(belowPos)) && BucketIsEmpty())
             {
                 FillBucketAtPos(belowPos);
@@ -324,7 +317,6 @@ namespace HydrateOrDiedrate.winch
 
         private void FillBucketAtPos(BlockPos pos)
         {
-            // Use the position directly instead of pos - 1 so that we extract water from the actual water block.
             var (waterType, extracted) = ExtractWaterAtPos(pos, 10);
             if (extracted <= 0) return;
             if (!BucketIsEmpty()) return;
@@ -426,7 +418,6 @@ namespace HydrateOrDiedrate.winch
         }
         private bool MovementBlocked()
         {
-            // If raising, check if we can move up. Otherwise (lowering) check if we can move down.
             if (isRaising)
             {
                 return !CanMoveUp();
@@ -441,7 +432,6 @@ namespace HydrateOrDiedrate.winch
         {
             if (Api?.World == null) return;
 
-            // Do not send turning state updates if movement is blocked.
             if (MovementBlocked()) return;
 
             bool nowTurning = (quantityPlayersTurning > 0) || (automated && mpc?.TrueSpeed > 0f);
@@ -542,7 +532,6 @@ namespace HydrateOrDiedrate.winch
             baseMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
             mesher.AddMeshData(baseMeshCloned);
 
-            // Ensure the top mesh is rendered properly when idle
             if (quantityPlayersTurning == 0 && !automated && topMeshCloned != null)
             {
                 topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
@@ -573,26 +562,20 @@ namespace HydrateOrDiedrate.winch
                 MeshData ropeSegmentMesh = GenRopeMesh();
                 if (ropeSegmentMesh != null)
                 {
-                    // Set the actual height of your rope segment mesh.
-                    // Adjust these values as needed.
                     float ropeSegmentHeight = 1.0f;
                     float initialOffset = 0.75f;
-                    float overlapFactor = 0.125f; // Adjust between 0 and 1; lower values cause more overlap.
+                    float overlapFactor = 0.125f;
                     float segmentSpacing = ropeSegmentHeight * overlapFactor;
 
-                    // Use bucketDepth as the effective rope length.
                     float effectiveRopeLength = bucketDepth;
 
-                    // Calculate the number of segments needed.
                     int segmentCount = (int)Math.Floor(effectiveRopeLength / segmentSpacing);
                     if (effectiveRopeLength % segmentSpacing > 0)
                     {
                         segmentCount++;
                     }
-                    // Reduce the count by 2, ensuring a minimum of 2 segments.
                     segmentCount = Math.Max(segmentCount - 2, 2);
 
-                    // Render each rope segment.
                     for (int i = 0; i < segmentCount; i++)
                     {
                         MeshData segmentMesh = ropeSegmentMesh.Clone();
@@ -600,7 +583,6 @@ namespace HydrateOrDiedrate.winch
                         segmentMesh.Translate(0f, yPosition, 0f);
                         mesher.AddMeshData(segmentMesh);
 
-                        // For the very first segment, render the knot mesh.
                         if (i == 0)
                         {
                             MeshData knotMesh = GenKnotMesh();
@@ -618,11 +600,6 @@ namespace HydrateOrDiedrate.winch
                     }
                 }
             }
-
-
-            // ===========================
-            // Bucket Rendering at Partial Depths
-            // ===========================
             if (!automated && quantityPlayersTurning == 0 && !InputSlot.Empty)
             {
                 MeshData bucketMesh;
@@ -637,7 +614,6 @@ namespace HydrateOrDiedrate.winch
 
                 if (bucketMesh != null)
                 {
-                    // Rotate based on winch direction
                     float bucketYRotation = 0f;
                     switch (Direction)
                     {
@@ -645,14 +621,8 @@ namespace HydrateOrDiedrate.winch
                         case "south": bucketYRotation = GameMath.PI; break;
                         case "west": bucketYRotation = GameMath.PI + GameMath.PIHALF; break;
                     }
-
-                    // Rotate the bucket correctly
                     bucketMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation, 0f);
-
-                    // Adjust for partial depths instead of block-snapping
                     bucketMesh.Translate(0f, -bucketDepth, 0f);
-
-                    // Add the static bucket mesh
                     mesher.AddMeshData(bucketMesh);
                 }
             }
@@ -665,7 +635,6 @@ namespace HydrateOrDiedrate.winch
             base.FromTreeAttributes(tree, worldForResolving);
             MeshAngle = tree.GetFloat("meshAngle", MeshAngle);
 
-            // Ensure inventory is properly initialized before loading attributes
             if (inventory == null)
             {
                 inventory = new InventoryWinch($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", Api);
@@ -699,7 +668,7 @@ namespace HydrateOrDiedrate.winch
             base.ToTreeAttributes(tree);
             tree.SetFloat("meshAngle", MeshAngle);
 
-            if (inventory != null) // Ensure inventory is always stored correctly
+            if (inventory != null)
             {
                 TreeAttribute invTree = new TreeAttribute();
                 inventory.ToTreeAttributes(invTree);
@@ -731,7 +700,6 @@ namespace HydrateOrDiedrate.winch
         {
             if (this.Api.World is IServerWorldAccessor)
             {
-                // Calculate drop position using the bucketDepth value for the y-offset.
                 Vec3d dropPos = this.Pos.ToVec3d().Add(0.5, -this.bucketDepth, 0.5);
                 this.Inventory.DropAll(dropPos);
             }
