@@ -79,17 +79,19 @@ namespace HydrateOrDiedrate.winch
             base.Initialize(api);
             this.api = api;
             this.ownBlock = this.Block as BlockWinch;
-            config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
-            if (config == null) config = new Config.Config();
-            this.inventory.TakeLocked = (bucketDepth > 1f);
-            this.inventory.PutLocked = false;
-            if (this.inventory == null)
+            config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json") ?? new Config.Config();
+            if (inventory == null)
             {
-                this.inventory = new InventoryWinch($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", api);
-                this.inventory.SlotModified += OnSlotModified;
+                inventory = new InventoryWinch($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", api);
+                inventory.SlotModified += OnSlotModified;
+            }
+            else
+            {
+                inventory.LateInitialize($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", api);
             }
             RegisterGameTickListener(Every100ms, 100);
             RegisterGameTickListener(Every500ms, 500);
+
             if (api.Side == EnumAppSide.Client)
             {
                 ambientSound = (api.World as IClientWorldAccessor)?.LoadSound(new SoundParams
@@ -115,7 +117,6 @@ namespace HydrateOrDiedrate.winch
                 }
     
                 ICoreClientAPI capi = api as ICoreClientAPI;
-                
                 capi.Event.RegisterRenderer(renderer, EnumRenderStage.Opaque, "winch");
             }
         }
@@ -431,9 +432,7 @@ namespace HydrateOrDiedrate.winch
         private void updateTurningState()
         {
             if (Api?.World == null) return;
-
-            if (MovementBlocked()) return;
-
+            
             bool nowTurning = (quantityPlayersTurning > 0) || (automated && mpc?.TrueSpeed > 0f);
             if (nowTurning != beforeTurning)
             {
@@ -442,7 +441,7 @@ namespace HydrateOrDiedrate.winch
                     renderer.ShouldRotateManual = (quantityPlayersTurning > 0);
                 }
                 Api.World.BlockAccessor.MarkBlockDirty(Pos, OnRetesselated);
-
+                
                 if (nowTurning)
                 {
                     ambientSound?.Start();
@@ -634,32 +633,25 @@ namespace HydrateOrDiedrate.winch
         {
             base.FromTreeAttributes(tree, worldForResolving);
             MeshAngle = tree.GetFloat("meshAngle", MeshAngle);
-
-            if (inventory == null)
-            {
-                inventory = new InventoryWinch($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", Api);
-                inventory.SlotModified += OnSlotModified;
-            }
-
             ITreeAttribute invTree = tree.GetTreeAttribute("inventory");
             if (invTree != null)
             {
                 inventory.FromTreeAttributes(invTree);
-                inventory.AfterBlocksLoaded(Api.World);
+                if (this.Api != null)
+                {
+                    inventory.AfterBlocksLoaded(this.Api.World);
+                }
             }
-
             inputTurnTime = tree.GetFloat("inputTurnTime", 0f);
             nowOutputFace = tree.GetInt("nowOutputFace", 0);
             bucketDepth = tree.GetFloat("bucketDepth", 0.5f);
             isRaising = tree.GetBool("isRaising", false);
             movementAccumTime = 0f;
-
             inventory.TakeLocked = (bucketDepth > 1f);
             inventory.PutLocked = false;
-
             if (worldForResolving.Side == EnumAppSide.Client)
             {
-                if (clientDialog != null) clientDialog.Update();
+                clientDialog?.Update();
             }
         }
 
@@ -667,26 +659,28 @@ namespace HydrateOrDiedrate.winch
         {
             base.ToTreeAttributes(tree);
             tree.SetFloat("meshAngle", MeshAngle);
-
             if (inventory != null)
             {
                 TreeAttribute invTree = new TreeAttribute();
                 inventory.ToTreeAttributes(invTree);
                 tree["inventory"] = invTree;
             }
-
             tree.SetFloat("inputTurnTime", inputTurnTime);
             tree.SetInt("nowOutputFace", nowOutputFace);
             tree.SetFloat("bucketDepth", bucketDepth);
             tree.SetBool("isRaising", isRaising);
-            List<int> vals = new List<int>();
+            List<int> clientIds = new List<int>();
             foreach (var kvp in playersTurning)
             {
                 IPlayer plr = Api.World.PlayerByUid(kvp.Key);
-                if (plr != null) vals.Add(plr.ClientId);
+                if (plr != null)
+                {
+                    clientIds.Add(plr.ClientId);
+                }
             }
-            tree["clientIdsTurning"] = new IntArrayAttribute(vals.ToArray());
+            tree["clientIdsTurning"] = new IntArrayAttribute(clientIds.ToArray());
         }
+
         public override void OnBlockRemoved()
         {
             base.OnBlockRemoved();

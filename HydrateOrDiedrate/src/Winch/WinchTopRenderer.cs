@@ -109,81 +109,88 @@ namespace HydrateOrDiedrate.winch
             rpi.RenderMesh(this.meshref);
             prog.Stop();
             if (be is BlockEntityWinch beWinch2)
+{
+    ItemStack bucketStack = beWinch2.InputSlot?.Itemstack;
+
+    if (bucketStack != null && bucketStack.Collectible != null)
+    {
+        targetBucketDepth = beWinch2.bucketDepth;
+
+        // When the bucket is new or has changed, reset the interpolation.
+        if (lastBucketStack == null ||
+            !bucketStack.Equals(api.World, lastBucketStack, GlobalConstants.IgnoredStackAttributes))
+        {
+            lastBucketStack = bucketStack.Clone();
+            lastBucketDepth = targetBucketDepth; // Reset depth immediately
+
+            bucketMeshRef?.Dispose();
+            bucketMeshRef = null;
+
+            MeshData itemMesh;
+            if (bucketStack.Class == EnumItemClass.Item && bucketStack.Item != null)
             {
-                ItemStack bucketStack = beWinch2.InputSlot?.Itemstack;
-
-                if (bucketStack != null && bucketStack.Collectible != null)
-                {
-                    targetBucketDepth = beWinch2.bucketDepth;
-                    lastBucketDepth =
-                        GameMath.Lerp(lastBucketDepth, targetBucketDepth, deltaTime * 10f);
-
-                    if (lastBucketStack == null ||
-                        !bucketStack.Equals(api.World, lastBucketStack, GlobalConstants.IgnoredStackAttributes))
-                    {
-                        lastBucketStack = bucketStack.Clone();
-                        bucketMeshRef?.Dispose();
-                        bucketMeshRef = null;
-
-                        MeshData itemMesh;
-                        if (bucketStack.Class == EnumItemClass.Item && bucketStack.Item != null)
-                        {
-                            api.Tesselator.TesselateItem(bucketStack.Item, out itemMesh);
-                        }
-                        else if (bucketStack.Class == EnumItemClass.Block && bucketStack.Block != null)
-                        {
-                            api.Tesselator.TesselateBlock(bucketStack.Block, out itemMesh);
-                        }
-                        else
-                        {
-                            return;
-                        }
-
-                        bucketMeshRef = api.Render.UploadMesh(itemMesh);
-                    }
-
-                    if (bucketMeshRef != null)
-                    {
-                        IStandardShaderProgram bucketProg = rpi.PreparedStandardShader(pos.X, pos.Y, pos.Z);
-
-                        if (bucketStack.Class == EnumItemClass.Item)
-                        {
-                            bucketProg.Tex2D = api.ItemTextureAtlas.AtlasTextures[0].TextureId;
-                        }
-                        else
-                        {
-                            bucketProg.Tex2D = api.BlockTextureAtlas.AtlasTextures[0].TextureId;
-                        }
-
-                        float yRotationBucket = 0f;
-                        switch (Direction)
-                        {
-                            case "east": yRotationBucket = GameMath.PIHALF; break;
-                            case "south": yRotationBucket = GameMath.PI; break;
-                            case "west": yRotationBucket = GameMath.PI + GameMath.PIHALF; break;
-                        }
-
-                        bucketProg.ModelMatrix = ModelMat
-                            .Identity()
-                            .Translate(pos.X - camPos.X, pos.Y - camPos.Y - lastBucketDepth, pos.Z - camPos.Z)
-                            .Translate(0.5f, 0f, 0.5f)
-                            .RotateY(yRotationBucket)
-                            .Translate(-0.5f, 0f, -0.5f)
-                            .Values;
-
-                        bucketProg.ViewMatrix = rpi.CameraMatrixOriginf;
-                        bucketProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-                        rpi.RenderMesh(bucketMeshRef);
-                        bucketProg.Stop();
-                    }
-                }
-                else
-                {
-                    bucketMeshRef?.Dispose();
-                    bucketMeshRef = null;
-                    lastBucketStack = null;
-                }
+                api.Tesselator.TesselateItem(bucketStack.Item, out itemMesh);
             }
+            else if (bucketStack.Class == EnumItemClass.Block && bucketStack.Block != null)
+            {
+                api.Tesselator.TesselateBlock(bucketStack.Block, out itemMesh);
+            }
+            else
+            {
+                return;
+            }
+
+            bucketMeshRef = api.Render.UploadMesh(itemMesh);
+        }
+        else
+        {
+            // Only lerp if the bucket is continuing from the previous state.
+            lastBucketDepth = GameMath.Lerp(lastBucketDepth, targetBucketDepth, deltaTime * 50f);
+        }
+
+        if (bucketMeshRef != null)
+        {
+            IStandardShaderProgram bucketProg = rpi.PreparedStandardShader(pos.X, pos.Y, pos.Z);
+
+            if (bucketStack.Class == EnumItemClass.Item)
+            {
+                bucketProg.Tex2D = api.ItemTextureAtlas.AtlasTextures[0].TextureId;
+            }
+            else
+            {
+                bucketProg.Tex2D = api.BlockTextureAtlas.AtlasTextures[0].TextureId;
+            }
+
+            float yRotationBucket = 0f;
+            switch (Direction)
+            {
+                case "east": yRotationBucket = GameMath.PIHALF; break;
+                case "south": yRotationBucket = GameMath.PI; break;
+                case "west": yRotationBucket = GameMath.PI + GameMath.PIHALF; break;
+            }
+
+            bucketProg.ModelMatrix = ModelMat
+                .Identity()
+                .Translate(pos.X - camPos.X, pos.Y - camPos.Y - lastBucketDepth, pos.Z - camPos.Z)
+                .Translate(0.5f, 0f, 0.5f)
+                .RotateY(yRotationBucket)
+                .Translate(-0.5f, 0f, -0.5f)
+                .Values;
+
+            bucketProg.ViewMatrix = rpi.CameraMatrixOriginf;
+            bucketProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+            rpi.RenderMesh(bucketMeshRef);
+            bucketProg.Stop();
+        }
+    }
+    else
+    {
+        bucketMeshRef?.Dispose();
+        bucketMeshRef = null;
+        lastBucketStack = null;
+    }
+}
+
         }
 
         public void Dispose()
