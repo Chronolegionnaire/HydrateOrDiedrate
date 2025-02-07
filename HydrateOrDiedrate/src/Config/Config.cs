@@ -205,7 +205,7 @@ public class Config : IModConfig
         AquiferWaterBlockMultiplier = 4.0;
         AquiferSaltWaterMultiplier = 4.0;
         AquiferBoilingWaterMultiplier = 100;
-        WellWaterFreshSatiety = -50f;
+        WellWaterFreshSatiety = 0f;
         WellWaterSaltSatiety = -100f;
         WellWaterMuddySatiety = -75f;
         WellWaterTaintedSatiety = -400f;
@@ -292,7 +292,7 @@ public class Config : IModConfig
         AquiferWaterBlockMultiplier = previousConfig?.AquiferWaterBlockMultiplier ?? 4.0;
         AquiferSaltWaterMultiplier = previousConfig?.AquiferSaltWaterMultiplier ?? 4.0;
         AquiferBoilingWaterMultiplier = previousConfig?.AquiferBoilingWaterMultiplier ?? 100;
-        WellWaterFreshSatiety = previousConfig?.WellWaterFreshSatiety ?? -50f;
+        WellWaterFreshSatiety = previousConfig?.WellWaterFreshSatiety ?? 0f;
         WellWaterSaltSatiety = previousConfig?.WellWaterSaltSatiety ?? -100f;
         WellWaterMuddySatiety = previousConfig?.WellWaterMuddySatiety ?? -75f;
         WellWaterTaintedSatiety = previousConfig?.WellWaterTaintedSatiety ?? -400f;

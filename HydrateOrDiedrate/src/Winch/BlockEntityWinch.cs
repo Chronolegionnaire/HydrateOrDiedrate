@@ -599,30 +599,117 @@ namespace HydrateOrDiedrate.winch
                     }
                 }
             }
+
             if (!automated && quantityPlayersTurning == 0 && !InputSlot.Empty)
             {
-                MeshData bucketMesh;
-                if (InputSlot.Itemstack.Class == EnumItemClass.Block)
+                try
                 {
-                    tesselator.TesselateBlock(InputSlot.Itemstack.Block, out bucketMesh);
-                }
-                else
-                {
-                    tesselator.TesselateItem(InputSlot.Itemstack.Item, out bucketMesh);
-                }
-
-                if (bucketMesh != null)
-                {
-                    float bucketYRotation = 0f;
-                    switch (Direction)
+                    MeshData bucketMesh;
+                    if (InputSlot.Itemstack.Class == EnumItemClass.Block)
                     {
-                        case "east": bucketYRotation = GameMath.PIHALF; break;
-                        case "south": bucketYRotation = GameMath.PI; break;
-                        case "west": bucketYRotation = GameMath.PI + GameMath.PIHALF; break;
+                        if (InputSlot.Itemstack.Block == null) return true;
+                        tesselator.TesselateBlock(InputSlot.Itemstack.Block, out bucketMesh);
                     }
-                    bucketMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation, 0f);
-                    bucketMesh.Translate(0f, -bucketDepth, 0f);
-                    mesher.AddMeshData(bucketMesh);
+                    else
+                    {
+                        if (InputSlot.Itemstack.Item == null) return true;
+                        tesselator.TesselateItem(InputSlot.Itemstack.Item, out bucketMesh);
+                    }
+
+                    if (bucketMesh != null && bucketMesh.VerticesCount > 0)
+                    {
+                        float bucketYRotation = 0f;
+                        switch (Direction)
+                        {
+                            case "east": bucketYRotation = GameMath.PIHALF; break;
+                            case "south": bucketYRotation = GameMath.PI; break;
+                            case "west": bucketYRotation = GameMath.PI + GameMath.PIHALF; break;
+                        }
+
+                        bucketMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation, 0f);
+                        bucketMesh.Translate(0f, -bucketDepth, 0f);
+                        mesher.AddMeshData(bucketMesh);
+                        if (InputSlot.Itemstack.Attributes?.HasAttribute("contents") == true)
+                        {
+                            var contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
+                            if (contents != null)
+                            {
+                                var contentStack = contents.GetItemstack("0");
+                                if (contentStack != null && contentStack.Collectible == null)
+                                {
+                                    contentStack.ResolveBlockOrItem(Api.World);
+                                }
+
+                                if (contentStack?.Collectible != null)
+                                {
+                                    var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
+                                    if (props != null)
+                                    {
+                                        Shape contentShape = null;
+                                        string shapePath = "game:shapes/block/wood/bucket/liquidcontents";
+                                        if (props.IsOpaque)
+                                        {
+                                            shapePath = "game:shapes/block/wood/bucket/contents";
+                                        }
+
+                                        contentShape = Shape.TryGet(Api, shapePath + ".json");
+                                        if (contentShape != null)
+                                        {
+                                            ContainerTextureSource textureSource = new ContainerTextureSource(
+                                                Api as ICoreClientAPI,
+                                                contentStack,
+                                                props.Texture
+                                            );
+                                            MeshData contentMesh;
+                                            tesselator.TesselateShape(GetType().Name, contentShape, out contentMesh,
+                                                textureSource);
+
+                                            if (contentMesh != null)
+                                            {
+                                                float maxLiquidHeight = 0.435f;
+                                                float liquidPercentage = (float)contentStack.StackSize /
+                                                                         (props.ItemsPerLitre * 10f);
+                                                float liquidHeight = liquidPercentage * maxLiquidHeight;
+                                                float liquidOffset = 0f;
+                                                contentMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation,
+                                                    0f);
+                                                contentMesh.Translate(0f, -bucketDepth + liquidHeight + liquidOffset, 0f);
+                                                if (props.ClimateColorMap != null)
+                                                {
+                                                    int col = (Api as ICoreClientAPI).World.ApplyColorMapOnRgba(
+                                                        props.ClimateColorMap,
+                                                        null,
+                                                        -1,
+                                                        Pos.X,
+                                                        Pos.Y,
+                                                        Pos.Z,
+                                                        false
+                                                    );
+
+                                                    byte[] rgba = ColorUtil.ToBGRABytes(col);
+                                                    for (int i = 0; i < contentMesh.Rgba.Length; i++)
+                                                    {
+                                                        contentMesh.Rgba[i] =
+                                                            (byte)(contentMesh.Rgba[i] * rgba[i % 4] / 255);
+                                                    }
+                                                }
+                                                for (int i = 0; i < contentMesh.FlagsCount; i++)
+                                                {
+                                                    contentMesh.Flags[i] &= ~4096;
+                                                }
+
+                                                mesher.AddMeshData(contentMesh);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Api.Logger.Error("Error rendering bucket contents: {0}", e);
                 }
             }
 
