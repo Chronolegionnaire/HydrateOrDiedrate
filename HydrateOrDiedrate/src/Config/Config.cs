@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using ProtoBuf;
 using Vintagestory.API.Common;
 
@@ -13,7 +14,7 @@ public class Config : IModConfig
     [ProtoMember(3)] public float ThirstDecayRate { get; set; }
     [ProtoMember(4)] public float ThirstDecayRateMax { get; set; }
     [ProtoMember(5)] public float HydrationLossDelayMultiplier { get; set; }
-    [ProtoMember(6)] public bool EnableThirstMechanics { get; set; }
+    [ProtoMember(6, IsRequired = true)] public bool EnableThirstMechanics { get; set; }
     [ProtoMember(7)] public float WaterSatiety { get; set; }
     [ProtoMember(8)] public float SaltWaterSatiety { get; set; }
     [ProtoMember(9)] public float BoilingWaterSatiety { get; set; }
@@ -22,7 +23,7 @@ public class Config : IModConfig
     [ProtoMember(12)] public float BoiledWaterSatiety { get; set; }
     [ProtoMember(13)] public float BoiledRainWaterSatiety { get; set; }
     [ProtoMember(14)] public float SprintThirstMultiplier { get; set; }
-    [ProtoMember(15)] public bool EnableBoilingWaterDamage { get; set; }
+    [ProtoMember(15, IsRequired = true)] public bool EnableBoilingWaterDamage { get; set; }
     [ProtoMember(16)] public float BoilingWaterDamage { get; set; }
 
     // Movement Speed Penalty Settings
@@ -30,12 +31,12 @@ public class Config : IModConfig
     [ProtoMember(18)] public float MovementSpeedPenaltyThreshold { get; set; }
 
     // Liquid Encumbrance Settings
-    [ProtoMember(19)] public bool EnableLiquidEncumbrance { get; set; }
+    [ProtoMember(19, IsRequired = true)] public bool EnableLiquidEncumbrance { get; set; }
     [ProtoMember(20)] public float EncumbranceLimit { get; set; }
     [ProtoMember(21)] public float LiquidEncumbranceMovementSpeedDebuff { get; set; }
 
     // Temperature and Heat Settings
-    [ProtoMember(22)] public bool HarshHeat { get; set; }
+    [ProtoMember(22, IsRequired = true)] public bool HarshHeat { get; set; }
     [ProtoMember(23)] public float TemperatureThreshold { get; set; }
     [ProtoMember(24)] public float ThirstIncreasePerDegreeMultiplier { get; set; }
     [ProtoMember(25)] public float HarshHeatExponentialGainMultiplier { get; set; }
@@ -55,9 +56,9 @@ public class Config : IModConfig
     public float[] EquatidianCoolingMultipliers { get; set; }
 
     // Rain Gathering Settings
-    [ProtoMember(34)] public bool EnableRainGathering { get; set; }
+    [ProtoMember(34, IsRequired = true)] public bool EnableRainGathering { get; set; }
     [ProtoMember(35)] public float RainMultiplier { get; set; }
-    [ProtoMember(36)] public bool EnableParticleTicking { get; set; }
+    [ProtoMember(36, IsRequired = true)] public bool EnableParticleTicking { get; set; }
 
     // Keg Settings
     [ProtoMember(37)] public float KegCapacityLitres { get; set; }
@@ -71,7 +72,7 @@ public class Config : IModConfig
     [ProtoMember(43)] public float TunSpoilRateMultiplier { get; set; }
 
     // Misc Settings
-    [ProtoMember(44)] public bool DisableDrunkSway { get; set; }
+    [ProtoMember(44, IsRequired = true)] public bool DisableDrunkSway { get; set; }
 
     // Well/Aquifer Settings
     [ProtoMember(45)]
@@ -125,7 +126,7 @@ public class Config : IModConfig
     [ProtoMember(61)] 
     public float WellWaterPoisonedSaltSatiety { get; set; }
     
-    [ProtoMember(62)] 
+    [ProtoMember(62, IsRequired = true)] 
     public bool AquiferDepthScaling { get; set; }
 
 
@@ -215,7 +216,6 @@ public class Config : IModConfig
         WellWaterPoisonedSaltSatiety = 0f;
         AquiferDepthScaling = true;
     }
-
     public Config(ICoreAPI api, Config previousConfig = null)
     {
         // Thirst Settings
@@ -231,7 +231,7 @@ public class Config : IModConfig
         RainWaterSatiety = previousConfig?.RainWaterSatiety ?? -50f;
         DistilledWaterSatiety = previousConfig?.DistilledWaterSatiety ?? 0f;
         BoiledWaterSatiety = previousConfig?.BoiledWaterSatiety ?? 0f;
-        BoiledRainWaterSatiety = previousConfig?.BoiledWaterSatiety ?? 0f;
+        BoiledRainWaterSatiety = previousConfig?.BoiledRainWaterSatiety ?? 0f;
         SprintThirstMultiplier = previousConfig?.SprintThirstMultiplier ?? 1.5f;
         EnableBoilingWaterDamage = previousConfig?.EnableBoilingWaterDamage ?? true;
         BoilingWaterDamage = previousConfig?.BoilingWaterDamage ?? 5.0f;

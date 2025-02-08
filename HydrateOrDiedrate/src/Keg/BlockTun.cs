@@ -10,7 +10,7 @@ namespace HydrateOrDiedrate.Keg
         public override void OnLoaded(ICoreAPI api)
         {
             base.OnLoaded(api);
-            tunCapacityLitres = Attributes?["tunCapacityLitres"].AsFloat(950.0f) ?? 950.0f;
+            tunCapacityLitres = HydrateOrDiedrateModSystem.LoadedConfig.TunCapacityLitres;
         }
 
         public override float CapacityLitres => tunCapacityLitres;

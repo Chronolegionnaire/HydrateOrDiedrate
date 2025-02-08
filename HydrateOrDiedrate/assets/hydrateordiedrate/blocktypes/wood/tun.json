@@ -45,9 +45,7 @@
         "vegetable": 1,
         "grain": 1
       }
-    },
-    "tunCapacityLitres": 950,
-    "spoilRate": 0.5
+    }
   },
   "variantgroups": [
     { "code": "side", "loadFromProperties": "abstract/horizontalorientation" }

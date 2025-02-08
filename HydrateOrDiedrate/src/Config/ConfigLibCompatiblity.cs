@@ -1,6 +1,7 @@
 ﻿using ConfigLib;
 using ImGuiNET;
 using Vintagestory.API.Client;
+using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 
 namespace HydrateOrDiedrate.Config
@@ -18,6 +19,8 @@ namespace HydrateOrDiedrate.Config
         private const string settingSaltWaterSatiety = "hydrateordiedrate:Config.Setting.SaltWaterSatiety";
         private const string settingBoilingWaterSatiety = "hydrateordiedrate:Config.Setting.BoilingWaterSatiety";
         private const string settingRainWaterSatiety = "hydrateordiedrate:Config.Setting.RainWaterSatiety";
+        private const string settingBoiledWaterSatiety = "hydrateordiedrate:Config.Setting.BoiledWaterSatiety";
+        private const string settingBoiledRainWaterSatiety = "hydrateordiedrate:Config.Setting.BoiledRainWaterSatiety";
         private const string settingDistilledWaterSatiety = "hydrateordiedrate:Config.Setting.DistilledWaterSatiety";
         private const string settingSprintThirstMultiplier = "hydrateordiedrate:Config.Setting.SprintThirstMultiplier";
         private const string settingEnableBoilingWaterDamage = "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage";
@@ -67,20 +70,20 @@ namespace HydrateOrDiedrate.Config
         private const string settingTunSpoilRateMultiplier = "hydrateordiedrate:Config.Setting.TunSpoilRateMultiplier";
         
         // Misc Settings
-        private const string settingDisableDrunkSway = "hydrateirduedrate:Config.Settings.DisableDrunkSway";
+        private const string settingDisableDrunkSway = "hydrateordiedrate:Config.Setting.DisableDrunkSway";
         
         // Well Settings
 
         private const string settingWellSpringOutputMultiplier =
-            "hydrateordiedrate:Config.Settings.WellSpringOutputMultiplier";
+            "hydrateordiedrate:Config.Setting.WellSpringOutputMultiplier";
         private const string settingWellwaterDepthMaxBase = "hydrateordiedrate:Config.Setting.WellwaterDepthMaxBase";
         private const string settingWellwaterDepthMaxClay = "hydrateordiedrate:Config.Setting.WellwaterDepthMaxClay";
         private const string settingWellwaterDepthMaxStone = "hydrateordiedrate:Config.Setting.WellwaterDepthMaxStone";
-        private const string settingAquiferRandomMultiplierChance = "hydrateordiedrate:Config.Settings.AquiferRandomMultiplierChance";
-        private const string settingAquiferStep = "hydrateordiedrate:Config.Settings.AquiferStep";
-        private const string settingAquiferWaterBlockMultiplier = "hydrateordiedrate:Config.Settings.AquiferWaterBlockMultiplier";
-        private const string settingAquiferSaltWaterMultiplier = "hydrateordiedrate:Config.Settings.AquiferSaltWaterMultiplier";
-        private const string settingAquiferBoilingWaterMultiplier = "hydrateordiedrate:Config.Settings.AquiferBoilingWaterMultiplier";
+        private const string settingAquiferRandomMultiplierChance = "hydrateordiedrate:Config.Setting.AquiferRandomMultiplierChance";
+        private const string settingAquiferStep = "hydrateordiedrate:Config.Setting.AquiferStep";
+        private const string settingAquiferWaterBlockMultiplier = "hydrateordiedrate:Config.Setting.AquiferWaterBlockMultiplier";
+        private const string settingAquiferSaltWaterMultiplier = "hydrateordiedrate:Config.Setting.AquiferSaltWaterMultiplier";
+        private const string settingAquiferBoilingWaterMultiplier = "hydrateordiedrate:Config.Setting.AquiferBoilingWaterMultiplier";
         private const string settingWellWaterFreshSatiety = "hydrateordiedrate:Config.Setting.WellWaterFreshSatiety";
         private const string settingWellWaterSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterSaltSatiety";
         private const string settingWellWaterMuddySatiety = "hydrateordiedrate:Config.Setting.WellWaterMuddySatiety";
@@ -113,11 +116,68 @@ namespace HydrateOrDiedrate.Config
 
         private void EditConfig(string id, ControlButtons buttons, ICoreClientAPI api)
         {
-            if (buttons.Save) ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", HydrateOrDiedrateModSystem.LoadedConfig);
-            if (buttons.Defaults) HydrateOrDiedrateModSystem.LoadedConfig = new Config();
+            // Save the current config to disk.
+            if (buttons.Save)
+            {
+                ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", HydrateOrDiedrateModSystem.LoadedConfig);
+            }
+
+            // Reload: re-read the config file and update the in-memory config.
+            if (buttons.Reload)
+            {
+                Config reloadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+                if (reloadedConfig != null)
+                {
+                    HydrateOrDiedrateModSystem.LoadedConfig = reloadedConfig;
+                    api.Logger.Notification("Config reloaded from file.");
+                }
+                else
+                {
+                    api.Logger.Warning("Failed to reload config from file.");
+                }
+            }
+
+            // Restore: discard any unsaved changes by reloading the config from disk.
+            if (buttons.Restore)
+            {
+                Config restoredConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+                if (restoredConfig != null)
+                {
+                    HydrateOrDiedrateModSystem.LoadedConfig = restoredConfig;
+                    api.Logger.Notification("Config restored from file.");
+                }
+                else
+                {
+                    api.Logger.Warning("No saved config found to restore.");
+                }
+            }
+
+            // Defaults: reset to default values.
+            if (buttons.Defaults)
+            {
+                if (api.Side == EnumAppSide.Server)
+                {
+                    HydrateOrDiedrateModSystem.LoadedConfig = new Config();
+                    ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", HydrateOrDiedrateModSystem.LoadedConfig);
+                }
+                else if (api.Side == EnumAppSide.Client)
+                {
+                    Config savedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
+                    if (savedConfig != null)
+                    {
+                        HydrateOrDiedrateModSystem.LoadedConfig = savedConfig;
+                    }
+                    else
+                    {
+                        api.Logger.Warning(
+                            "No saved config found when reloading defaults; using current config values.");
+                    }
+                }
+            }
+
+            // Open the edit UI with the updated config instance.
             Edit(api, HydrateOrDiedrateModSystem.LoadedConfig, id);
         }
-
         private void Edit(ICoreClientAPI api, Config config, string id)
         {
             ImGui.TextWrapped("HydrateOrDiedrate Settings");
@@ -168,6 +228,14 @@ namespace HydrateOrDiedrate.Config
             float distilledWaterSatiety = config.DistilledWaterSatiety;
             ImGui.DragFloat(Lang.Get(settingDistilledWaterSatiety) + $"##distilledWaterSatiety-{id}", ref distilledWaterSatiety, 1.0f, -1000.0f, 1000.0f);
             config.DistilledWaterSatiety = distilledWaterSatiety;
+            
+            float boiledWaterSatiety = config.BoiledWaterSatiety;
+            ImGui.DragFloat(Lang.Get(settingBoiledWaterSatiety) + $"##boiledWaterSatiety-{id}", ref boiledWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.BoiledWaterSatiety = boiledWaterSatiety;
+            
+            float boiledRainWaterSatiety = config.BoiledRainWaterSatiety;
+            ImGui.DragFloat(Lang.Get(settingBoiledRainWaterSatiety) + $"##boiledRainWaterSatiety-{id}", ref boiledRainWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+            config.BoiledRainWaterSatiety = boiledRainWaterSatiety;
 
             float sprintThirstMultiplier = config.SprintThirstMultiplier;
             ImGui.DragFloat(Lang.Get(settingSprintThirstMultiplier) + $"##sprintThirstMultiplier-{id}", ref sprintThirstMultiplier, 0.1f, 0.0f, 5.0f);

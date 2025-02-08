@@ -60,17 +60,37 @@ namespace HydrateOrDiedrate.Config
                 }
                 else
                 {
-                    if (prop.Value is JObject sourceObj && target[prop.Name] is JObject targetObj)
+                    if (prop.Name == "patches" && prop.Value is JArray sourceArr && target[prop.Name] is JArray targetArr)
+                    {
+                        foreach (var sourceItem in sourceArr.OfType<JObject>())
+                        {
+                            string itemName = sourceItem["itemname"]?.ToString();
+                            if (string.IsNullOrEmpty(itemName))
+                                continue;
+
+                            var targetItem = targetArr.OfType<JObject>()
+                                .FirstOrDefault(x => x["itemname"]?.ToString() == itemName);
+                            if (targetItem == null)
+                            {
+                                targetArr.Add(sourceItem.DeepClone());
+                            }
+                            else
+                            {
+                                DeepMerge(sourceItem, targetItem);
+                            }
+                        }
+                    }
+                    else if (prop.Value is JObject sourceObj && target[prop.Name] is JObject targetObj)
                     {
                         DeepMerge(sourceObj, targetObj);
                     }
-                    else if (prop.Value is JArray sourceArr && target[prop.Name] is JArray targetArr)
+                    else if (prop.Value is JArray sourceArray && target[prop.Name] is JArray targetArray)
                     {
-                        foreach (var item in sourceArr)
+                        foreach (var item in sourceArray)
                         {
-                            if (!targetArr.Any(x => JToken.DeepEquals(x, item)))
+                            if (!targetArray.Any(x => JToken.DeepEquals(x, item)))
                             {
-                                targetArr.Add(item.DeepClone());
+                                targetArray.Add(item.DeepClone());
                             }
                         }
                     }

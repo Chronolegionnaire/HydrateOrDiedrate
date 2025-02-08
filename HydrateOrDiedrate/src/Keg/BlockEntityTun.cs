@@ -28,12 +28,6 @@ namespace HydrateOrDiedrate.Keg
                 inv.OnGetSuitability = GetSuitability;
                 UpdateTunMultiplier();
             }
-            config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json");
-
-            if (config == null)
-            {
-                config = new Config.Config();
-            }
             RegisterGameTickListener(UpdateSpoilRate, UpdateIntervalMs);
         }
         private void UpdateTunMultiplier()
