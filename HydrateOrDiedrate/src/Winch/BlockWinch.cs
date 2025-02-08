@@ -101,25 +101,39 @@ namespace HydrateOrDiedrate.winch
                 {
                     new WorldInteraction
                     {
-                        ActionLangCode = "blockhelp-winch-addremoveitems",
+                        ActionLangCode = Lang.Get("hydrateordiedrate:blockhelp-winch-addremoveitems"),
                         MouseButton = EnumMouseButton.Right
                     }
                 }.Append(base.GetPlacedBlockInteractionHelp(world, selection, forPlayer));
             }
+
+            // When selection.SelectionBoxIndex != 0, return two custom interactions:
             return new WorldInteraction[]
             {
                 new WorldInteraction
                 {
-                    ActionLangCode = "blockhelp-winch-turn",
+                    ActionLangCode = Lang.Get("hydrateordiedrate:blockhelp-winch-lower"),
                     MouseButton = EnumMouseButton.Right,
                     ShouldApply = (wi, bs, es) =>
                     {
                         BlockEntityWinch beWinch = world.BlockAccessor.GetBlockEntity(bs.Position) as BlockEntityWinch;
                         return beWinch != null && beWinch.CanTurn();
                     }
+                },
+                new WorldInteraction
+                {
+                    ActionLangCode = Lang.Get("hydrateordiedrate:blockhelp-winch-raise"),
+                    MouseButton = EnumMouseButton.Right,
+                    HotKeyCode = ("sneak"),
+                    ShouldApply = (wi, bs, es) =>
+                    {
+                        BlockEntityWinch beWinch = world.BlockAccessor.GetBlockEntity(bs.Position) as BlockEntityWinch;
+                        return beWinch != null && !beWinch.InputSlot.Empty;
+                    }
                 }
             }.Append(base.GetPlacedBlockInteractionHelp(world, selection, forPlayer));
         }
+
 
         public override void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {

@@ -321,8 +321,8 @@ namespace HydrateOrDiedrate.winch
             var (waterType, extracted) = ExtractWaterAtPos(pos, 10);
             if (extracted <= 0) return;
             if (!BucketIsEmpty()) return;
-            if (InputSlot.Itemstack?.Collectible?.Code.Path != "woodbucket") return;
-    
+            if (InputSlot.Itemstack?.Collectible?.Code.Path.StartsWith("woodbucket") != true) return;
+
             ItemStack filledBucket = InputSlot.Itemstack.Clone();
             TreeAttribute contents = new TreeAttribute();
             int totalWaterItems = extracted * 100;
@@ -335,6 +335,7 @@ namespace HydrateOrDiedrate.winch
             InputSlot.Itemstack = filledBucket;
             InputSlot.MarkDirty();
         }
+
 
         private (string, int) ExtractWaterAtPos(BlockPos pos, int litersNeeded)
         {
@@ -416,17 +417,6 @@ namespace HydrateOrDiedrate.winch
                 }
             }
             updateTurningState();
-        }
-        private bool MovementBlocked()
-        {
-            if (isRaising)
-            {
-                return !CanMoveUp();
-            }
-            else
-            {
-                return !CanMoveDown();
-            }
         }
 
         private void updateTurningState()

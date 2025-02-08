@@ -121,5 +121,10 @@
   "hydrateordiedrate:block-wellwaterpoisonsalt-*": "Poisoned Salty Well Water",
   "hydrateordiedrate:block-wellwatertainted-*": "Tainted Well Water",
   "hydrateordiedrate:block-wellwatertaintedsalt-*": "Tainted Salty Well Water",
-  "hydrateordiedrate:block-wellspring-description": "A hand-dug spring that allows filtered water to seep through from nearby water or aquifers."
+  "hydrateordiedrate:block-wellspring-description": "A hand-dug spring that allows filtered water to seep through from nearby water or aquifers.",
+  "hydrateordiedrate:block-winch-*": "Well Winch",
+  "hydrateordiedrate:blockhelp-winch-addremoveitems": "Add or remove a bucket. (Must be raised all the way up!)",
+  "hydrateordiedrate:blockhelp-winch-lower": "Lower Winch",
+  "hydrateordiedrate:blockhelp-winch-raise": "Raise Winch",
+  "hydrateordiedrate:Winch": "Winch"
 }

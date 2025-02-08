@@ -40,12 +40,12 @@ namespace HydrateOrDiedrate.winch
 			{
 				hoveredSlot = null;
 			}
-			ElementBounds winchBounds = ElementBounds.Fixed(0.0, 0.0, 100.0, 90.0);
-			ElementBounds inputSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.None, 30.0, 30.0, 1, 1);
+			ElementBounds winchBounds = ElementBounds.Fixed(0.0, 0.0, 100.0, 100.0);
+			ElementBounds inputSlotBounds = ElementStdBounds.SlotGrid(EnumDialogArea.CenterMiddle, 0.0, 15.0, 1, 1);
 			ElementBounds bgBounds = ElementBounds.Fill.WithFixedPadding(GuiStyle.ElementToDialogPadding);
 			bgBounds.BothSizing = ElementSizing.FitToChildren;
 			bgBounds.WithChildren(new ElementBounds[] { winchBounds });
-			ElementBounds dialogBounds = ElementStdBounds.AutosizedMainDialog.WithAlignment(EnumDialogArea.RightMiddle).WithFixedAlignmentOffset(-GuiStyle.DialogToScreenPadding, 0.0);
+			ElementBounds dialogBounds = ElementStdBounds.AutosizedMainDialog.WithAlignment(EnumDialogArea.CenterMiddle).WithFixedAlignmentOffset(-GuiStyle.DialogToScreenPadding, 0.0);
 			base.ClearComposers();
 			IGuiAPI gui = this.capi.Gui;
 			string text = "blockentitywinch";
