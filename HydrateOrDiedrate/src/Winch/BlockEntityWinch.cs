@@ -91,18 +91,8 @@ namespace HydrateOrDiedrate.winch
             }
             RegisterGameTickListener(Every100ms, 100);
             RegisterGameTickListener(Every500ms, 500);
-
-            if (api.Side == EnumAppSide.Client)
-            {
-                ambientSound = (api.World as IClientWorldAccessor)?.LoadSound(new SoundParams
-                {
-                    Location = new AssetLocation("game:sounds/block/woodcreak_2.ogg"),
-                    ShouldLoop = true,
-                    Position = Pos.ToVec3f().Add(0.5f, 0.25f, 0.5f),
-                    DisposeOnFinish = false,
-                    Volume = 0.75f
-                });
-            }
+            RegisterGameTickListener(OnEverySecond, 1000);
+            
             if (api.Side == EnumAppSide.Client)
             {
                 winchBaseMesh = GenMesh("base");
@@ -281,6 +271,23 @@ namespace HydrateOrDiedrate.winch
                 {
                     playersTurning.Remove(kvp.Key);
                 }
+            }
+        }
+        private void OnEverySecond(float dt)
+        {
+            float speed = GetCurrentTurnSpeed();
+            if (this.Api.World.Rand.NextDouble() < (speed / 4f))
+            {
+                this.Api.World.PlaySoundAt(
+                    new AssetLocation("game:sounds/block/woodcreak"),
+                    this.Pos.X + 0.5,
+                    this.Pos.Y + 0.5,
+                    this.Pos.Z + 0.5,
+                    null,
+                    0.85f + speed,
+                    32f,
+                    1f
+                );
             }
         }
         private bool StepMovement()
