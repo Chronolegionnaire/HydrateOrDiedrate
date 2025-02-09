@@ -1,0 +1,23 @@
+[
+    {
+        "code": "dye-red",
+        "sealHours": 8,
+        "ingredients": [
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:distilledwaterportion",
+                "litres": 4
+            },
+            {
+                "type": "item",
+                "code": "floralzonescentralaustralianregion:fruit-enchylaenatomentosa",
+                "quantity": 10
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "game:dye-red",
+            "litres": 4
+        }
+    }
+]

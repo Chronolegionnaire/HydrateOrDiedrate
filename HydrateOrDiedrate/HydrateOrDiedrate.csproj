@@ -83,6 +83,21 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="assets\hydrateordiedrate\compatibility\butchering\recipes\barrel\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\expandedfoods\compatibility\acorns\recipes\simmering\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\expandedfoods\compatibility\ancienttools\recipes\simmering\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\expandedfoods\compatibility\moreanimals\recipes\simmering\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\expandedfoods\compatibility\primitivesurvival\recipes\simmering\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\expandedfoods\compatibility\wildcraftfruit\recipes\barrel\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\expandedfoods\compatibility\wildcraftfruit\recipes\simmering\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\expandedfoods\compatibility\wildcraftherb\recipes\simmering\primitivesurvival\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\floralzonescaribbeanregion\recipes\barrel\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\floralzonescentralaustralianregion\recipes\barrel\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\floralzoneseastasiaticregion\recipes\barrel\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\floralzonesmediterraneanregion\recipes\barrel\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\floralzonesneozeylandicregion\recipes\barrel\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\wildcraftfruit\recipes\barrel\" />
+      <Folder Include="assets\hydrateordiedrate\compatibility\wildcrafttree\recipes\barrel\" />
       <Folder Include="assets\hydrateordiedrate\patches\" />
     </ItemGroup>
 

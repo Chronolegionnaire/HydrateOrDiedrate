@@ -1,0 +1,23 @@
+{
+    "code": "vegetable-puerariamontana",
+    "sealHours": 24,
+    "ingredients": [
+        {
+            "type": "item",
+            "code": "hydrateordiedrate:distilledwaterportion",
+            "litres": 1,
+            "consumeLitres": 1
+        },
+        {
+            "type": "item",
+            "code": "floralzoneseastasiaticregion:vegetable-puerariamontana",
+            "name": "vegetable-puerariamontana",
+            "quantity": 1
+        }
+    ],
+    "output": {
+        "type": "item",
+        "code": "soakedkudzu-soaked",
+        "stackSize": 1
+    }
+}

@@ -1,0 +1,44 @@
+[
+    {
+        "code": "weaktannin",
+        "sealHours": 24,
+        "ingredients": [
+            {
+                "type": "block",
+                "code": "floralzonescaperegion:log-placed-afrocarpusfalcatus-ud",
+                "quantity": 1
+            },
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:boiledrainwaterportion",
+                "litres": 10
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "game:weaktanninportion",
+            "litres": 10
+        }
+    },
+    {
+        "code": "weaktannin",
+        "sealHours": 24,
+        "ingredients": [
+            {
+                "type": "item",
+                "code": "floralzonescaperegion:fruit-hydnoraafricana",
+                "quantity": 5
+            },
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:boiledrainwaterportion",
+                "litres": 10
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "game:weaktanninportion",
+            "litres": 10
+        }
+    }
+]

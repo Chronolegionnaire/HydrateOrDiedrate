@@ -1,0 +1,21 @@
+{
+    "code": "acornleached",
+    "sealHours": 72,
+    "ingredients": [
+        {
+            "type": "item",
+            "code": "hydrateordiedrate:wellwaterportion-fresh",
+            "litres": 2
+        },
+        {
+            "type": "item",
+            "code": "wildcraftfruit:nut-acornshelled",
+            "quantity": 1
+        }
+    ],
+    "output": {
+        "type": "item",
+        "code": "wildcraftfruit:nut-acornleached",
+        "stackSize": 1
+    }
+}
