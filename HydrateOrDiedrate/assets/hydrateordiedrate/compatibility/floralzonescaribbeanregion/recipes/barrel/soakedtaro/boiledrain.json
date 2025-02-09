@@ -10,14 +10,14 @@
         },
         {
             "type": "item",
-            "code": "vegetable-xanthosomasagittifoliumroot-raw",
+            "code": "floralzonescaribbeanregion:vegetable-xanthosomasagittifoliumroot-raw",
             "name": "vegetable-xanthosomasagittifoliumroot-raw",
             "quantity": 1
         }
     ],
     "output": {
         "type": "item",
-        "code": "vegetable-xanthosomasagittifoliumroot-soaked",
+        "code": "floralzonescaribbeanregion:vegetable-xanthosomasagittifoliumroot-soaked",
         "stackSize": 1
     }
 }
