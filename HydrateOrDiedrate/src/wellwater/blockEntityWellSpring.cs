@@ -14,7 +14,7 @@ namespace HydrateOrDiedrate.wellwater
     {
         private ICoreServerAPI sapi;
         private AquiferManager _aquiferManager;
-        private int updateIntervalMs = 15000;
+        private int updateIntervalMs = 5000;
         private double accumulatedWater = 0.0;
         private const double MaxDailyOutput = 70.0;
         private const double MinimumDailyOutput = 1.0;
@@ -112,8 +112,8 @@ namespace HydrateOrDiedrate.wellwater
                 }
 
                 double depthFactor = thisSpring.DepthFactor;
-                double dailyLiters = MaxDailyOutput * (remainingRating / 100.0) * depthFactor;
-                dailyLiters *= HydrateOrDiedrateModSystem.LoadedConfig.WellSpringOutputMultiplier;
+                double dailyLiters = MaxDailyOutput * (remainingRating / 100.0) * (1.0 - 0.75 + (0.75 * depthFactor));
+                dailyLiters *= (2f * HydrateOrDiedrateModSystem.LoadedConfig.WellSpringOutputMultiplier);
 
                 if (dailyLiters < MinimumDailyOutput)
                 {
@@ -147,7 +147,7 @@ namespace HydrateOrDiedrate.wellwater
                     var existingBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(currentPos);
                     if (existingBE != null)
                     {
-                        int maxVolume = isMuddy ? 5 : 70;
+                        int maxVolume = isMuddy ? 9 : 70;
                         int availableCapacity = maxVolume - existingBE.Volume;
 
                         if (availableCapacity > 0)
@@ -163,7 +163,8 @@ namespace HydrateOrDiedrate.wellwater
             {
                 BlockPos currentPos = Pos.UpCopy(i + 1);
                 Block currentBlock = blockAccessor.GetBlock(currentPos);
-                bool skipPlacementCheck = isMuddy && (waterType == "muddysalt" || waterType == "muddy");
+                bool skipPlacementCheck = isMuddy;
+
                 if (currentBlock != null && currentBlock.Code?.Path == "air" &&
                     (skipPlacementCheck || IsValidPlacement(blockAccessor, currentPos)))
                 {
@@ -176,7 +177,7 @@ namespace HydrateOrDiedrate.wellwater
                         var newBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(currentPos);
                         if (newBE != null)
                         {
-                            int maxVolume = isMuddy ? 1 : 70;
+                            int maxVolume = isMuddy ? 9 : 70;
                             int volumeToSet = Math.Min(leftoverLiters, maxVolume);
                             newBE.Volume = volumeToSet;
                             leftoverLiters -= volumeToSet;

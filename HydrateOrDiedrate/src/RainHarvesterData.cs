@@ -18,6 +18,8 @@ public class RainHarvesterData
     private SimpleParticleProperties rainParticlesBlue;
     private WeatherSystemServer weatherSysServer;
     private RainHarvesterManager harvesterManager;
+    private double accumulatedRainWater = 0.0;
+    private double lastRainHarvestDay = -1.0;
     public RainHarvesterData(BlockEntity entity, float rainMultiplier)
     {
         BlockEntity = entity;
@@ -83,6 +85,21 @@ public class RainHarvesterData
         {
             return;
         }
+        double currentDay = BlockEntity.Api.World.Calendar.TotalDays;
+        if (lastRainHarvestDay < 0)
+        {
+            lastRainHarvestDay = currentDay;
+            return;
+        }
+        double elapsedDays = currentDay - lastRainHarvestDay;
+        if (elapsedDays <= 0) return;
+        lastRainHarvestDay = currentDay;
+        double litersThisCycle = CalculateFillRate(rainIntensity) * elapsedDays;
+        accumulatedRainWater += litersThisCycle;
+        if (accumulatedRainWater < 0.2) return;
+        int increments = (int)Math.Floor(accumulatedRainWater / 0.2);
+        float waterToAdd = increments * 0.2f;
+        accumulatedRainWater -= waterToAdd;
 
         if (BlockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
         {
@@ -92,15 +109,13 @@ public class RainHarvesterData
                 if (slot.Empty) continue;
 
                 string itemName = slot.Itemstack?.Collectible?.Code?.Path?.ToLower() ?? "";
-
                 if (itemName.Contains("raw") || itemName.Contains("unfired")) continue;
 
-                if (slot?.Itemstack?.Collectible is BlockLiquidContainerBase blockContainer && blockContainer.IsTopOpened)
+                if (slot?.Itemstack?.Collectible is BlockLiquidContainerBase blockContainer &&
+                    blockContainer.IsTopOpened)
                 {
-                    float fillRate = CalculateFillRate(rainIntensity);
                     rainWaterStack.StackSize = 100;
-                    float desiredLiters = (float)Math.Round(fillRate, 2);
-
+                    float desiredLiters = waterToAdd;
                     float addedAmount = blockContainer.TryPutLiquid(slot.Itemstack, rainWaterStack, desiredLiters);
                     if (addedAmount > 0) groundStorage.MarkDirty(true);
                 }
@@ -108,10 +123,8 @@ public class RainHarvesterData
         }
         else if (BlockEntity.Block is BlockLiquidContainerBase blockContainerBase)
         {
-            float fillRate = CalculateFillRate(rainIntensity);
             rainWaterStack.StackSize = 100;
-            float desiredLiters = (float)Math.Round(fillRate, 2);
-
+            float desiredLiters = waterToAdd;
             blockContainerBase.TryPutLiquid(BlockEntity.Pos, rainWaterStack, desiredLiters);
         }
     }
@@ -125,7 +138,7 @@ public class RainHarvesterData
         float currentCalendarSpeedMul = BlockEntity.Api.World.Calendar.CalendarSpeedMul;
         float gameSpeedMultiplier = (currentSpeedOfTime / 60f) * (currentCalendarSpeedMul / 0.5f);
 
-        return 0.2f * rainIntensity * gameSpeedMultiplier * rainMultiplier;
+        return 2f * rainIntensity * gameSpeedMultiplier * rainMultiplier;
     }
     public bool IsOpenToSky(BlockPos pos)
     {
