@@ -1,0 +1,23 @@
+[
+    {
+        "code": "dye-black",
+        "sealHours": 8,
+        "ingredients": [
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:boiledwaterportion",
+                "litres": 4
+            },
+            {
+                "type": "item",
+                "code": "wildcrafttree:leaves-walnut",
+                "quantity": 8
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "wildcrafttree:dye-walnut",
+            "litres": 4
+        }
+    }
+]

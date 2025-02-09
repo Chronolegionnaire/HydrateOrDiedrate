@@ -1,0 +1,44 @@
+﻿[
+  {
+    "ingredientPattern": "B,S",
+    "recipeGroup": 1,
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "game:woodbucket"
+      },
+      "S": { "type": "item", "code": "expandedfoods:soyprep-shelled" }
+    },
+    "attributes": {
+      "liquidContainerProps": {
+        "requiresContent": { "type": "item", "code": "hydrateordiedrate:boiledwaterportion" },
+        "requiresLitres": 1
+      }
+    },
+    "width": 1,
+    "height": 2,
+    "shapeless": true,
+    "output": { "type": "item", "code": "expandedfoods:soyprep-wetshell" }
+  },
+  {
+    "ingredientPattern": "B,S",
+    "recipeGroup": 2,
+    "ingredients": {
+      "B": {
+        "type": "block",
+        "code": "aculinaryartillery:bottle-*-burned"
+      },
+      "S": { "type": "item", "code": "expandedfoods:soyprep-shelled" }
+    },
+    "attributes": {
+      "liquidContainerProps": {
+        "requiresContent": { "type": "item", "code": "hydrateordiedrate:boiledwaterportion" },
+        "requiresLitres": 1
+      }
+    },
+    "width": 1,
+    "height": 2,
+    "shapeless": true,
+    "output": { "type": "item", "code": "expandedfoods:soyprep-wetshell" }
+  }
+]

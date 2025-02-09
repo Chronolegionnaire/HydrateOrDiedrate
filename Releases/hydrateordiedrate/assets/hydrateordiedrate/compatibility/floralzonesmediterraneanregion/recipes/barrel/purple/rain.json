@@ -1,0 +1,23 @@
+[
+    {
+        "code": "dye-purple",
+        "sealHours": 8,
+        "ingredients": [
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:rainwaterportion",
+                "litres": 2
+            },
+            {
+                "type": "item",
+                "code": "floralzonesmediterraneanregion:fruit-vitisvinifera-black",
+                "quantity": 1
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "game:dye-purple",
+            "litres": 2
+        }
+    }
+]

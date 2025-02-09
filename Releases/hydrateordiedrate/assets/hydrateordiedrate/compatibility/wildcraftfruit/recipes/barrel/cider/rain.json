@@ -1,0 +1,42 @@
+[
+    {
+        "code": "sweetwater",
+        "ingredients": [
+            {
+                "type": "item",
+                "code": "game:honeycomb",
+                "quantity": 1
+            },
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:rainwaterportion",
+                "litres": 10
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "hydrateordiedrate:rainwaterportion",
+            "litres": 10
+        }
+    },
+    {
+        "code": "sweetwater",
+        "ingredients": [
+            {
+                "type": "item",
+                "code": "wildcraftfruit:flower-honeypots",
+                "quantity": 2
+            },
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:rainwaterportion",
+                "litres": 1
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "hydrateordiedrate:rainwaterportion",
+            "litres": 1
+        }
+    }
+]

@@ -1,0 +1,23 @@
+[
+  {
+    "code": "dye-red",
+    "sealHours": 8,
+    "ingredients": [
+      {
+        "type": "item",
+        "code": "hydrateordiedrate:distilledwaterportion",
+        "litres": 5
+      },
+      {
+        "type": "item",
+        "code": "game:crushed-cinnabar",
+        "quantity": 1
+      }
+    ],
+    "output": {
+      "type": "item",
+      "code": "game:dye-red",
+      "litres": 5
+    }
+  }
+]

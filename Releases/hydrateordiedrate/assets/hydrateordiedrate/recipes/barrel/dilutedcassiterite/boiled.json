@@ -1,0 +1,20 @@
+{
+  "code": "dilutedcassiterite",
+  "ingredients": [
+    {
+      "type": "item",
+      "code": "hydrateordiedrate:boiledwaterportion",
+      "litres": 5
+    },
+    {
+      "type": "item",
+      "code": "game:crushed-cassiterite",
+      "quantity": 1
+    }
+  ],
+  "output": {
+    "type": "item",
+    "code": "game:dilutedcassiteriteportion",
+    "litres": 5
+  }
+}

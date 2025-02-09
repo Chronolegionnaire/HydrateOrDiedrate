@@ -1,0 +1,11 @@
+﻿{
+  "ingredientPattern": "PRP,PAP,PRP",
+  "ingredients": {
+    "P": { "type": "item", "code": "game:plank-*", "name": "wood" },
+    "R": { "type": "item", "code": "game:rope", "quantity": 10 },
+    "A": { "type": "block", "code": "game:woodenaxle-*" }
+  },
+  "width": 3,
+  "height": 3,
+  "output": { "type": "block", "code": "hydrateordiedrate:winch-{wood}-east" }
+}

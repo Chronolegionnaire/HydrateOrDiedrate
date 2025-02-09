@@ -1,0 +1,23 @@
+[
+    {
+        "code": "weaktannin",
+        "sealHours": 24,
+        "ingredients": [
+            {
+                "type": "block",
+                "code": "floralzonescentralaustralianregion:log-placed-eucalyptuscamaldulensis-ud",
+                "quantity": 1
+            },
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:wellwaterportion-fresh",
+                "litres": 10
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "game:weaktanninportion",
+            "litres": 10
+        }
+    }
+]

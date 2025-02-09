@@ -1,0 +1,10 @@
+﻿[
+  {
+    "op": "replace",
+    "path": "/ingredients/A/code",
+    "value": "vanvar:woodenaxle-*",
+    "file": "hydrateordiedrate:compatibility/floralzonesmediterraneanregion/recipes/grid/winch.json",
+    "side": "Server",
+    "dependsOn": [{ "modid": "floralzonesmediterraneanregion" }]
+  }
+]

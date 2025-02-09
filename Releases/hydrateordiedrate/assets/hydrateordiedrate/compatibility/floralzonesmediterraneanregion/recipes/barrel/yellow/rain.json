@@ -1,0 +1,44 @@
+[
+    {
+        "code": "dye-yellow",
+        "sealHours": 8,
+        "ingredients": [
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:rainwaterportion",
+                "litres": 4
+            },
+            {
+                "type": "block",
+                "code": "floralzonesmediterraneanregion:tallplant-spartiumjunceum-land-harvested-free",
+                "quantity": 1
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "game:dye-yellow",
+            "litres": 4
+        }
+    },
+    {
+        "code": "dye-yellow",
+        "sealHours": 8,
+        "ingredients": [
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:rainwaterportion",
+                "litres": 4
+            },
+            {
+                "type": "block",
+                "code": "floralzonesmediterraneanregion:flower-ulexeuropaeus-free",
+                "quantity": 1
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "game:dye-yellow",
+            "litres": 4
+        }
+    }
+]

@@ -4,27 +4,31 @@
 	"entityclass": "BlockEntityWinch",
 	"entityBehaviors": [{ "name": "MPConsumer" }],
 	"behaviors": [
-		{"name": "Container"}
+		{"name": "Container"},
+		{"name": "HorizontalOrientable"}
 	],
 	"variantgroups": [
-		{ "code": "wood", "loadFromProperties": "floralzonescentralaustralianregion:block/wood" }
+		{ "code": "wood", "loadFromProperties": "floralzonescentralaustralianregion:block/wood" },
+		{ "code":"side", "loadFromProperties": "abstract/horizontalorientation" }
 	],
-	"shape": { "base": "hydrateordiedrate:block/winch/complete", "rotateY": 180 },
+	"shapeByType": {
+		"*-north": { "base": "hydrateordiedrate:block/winch/complete", "rotateY": 180 },
+		"*-east": { "base": "hydrateordiedrate:block/winch/complete", "rotateY": 90 },
+		"*-west": { "base": "hydrateordiedrate:block/winch/complete", "rotateY": 270 },
+		"*-south": { "base": "hydrateordiedrate:block/winch/complete", "rotateY": 0 }
+	},
 	"textures": {
 		"spindle":  { "base": "game:block/wood/debarked/{wood}" },
 		"plank": { "base": "game:block/wood/planks/{wood}1" },
 		"rope": { "base": "game:entity/erel/pristine/rope" }
 	},
 	"attributes": {
-		"mapColorCode": "settlement",
-		"rotatatableInterval": {
-			"default": "45deg"
-		}
+		"mapColorCode": "settlement"
 	},
 	"creativeinventory": {
-		"general": [ "*" ],
-		"decorative": [ "*" ],
-		"mechanics": ["*"]
+		"general": [ "winch-*-east" ],
+		"decorative": [ "winch-*-east" ],
+		"mechanics": ["winch-*-east"]
 	},
 	"blockmaterial": "Wood",
 	"replaceable": 900,
@@ -48,21 +52,35 @@
 	},
 	"heldTpIdleAnimation": "holdbothhandslarge",
 	"heldTpUseAnimation": "twohandplaceblock",
-	"collisionbox": {
-		"x1": 0,
-		"y1": 0,
-		"z1": 0,
-		"x2": 1,
-		"y2": 0.9375,
-		"z2": 1
-	},
-	"selectionbox": {
-		"x1": 0,
-		"y1": 0,
-		"z1": 0,
-		"x2": 1,
-		"y2": 0.9375,
-		"z2": 1
+	"collisionSelectionBoxesByType": {
+		"*-north": [
+			{ "x1": 0.25, "y1": 0.3125, "z1": 0.3125, "x2": 0.75, "y2": 0.6875, "z2": 0.625 },
+			{ "x1": 1.2501, "y1": 0.3125, "z1": 0.3125, "x2": 1.0625, "y2": 0.75, "z2": 0.6876 },
+			{ "x1": -0.0625, "y1": 0, "z1": 0.3126, "x2": 0, "y2": 1, "z2": 0.6875 },
+			{ "x1": 1, "y1": 0, "z1": 0.3125, "x2": 1.0625, "y2": 1, "z2": 0.6875 },
+			{ "x1": -0.125, "y1": 0.875, "z1": 0.46, "x2": 1.125, "y2": 0.9375, "z2": 0.54 },
+			{ "x1": 0, "y1": 0.375, "z1": 0.375, "x2": 1, "y2": 0.625, "z2": 0.625 }],
+		"*-west": [
+			{ "x1": 0.3125, "y1": 0.3125, "z1": 0.2501, "x2": 0.6875, "y2": 0.6875, "z2": 0.75 },
+			{ "x1": 0.3125, "y1": 0.3125, "z1": 1.2502, "x2": 0.6875, "y2": 0.75, "z2": 1.0626 },
+			{ "x1": 0.3125, "y1": 0, "z1": 1, "x2": 0.6875, "y2": 1, "z2": 1.0625 },
+			{ "x1": 0.6875, "y1": 0, "z1": 0, "x2": 0.3125, "y2": 1, "z2": -0.0625 },
+			{ "x1": 0.46, "y1": 0.875, "z1": -0.1249, "x2": 0.54, "y2": 0.9375, "z2": 1.125 },
+			{ "x1": 0.6875, "y1": 0.625, "z1": 1, "x2": 0.3125, "y2": 0.375, "z2": 0 }],
+		"*-east": [
+			{ "x1": 0.3125, "y1": 0.3125, "z1": 0.2501, "x2": 0.6875, "y2": 0.6875, "z2": 0.75 },
+			{ "x1": 0.3125, "y1": 0.3125, "z1": -0.2499, "x2": 0.6875, "y2": 0.75, "z2": -0.0625 },
+			{ "x1": 0.3125, "y1": 0, "z1": 1, "x2": 0.6875, "y2": 1, "z2": 1.0625 },
+			{ "x1": 0.6875, "y1": 0, "z1": 0, "x2": 0.3125, "y2": 1, "z2": -0.0625 },
+			{ "x1": 0.46, "y1": 0.875, "z1": -0.1249, "x2": 0.54, "y2": 0.9375, "z2": 1.125 },
+			{ "x1": 0.6875, "y1": 0.625, "z1": 1, "x2": 0.3125, "y2": 0.375, "z2": 0 }],
+		"*-south": [
+			{ "x1": 0.25, "y1": 0.3125, "z1": 0.3125, "x2": 0.75, "y2": 0.6875, "z2": 0.625 },
+			{ "x1": -0.25, "y1": 0.3125, "z1": 0.6877, "x2": 0, "y2": 0.75, "z2": 0.3126 },
+			{ "x1": -0.0625, "y1": 0, "z1": 0.3126, "x2": 0, "y2": 1, "z2": 0.6875 },
+			{ "x1": 1, "y1": 0, "z1": 0.3125, "x2": 1.0625, "y2": 1, "z2": 0.6875 },
+			{ "x1": -0.125, "y1": 0.875, "z1": 0.46, "x2": 1.125, "y2": 0.9375, "z2": 0.54 },
+			{ "x1": 0, "y1": 0.375, "z1": 0.375, "x2": 1, "y2": 0.625, "z2": 0.625 }]
 	},
 	"tpHandTransform": {
 		"translation": { "x": -0.29, "y": -1.19, "z": -0.19 },

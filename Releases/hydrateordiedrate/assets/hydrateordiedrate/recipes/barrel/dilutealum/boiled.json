@@ -1,0 +1,20 @@
+{
+  "code": "dilutedalum",
+  "ingredients": [
+    {
+      "type": "item",
+      "code": "hydrateordiedrate:boiledwaterportion",
+      "litres": 5
+    },
+    {
+      "type": "item",
+      "code": "game:crushed-alum",
+      "quantity": 1
+    }
+  ],
+  "output": {
+    "type": "item",
+    "code": "game:dilutedalumportion",
+    "litres": 5
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "code": "dilutedborax",
+  "ingredients": [
+    {
+      "type": "item",
+      "code": "hydrateordiedrate:boiledrainwaterportion",
+      "litres": 5
+    },
+    {
+      "type": "item",
+      "code": "game:powder-borax",
+      "quantity": 2
+    }
+  ],
+  "output": {
+    "type": "item",
+    "code": "game:dilutedboraxportion",
+    "litres": 5
+  }
+}

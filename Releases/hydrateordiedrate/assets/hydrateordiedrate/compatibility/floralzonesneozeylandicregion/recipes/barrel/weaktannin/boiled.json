@@ -1,0 +1,44 @@
+[
+    {
+        "code": "weaktannin",
+        "sealHours": 24,
+        "ingredients": [
+            {
+                "type": "block",
+                "code": "floralzonesneozeylandicregion:log-placed-nothofagusmenziesii-ud",
+                "quantity": 1
+            },
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:boiledwaterportion",
+                "litres": 10
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "game:weaktanninportion",
+            "litres": 10
+        }
+    },
+    {
+        "code": "weaktannin",
+        "sealHours": 24,
+        "ingredients": [
+            {
+                "type": "block",
+                "code": "floralzonesneozeylandicregion:logsection-placed-nothofagusmenziesii-ne-ud",
+                "quantity": 1
+            },
+            {
+                "type": "item",
+                "code": "hydrateordiedrate:boiledwaterportion",
+                "litres": 10
+            }
+        ],
+        "output": {
+            "type": "item",
+            "code": "game:weaktanninportion",
+            "litres": 10
+        }
+    }
+]
