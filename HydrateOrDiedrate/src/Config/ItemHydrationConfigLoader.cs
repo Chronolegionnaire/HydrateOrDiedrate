@@ -2256,6 +2256,14 @@ namespace HydrateOrDiedrate.Config
                         {
                             ["*"] = -12
                         }
+                    },
+                    new JObject
+                    {
+                        ["itemname"] = "maketea:teaportion-*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["*"] = 600
+                        }
                     }
                 }
             };

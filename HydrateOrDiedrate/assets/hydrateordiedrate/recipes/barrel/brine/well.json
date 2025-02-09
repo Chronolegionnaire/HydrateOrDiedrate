@@ -1,0 +1,20 @@
+{
+  "code": "brine",
+  "ingredients": [
+    {
+      "type": "item",
+      "code": "hydrateordiedrate:wellwaterportion-fresh",
+      "litres": 2
+    },
+    {
+      "type": "item",
+      "code": "game:salt",
+      "quantity": 1
+    }
+  ],
+  "output": {
+    "type": "item",
+    "code": "game:brineportion",
+    "litres": 2
+  }
+}

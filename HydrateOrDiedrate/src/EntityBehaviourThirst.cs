@@ -9,9 +9,6 @@ namespace HydrateOrDiedrate
     {
         private const float DefaultSpeedOfTime = 60f;
         private const float DefaultCalendarSpeedMul = 0.5f;
-
-        private float _customThirstRate;
-        private int _customThirstTicks;
         
         private float thirstDelta;
         private float thirstDamageDelta;
@@ -119,52 +116,62 @@ namespace HydrateOrDiedrate
 
         private void HandleAccumulatedThirstDecay(float deltaTime)
         {
-            float thirstDecayRate = _customThirstTicks > 0 ? _customThirstRate : HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
+            float thirstDecayRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
             int hydrationLossDelay = HydrationLossDelay;
-
-            float currentSpeedOfTime = entity.Api.World.Calendar.SpeedOfTime;
-            float currentCalendarSpeedMul = entity.Api.World.Calendar.CalendarSpeedMul;
+            float currentSpeedOfTime = entity.Api?.World?.Calendar?.SpeedOfTime ?? DefaultSpeedOfTime;
+            float currentCalendarSpeedMul = entity.Api?.World?.Calendar?.CalendarSpeedMul ?? DefaultCalendarSpeedMul;
             float multiplierPerGameSec = (currentSpeedOfTime / DefaultSpeedOfTime) *
                                          (currentCalendarSpeedMul / DefaultCalendarSpeedMul);
 
             if (hydrationLossDelay > 0)
             {
-                HydrationLossDelay = hydrationLossDelay - Math.Max(1, (int)Math.Floor(multiplierPerGameSec * deltaTime));
+                HydrationLossDelay =
+                    hydrationLossDelay - Math.Max(1, (int)Math.Floor(multiplierPerGameSec * deltaTime));
                 return;
             }
 
             if (entity is EntityPlayer player)
             {
-                if (player.Controls?.Sprint == true)
+                var controls = player.Controls;
+                if (controls != null)
                 {
-                    thirstDecayRate *= HydrateOrDiedrateModSystem.LoadedConfig.SprintThirstMultiplier;
-                }
+                    if (controls.Sprint)
+                    {
+                        thirstDecayRate *= HydrateOrDiedrateModSystem.LoadedConfig.SprintThirstMultiplier;
+                    }
 
-                if (player.Controls.TriesToMove || player.Controls.Jump || player.Controls.LeftMouseDown || player.Controls.RightMouseDown)
-                {
-                    lastMoveMs = entity.World.ElapsedMilliseconds;
+                    if (controls.TriesToMove || controls.Jump || controls.LeftMouseDown || controls.RightMouseDown)
+                    {
+                        lastMoveMs = entity.World.ElapsedMilliseconds;
+                    }
                 }
             }
 
             if (HydrateOrDiedrateModSystem.LoadedConfig.HarshHeat)
             {
-                var climate = entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues);
+                var climate =
+                    entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues);
 
                 if (climate.Temperature > HydrateOrDiedrateModSystem.LoadedConfig.TemperatureThreshold)
                 {
-                    float temperatureDifference = climate.Temperature - HydrateOrDiedrateModSystem.LoadedConfig.TemperatureThreshold;
-                    float temperatureFactor = HydrateOrDiedrateModSystem.LoadedConfig.ThirstIncreasePerDegreeMultiplier *
-                                              (float)Math.Exp(HydrateOrDiedrateModSystem.LoadedConfig.HarshHeatExponentialGainMultiplier *
-                                                              temperatureDifference);
+                    float temperatureDifference =
+                        climate.Temperature - HydrateOrDiedrateModSystem.LoadedConfig.TemperatureThreshold;
+                    float temperatureFactor =
+                        HydrateOrDiedrateModSystem.LoadedConfig.ThirstIncreasePerDegreeMultiplier *
+                        (float)Math.Exp(HydrateOrDiedrateModSystem.LoadedConfig.HarshHeatExponentialGainMultiplier *
+                                        temperatureDifference);
 
                     thirstDecayRate += temperatureFactor;
 
                     float coolingFactor = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f);
                     float coolingEffect = coolingFactor * (1f / (1f + (float)Math.Exp(-0.5f * temperatureDifference)));
-                    thirstDecayRate -= Math.Min(coolingEffect, thirstDecayRate - HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate);
+                    thirstDecayRate -= Math.Min(coolingEffect,
+                        thirstDecayRate - HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate);
                 }
             }
-            thirstDecayRate = Math.Min(thirstDecayRate, HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate * HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRateMax);
+
+            thirstDecayRate = Math.Min(thirstDecayRate, HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate *
+                                                        HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRateMax);
 
             if (currentSpeedOfTime > DefaultSpeedOfTime || currentCalendarSpeedMul > DefaultCalendarSpeedMul)
             {
@@ -176,10 +183,7 @@ namespace HydrateOrDiedrate
             {
                 thirstDecayRate /= 4f;
             }
-
-            if (_customThirstTicks > 0) _customThirstTicks--;
             ModifyThirst(-thirstDecayRate * deltaTime * 0.1f);
-            
             ThirstRate = thirstDecayRate;
         }
 

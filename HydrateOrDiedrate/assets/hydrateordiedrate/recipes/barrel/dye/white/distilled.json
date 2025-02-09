@@ -1,0 +1,23 @@
+[
+  {
+    "code": "dye-white",
+    "sealHours": 8,
+    "ingredients": [
+      {
+        "type": "item",
+        "code": "hydrateordiedrate:distilledwaterportion",
+        "litres": 2
+      },
+      {
+        "type": "item",
+        "code": "game:powder-borax",
+        "quantity": 1
+      }
+    ],
+    "output": {
+      "type": "item",
+      "code": "game:dye-white",
+      "litres": 2
+    }
+  }
+]

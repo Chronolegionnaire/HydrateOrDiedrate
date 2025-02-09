@@ -234,7 +234,6 @@ namespace HydrateOrDiedrate.winch
                 EnumRotDirection turnDir = mpc.Network.TurnDir;
                 bool oldRaising = isRaising;
                 isRaising = (turnDir == EnumRotDirection.Counterclockwise);
-                Console.WriteLine(turnDir);
                 if (isRaising != oldRaising)
                 {
                     movementAccumTime = 0f;

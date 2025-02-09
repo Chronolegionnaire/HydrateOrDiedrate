@@ -160,14 +160,24 @@ namespace HydrateOrDiedrate.winch
                 if (ShouldRotateAutomated && mechPowerPart != null)
                 {
                     float mechAngle = mechPowerPart.AngleRad;
-                    if (Direction == "north" || Direction == "west")
+                    float turnDirSign = (mechPowerPart.Network.TurnDir == EnumRotDirection.Counterclockwise) ? 1f : -1f;
+                    switch (Direction)
                     {
-                        mechAngle = -mechAngle;
+                        case "east":
+                            this.AngleRad = -mechAngle * turnDirSign;
+                            break;
+                        case "west":
+                            this.AngleRad = mechAngle * turnDirSign;
+                            break;
+                        case "south":
+                            this.AngleRad = mechAngle * 1f;
+                            break;
+                        default:
+                            this.AngleRad = -mechAngle * 1f;
+                            break;
                     }
-
-                    float directionSign = beWinch.IsRaising ? -1f : 1f;
-                    this.AngleRad = mechAngle * directionSign;
                 }
+
 
                 if (ShouldRotateManual)
                 {

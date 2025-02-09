@@ -1,0 +1,73 @@
+[
+  {
+    "code": "pulp-linen",
+    "sealHours": 24,
+    "ingredients": [
+      {
+        "type": "item",
+        "code": "hydrateordiedrate:wellwaterportion-fresh",
+        "litres": 4,
+        "consumeLitres": 4
+      },
+      {
+        "type": "item",
+        "code": "game:bandage-*",
+        "name": "bandage",
+        "quantity": 1,
+        "allowedVariants": [
+          "clean",
+          "alcoholed"
+        ]
+      }
+    ],
+    "output": {
+      "type": "item",
+      "code": "game:pulp-linen",
+      "stackSize": 2
+    }
+  },
+  {
+    "code": "pulp-linen",
+    "sealHours": 24,
+    "ingredients": [
+      {
+        "type": "item",
+        "code": "hydrateordiedrate:wellwaterportion-fresh",
+        "litres": 2,
+        "consumeLitres": 2
+      },
+      {
+        "type": "item",
+        "code": "game:flaxtwine",
+        "quantity": 1
+      }
+    ],
+    "output": {
+      "type": "item",
+      "code": "game:pulp-linen",
+      "stackSize": 1
+    }
+  },
+  {
+    "code": "pulp-linen",
+    "sealHours": 24,
+    "ingredients": [
+      {
+        "type": "item",
+        "code": "hydrateordiedrate:wellwaterportion-fresh",
+        "litres": 2,
+        "consumeLitres": 2
+      },
+      {
+        "type": "item",
+        "code": "game:flaxfibers",
+        "quantity": 4
+      }
+    ],
+    "output": {
+      "type": "item",
+      "code": "game:pulp-linen",
+      "stackSize": 1
+    }
+  }
+]

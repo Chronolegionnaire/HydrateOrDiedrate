@@ -1,0 +1,20 @@
+{
+  "code": "slakedlime",
+  "ingredients": [
+    {
+      "type": "item",
+      "code": "hydrateordiedrate:wellwaterportion-fresh",
+      "litres": 1
+    },
+    {
+      "type": "item",
+      "code": "game:quicklime",
+      "quantity": 4
+    }
+  ],
+  "output": {
+    "type": "item",
+    "code": "game:slakedlimeportion",
+    "litres": 4
+  }
+}
