@@ -332,25 +332,34 @@ namespace HydrateOrDiedrate.winch
             ItemStack filledBucket = InputSlot.Itemstack.Clone();
             TreeAttribute contents = new TreeAttribute();
             int totalWaterItems = extracted * 100;
-            ItemStack waterStack = new ItemStack(
-                Api.World.GetItem(new AssetLocation($"hydrateordiedrate:wellwaterportion-{waterType}")),
-                totalWaterItems
-            );
+
+            AssetLocation waterAsset;
+            if (waterType == "saltwater")
+            {
+                waterAsset = new AssetLocation("game:saltwaterportion");
+            }
+            else if (waterType == "water")
+            {
+                waterAsset = new AssetLocation("game:waterportion");
+            }
+            else
+            {
+                waterAsset = new AssetLocation($"hydrateordiedrate:wellwaterportion-{waterType}");
+            }
+
+            ItemStack waterStack = new ItemStack(Api.World.GetItem(waterAsset), totalWaterItems);
             contents["0"] = new ItemstackAttribute(waterStack);
             filledBucket.Attributes["contents"] = contents;
             InputSlot.Itemstack = filledBucket;
             InputSlot.MarkDirty();
         }
 
-
         private (string, int) ExtractWaterAtPos(BlockPos pos, int litersNeeded)
         {
             Block block = Api.World.BlockAccessor.GetBlock(pos);
             string codePath = block?.Code?.Path?.ToLowerInvariant() ?? "";
 
-            if (codePath.StartsWith("game:water")
-                || codePath.StartsWith("game:saltwater")
-                || codePath.StartsWith("game:boilingwater"))
+            if (codePath.StartsWith("water") || codePath.StartsWith("saltwater") || codePath.StartsWith("boilingwater"))
             {
                 return (codePath.Contains("salt") ? "saltwater" : "water", litersNeeded);
             }
@@ -358,6 +367,15 @@ namespace HydrateOrDiedrate.winch
             if (codePath.Contains("wellwater"))
             {
                 BlockEntity be = Api.World.BlockAccessor.GetBlockEntity(pos);
+                if (!(be is HydrateOrDiedrate.wellwater.BlockEntityWellWaterData))
+                {
+                    BlockPos naturalPos = FindNaturalSourceInLiquidChain(Api.World.BlockAccessor, pos);
+                    if (naturalPos != null)
+                    {
+                        be = Api.World.BlockAccessor.GetBlockEntity(naturalPos);
+                    }
+                }
+
                 if (be is HydrateOrDiedrate.wellwater.BlockEntityWellWaterData wellData)
                 {
                     int available = wellData.Volume;
@@ -368,13 +386,20 @@ namespace HydrateOrDiedrate.winch
                         wellData.MarkDirty(true);
 
                         string waterType = "fresh";
-                        if (codePath.Contains("muddysalt")) waterType = "muddysalt";
-                        else if (codePath.Contains("taintedsalt")) waterType = "taintedsalt";
-                        else if (codePath.Contains("poisonedsalt")) waterType = "poisonedsalt";
-                        else if (codePath.Contains("muddy")) waterType = "muddy";
-                        else if (codePath.Contains("tainted")) waterType = "tainted";
-                        else if (codePath.Contains("poisoned")) waterType = "poisoned";
-                        else if (codePath.Contains("salt")) waterType = "salt";
+                        if (codePath.Contains("muddysalt"))
+                            waterType = "muddysalt";
+                        else if (codePath.Contains("taintedsalt"))
+                            waterType = "taintedsalt";
+                        else if (codePath.Contains("poisonedsalt"))
+                            waterType = "poisonedsalt";
+                        else if (codePath.Contains("muddy"))
+                            waterType = "muddy";
+                        else if (codePath.Contains("tainted"))
+                            waterType = "tainted";
+                        else if (codePath.Contains("poisoned"))
+                            waterType = "poisoned";
+                        else if (codePath.Contains("salt"))
+                            waterType = "salt";
 
                         return (waterType, extract);
                     }
@@ -383,6 +408,42 @@ namespace HydrateOrDiedrate.winch
 
             return ("fresh", 0);
         }
+
+        public BlockPos FindNaturalSourceInLiquidChain(IBlockAccessor blockAccessor, BlockPos pos,
+            HashSet<BlockPos> visited = null)
+        {
+            if (visited == null) visited = new HashSet<BlockPos>();
+            if (visited.Contains(pos)) return null;
+            visited.Add(pos);
+
+            Block currentBlock = blockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
+            if (currentBlock != null && currentBlock.Variant["createdBy"] == "natural")
+            {
+                return pos;
+            }
+
+            foreach (BlockFacing facing in BlockFacing.ALLFACES)
+            {
+                BlockPos neighborPos = pos.AddCopy(facing);
+                Block neighborBlock = blockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
+                if (neighborBlock != null && neighborBlock.Code?.Domain == "game")
+                {
+                    continue;
+                }
+
+                if (neighborBlock != null && neighborBlock.IsLiquid())
+                {
+                    var naturalSourcePos = FindNaturalSourceInLiquidChain(blockAccessor, neighborPos, visited);
+                    if (naturalSourcePos != null)
+                    {
+                        return naturalSourcePos;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         private bool BucketIsEmpty()
         {
             if (InputSlot.Empty) return false;
@@ -392,9 +453,9 @@ namespace HydrateOrDiedrate.winch
         {
             if (block == null) return false;
             string codePath = block.Code?.Path?.ToLowerInvariant() ?? "";
-            return codePath.StartsWith("game:water")
-                || codePath.StartsWith("game:saltwater")
-                || codePath.StartsWith("game:boilingwater")
+            return codePath.StartsWith("water")
+                || codePath.Contains("saltwater")
+                || codePath.Contains("boilingwater")
                 || codePath.Contains("wellwater");
         }
         private float GetCurrentTurnSpeed()

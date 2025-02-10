@@ -122,6 +122,7 @@ namespace HydrateOrDiedrate.wellwater
 
                 double litersThisTick = dailyLiters * elapsedDays;
                 accumulatedWater += litersThisTick;
+                Console.WriteLine(accumulatedWater);
                 if (accumulatedWater >= 1.0)
                 {
                     int wholeLiters = (int)Math.Floor(accumulatedWater);
@@ -131,6 +132,7 @@ namespace HydrateOrDiedrate.wellwater
                 }
             }
         }
+
         private void AddOrPlaceWater(string waterType, int litersToAdd)
         {
             var blockAccessor = sapi.World.BlockAccessor;
@@ -164,8 +166,11 @@ namespace HydrateOrDiedrate.wellwater
                 BlockPos currentPos = Pos.UpCopy(i + 1);
                 Block currentBlock = blockAccessor.GetBlock(currentPos);
                 bool skipPlacementCheck = isMuddy;
-
-                if (currentBlock != null && currentBlock.Code?.Path == "air" &&
+                string blockPath = currentBlock?.Code?.Path;
+                bool isAir = blockPath == "air";
+                bool isSpreading = blockPath?.StartsWith($"wellwater{waterType}-spreading-") == true;
+                bool isNatural = blockPath?.StartsWith($"wellwater{waterType}-natural-") == true;
+                if ((isAir || isSpreading) && !isNatural &&
                     (skipPlacementCheck || IsValidPlacement(blockAccessor, currentPos)))
                 {
                     string blockCode = $"hydrateordiedrate:wellwater{waterType}-natural-still-1";
@@ -185,11 +190,13 @@ namespace HydrateOrDiedrate.wellwater
                     }
                 }
             }
+
             if (leftoverLiters > 0)
             {
                 accumulatedWater = 0.0;
             }
         }
+
         private int DetermineBaseVertical(IBlockAccessor blockAccessor, BlockPos pos)
         {
             string ringMat = CheckBaseRingMaterial(blockAccessor, pos);

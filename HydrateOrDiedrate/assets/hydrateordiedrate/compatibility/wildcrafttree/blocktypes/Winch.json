@@ -19,7 +19,7 @@
 	},
 	"textures": {
 		"spindle":  { "base": "game:block/wood/debarked/{wood}" },
-		"plank": { "base": "game:block/wood/planks/{wood}1" },
+		"plank": { "base": "wildcrafttree:block/wood/planks/{wood}1" },
 		"rope": { "base": "game:entity/erel/pristine/rope" }
 	},
 	"attributes": {

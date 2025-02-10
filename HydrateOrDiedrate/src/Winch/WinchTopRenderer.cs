@@ -63,11 +63,12 @@ namespace HydrateOrDiedrate.winch
             if (contents == null) return;
 
             var contentStack = contents.GetItemstack("0");
-            if (contentStack != null && contentStack.Collectible == null)
+            if (contentStack == null) return;
+            if (contentStack.Collectible == null)
             {
                 contentStack.ResolveBlockOrItem(api.World);
             }
-            if (lastContentStack != null && 
+            if (lastContentStack != null &&
                 contentStack.Equals(api.World, lastContentStack, GlobalConstants.IgnoredStackAttributes))
             {
                 return;
@@ -81,12 +82,12 @@ namespace HydrateOrDiedrate.winch
                 liquidContentsMeshRef = null;
             }
 
-            if (contentStack?.Collectible == null) return;
+            if (contentStack.Collectible == null) return;
 
             var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
             if (props == null) return;
 
-            string shapePath = props.IsOpaque 
+            string shapePath = props.IsOpaque
                 ? "game:shapes/block/wood/bucket/contents"
                 : "game:shapes/block/wood/bucket/liquidcontents";
 
