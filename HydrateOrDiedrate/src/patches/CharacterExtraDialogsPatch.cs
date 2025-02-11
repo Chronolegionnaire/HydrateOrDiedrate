@@ -193,7 +193,11 @@ namespace HydrateOrDiedrate.patches
             float thirstPenalty = entity.WatchedAttributes.GetFloat("thirstPenalty", 0f);
             float currentThirstRate = entity.WatchedAttributes.GetFloat("thirstRate", 0.01f);
             float normalThirstRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
-            float thirstRatePercentage = (currentThirstRate / normalThirstRate) * 100;
+            float currentSpeedOfTime = capi.World.Calendar?.SpeedOfTime ?? 60f;
+            float currentCalendarSpeedMul = capi.World.Calendar?.CalendarSpeedMul ?? 0.5f;
+            float multiplierPerGameSec = (currentSpeedOfTime / 60f) * (currentCalendarSpeedMul / 0.5f);
+            float normalizedThirstRate = currentThirstRate / multiplierPerGameSec;
+            float thirstRatePercentage = (normalizedThirstRate / normalThirstRate) * 100;
             thirstRatePercentage = Math.Max(0, thirstRatePercentage);
             var thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst");
             if (thirstDynamicText != null)

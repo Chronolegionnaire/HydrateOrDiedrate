@@ -241,8 +241,11 @@ namespace HydrateOrDiedrate.wellwater
                     if (wellSpringBlock != null)
                     {
                         bhHandling = EnumHandling.PreventDefault;
-                        world.BlockAccessor.ExchangeBlock(wellSpringBlock.BlockId, blockSel.Position);
-                        world.BlockAccessor.SpawnBlockEntity("BlockEntityWellSpring", blockSel.Position, null);
+                        api.World.RegisterCallback((float dt) =>
+                        {
+                            world.BlockAccessor.ExchangeBlock(wellSpringBlock.BlockId, blockSel.Position);
+                            world.BlockAccessor.SpawnBlockEntity("BlockEntityWellSpring", blockSel.Position, null);
+                        }, 200);
                         return true;
                     }
                 }
