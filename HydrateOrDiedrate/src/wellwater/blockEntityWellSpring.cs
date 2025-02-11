@@ -122,7 +122,6 @@ namespace HydrateOrDiedrate.wellwater
 
                 double litersThisTick = dailyLiters * elapsedDays;
                 accumulatedWater += litersThisTick;
-                Console.WriteLine(accumulatedWater);
                 if (accumulatedWater >= 1.0)
                 {
                     int wholeLiters = (int)Math.Floor(accumulatedWater);

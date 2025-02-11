@@ -64,7 +64,8 @@ namespace HydrateOrDiedrate.wellwater
                     Block wellSpringBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:wellspring"));
                     if (wellSpringBlock != null)
                     {
-                        world.BlockAccessor.SetBlock(wellSpringBlock.BlockId, blockSel.Position);
+                        world.BlockAccessor.ExchangeBlock(wellSpringBlock.BlockId, blockSel.Position);
+                        world.BlockAccessor.SpawnBlockEntity("BlockEntityWellSpring", blockSel.Position, null);
                         return true;
                     }
                 }
