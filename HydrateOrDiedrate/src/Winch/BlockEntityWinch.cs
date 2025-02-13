@@ -259,7 +259,7 @@ namespace HydrateOrDiedrate.winch
             if (Api.Side == EnumAppSide.Server && (GetCurrentTurnSpeed() > 0f || prevInputTurnTime != inputTurnTime))
             {
                 ItemStack itemstack = inventory?[0]?.Itemstack;
-                if (itemstack?.Collectible?.GrindingProps != null)
+                if (itemstack?.Collectible?.IsLiquid() != null)
                 {
                     MarkDirty(false);
                 }
@@ -309,8 +309,14 @@ namespace HydrateOrDiedrate.winch
             bucketDepth = GameMath.Clamp(bucketDepth, 0.5f, float.MaxValue);
 
             BlockPos belowPos = Pos.DownCopy((int)Math.Ceiling(bucketDepth));
+            Block blockBelow = Api.World.BlockAccessor.GetBlock(belowPos);
+            bool notRaising = !isRaising;
+            bool isLiquid = IsLiquidBlock(blockBelow);
+            bool bucketEmpty = BucketIsEmpty();
 
-            if (!isRaising && IsLiquidBlock(Api.World.BlockAccessor.GetBlock(belowPos)) && BucketIsEmpty())
+            Console.WriteLine($"[Winch Debug] !isRaising: {notRaising}, IsLiquidBlock: {isLiquid}, BucketIsEmpty: {bucketEmpty}");
+
+            if (notRaising && isLiquid && bucketEmpty)
             {
                 FillBucketAtPos(belowPos);
             }
@@ -443,11 +449,26 @@ namespace HydrateOrDiedrate.winch
 
             return null;
         }
-
         private bool BucketIsEmpty()
         {
-            if (InputSlot.Empty) return false;
-            return !InputSlot.Itemstack.Attributes.HasAttribute("contents");
+            if (InputSlot.Empty)
+            {
+                return false;
+            }
+
+            if (!InputSlot.Itemstack.Attributes.HasAttribute("contents"))
+            {
+                return true;
+            }
+
+            ITreeAttribute contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
+            if (contents == null)
+            {
+                return true;
+            }
+
+            var contentStack = contents.GetItemstack("0");
+            return contentStack == null;
         }
         private bool IsLiquidBlock(Block block)
         {
