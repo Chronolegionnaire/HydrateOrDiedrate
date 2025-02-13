@@ -128,6 +128,80 @@ public class Config : IModConfig
     
     [ProtoMember(62, IsRequired = true)] 
     public bool AquiferDepthScaling { get; set; }
+    
+    // Liquid Perish Rates
+    
+    [ProtoMember(63)] 
+    public float RainWaterFreshHours { get; set; }
+    
+    [ProtoMember(64)] 
+    public float RainWaterTransitionHours { get; set; }
+    
+    [ProtoMember(65)] 
+    public float BoiledWaterFreshHours { get; set; }
+    
+    [ProtoMember(66)] 
+    public float BoiledWaterTransitionHours { get; set; }
+    
+    [ProtoMember(67)] 
+    public float BoiledRainWaterFreshHours { get; set; }
+    
+    [ProtoMember(68)] 
+    public float BoiledRainWaterTransitionHours { get; set; }
+    
+    [ProtoMember(69)] 
+    public float DistilledWaterFreshHours { get; set; }
+    
+    [ProtoMember(70)] 
+    public float DistilledWaterTransitionHours { get; set; }
+    
+    [ProtoMember(71)] 
+    public float WellWaterFreshFreshHours { get; set; }
+    
+    [ProtoMember(72)] 
+    public float WellWaterFreshTransitionHours { get; set; }
+    
+    [ProtoMember(73)] 
+    public float WellWaterSaltFreshHours { get; set; }
+    
+    [ProtoMember(74)] 
+    public float WellWaterSaltTransitionHours { get; set; }
+    
+    [ProtoMember(75)] 
+    public float WellWaterMuddyFreshHours { get; set; }
+    
+    [ProtoMember(76)] 
+    public float WellWaterMuddyTransitionHours { get; set; }
+    
+    [ProtoMember(77)] 
+    public float WellWaterTaintedFreshHours { get; set; }
+    
+    [ProtoMember(78)] 
+    public float WellWaterTaintedTransitionHours { get; set; }
+    
+    [ProtoMember(79)] 
+    public float WellWaterPoisonedFreshHours { get; set; }
+    
+    [ProtoMember(80)] 
+    public float WellWaterPoisonedTransitionHours { get; set; }
+    
+    [ProtoMember(81)] 
+    public float WellWaterMuddySaltFreshHours { get; set; }
+    
+    [ProtoMember(82)] 
+    public float WellWaterMuddySaltTransitionHours { get; set; }
+    
+    [ProtoMember(83)] 
+    public float WellWaterTaintedSaltFreshHours { get; set; }
+    
+    [ProtoMember(84)] 
+    public float WellWaterTaintedSaltTransitionHours { get; set; }
+    
+    [ProtoMember(85)] 
+    public float WellWaterPoisonedSaltFreshHours { get; set; }
+    
+    [ProtoMember(86)] 
+    public float WellWaterPoisonedSaltTransitionHours { get; set; }
 
 
     public Config()
@@ -215,6 +289,32 @@ public class Config : IModConfig
         WellWaterTaintedSaltSatiety = -400f;
         WellWaterPoisonedSaltSatiety = 0f;
         AquiferDepthScaling = true;
+        
+        // Liquid Perish Rates
+        RainWaterFreshHours = 150f;
+        RainWaterTransitionHours = 36f;
+        BoiledWaterFreshHours = 75f;
+        BoiledWaterTransitionHours = 18f;
+        BoiledRainWaterFreshHours = 75f;
+        BoiledRainWaterTransitionHours = 18f;
+        DistilledWaterFreshHours = 150f;
+        DistilledWaterTransitionHours = 36f;
+        WellWaterFreshFreshHours = 150f;
+        WellWaterFreshTransitionHours = 36f;
+        WellWaterSaltFreshHours = 150f;
+        WellWaterSaltTransitionHours = 36f;
+        WellWaterMuddyFreshHours = 150f;
+        WellWaterMuddyTransitionHours = 36f;
+        WellWaterTaintedFreshHours = 150f;
+        WellWaterTaintedTransitionHours = 36f;
+        WellWaterPoisonedFreshHours = 150f;
+        WellWaterPoisonedTransitionHours = 36f;
+        WellWaterMuddySaltFreshHours = 150f;
+        WellWaterMuddySaltTransitionHours = 36f;
+        WellWaterTaintedSaltFreshHours = 150f;
+        WellWaterTaintedSaltTransitionHours = 36f;
+        WellWaterPoisonedSaltFreshHours = 150f;
+        WellWaterPoisonedSaltTransitionHours = 36f;
     }
     public Config(ICoreAPI api, Config previousConfig = null)
     {
@@ -301,5 +401,31 @@ public class Config : IModConfig
         WellWaterTaintedSaltSatiety = previousConfig?.WellWaterTaintedSaltSatiety ?? -400f;
         WellWaterPoisonedSaltSatiety = previousConfig?.WellWaterPoisonedSaltSatiety ?? 0f;
         AquiferDepthScaling = previousConfig?.AquiferDepthScaling ?? true;
+        
+        // Liquid Perish Rates
+         RainWaterFreshHours = previousConfig?.RainWaterFreshHours ?? 150f;
+         RainWaterTransitionHours = previousConfig?.RainWaterTransitionHours ?? 36f;
+         BoiledWaterFreshHours = previousConfig?.BoiledWaterFreshHours ?? 75f;
+         BoiledWaterTransitionHours = previousConfig?.BoiledWaterTransitionHours ?? 18f;
+         BoiledRainWaterFreshHours = previousConfig?.BoiledRainWaterFreshHours ?? 75f;
+         BoiledRainWaterTransitionHours = previousConfig?.BoiledRainWaterTransitionHours ?? 18f;
+         DistilledWaterFreshHours = previousConfig?.DistilledWaterFreshHours ?? 150f;
+         DistilledWaterTransitionHours = previousConfig?.DistilledWaterTransitionHours ?? 36f;
+         WellWaterFreshFreshHours = previousConfig?.WellWaterFreshFreshHours ?? 150f;
+         WellWaterFreshTransitionHours = previousConfig?.WellWaterFreshTransitionHours ?? 36f;
+         WellWaterSaltFreshHours = previousConfig?.WellWaterSaltFreshHours ?? 150f;
+         WellWaterSaltTransitionHours = previousConfig?.WellWaterSaltTransitionHours ?? 36f;
+         WellWaterMuddyFreshHours = previousConfig?.WellWaterMuddyFreshHours ?? 150f;
+         WellWaterMuddyTransitionHours = previousConfig?.WellWaterMuddyTransitionHours ?? 36f;
+         WellWaterTaintedFreshHours = previousConfig?.WellWaterTaintedFreshHours ?? 150f;
+         WellWaterTaintedTransitionHours = previousConfig?.WellWaterTaintedTransitionHours ?? 36f;
+         WellWaterPoisonedFreshHours = previousConfig?.WellWaterPoisonedFreshHours ?? 150f;
+         WellWaterPoisonedTransitionHours = previousConfig?.WellWaterPoisonedTransitionHours ?? 36f;
+         WellWaterMuddySaltFreshHours = previousConfig?.WellWaterMuddySaltFreshHours ?? 150f;
+         WellWaterMuddySaltTransitionHours = previousConfig?.WellWaterMuddySaltTransitionHours ?? 36f;
+         WellWaterTaintedSaltFreshHours = previousConfig?.WellWaterTaintedSaltFreshHours ?? 150f;
+         WellWaterTaintedSaltTransitionHours = previousConfig?.WellWaterTaintedSaltTransitionHours ?? 36f;
+         WellWaterPoisonedSaltFreshHours = previousConfig?.WellWaterPoisonedSaltFreshHours ?? 150f;
+         WellWaterPoisonedSaltTransitionHours = previousConfig?.WellWaterPoisonedSaltTransitionHours ?? 36f;
     }
 }

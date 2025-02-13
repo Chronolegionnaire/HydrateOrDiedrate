@@ -94,6 +94,31 @@ namespace HydrateOrDiedrate.Config
         private const string settingWellWaterPoisonedSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltSatiety";
         private const string settingAquiferDepthScaling = "hydrateordiedrate:Config.Setting.AquiferDepthScaling";
 
+        // Liquid Perish Rate Settings (new)
+        private const string settingRainWaterFreshHours = "hydrateordiedrate:Config.Setting.RainWaterFreshHours";
+        private const string settingRainWaterTransitionHours = "hydrateordiedrate:Config.Setting.RainWaterTransitionHours";
+        private const string settingBoiledWaterFreshHours = "hydrateordiedrate:Config.Setting.BoiledWaterFreshHours";
+        private const string settingBoiledWaterTransitionHours = "hydrateordiedrate:Config.Setting.BoiledWaterTransitionHours";
+        private const string settingBoiledRainWaterFreshHours = "hydrateordiedrate:Config.Setting.BoiledRainWaterFreshHours";
+        private const string settingBoiledRainWaterTransitionHours = "hydrateordiedrate:Config.Setting.BoiledRainWaterTransitionHours";
+        private const string settingDistilledWaterFreshHours = "hydrateordiedrate:Config.Setting.DistilledWaterFreshHours";
+        private const string settingDistilledWaterTransitionHours = "hydrateordiedrate:Config.Setting.DistilledWaterTransitionHours";
+        private const string settingWellWaterFreshFreshHours = "hydrateordiedrate:Config.Setting.WellWaterFreshFreshHours";
+        private const string settingWellWaterFreshTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterFreshTransitionHours";
+        private const string settingWellWaterSaltFreshHours = "hydrateordiedrate:Config.Setting.WellWaterSaltFreshHours";
+        private const string settingWellWaterSaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterSaltTransitionHours";
+        private const string settingWellWaterMuddyFreshHours = "hydrateordiedrate:Config.Setting.WellWaterMuddyFreshHours";
+        private const string settingWellWaterMuddyTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterMuddyTransitionHours";
+        private const string settingWellWaterTaintedFreshHours = "hydrateordiedrate:Config.Setting.WellWaterTaintedFreshHours";
+        private const string settingWellWaterTaintedTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterTaintedTransitionHours";
+        private const string settingWellWaterPoisonedFreshHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedFreshHours";
+        private const string settingWellWaterPoisonedTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedTransitionHours";
+        private const string settingWellWaterMuddySaltFreshHours = "hydrateordiedrate:Config.Setting.WellWaterMuddySaltFreshHours";
+        private const string settingWellWaterMuddySaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterMuddySaltTransitionHours";
+        private const string settingWellWaterTaintedSaltFreshHours = "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltFreshHours";
+        private const string settingWellWaterTaintedSaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltTransitionHours";
+        private const string settingWellWaterPoisonedSaltFreshHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltFreshHours";
+        private const string settingWellWaterPoisonedSaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltTransitionHours";
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
             if (!api.ModLoader.IsModEnabled("configlib"))
@@ -116,13 +141,10 @@ namespace HydrateOrDiedrate.Config
 
         private void EditConfig(string id, ControlButtons buttons, ICoreClientAPI api)
         {
-            // Save the current config to disk.
             if (buttons.Save)
             {
                 ModConfig.WriteConfig(api, "HydrateOrDiedrateConfig.json", HydrateOrDiedrateModSystem.LoadedConfig);
             }
-
-            // Reload: re-read the config file and update the in-memory config.
             if (buttons.Reload)
             {
                 Config reloadedConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
@@ -136,8 +158,6 @@ namespace HydrateOrDiedrate.Config
                     api.Logger.Warning("Failed to reload config from file.");
                 }
             }
-
-            // Restore: discard any unsaved changes by reloading the config from disk.
             if (buttons.Restore)
             {
                 Config restoredConfig = ModConfig.ReadConfig<Config>(api, "HydrateOrDiedrateConfig.json");
@@ -151,8 +171,6 @@ namespace HydrateOrDiedrate.Config
                     api.Logger.Warning("No saved config found to restore.");
                 }
             }
-
-            // Defaults: reset to default values.
             if (buttons.Defaults)
             {
                 if (api.Side == EnumAppSide.Server)
@@ -174,8 +192,6 @@ namespace HydrateOrDiedrate.Config
                     }
                 }
             }
-
-            // Open the edit UI with the updated config instance.
             Edit(api, HydrateOrDiedrateModSystem.LoadedConfig, id);
         }
         private void Edit(ICoreClientAPI api, Config config, string id)
@@ -489,6 +505,103 @@ namespace HydrateOrDiedrate.Config
             ImGui.Checkbox(Lang.Get(settingAquiferDepthScaling) + $"##aquiferDepthScaling-{id}", ref aquiferDepthScaling);
             config.AquiferDepthScaling = aquiferDepthScaling;
             
+            ImGui.SeparatorText("Liquid Perish Rates");
+
+            float rainWaterFreshHours = config.RainWaterFreshHours;
+            ImGui.DragFloat(Lang.Get(settingRainWaterFreshHours) + $"##rainWaterFreshHours-{id}", ref rainWaterFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.RainWaterFreshHours = rainWaterFreshHours;
+
+            float rainWaterTransitionHours = config.RainWaterTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingRainWaterTransitionHours) + $"##rainWaterTransitionHours-{id}", ref rainWaterTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.RainWaterTransitionHours = rainWaterTransitionHours;
+
+            float boiledWaterFreshHours = config.BoiledWaterFreshHours;
+            ImGui.DragFloat(Lang.Get(settingBoiledWaterFreshHours) + $"##boiledWaterFreshHours-{id}", ref boiledWaterFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.BoiledWaterFreshHours = boiledWaterFreshHours;
+
+            float boiledWaterTransitionHours = config.BoiledWaterTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingBoiledWaterTransitionHours) + $"##boiledWaterTransitionHours-{id}", ref boiledWaterTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.BoiledWaterTransitionHours = boiledWaterTransitionHours;
+
+            float boiledRainWaterFreshHours = config.BoiledRainWaterFreshHours;
+            ImGui.DragFloat(Lang.Get(settingBoiledRainWaterFreshHours) + $"##boiledRainWaterFreshHours-{id}", ref boiledRainWaterFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.BoiledRainWaterFreshHours = boiledRainWaterFreshHours;
+
+            float boiledRainWaterTransitionHours = config.BoiledRainWaterTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingBoiledRainWaterTransitionHours) + $"##boiledRainWaterTransitionHours-{id}", ref boiledRainWaterTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.BoiledRainWaterTransitionHours = boiledRainWaterTransitionHours;
+
+            float distilledWaterFreshHours = config.DistilledWaterFreshHours;
+            ImGui.DragFloat(Lang.Get(settingDistilledWaterFreshHours) + $"##distilledWaterFreshHours-{id}", ref distilledWaterFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.DistilledWaterFreshHours = distilledWaterFreshHours;
+
+            float distilledWaterTransitionHours = config.DistilledWaterTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingDistilledWaterTransitionHours) + $"##distilledWaterTransitionHours-{id}", ref distilledWaterTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.DistilledWaterTransitionHours = distilledWaterTransitionHours;
+
+            float wellWaterFreshFreshHours = config.WellWaterFreshFreshHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterFreshFreshHours) + $"##wellWaterFreshFreshHours-{id}", ref wellWaterFreshFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterFreshFreshHours = wellWaterFreshFreshHours;
+
+            float wellWaterFreshTransitionHours = config.WellWaterFreshTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterFreshTransitionHours) + $"##wellWaterFreshTransitionHours-{id}", ref wellWaterFreshTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterFreshTransitionHours = wellWaterFreshTransitionHours;
+
+            float wellWaterSaltFreshHours = config.WellWaterSaltFreshHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterSaltFreshHours) + $"##wellWaterSaltFreshHours-{id}", ref wellWaterSaltFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterSaltFreshHours = wellWaterSaltFreshHours;
+
+            float wellWaterSaltTransitionHours = config.WellWaterSaltTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterSaltTransitionHours) + $"##wellWaterSaltTransitionHours-{id}", ref wellWaterSaltTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterSaltTransitionHours = wellWaterSaltTransitionHours;
+
+            float wellWaterMuddyFreshHours = config.WellWaterMuddyFreshHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterMuddyFreshHours) + $"##wellWaterMuddyFreshHours-{id}", ref wellWaterMuddyFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterMuddyFreshHours = wellWaterMuddyFreshHours;
+
+            float wellWaterMuddyTransitionHours = config.WellWaterMuddyTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterMuddyTransitionHours) + $"##wellWaterMuddyTransitionHours-{id}", ref wellWaterMuddyTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterMuddyTransitionHours = wellWaterMuddyTransitionHours;
+
+            float wellWaterTaintedFreshHours = config.WellWaterTaintedFreshHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterTaintedFreshHours) + $"##wellWaterTaintedFreshHours-{id}", ref wellWaterTaintedFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterTaintedFreshHours = wellWaterTaintedFreshHours;
+
+            float wellWaterTaintedTransitionHours = config.WellWaterTaintedTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterTaintedTransitionHours) + $"##wellWaterTaintedTransitionHours-{id}", ref wellWaterTaintedTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterTaintedTransitionHours = wellWaterTaintedTransitionHours;
+
+            float wellWaterPoisonedFreshHours = config.WellWaterPoisonedFreshHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedFreshHours) + $"##wellWaterPoisonedFreshHours-{id}", ref wellWaterPoisonedFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterPoisonedFreshHours = wellWaterPoisonedFreshHours;
+
+            float wellWaterPoisonedTransitionHours = config.WellWaterPoisonedTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedTransitionHours) + $"##wellWaterPoisonedTransitionHours-{id}", ref wellWaterPoisonedTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterPoisonedTransitionHours = wellWaterPoisonedTransitionHours;
+
+            float wellWaterMuddySaltFreshHours = config.WellWaterMuddySaltFreshHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterMuddySaltFreshHours) + $"##wellWaterMuddySaltFreshHours-{id}", ref wellWaterMuddySaltFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterMuddySaltFreshHours = wellWaterMuddySaltFreshHours;
+
+            float wellWaterMuddySaltTransitionHours = config.WellWaterMuddySaltTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterMuddySaltTransitionHours) + $"##wellWaterMuddySaltTransitionHours-{id}", ref wellWaterMuddySaltTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterMuddySaltTransitionHours = wellWaterMuddySaltTransitionHours;
+
+            float wellWaterTaintedSaltFreshHours = config.WellWaterTaintedSaltFreshHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSaltFreshHours) + $"##wellWaterTaintedSaltFreshHours-{id}", ref wellWaterTaintedSaltFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterTaintedSaltFreshHours = wellWaterTaintedSaltFreshHours;
+
+            float wellWaterTaintedSaltTransitionHours = config.WellWaterTaintedSaltTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSaltTransitionHours) + $"##wellWaterTaintedSaltTransitionHours-{id}", ref wellWaterTaintedSaltTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterTaintedSaltTransitionHours = wellWaterTaintedSaltTransitionHours;
+
+            float wellWaterPoisonedSaltFreshHours = config.WellWaterPoisonedSaltFreshHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltFreshHours) + $"##wellWaterPoisonedSaltFreshHours-{id}", ref wellWaterPoisonedSaltFreshHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterPoisonedSaltFreshHours = wellWaterPoisonedSaltFreshHours;
+
+            float wellWaterPoisonedSaltTransitionHours = config.WellWaterPoisonedSaltTransitionHours;
+            ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltTransitionHours) + $"##wellWaterPoisonedSaltTransitionHours-{id}", ref wellWaterPoisonedSaltTransitionHours, 1.0f, 0.0f, 1000.0f);
+            config.WellWaterPoisonedSaltTransitionHours = wellWaterPoisonedSaltTransitionHours;
         }
     }
 }

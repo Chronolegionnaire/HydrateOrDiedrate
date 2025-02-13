@@ -302,13 +302,134 @@
       "z": -1.4
     }
   },
-  "transitionableProps": [
-    {
-      "type": "Perish",
-      "freshHours": { "avg": 150 },
-      "transitionHours": { "avg": 36 },
-      "transitionedStack": { "type": "item", "code": "game:waterportion" },
-      "transitionRatio": 1.0
-    }
-  ]
+  "transitionablePropsByType": {
+    "*-fresh": [
+      {
+        "type": "Perish",
+        "freshHours": {
+          "avg": 150
+        },
+        "transitionHours": {
+          "avg": 36
+        },
+        "transitionedStack": {
+          "type": "item",
+          "code": "game:waterportion"
+        },
+        "transitionRatio": 1.0
+      }
+    ],
+    "*-salt": [
+      {
+        "type": "Perish",
+        "freshHours": {
+          "avg": 150
+        },
+        "transitionHours": {
+          "avg": 36
+        },
+        "transitionedStack": {
+          "type": "item",
+          "code": "game:saltwaterportion"
+        },
+        "transitionRatio": 1.0
+      }
+    ],
+    "*-muddy": [
+      {
+        "type": "Perish",
+        "freshHours": {
+          "avg": 150
+        },
+        "transitionHours": {
+          "avg": 36
+        },
+        "transitionedStack": {
+          "type": "item",
+          "code": "game:waterportion"
+        },
+        "transitionRatio": 1.0
+      }
+    ],
+    "*-tainted": [
+      {
+        "type": "Perish",
+        "freshHours": {
+          "avg": 150
+        },
+        "transitionHours": {
+          "avg": 36
+        },
+        "transitionedStack": {
+          "type": "item",
+          "code": "game:rot"
+        },
+        "transitionRatio": 1.0
+      }
+    ],
+    "*-poisoned": [
+      {
+        "type": "Perish",
+        "freshHours": {
+          "avg": 150
+        },
+        "transitionHours": {
+          "avg": 36
+        },
+        "transitionedStack": {
+          "type": "item",
+          "code": "game:rot"
+        },
+        "transitionRatio": 1.0
+      }
+    ],
+    "*-muddysalt": [
+      {
+        "type": "Perish",
+        "freshHours": {
+          "avg": 150
+        },
+        "transitionHours": {
+          "avg": 36
+        },
+        "transitionedStack": {
+          "type": "item",
+          "code": "game:saltwaterportion"
+        },
+        "transitionRatio": 1.0
+      }
+    ],
+    "*-taintedsalt": [
+      {
+        "type": "Perish",
+        "freshHours": {
+          "avg": 150
+        },
+        "transitionHours": {
+          "avg": 36
+        },
+        "transitionedStack": {
+          "type": "item",
+          "code": "game:rot"
+        },
+        "transitionRatio": 1.0
+      }
+    ],
+    "*-poisonedsalt": [
+      {
+        "type": "Perish",
+        "freshHours": {
+          "avg": 150
+        },
+        "transitionHours": {
+          "avg": 36
+        },
+        "transitionedStack": {
+          "type": "item",
+          "code": "game:rot"
+        },
+        "transitionRatio": 1.0
+      }
+    ]
+  }
 }

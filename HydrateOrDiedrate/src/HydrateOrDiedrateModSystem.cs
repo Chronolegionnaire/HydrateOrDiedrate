@@ -156,6 +156,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
         base.AssetsLoaded(api);
         ApplyWaterSatietyPatches(api);
         ApplyWellWaterSatietyPatches(api);
+        ApplyWaterPerishPatches(api);
+        ApplyWellWaterPerishPatches(api);
         ApplyKegTunConfigPatches(api);
     }
     public override void AssetsFinalize(ICoreAPI api)
@@ -285,6 +287,96 @@ public class HydrateOrDiedrateModSystem : ModSystem
         patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwatersatiety-{waterType}"), patchSatiety, ref applied, ref notFound, ref errorCount);
         patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwaterfoodcat-{waterType}"), patchFoodCategory, ref applied, ref notFound, ref errorCount);
     }
+    public void ApplyWaterPerishPatches(ICoreAPI api)
+    {
+        float rainWaterFreshFreshHours = LoadedConfig.RainWaterFreshHours;
+        float rainWaterFreshTransitionHours = LoadedConfig.RainWaterTransitionHours;
+        float boiledWaterFreshFreshHours = LoadedConfig.BoiledWaterFreshHours;
+        float boiledWaterFreshTransitionHours = LoadedConfig.BoiledWaterTransitionHours;
+        float boiledRainWaterFreshFreshHours = LoadedConfig.BoiledRainWaterFreshHours;
+        float boiledRainWaterFreshTransitionHours = LoadedConfig.BoiledRainWaterTransitionHours;
+        float distilledWaterFreshFreshHours = LoadedConfig.DistilledWaterFreshHours;
+        float distilledWaterFreshTransitionHours = LoadedConfig.DistilledWaterTransitionHours;
+        
+        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", rainWaterFreshFreshHours, rainWaterFreshTransitionHours);
+        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", distilledWaterFreshFreshHours, distilledWaterFreshTransitionHours);
+        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", boiledWaterFreshFreshHours, boiledWaterFreshTransitionHours);
+        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", boiledRainWaterFreshFreshHours, boiledRainWaterFreshTransitionHours);
+    }
+
+    private void ApplyPerishPatch(ICoreAPI api, string jsonFilePath, float freshHours, float transitionHours)
+    {
+        JsonPatch patchFreshHours = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/transitionableProps/0/freshHours",
+            Value = new JsonObject(JToken.FromObject(new { avg = freshHours })),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+    
+        JsonPatch patchTransitionHours = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = "/transitionableProps/0/transitionHours",
+            Value = new JsonObject(JToken.FromObject(new { avg = transitionHours })),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+
+        int applied = 0, notFound = 0, errorCount = 0;
+        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicfreshhourspatch"), patchFreshHours, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamictransitionhourspatch"), patchTransitionHours, ref applied, ref notFound, ref errorCount);
+    }
+
+    public void ApplyWellWaterPerishPatches(ICoreAPI api)
+    {
+        var wellWaterPerishRateValues = new Dictionary<string, (float fresh, float transition)>
+        {
+            { "fresh", (LoadedConfig.WellWaterFreshFreshHours, LoadedConfig.WellWaterFreshTransitionHours) },
+            { "salt", (LoadedConfig.WellWaterSaltFreshHours, LoadedConfig.WellWaterSaltTransitionHours) },
+            { "muddy", (LoadedConfig.WellWaterMuddyFreshHours, LoadedConfig.WellWaterMuddyTransitionHours) },
+            { "tainted", (LoadedConfig.WellWaterTaintedFreshHours, LoadedConfig.WellWaterTaintedTransitionHours) },
+            { "poisoned", (LoadedConfig.WellWaterPoisonedFreshHours, LoadedConfig.WellWaterPoisonedTransitionHours) },
+            { "muddysalt", (LoadedConfig.WellWaterMuddySaltFreshHours, LoadedConfig.WellWaterMuddySaltTransitionHours) },
+            { "taintedsalt", (LoadedConfig.WellWaterTaintedSaltFreshHours, LoadedConfig.WellWaterTaintedSaltTransitionHours) },
+            { "poisonedsalt", (LoadedConfig.WellWaterPoisonedSaltFreshHours, LoadedConfig.WellWaterPoisonedSaltTransitionHours) }
+        };
+        foreach (var kvp in wellWaterPerishRateValues)
+        {
+            ApplyWellWaterPerishRatePatch(api, "hydrateordiedrate:itemtypes/liquid/wellwaterportion.json", kvp.Key,
+                kvp.Value.fresh, kvp.Value.transition);
+        }
+    }
+
+    private void ApplyWellWaterPerishRatePatch(ICoreAPI api, string jsonFilePath, string waterType, float freshHours,
+        float transitionHours)
+    {
+        int applied = 0, notFound = 0, errorCount = 0;
+        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
+        JsonPatch patchFreshHours = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = $"/transitionablePropsByType/*-{waterType}/0/freshHours",
+            Value = new JsonObject(JToken.FromObject(new { avg = freshHours })),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+        JsonPatch patchTransitionHours = new JsonPatch
+        {
+            Op = EnumJsonPatchOp.AddMerge,
+            Path = $"/transitionablePropsByType/*-{waterType}/0/transitionHours",
+            Value = new JsonObject(JToken.FromObject(new { avg = transitionHours })),
+            File = new AssetLocation(jsonFilePath),
+            Side = EnumAppSide.Server
+        };
+        patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwaterfreshperishrate-{waterType}"),
+            patchFreshHours, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwatertransitionperishrate-{waterType}"),
+            patchTransitionHours, ref applied, ref notFound, ref errorCount);
+    }
+
     public void ApplyKegTunConfigPatches(ICoreAPI api)
     {
         ApplyKegPatch(api, "hydrateordiedrate:blocktypes/keg.json", LoadedConfig.KegCapacityLitres, LoadedConfig.SpoilRateTapped, LoadedConfig.KegIronHoopDropChance, LoadedConfig.KegTapDropChance);
