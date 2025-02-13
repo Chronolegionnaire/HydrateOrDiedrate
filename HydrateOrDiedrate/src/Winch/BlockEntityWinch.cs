@@ -313,9 +313,6 @@ namespace HydrateOrDiedrate.winch
             bool notRaising = !isRaising;
             bool isLiquid = IsLiquidBlock(blockBelow);
             bool bucketEmpty = BucketIsEmpty();
-
-            Console.WriteLine($"[Winch Debug] !isRaising: {notRaising}, IsLiquidBlock: {isLiquid}, BucketIsEmpty: {bucketEmpty}");
-
             if (notRaising && isLiquid && bucketEmpty)
             {
                 FillBucketAtPos(belowPos);
