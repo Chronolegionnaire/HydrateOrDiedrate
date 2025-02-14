@@ -488,7 +488,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
         api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
         api.RegisterCollectibleBehaviorClass("BehaviorPickaxeWellMode", typeof(BehaviorPickaxeWellMode));
-        api.RegisterItemClass("DigWellToolModeShovel", typeof(DigWellToolModeShovel));
+        api.RegisterCollectibleBehaviorClass("BehaviorShovelWellMode", typeof(BehaviorShovelWellMode));
         api.RegisterBlockClass("BlockTun", typeof(BlockTun));
         api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
         api.RegisterBlockEntityClass("BlockEntityWellWaterData", typeof(BlockEntityWellWaterData));
@@ -549,6 +549,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<ConfigSyncPacket>()
             .RegisterMessageType<ConfigSyncRequestPacket>()
+            .RegisterMessageType<WellSpringBlockPacket>()
+            .SetMessageHandler<WellSpringBlockPacket>(WellSpringBlockPacketReceived)
             .SetMessageHandler<ConfigSyncRequestPacket>(OnConfigSyncRequestReceived);
         
         _waterInteractionHandler.Initialize(serverChannel);
@@ -570,8 +572,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<ConfigSyncPacket>()
             .RegisterMessageType<ConfigSyncRequestPacket>()
+            .RegisterMessageType<WellSpringBlockPacket>()
             .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived)
             .SetMessageHandler<ConfigSyncPacket>(OnConfigSyncReceived);
+        
 
         api.Event.RegisterCallback((dt) =>
         {
@@ -821,6 +825,14 @@ public class HydrateOrDiedrateModSystem : ModSystem
             });
             block.BlockEntityBehaviors = behaviorsList.ToArray();
         }
+    }
+    private void WellSpringBlockPacketReceived(IServerPlayer sender, WellSpringBlockPacket packet)
+    {
+        if (_serverApi?.World == null) return;
+        IBlockAccessor accessor = _serverApi.World.GetBlockAccessor(true, true, false);
+        accessor.ExchangeBlock(packet.BlockId, packet.Position);
+        accessor.SpawnBlockEntity("BlockEntityWellSpring", packet.Position, null);
+        Console.WriteLine();
     }
     public override void Dispose()
     {

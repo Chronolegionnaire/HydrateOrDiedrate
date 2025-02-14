@@ -235,17 +235,31 @@ namespace HydrateOrDiedrate.wellwater
             if (modeName == "digwellspring")
             {
                 Block targetBlock = world.BlockAccessor.GetBlock(blockSel.Position);
-                if (targetBlock?.Code.Path.StartsWith("rock-") == true)
+                if (targetBlock != null && 
+                    (targetBlock.Code.Path.StartsWith("rock") || targetBlock.Code.Path.StartsWith("crackedrock")))
                 {
                     Block wellSpringBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:wellspring"));
                     if (wellSpringBlock != null)
                     {
                         bhHandling = EnumHandling.PreventDefault;
-                        api.World.RegisterCallback((float dt) =>
+                        world.RegisterCallback((dt) =>
                         {
-                            world.BlockAccessor.ExchangeBlock(wellSpringBlock.BlockId, blockSel.Position);
-                            world.BlockAccessor.SpawnBlockEntity("BlockEntityWellSpring", blockSel.Position, null);
-                        }, 200);
+                            IBlockAccessor accessor = world.GetBlockAccessor(true, true, true);
+                            accessor.ExchangeBlock(wellSpringBlock.BlockId, blockSel.Position);
+                            accessor.SpawnBlockEntity("BlockEntityWellSpring", blockSel.Position, null);
+                            if (api.Side == EnumAppSide.Client)
+                            {
+                                WellSpringBlockPacket packet = new WellSpringBlockPacket
+                                {
+                                    BlockId = wellSpringBlock.BlockId,
+                                    Position = blockSel.Position
+                                };
+                                ICoreClientAPI capi = api as ICoreClientAPI;
+                                capi?.Network
+                                    .GetChannel("hydrateordiedrate")
+                                    .SendPacket(packet);
+                            }
+                        }, 5);
                         return true;
                     }
                 }

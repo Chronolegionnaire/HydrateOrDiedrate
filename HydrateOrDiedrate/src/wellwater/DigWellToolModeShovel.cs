@@ -1,89 +1,168 @@
 ﻿using System;
+using System.Collections.Generic;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Config;
+using Vintagestory.API.MathTools;
+using Vintagestory.API.Util;
 
 namespace HydrateOrDiedrate.wellwater
 {
-    public class DigWellToolModeShovel : Item
+    public class BehaviorShovelWellMode : CollectibleBehavior, IDisposable
     {
-        private SkillItem[] toolModes;
+        private static SkillItem digMode;
+        private static SkillItem wellMode;
+
+        private ICoreAPI api;
+        private readonly List<SkillItem> customModes = new List<SkillItem>();
+
+        public BehaviorShovelWellMode(CollectibleObject collObj) : base(collObj)
+        {
+        }
 
         public override void OnLoaded(ICoreAPI api)
         {
+            this.api = api;
             base.OnLoaded(api);
-
-            ICoreClientAPI capi = api as ICoreClientAPI;
-            toolModes = new SkillItem[]
+            if (api.Side == EnumAppSide.Client)
             {
-                new SkillItem
+                ICoreClientAPI capi = api as ICoreClientAPI;
+
+                digMode = new SkillItem
+                {
+                    Code = new AssetLocation("digmode"),
+                    Name = Lang.Get("Dig Mode")
+                }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
+                    new AssetLocation("game:textures/icons/rocks.svg"),
+                    48, 48, 5, ColorUtil.WhiteArgb));
+
+                wellMode = new SkillItem
+                {
+                    Code = new AssetLocation("digwellspring"),
+                    Name = Lang.Get("Dig Well Spring")
+                }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
+                    new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
+                    48, 48, 5, ColorUtil.WhiteArgb));
+            }
+            else
+            {
+                digMode = new SkillItem
                 {
                     Code = new AssetLocation("digmode"),
                     Name = "Dig Mode"
-                },
-                new SkillItem
+                };
+                wellMode = new SkillItem
                 {
                     Code = new AssetLocation("digwellspring"),
                     Name = "Dig Well Spring"
-                }
-            };
-
-            if (capi != null)
-            {
-                toolModes[0].WithIcon(capi, capi.Gui.LoadSvgWithPadding(new AssetLocation("game:textures/icons/rocks.svg"), 48, 48, 5, null));
-                toolModes[1].WithIcon(capi, capi.Gui.LoadSvgWithPadding(new AssetLocation("hydrateordiedrate:textures/icons/well.svg"), 48, 48, 5, null));
+                };
             }
+
+            customModes.Add(digMode);
+            customModes.Add(wellMode);
         }
 
+        public override void OnUnloaded(ICoreAPI api)
+        {
+            foreach (SkillItem mode in customModes)
+            {
+                mode?.Dispose();
+            }
+            customModes.Clear();
+            base.OnUnloaded(api);
+        }
         public override SkillItem[] GetToolModes(ItemSlot slot, IClientPlayer forPlayer, BlockSelection blockSel)
         {
-            return toolModes;
+            return customModes.ToArray();
         }
-
-        public override int GetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel)
-        {
-            return Math.Min(toolModes.Length - 1, slot.Itemstack.Attributes.GetInt("toolMode", 0));
-        }
-
         public override void SetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel, int toolMode)
         {
-            slot.Itemstack.Attributes.SetInt("toolMode", toolMode);
-        }
-
-        public override bool OnBlockBrokenWith(IWorldAccessor world, Entity byEntity, ItemSlot itemslot, BlockSelection blockSel, float dropQuantityMultiplier = 1f)
-        {
-            int toolMode = GetToolMode(itemslot, (byEntity as EntityPlayer)?.Player, blockSel);
-
-            if (toolMode == 1 && blockSel != null)
+            SkillItem[] modes = GetToolModes(slot, byPlayer as IClientPlayer, blockSel);
+            if (modes == null || modes.Length == 0)
             {
-                string blockCode = world.BlockAccessor.GetBlock(blockSel.Position).Code.Path;
-                bool isShovel = itemslot.Itemstack?.Item?.Code?.Path?.Contains("shovel") ?? false;
+                slot.Itemstack.Attributes.SetString("toolMode", "digmode");
+            }
+            else
+            {
+                int clamped = GameMath.Clamp(toolMode, 0, modes.Length - 1);
+                string modeName = modes[clamped].Code.Path;
+                slot.Itemstack.Attributes.SetString("toolMode", modeName);
+            }
+            slot.MarkDirty();
+        }
+        public override int GetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel)
+        {
+            string current = slot.Itemstack.Attributes.GetString("toolMode", "digmode");
+            SkillItem[] modes = GetToolModes(slot, byPlayer as IClientPlayer, blockSel);
+            if (modes == null || modes.Length == 0) return 0;
 
-                if (isShovel && (blockCode.StartsWith("soil-") || blockCode.StartsWith("gravel-") || blockCode.StartsWith("sand-")))
+            for (int i = 0; i < modes.Length; i++)
+            {
+                if (modes[i].Code.Path == current) return i;
+            }
+            return 0;
+        }
+        public override bool OnBlockBrokenWith(
+            IWorldAccessor world,
+            Entity byEntity,
+            ItemSlot itemslot,
+            BlockSelection blockSel,
+            float dropQuantityMultiplier,
+            ref EnumHandling handling)
+        {
+            if (blockSel == null || byEntity == null)
+            {
+                return false;
+            }
+            string modeName = itemslot.Itemstack.Attributes.GetString("toolMode", "digmode");
+
+            if (modeName == "digwellspring")
+            {
+                Block targetBlock = world.BlockAccessor.GetBlock(blockSel.Position);
+                if (targetBlock != null)
                 {
-                    Block wellSpringBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:wellspring"));
-                    if (wellSpringBlock != null)
+                    string path = targetBlock.Code?.Path ?? "";
+                    if (path.StartsWith("soil-") || path.StartsWith("gravel-") || path.StartsWith("sand-"))
                     {
-                        world.BlockAccessor.ExchangeBlock(wellSpringBlock.BlockId, blockSel.Position);
-                        world.BlockAccessor.SpawnBlockEntity("BlockEntityWellSpring", blockSel.Position, null);
-                        return true;
+                        Block wellSpringBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:wellspring"));
+                        if (wellSpringBlock != null)
+                        {
+                            handling = EnumHandling.PreventDefault;
+                            world.RegisterCallback((dt) =>
+                            {
+                                IBlockAccessor accessor = world.GetBlockAccessor(true, true, true);
+                                accessor.ExchangeBlock(wellSpringBlock.BlockId, blockSel.Position);
+                                accessor.SpawnBlockEntity("BlockEntityWellSpring", blockSel.Position, null);
+                                if (api.Side == EnumAppSide.Client)
+                                {
+                                    WellSpringBlockPacket packet = new WellSpringBlockPacket
+                                    {
+                                        BlockId = wellSpringBlock.BlockId,
+                                        Position = blockSel.Position
+                                    };
+                                    ICoreClientAPI capi = api as ICoreClientAPI;
+                                    capi?.Network
+                                        .GetChannel("hydrateordiedrate")
+                                        .SendPacket(packet);
+                                }
+                            }, 5);
+
+                            return true;
+                        }
                     }
                 }
             }
-
-            return base.OnBlockBrokenWith(world, byEntity, itemslot, blockSel, dropQuantityMultiplier);
+            return base.OnBlockBrokenWith(world, byEntity, itemslot, blockSel, dropQuantityMultiplier, ref handling);
         }
-        public override WorldInteraction[] GetHeldInteractionHelp(ItemSlot inSlot)
+
+        public void Dispose()
         {
-            return new WorldInteraction[]
+            foreach (SkillItem mode in customModes)
             {
-                new WorldInteraction
-                {
-                    ActionLangCode = "Change tool mode",
-                    HotKeyCodes = new string[] { "toolmodeselect" },
-                    MouseButton = EnumMouseButton.None
-                }
-            };
+                mode?.Dispose();
+            }
+            customModes.Clear();
         }
     }
 }
