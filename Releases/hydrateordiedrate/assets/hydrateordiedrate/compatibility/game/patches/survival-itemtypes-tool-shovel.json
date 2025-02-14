@@ -1,8 +1,10 @@
 [
   {
-    "op": "add",
-    "path": "/class",
-    "value": "DigWellToolModeShovel",
+    "op": "addmerge",
+    "path": "/behaviors",
+    "value":[{
+      "name": "BehaviorShovelWellMode"
+    }],
     "file": "game:itemtypes/tool/shovel.json",
     "side": "Server"
   }
