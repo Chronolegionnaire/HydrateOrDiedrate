@@ -23,39 +23,31 @@ namespace HydrateOrDiedrate.patches
             {
                 var itemWearable = inSlot.Itemstack.Collectible as ItemWearable;
                 if (itemWearable == null) return;
-
                 ItemStack itemStack = inSlot.Itemstack;
-                float cooling = CoolingManager.GetCooling(itemStack);
-                string existingText = dsc.ToString();
-
                 ensureConditionExistsMethod?.Invoke(itemWearable, new object[] { inSlot });
-
-                if (inSlot.Itemstack.Attributes.HasAttribute("condition"))
+                float condition = inSlot.Itemstack.Attributes.GetFloat("condition", 1f);
+                if (float.IsNaN(condition)) condition = 0;
+                float maxWarmth = inSlot.Itemstack.ItemAttributes["warmth"].AsFloat(0f);
+                float actualWarmth = maxWarmth * condition;
+                float maxCooling = CoolingManager.GetMaxCooling(itemStack);
+                if (float.IsNaN(maxCooling)) maxCooling = 0;
+                float actualCooling = maxCooling * condition;
+                string existingText = dsc.ToString();
+                if (maxWarmth > 0 || maxCooling > 0)
                 {
-                    float condition = inSlot.Itemstack.Attributes.GetFloat("condition", 1f);
-                    if (float.IsNaN(condition)) condition = 0;
+                    string updatedWarmthLine = $"Warmth:<font color=\"#ff8444\"> +{actualWarmth:0.#}°C</font>";
 
-                    float maxWarmth = inSlot.Itemstack.ItemAttributes["warmth"].AsFloat(0f);
-                    float actualWarmth = maxWarmth * condition;
-
-                    if (maxWarmth > 0 || cooling > 0)
+                    if (actualCooling != 0)
                     {
-                        string updatedWarmthLine = $"Warmth:<font color=\"#ff8444\"> +{actualWarmth:0.#}°C</font>";
-                        if (cooling != 0)
-                        {
-                            updatedWarmthLine += $", Cooling:<font color=\"#84dfff\"> +{cooling:0.#}°C</font>";
-                        }
-
-                        if (!existingText.Contains(updatedWarmthLine))
-                        {
-                            UpdateWarmthLine(dsc, existingText, updatedWarmthLine);
-                        }
-
-                        AppendConditionInfo(dsc, existingText, condition);
+                        updatedWarmthLine += $", Cooling:<font color=\"#84dfff\"> +{actualCooling:0.#}°C</font>";
                     }
+                    if (!existingText.Contains(updatedWarmthLine))
+                    {
+                        UpdateWarmthLine(dsc, existingText, updatedWarmthLine);
+                    }
+                    AppendConditionInfo(dsc, existingText, condition);
                 }
-
-                AppendMaxCoolingInfo(dsc, existingText, cooling, inSlot);
+                AppendMaxCoolingInfo(dsc, existingText, maxCooling, inSlot);
             }
             catch (Exception ex)
             {
@@ -68,10 +60,7 @@ namespace HydrateOrDiedrate.patches
             string greenWarmthPattern = "<font color=\"#84ff84\">+";
             string redWarmthPattern = "<font color=\"#ff8484\">+";
             int warmthLineStart = existingText.IndexOf(greenWarmthPattern);
-            if (warmthLineStart == -1)
-            {
-                warmthLineStart = existingText.IndexOf(redWarmthPattern);
-            }
+            if (warmthLineStart == -1) warmthLineStart = existingText.IndexOf(redWarmthPattern);
 
             if (warmthLineStart != -1)
             {
@@ -98,9 +87,21 @@ namespace HydrateOrDiedrate.patches
             }
         }
 
-        private static void AppendMaxCoolingInfo(StringBuilder dsc, string existingText, float maxCooling, ItemSlot inSlot)
+        private static string GetConditionString(float condition)
         {
-            if ((inSlot.Itemstack.ItemAttributes["warmth"].Exists || maxCooling > 0) && !existingText.Contains("Max Cooling:"))
+            if (condition > 0.5f) return Lang.Get("clothingcondition-good", (int)(condition * 100f));
+            if (condition > 0.4f) return Lang.Get("clothingcondition-worn", (int)(condition * 100f));
+            if (condition > 0.3f) return Lang.Get("clothingcondition-heavilyworn", (int)(condition * 100f));
+            if (condition > 0.2f) return Lang.Get("clothingcondition-tattered", (int)(condition * 100f));
+            if (condition > 0.1f) return Lang.Get("clothingcondition-heavilytattered", (int)(condition * 100f));
+            return Lang.Get("clothingcondition-terrible", (int)(condition * 100f));
+        }
+
+        private static void AppendMaxCoolingInfo(StringBuilder dsc, string existingText, float maxCooling,
+            ItemSlot inSlot)
+        {
+            if ((inSlot.Itemstack.ItemAttributes["warmth"].Exists || maxCooling > 0) &&
+                !existingText.Contains("Max Cooling:"))
             {
                 string maxWarmthLinePrefix = "Max warmth:";
                 int maxWarmthIndex = existingText.IndexOf(maxWarmthLinePrefix);
@@ -110,7 +111,8 @@ namespace HydrateOrDiedrate.patches
                     int endOfMaxWarmthLine = existingText.IndexOf("\n", maxWarmthIndex);
                     if (endOfMaxWarmthLine == -1) endOfMaxWarmthLine = existingText.Length;
 
-                    string maxWarmthLine = existingText.Substring(maxWarmthIndex, endOfMaxWarmthLine - maxWarmthIndex).Trim();
+                    string maxWarmthLine = existingText.Substring(maxWarmthIndex, endOfMaxWarmthLine - maxWarmthIndex)
+                        .Trim();
                     string updatedMaxWarmthLine = $"{maxWarmthLine} | Max Cooling: {maxCooling:0.#}°C";
 
                     dsc.Replace(maxWarmthLine, updatedMaxWarmthLine);
@@ -120,16 +122,6 @@ namespace HydrateOrDiedrate.patches
                     dsc.AppendLine($"Max Cooling: {maxCooling:0.#}°C");
                 }
             }
-        }
-
-        private static string GetConditionString(float condition)
-        {
-            if (condition > 0.5) return Lang.Get("clothingcondition-good", (int)(condition * 100f));
-            if (condition > 0.4) return Lang.Get("clothingcondition-worn", (int)(condition * 100f));
-            if (condition > 0.3) return Lang.Get("clothingcondition-heavilyworn", (int)(condition * 100f));
-            if (condition > 0.2) return Lang.Get("clothingcondition-tattered", (int)(condition * 100f));
-            if (condition > 0.1) return Lang.Get("clothingcondition-heavilytattered", (int)(condition * 100f));
-            return Lang.Get("clothingcondition-terrible", (int)(condition * 100f));
         }
     }
 }

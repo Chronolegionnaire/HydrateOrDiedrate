@@ -1,0 +1,9 @@
+[
+  {
+    "op": "replace",
+    "path": "/attributes/warmthByType/*",
+    "value": 0.01,
+    "file": "game:itemtypes/wearable/seraph/waist.json",
+    "side": "Server"
+  }
+]

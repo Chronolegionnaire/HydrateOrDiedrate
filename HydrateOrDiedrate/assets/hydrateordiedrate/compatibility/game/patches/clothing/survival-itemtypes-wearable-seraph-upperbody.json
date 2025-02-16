@@ -1,0 +1,9 @@
+[
+  {
+    "op": "add",
+    "path": "/attributes/warmth",
+    "value": 0.01,
+    "file": "game:itemtypes/wearable/seraph/upperbody.json",
+    "side": "Server"
+  }
+]

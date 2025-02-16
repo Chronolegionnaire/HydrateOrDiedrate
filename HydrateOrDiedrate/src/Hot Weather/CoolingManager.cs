@@ -22,7 +22,7 @@ public static class CoolingManager
         collectible.Attributes.Token[CoolingAttributeKey] = JToken.FromObject(coolingValue);
     }
 
-    public static float GetCooling(ItemStack itemStack)
+    public static float GetMaxCooling(ItemStack itemStack)
     {
         var collectible = itemStack?.Collectible;
         if (collectible?.Attributes == null)

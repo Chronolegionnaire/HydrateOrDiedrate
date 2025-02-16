@@ -12,7 +12,8 @@ namespace HydrateOrDiedrate.Hot_Weather
     public class EntityBehaviorBodyTemperatureHot : Vintagestory.API.Common.Entities.EntityBehavior
     {
         private Config.Config _config;
-        private float _currentCooling;
+        private float _rawClothingCooling;
+        private float _adjustedCooling;
         private float slowaccum;
         private float coolingCounter;
         private BlockPos plrpos;
@@ -22,22 +23,32 @@ namespace HydrateOrDiedrate.Hot_Weather
         private Vec3d tmpPos = new Vec3d();
         private bool isMedievalExpansionInstalled;
 
-        public float CurrentCooling
+        public float RawClothingCooling
         {
-            get => _currentCooling;
+            get => _rawClothingCooling;
             set
             {
-                _currentCooling = GameMath.Clamp(value, 0, float.MaxValue);
-                entity.WatchedAttributes.SetFloat("currentCoolingHot", _currentCooling);
+                _rawClothingCooling = GameMath.Clamp(value, 0, float.MaxValue);
+                entity.WatchedAttributes.SetFloat("currentCoolingHot", _rawClothingCooling);
                 entity.WatchedAttributes.MarkPathDirty("currentCoolingHot");
             }
         }
-
+        public float AdjustedCooling
+        {
+            get => _adjustedCooling;
+            set
+            {
+                _adjustedCooling = GameMath.Clamp(value, 0, float.MaxValue);
+                entity.WatchedAttributes.SetFloat("adjustedCoolingHot", _adjustedCooling);
+                entity.WatchedAttributes.MarkPathDirty("adjustedCoolingHot");
+            }
+        }
         public float CoolingMultiplier { get; set; } = 1.0f;
         public EntityBehaviorBodyTemperatureHot(Entity entity) : base(entity)
         {
             _config = HydrateOrDiedrateModSystem.LoadedConfig ?? new Config.Config();
-            _currentCooling = 0;
+            RawClothingCooling = 0;
+            AdjustedCooling = 0;
             CoolingMultiplier = 1.0f;
             LoadCooling();
             InitializeFields();
@@ -48,7 +59,8 @@ namespace HydrateOrDiedrate.Hot_Weather
         public EntityBehaviorBodyTemperatureHot(Entity entity, Config.Config config) : base(entity)
         {
             _config = config;
-            _currentCooling = 0;
+            RawClothingCooling = 0;
+            AdjustedCooling = 0;
             CoolingMultiplier = 1.0f;
             LoadCooling();
             InitializeFields();
@@ -59,8 +71,6 @@ namespace HydrateOrDiedrate.Hot_Weather
             _config = newConfig;
             UpdateCoolingFactor();
         }
-
-
         private void InitializeFields()
         {
             slowaccum = 0f;
@@ -70,7 +80,6 @@ namespace HydrateOrDiedrate.Hot_Weather
             nearHeatSourceStrength = 0f;
             world = entity.World;
         }
-
         public override void OnGameTick(float deltaTime)
         {
             if (!entity.Alive || !_config.HarshHeat) return;
@@ -89,10 +98,8 @@ namespace HydrateOrDiedrate.Hot_Weather
                 slowaccum = 0f;
             }
         }
-
         public void UpdateCoolingFactor()
         {
-            float coolingFactor = 0f;
             var entityAgent = entity as EntityAgent;
             if (entityAgent == null) return;
 
@@ -100,44 +107,49 @@ namespace HydrateOrDiedrate.Hot_Weather
             if (behaviorContainer == null || behaviorContainer.Inventory == null) return;
 
             IInventory inventory = behaviorContainer.Inventory;
+            float finalCooling = 0f;
+            float displayCoolingTotal = 0f;
             int unequippedSlots = 0;
 
             for (int i = 0; i < inventory.Count; i++)
             {
-                if (i == 0 || i == 6 || i == 7 || i == 8 || i == 9 || i == 10)
-                {
-                    continue;
-                }
 
                 var slot = inventory[i];
+                float itemDisplayCooling = 0f;
+                float itemActualCooling = 0f;
 
-                if (slot?.Itemstack == null)
+                if (slot?.Itemstack != null)
                 {
-                    unequippedSlots++;
+                    itemActualCooling = CustomItemWearableExtensions.GetCooling(slot, entity.World.Api);
+                    finalCooling += itemActualCooling;
+                    float baseCooling = CoolingManager.GetMaxCooling(slot.Itemstack);
+                    float condition = slot.Itemstack.Attributes.GetFloat("condition", 1f);
+                    float rawValue = baseCooling * condition;
+                    itemDisplayCooling = (float)Math.Round(rawValue, 1, MidpointRounding.AwayFromZero);
                 }
                 else
                 {
-                    var cooling = CustomItemWearableExtensions.GetCooling(slot, entity.World.Api);
-                    if (cooling != 0)
+                    if (i == 0 || i == 1 || i == 2 || i == 11 || i == 3 || i == 4 || i == 8 || i == 5)
                     {
-                        coolingFactor += cooling;
+                        unequippedSlots++;
                     }
                 }
+                displayCoolingTotal += itemDisplayCooling;
             }
-
-            coolingFactor += unequippedSlots * _config.UnequippedSlotCooling;
-
+            displayCoolingTotal += unequippedSlots * _config.UnequippedSlotCooling;
+            finalCooling += unequippedSlots * _config.UnequippedSlotCooling;
+            RawClothingCooling = displayCoolingTotal;
             if (entity.WatchedAttributes.GetFloat("wetness", 0f) > 0)
             {
-                coolingFactor *= _config.WetnessCoolingFactor;
+                finalCooling *= _config.WetnessCoolingFactor;
             }
 
             if (inEnclosedRoom)
             {
-                coolingFactor *= _config.ShelterCoolingFactor;
+                finalCooling *= _config.ShelterCoolingFactor;
             }
 
-            coolingFactor -= nearHeatSourceStrength * 0.5f;
+            finalCooling -= nearHeatSourceStrength * 0.5f;
 
             BlockPos entityPos = entity.SidedPos.AsBlockPos;
             int sunlightLevel = world.BlockAccessor.GetLightLevel(entityPos, EnumLightLevelType.TimeOfDaySunLight);
@@ -150,11 +162,10 @@ namespace HydrateOrDiedrate.Hot_Weather
                 GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0));
 
             double diurnalCooling = (0.5 - distanceTo4AM - distanceTo3PM) * _config.DiurnalVariationAmplitude;
-            coolingFactor += (float)(sunlightCooling + diurnalCooling);
-            coolingFactor *= CoolingMultiplier;
-            CurrentCooling = Math.Max(0, coolingFactor);
+            finalCooling += (float)(sunlightCooling + diurnalCooling);
+            finalCooling *= CoolingMultiplier;
+            AdjustedCooling = Math.Max(0, finalCooling);
         }
-
         private void CheckRoom()
         {
             plrpos.Set((int)entity.Pos.X, (int)entity.Pos.Y, (int)entity.Pos.Z);
@@ -170,12 +181,12 @@ namespace HydrateOrDiedrate.Hot_Weather
 
             if (room != null)
             {
-                inEnclosedRoom = room.ExitCount == 0 && room.SkylightCount < room.NonSkylightCount;
+                inEnclosedRoom = (room.ExitCount == 0 && room.SkylightCount < room.NonSkylightCount);
 
                 if (inEnclosedRoom)
                 {
                     bool isRefrigeratedRoom = false;
-                    if (IsMedievalExpansionInstalled(entity.Api) && inEnclosedRoom)
+                    if (IsMedievalExpansionInstalled(entity.Api))
                     {
                         isRefrigeratedRoom = CheckRefrigeration(room);
                     }
@@ -194,69 +205,48 @@ namespace HydrateOrDiedrate.Hot_Weather
                         if (blockEntity is Vintagestory.GameContent.IHeatSource heatSource)
                         {
                             tmpPos.Set(x, y, z);
-                            float factor = Math.Min(1f,
-                                9f / (8f + (float)Math.Pow(tmpPos.DistanceTo(px, py, pz), proximityPower)));
+                            float factor = Math.Min(
+                                1f,
+                                9f / (8f + (float)Math.Pow(tmpPos.DistanceTo(px, py, pz), proximityPower))
+                            );
                             nearHeatSourceStrength +=
-                                heatSource.GetHeatStrength(world, new BlockPos(x, y, z, plrpos.dimension), plrpos) *
-                                factor;
+                                heatSource.GetHeatStrength(world, new BlockPos(x, y, z, plrpos.dimension), plrpos) * factor;
                         }
                     });
 
                     if (isRefrigeratedRoom)
                     {
-                        CurrentCooling += _config.RefrigerationCooling;
+                        AdjustedCooling += _config.RefrigerationCooling;
                     }
                 }
             }
 
             entity.WatchedAttributes.MarkPathDirty("bodyTemp");
         }
-
         private bool CheckRefrigeration(Room room)
         {
-            if (room == null)
-            {
-                return false;
-            }
+            if (room == null) return false;
 
             var assembly = AppDomain.CurrentDomain.GetAssemblies()
                 .FirstOrDefault(a => a.GetName().Name == "medievalexpansion");
-            if (assembly == null)
-            {
-                return false;
-            }
+            if (assembly == null) return false;
 
             var managerType = assembly.GetType("medievalexpansion.src.busineslogic.RoomRefridgePositionManager");
-            if (managerType == null)
-            {
-                return false;
-            }
+            if (managerType == null) return false;
 
             var instanceMethod = managerType.GetMethod("Instance",
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-            if (instanceMethod == null)
-            {
-                return false;
-            }
+            if (instanceMethod == null) return false;
 
             var instance = instanceMethod.Invoke(null, null);
-            if (instance == null)
-            {
-                return false;
-            }
+            if (instance == null) return false;
 
             var positionsProperty = managerType.GetProperty("RoomRefridgerPosition",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            if (positionsProperty == null)
-            {
-                return false;
-            }
+            if (positionsProperty == null) return false;
 
             var positions = positionsProperty.GetValue(instance) as IList<BlockPos>;
-            if (positions == null)
-            {
-                return false;
-            }
+            if (positions == null) return false;
 
             foreach (var pos in positions)
             {
@@ -265,17 +255,14 @@ namespace HydrateOrDiedrate.Hot_Weather
                     return true;
                 }
             }
-
             return false;
         }
-
         public void LoadCooling()
         {
-            _currentCooling = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0);
+            _rawClothingCooling = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0);
+            _adjustedCooling = entity.WatchedAttributes.GetFloat("adjustedCoolingHot", 0);
         }
-
         public override string PropertyName() => "bodytemperaturehot";
-
         private bool IsMedievalExpansionInstalled(ICoreAPI api)
         {
             return api.ModLoader.IsModEnabled("medievalexpansion");

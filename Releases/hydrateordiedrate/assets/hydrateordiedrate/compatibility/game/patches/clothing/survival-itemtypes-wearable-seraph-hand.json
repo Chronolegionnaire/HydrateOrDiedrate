@@ -1,0 +1,26 @@
+[
+  {
+    "op": "remove",
+    "path": "/attributesByType/*-clockmaker-wristguard",
+    "file": "game:itemtypes/wearable/seraph/hand.json",
+    "side": "Server"
+  },
+  {
+    "op": "remove",
+    "path": "/attributesByType/*-forlorn-bracer",
+    "file": "game:itemtypes/wearable/seraph/hand.json",
+    "side": "Server"
+  },
+  {
+    "op": "remove",
+    "path": "/attributesByType/*-laced-handsome-gloves",
+    "file": "game:itemtypes/wearable/seraph/hand.json",
+    "side": "Server"
+  },
+  {
+    "op": "remove",
+    "path": "/attributesByType/*-surgeon",
+    "file": "game:itemtypes/wearable/seraph/hand.json",
+    "side": "Server"
+  }
+]
