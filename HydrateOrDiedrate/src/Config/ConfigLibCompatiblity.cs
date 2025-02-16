@@ -119,6 +119,9 @@ namespace HydrateOrDiedrate.Config
         private const string settingWellWaterTaintedSaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltTransitionHours";
         private const string settingWellWaterPoisonedSaltFreshHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltFreshHours";
         private const string settingWellWaterPoisonedSaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltTransitionHours";
+        
+        private const string settingWinchLowerSpeed = "hydrateordiedrate:Config.Setting.WinchLowerSpeed";
+        private const string settingWinchRaiseSpeed = "hydrateordiedrate:Config.Setting.WinchRaiseSpeed";
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
             if (!api.ModLoader.IsModEnabled("configlib"))
@@ -602,6 +605,16 @@ namespace HydrateOrDiedrate.Config
             float wellWaterPoisonedSaltTransitionHours = config.WellWaterPoisonedSaltTransitionHours;
             ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltTransitionHours) + $"##wellWaterPoisonedSaltTransitionHours-{id}", ref wellWaterPoisonedSaltTransitionHours, 1.0f, 0.0f, 1000.0f);
             config.WellWaterPoisonedSaltTransitionHours = wellWaterPoisonedSaltTransitionHours;
+            
+            ImGui.SeparatorText("Winch Speed");
+            
+            float winchLowerSpeed = config.WinchLowerSpeed;
+            ImGui.DragFloat(Lang.Get(settingWinchLowerSpeed) + $"##winchLowerSpeed-{id}", ref winchLowerSpeed, 0.01f, 0.0f, 5.0f);
+            config.WinchLowerSpeed = winchLowerSpeed;
+
+            float winchRaiseSpeed = config.WinchRaiseSpeed;
+            ImGui.DragFloat(Lang.Get(settingWinchRaiseSpeed) + $"##winchRaiseSpeed-{id}", ref winchRaiseSpeed, 0.01f, 0.0f, 5.0f);
+            config.WinchRaiseSpeed = winchRaiseSpeed;
         }
     }
 }

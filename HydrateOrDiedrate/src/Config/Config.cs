@@ -202,6 +202,12 @@ public class Config : IModConfig
     
     [ProtoMember(86)] 
     public float WellWaterPoisonedSaltTransitionHours { get; set; }
+    
+    [ProtoMember(87)] 
+    public float WinchLowerSpeed { get; set; }
+    
+    [ProtoMember(88)] 
+    public float WinchRaiseSpeed { get; set; }
 
 
     public Config()
@@ -315,6 +321,9 @@ public class Config : IModConfig
         WellWaterTaintedSaltTransitionHours = 36f;
         WellWaterPoisonedSaltFreshHours = 150f;
         WellWaterPoisonedSaltTransitionHours = 36f;
+
+        WinchLowerSpeed = 0.8f;
+        WinchRaiseSpeed = 0.8f;
     }
     public Config(ICoreAPI api, Config previousConfig = null)
     {
@@ -427,5 +436,8 @@ public class Config : IModConfig
          WellWaterTaintedSaltTransitionHours = previousConfig?.WellWaterTaintedSaltTransitionHours ?? 36f;
          WellWaterPoisonedSaltFreshHours = previousConfig?.WellWaterPoisonedSaltFreshHours ?? 150f;
          WellWaterPoisonedSaltTransitionHours = previousConfig?.WellWaterPoisonedSaltTransitionHours ?? 36f;
+         
+         WinchLowerSpeed = previousConfig?.WinchLowerSpeed ?? 0.8f;
+         WinchRaiseSpeed = previousConfig?.WinchRaiseSpeed ?? 0.8f;
     }
 }

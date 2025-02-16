@@ -292,14 +292,17 @@ namespace HydrateOrDiedrate.winch
         }
         private bool StepMovement()
         {
+            float lowerSpeed = HydrateOrDiedrateModSystem.LoadedConfig.WinchLowerSpeed;
+            float raiseSpeed = HydrateOrDiedrateModSystem.LoadedConfig.WinchRaiseSpeed;
+            
             if (isRaising)
             {
                 if (!CanMoveUp()) return false;
-                bucketDepth -= 0.1f;
+                bucketDepth -= raiseSpeed;
             }
             else
             {
-                float nextDepth = bucketDepth + 0.1f;
+                float nextDepth = bucketDepth + lowerSpeed;
 
                 if (!CanMoveDown()) return false;
 

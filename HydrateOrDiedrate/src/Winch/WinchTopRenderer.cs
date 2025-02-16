@@ -188,7 +188,7 @@ namespace HydrateOrDiedrate.winch
                     }
                     else
                     {
-                        AngleRad += deltaTime * 40f * GameMath.DEG2RAD * (beWinch.isRaising ? -1f : 1f);
+                        AngleRad += deltaTime * 200f * GameMath.DEG2RAD * (beWinch.isRaising ? -1f : 1f);
                     }
                 }
             }
