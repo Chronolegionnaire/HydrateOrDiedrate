@@ -41,7 +41,7 @@ namespace HydrateOrDiedrate.patches
             {
                 return;
             }
-            var harmony = new Harmony("com.yourname.hydrateordiedrate.betterprospecting");
+            var harmony = new Harmony("com.chronolegionnaire.hydrateordiedrate.betterprospecting");
             var postfix = new HarmonyMethod(typeof(BetterProspectingAquiferPatch).GetMethod(nameof(OnBlockBrokenWithPostfix), BindingFlags.NonPublic | BindingFlags.Static));
             var patchProcessor = new PatchProcessor(harmony, targetMethod);
             patchProcessor.AddPostfix(postfix);
