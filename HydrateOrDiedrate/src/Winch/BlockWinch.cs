@@ -54,8 +54,7 @@ namespace HydrateOrDiedrate.winch
             }
             BlockEntityWinch beWinch = world.BlockAccessor.GetBlockEntity(blockSel.Position) as BlockEntityWinch;
             if (beWinch != null && beWinch.CanTurn() 
-                && (blockSel.SelectionBoxIndex == 1 
-                    || beWinch.Inventory.openedByPlayerGUIds.Contains(byPlayer.PlayerUID)))
+                && (blockSel.SelectionBoxIndex == 1))
             {
                 beWinch.SetPlayerTurning(byPlayer, true);
                 return true;
@@ -106,8 +105,6 @@ namespace HydrateOrDiedrate.winch
                     }
                 }.Append(base.GetPlacedBlockInteractionHelp(world, selection, forPlayer));
             }
-
-            // When selection.SelectionBoxIndex != 0, return two custom interactions:
             return new WorldInteraction[]
             {
                 new WorldInteraction

@@ -579,13 +579,7 @@ namespace HydrateOrDiedrate.winch
                         return clientDialog;
                     });
                 }
-                return true;
             }
-            else if (blockSel.SelectionBoxIndex == 1)
-            {
-                return true;
-            }
-
             return false;
         }
         public ItemSlot InputSlot => inventory[0];
