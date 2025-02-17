@@ -1,0 +1,133 @@
+﻿[
+  {
+    "type": "replace",
+    "conditions": [{ "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }],
+    "outputCode": "hydrateordiedrate:winch-*",
+    "ingredients": [
+      {
+        "ingredientCode": "game:woodenaxle-*",
+        "Code": "vanvar:woodenaxle-*"
+      }
+    ]
+  },
+  {
+    "type": "Replace",
+    "conditions": [
+      { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
+    ],
+    "dependsOn": [
+      { "modid": "floralzonescaperegion" }
+    ],
+    "outputCode": "hydrateordiedrate:winch-*",
+    "ingredients": [
+      {
+        "ingredientCode": "game:woodenaxle-*",
+        "Code": "vanvar:woodenaxle-*"
+      },
+      {
+        "ingredientCode": "game:plank-*",
+        "Code": "floralzonescaperegion:plank-*"
+      }
+    ]
+  },
+  {
+    "type": "Replace",
+    "conditions": [
+      { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
+    ],
+    "dependsOn": [
+      { "modid": "floralzonescaribbeanregion" }
+    ],
+    "outputCode": "hydrateordiedrate:winch-*",
+    "ingredients": [
+      {
+        "ingredientCode": "game:woodenaxle-*",
+        "Code": "vanvar:woodenaxle-*"
+      },
+      {
+        "ingredientCode": "game:plank-*",
+        "Code": "floralzonescaribbeanregion:plank-*"
+      }
+    ]
+  },
+  {
+    "type": "Replace",
+    "conditions": [
+      { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
+    ],
+    "dependsOn": [
+      { "modid": "floralzonescentralaustralianregion" }
+    ],
+    "outputCode": "hydrateordiedrate:winch-*",
+    "ingredients": [
+      {
+        "ingredientCode": "game:woodenaxle-*",
+        "Code": "vanvar:woodenaxle-*"
+      },
+      {
+        "ingredientCode": "game:plank-*",
+        "Code": "floralzonescentralaustralianregion:plank-*"
+      }
+    ]
+  },
+  {
+    "type": "Replace",
+    "conditions": [
+      { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
+    ],
+    "dependsOn": [
+      { "modid": "floralzonesmediterraneanregion" }
+    ],
+    "outputCode": "hydrateordiedrate:winch-*",
+    "ingredients": [
+      {
+        "ingredientCode": "game:woodenaxle-*",
+        "Code": "vanvar:woodenaxle-*"
+      },
+      {
+        "ingredientCode": "game:plank-*",
+        "Code": "floralzonesmediterraneanregion:plank-*"
+      }
+    ]
+  },
+  {
+    "type": "Replace",
+    "conditions": [
+      { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
+    ],
+    "dependsOn": [
+      { "modid": "floralzonesneozeylandricregion" }
+    ],
+    "outputCode": "hydrateordiedrate:winch-*",
+    "ingredients": [
+      {
+        "ingredientCode": "game:woodenaxle-*",
+        "Code": "vanvar:woodenaxle-*"
+      },
+      {
+        "ingredientCode": "game:plank-*",
+        "Code": "floralzonesneozeylandricregion:plank-*"
+      }
+    ]
+  },
+  {
+    "type": "Replace",
+    "conditions": [
+      { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
+    ],
+    "dependsOn": [
+      { "modid": "wildcrafttree" }
+    ],
+    "outputCode": "hydrateordiedrate:winch-*",
+    "ingredients": [
+      {
+        "ingredientCode": "game:woodenaxle-*",
+        "Code": "vanvar:woodenaxle-*"
+      },
+      {
+        "ingredientCode": "game:plank-*",
+        "Code": "wildcrafttree:plank-*"
+      }
+    ]
+  }
+]
