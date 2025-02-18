@@ -19,6 +19,7 @@ namespace HydrateOrDiedrate.wellwater
         private const double MaxDailyOutput = 70.0;
         private const double MinimumDailyOutput = 1.0;
         private double lastInGameTime = -1.0;
+        private double depthFactor = 1.0;
 
         public override void Initialize(ICoreAPI api)
         {
@@ -29,21 +30,22 @@ namespace HydrateOrDiedrate.wellwater
                 _aquiferManager = HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager;
                 if (_aquiferManager == null) return;
 
-                double depthFactor = 1.0;
-                if (HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
-                {
-                    double maxWorldHeight = sapi.WorldManager.MapSizeY;
-                    double waterLineY = Math.Round(0.4296875 * maxWorldHeight);
-                    depthFactor = (waterLineY - Pos.Y) / (waterLineY - 1);
-                    if (depthFactor < 0) depthFactor = 0;
-                }
-                if (depthFactor < 0) depthFactor = 0;
-
+                depthFactor = CalculateDepthFactor();
                 _aquiferManager.RegisterWellspring(Pos, depthFactor);
                 RegisterGameTickListener(OnTick, updateIntervalMs);
             }
         }
-
+        private double CalculateDepthFactor()
+        {
+            if (!HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
+            {
+                return 1.0;
+            }
+            double maxWorldHeight = sapi.WorldManager.MapSizeY;
+            double waterLineY = Math.Round(0.4296875 * maxWorldHeight);
+            double calculatedDepthFactor = (waterLineY - Pos.Y) / (waterLineY - 1);
+            return Math.Max(calculatedDepthFactor, 0);
+        }
         public override void OnBlockRemoved()
         {
             base.OnBlockRemoved();
@@ -99,11 +101,13 @@ namespace HydrateOrDiedrate.wellwater
                     string waterType = nearbyWater.isSalty ? "muddysalt" : "muddy";
                     AddOrPlaceWater(waterType, wholeLiters);
                 }
+
                 return;
             }
 
             if (wellsprings.Count > 0)
             {
+                depthFactor = CalculateDepthFactor();
                 double remainingRating = aquiferData.AquiferRating / wellsprings.Count;
                 var thisSpring = wellsprings.FirstOrDefault(ws => ws.Position.Equals(Pos));
                 if (thisSpring == null)
@@ -111,7 +115,6 @@ namespace HydrateOrDiedrate.wellwater
                     return;
                 }
 
-                double depthFactor = thisSpring.DepthFactor;
                 double dailyLiters = MaxDailyOutput * (remainingRating / 100.0) * (1.0 - 0.75 + (0.75 * depthFactor));
                 dailyLiters *= (2f * HydrateOrDiedrateModSystem.LoadedConfig.WellSpringOutputMultiplier);
 

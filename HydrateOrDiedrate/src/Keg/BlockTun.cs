@@ -7,10 +7,36 @@ namespace HydrateOrDiedrate.Keg
     public class BlockTun : BlockLiquidContainerBase
     {
         private float tunCapacityLitres;
+        private long updateListenerId;
+
         public override void OnLoaded(ICoreAPI api)
         {
             base.OnLoaded(api);
+            LoadConfigValues();
+
+            if (api.Side == EnumAppSide.Client)
+            {
+                RegisterConfigUpdateListener(api);
+            }
+        }
+
+        private void LoadConfigValues()
+        {
             tunCapacityLitres = HydrateOrDiedrateModSystem.LoadedConfig.TunCapacityLitres;
+        }
+
+        private void RegisterConfigUpdateListener(ICoreAPI api)
+        {
+            updateListenerId = api.Event.RegisterGameTickListener(dt =>
+            {
+                float newTunCapacity = HydrateOrDiedrateModSystem.LoadedConfig.TunCapacityLitres;
+                if (newTunCapacity != tunCapacityLitres)
+                {
+                    LoadConfigValues();
+                    api.Event.UnregisterGameTickListener(updateListenerId);
+                }
+
+            }, 5000);
         }
 
         public override float CapacityLitres => tunCapacityLitres;
@@ -62,6 +88,5 @@ namespace HydrateOrDiedrate.Keg
 
             base.tryEatStop(secondsUsed, slot, byEntity);
         }
-        
     }
 }

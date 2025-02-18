@@ -79,7 +79,6 @@ namespace HydrateOrDiedrate.winch
             base.Initialize(api);
             this.api = api;
             this.ownBlock = this.Block as BlockWinch;
-            config = ModConfig.ReadConfig<Config.Config>(api, "HydrateOrDiedrateConfig.json") ?? new Config.Config();
             if (inventory == null)
             {
                 inventory = new InventoryWinch($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", api);

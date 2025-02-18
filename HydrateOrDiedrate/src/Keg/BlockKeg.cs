@@ -14,13 +14,42 @@ namespace HydrateOrDiedrate.Keg
         private float kegCapacityLitres;
         private float ironHoopDropChance;
         private float kegTapDropChance;
+        private long updateListenerId;
 
         public override void OnLoaded(ICoreAPI api)
         {
             base.OnLoaded(api);
+            LoadConfigValues();
+
+            if (api.Side == EnumAppSide.Client)
+            {
+                RegisterConfigUpdateListener(api);
+            }
+        }
+
+        private void LoadConfigValues()
+        {
             kegCapacityLitres = HydrateOrDiedrateModSystem.LoadedConfig.KegCapacityLitres;
             ironHoopDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegIronHoopDropChance;
             kegTapDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegTapDropChance;
+        }
+
+        private void RegisterConfigUpdateListener(ICoreAPI api)
+        {
+            updateListenerId = api.Event.RegisterGameTickListener(dt =>
+            {
+                float newKegCapacity = HydrateOrDiedrateModSystem.LoadedConfig.KegCapacityLitres;
+                float newIronHoopDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegIronHoopDropChance;
+                float newKegTapDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegTapDropChance;
+                if (newKegCapacity != kegCapacityLitres || 
+                    newIronHoopDropChance != ironHoopDropChance || 
+                    newKegTapDropChance != kegTapDropChance)
+                {
+                    LoadConfigValues();
+                    api.Event.UnregisterGameTickListener(updateListenerId);
+                }
+
+            }, 5000);
         }
         public override float CapacityLitres => kegCapacityLitres;
         public override bool CanDrinkFrom => false;
