@@ -96,9 +96,9 @@ public class RainHarvesterData
         lastRainHarvestDay = currentDay;
         double litersThisCycle = CalculateFillRate(rainIntensity) * elapsedDays;
         accumulatedRainWater += litersThisCycle;
-        if (accumulatedRainWater < 0.2) return;
-        int increments = (int)Math.Floor(accumulatedRainWater / 0.2);
-        float waterToAdd = increments * 0.2f;
+        if (accumulatedRainWater < 0.1) return;
+        int increments = (int)Math.Floor(accumulatedRainWater / 0.1);
+        float waterToAdd = increments * 0.1f;
         accumulatedRainWater -= waterToAdd;
 
         if (BlockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
@@ -138,7 +138,7 @@ public class RainHarvesterData
         float currentCalendarSpeedMul = BlockEntity.Api.World.Calendar.CalendarSpeedMul;
         float gameSpeedMultiplier = (currentSpeedOfTime / 60f) * (currentCalendarSpeedMul / 0.5f);
 
-        return 2f * rainIntensity * gameSpeedMultiplier * rainMultiplier;
+        return 3f * rainIntensity * gameSpeedMultiplier * rainMultiplier;
     }
     public bool IsOpenToSky(BlockPos pos)
     {

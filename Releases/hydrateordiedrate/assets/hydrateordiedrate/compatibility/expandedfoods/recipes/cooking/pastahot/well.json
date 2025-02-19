@@ -38,7 +38,7 @@
       "validStacks": [
         {
           "type": "item",
-          "code": "hydrateordiedrate:waterwaterportion-fresh",
+          "code": "hydrateordiedrate:wellwaterportion-fresh",
           "shapeElement": "bowl/null"
         },
         {

@@ -130,10 +130,9 @@ public class RainHarvesterManager
                 {
                     harvesterData.adaptiveTickInterval = globalTickCounter + 2;
                 }
-
                 if (harvesterData.adaptiveTickInterval > 10)
                 {
-                    harvesterData.adaptiveTickInterval -= 10;
+                    harvesterData.adaptiveTickInterval -= 9;
                 }
 
                 if (globalTickCounter == harvesterData.adaptiveTickInterval)
