@@ -459,6 +459,48 @@ namespace HydrateOrDiedrate.Keg
                 BlendMode = EnumAnimationBlendMode.Add,
             });
         }
+        public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
+        {
+            bool preventDefault = false;
+            foreach (BlockBehavior blockBehavior in this.BlockBehaviors)
+            {
+                EnumHandling handled = EnumHandling.PassThrough;
+                blockBehavior.OnBlockBroken(world, pos, byPlayer, ref handled);
+                if (handled == EnumHandling.PreventDefault)
+                {
+                    preventDefault = true;
+                }
+                if (handled == EnumHandling.PreventSubsequent)
+                {
+                    return;
+                }
+            }
+            if (preventDefault)
+            {
+                return;
+            }
+            if (world.Side == EnumAppSide.Server && (byPlayer == null || byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative))
+            {
+                ItemStack[] drops = new ItemStack[]
+                {
+                    new ItemStack(this, 1)
+                };
+                for (int i = 0; i < drops.Length; i++)
+                {
+                    world.SpawnItemEntity(drops[i], pos, null);
+                }
+                world.PlaySoundAt(this.Sounds.GetBreakSound(byPlayer), pos, 0.0, byPlayer, true, 32f, 1f);
+            }
+            if (this.EntityClass != null)
+            {
+                BlockEntity entity = world.BlockAccessor.GetBlockEntity(pos);
+                if (entity != null)
+                {
+                    entity.OnBlockBroken(null);
+                }
+            }
+            world.BlockAccessor.SetBlock(0, pos);
+        }
     }
     
 }
