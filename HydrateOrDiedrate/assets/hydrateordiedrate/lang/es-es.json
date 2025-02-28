@@ -1,0 +1,21 @@
+{
+  "_comentarios": "Traducido por C4BR3R4 || Versión del Mod: 1.0.4 || Fecha de modificación: 20250218 || Registro: http://c4br3r4.es/index.php?topic=1313.0 ",
+  "hodblocks:Config.Setting.KegCapacityLitres": "Capacidad del Barril (Litros)",
+  "hodblocks:Config.Setting.SpoilRateUntapped": "Porcentaje de Descomposición (sin usar)",
+  "hodblocks:Config.Setting.SpoilRateTapped": "Tasa de Descomposición (Aprovechados)",
+  "hodblocks:Config.Setting.KegIronHoopDropChance": "Probabilidad de Perder el Aro de Hierro del Barril",
+  "hodblocks:Config.Setting.KegTapDropChance": "Probabilidad de Perder el Grifo de Barril",
+  "hodblocks:block-keg": "Barril",
+  "hodblocks:block-kegtapped": "Barril con Grifo",
+  "hodblocks:item-kegtap": "Grifo de Barril",
+  "hodblocks:block-tun*": "Cuba",
+  "hodblocks:block-winch-*": "Cabrestante de Pozo",
+  "hodblocks:blockhelp-winch-addremoveitems": "Añade o retira el Cubo.\n(¡Debe estar arriba!)",
+  "hodblocks:blockhelp-winch-lower": "Bajar Cubo",
+  "hodblocks:blockhelp-winch-raise": "Subir Cubo",
+  "hodblocks:Winch": "Cabrestante",
+  "hydrateordiedrate:Config.Setting.WinchLowerSpeed": "Velocidad de descenso del cabrestante",
+  "hydrateordiedrate:Config.Setting.WinchRaiseSpeed": "Velocidad de elevación del cabrestante",
+  "hydrateordiedrate:Config.Setting.TunCapacityLitres": "Capacidad de la Cuba (Litros)",
+  "hydrateordiedrate:Config.Setting.TunSpoilRateMultiplier": "Multiplicador de la Tasa de Descomposición"
+}
