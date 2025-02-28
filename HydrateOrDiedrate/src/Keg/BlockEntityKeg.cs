@@ -18,6 +18,9 @@ namespace HydrateOrDiedrate.Keg
         public float MeshAngle;
         private Config.Config config;
         private const int UpdateIntervalMs = 1000;
+        private long updateListenerId;
+        private float spoilRateTapped;
+        private float spoilRateUntapped;
         public override string InventoryClassName => "keg";
 
         public override void Initialize(ICoreAPI api)
@@ -31,6 +34,10 @@ namespace HydrateOrDiedrate.Keg
                 UpdateKegMultiplier();
             }
             RegisterGameTickListener(UpdateSpoilRate, UpdateIntervalMs);
+            if (api.Side == EnumAppSide.Client)
+            {
+                RegisterConfigUpdateListener(api);
+            }
         }
         private void UpdateKegMultiplier()
         {
@@ -41,7 +48,9 @@ namespace HydrateOrDiedrate.Keg
                     inv.TransitionableSpeedMulByType = new Dictionary<EnumTransitionType, float>();
                 }
 
-                float kegMultiplier = (this.Block.Code.Path == "kegtapped") ? config?.SpoilRateTapped ?? 1.0f : config?.SpoilRateUntapped ?? 1.0f;
+                float kegMultiplier = (this.Block.Code.Path == "kegtapped") 
+                    ? spoilRateTapped
+                    : spoilRateUntapped;
                 inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = kegMultiplier;
             }
         }
@@ -50,39 +59,6 @@ namespace HydrateOrDiedrate.Keg
             this.inventory = new InventoryGeneric(1, null, null, null);
             inventory.BaseWeight = 1.0f;
             inventory.OnGetSuitability = GetSuitability;
-        }
-        private float GetRoomMultiplier()
-        {
-            RoomRegistry roomRegistry = api.ModLoader.GetModSystem<RoomRegistry>();
-            if (roomRegistry == null)
-            {
-                return 1.0f;
-            }
-            Room room = roomRegistry.GetRoomForPosition(Pos);
-            if (room == null)
-            {
-                return 1.0f;
-            }
-            if (room.ExitCount == 0)
-            {
-                return 0.5f;
-            }
-            if (room.SkylightCount > 0)
-            {
-                return 1.2f;
-            }
-
-            return 1.0f;
-        }
-        private float GetTemperatureFactor()
-        {
-            ClimateCondition climate = api.World.BlockAccessor.GetClimateAt(Pos, EnumGetClimateMode.NowValues);
-            if (climate == null)
-            {
-                return 1.0f;
-            }
-            float normalizedTemperature = climate.Temperature / 20f;
-            return Math.Max(0.5f, Math.Min(2.0f, normalizedTemperature));
         }
         private void UpdateSpoilRate(float dt)
         {
@@ -96,12 +72,10 @@ namespace HydrateOrDiedrate.Keg
                 {
                     inv.TransitionableSpeedMulByType.Clear();
                 }
-                float roomMultiplier = GetRoomMultiplier();
                 float kegMultiplier = (this.Block.Code.Path == "kegtapped")
-                    ? config?.SpoilRateTapped ?? 1.0f
-                    : config?.SpoilRateUntapped ?? 1.0f;
-                float temperatureFactor = GetTemperatureFactor();
-                float finalSpoilRate = kegMultiplier * roomMultiplier * temperatureFactor;
+                    ? spoilRateTapped
+                    : spoilRateUntapped;
+                float finalSpoilRate = kegMultiplier;
                 inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = finalSpoilRate;
             }
         }
@@ -165,6 +139,26 @@ namespace HydrateOrDiedrate.Keg
             }
 
             base.OnBlockBroken(byPlayer);
+        }
+        private void LoadConfigValues()
+        {
+            spoilRateTapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateTapped;
+            spoilRateUntapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateUntapped;
+        }
+        private void RegisterConfigUpdateListener(ICoreAPI api)
+        {
+            updateListenerId = api.Event.RegisterGameTickListener(dt =>
+            {
+                float newSpoilRateTapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateTapped;
+                float newSpoilRateUntapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateUntapped;
+                if (newSpoilRateTapped != spoilRateTapped || 
+                    newSpoilRateUntapped != spoilRateUntapped)
+                {
+                    LoadConfigValues();
+                    api.Event.UnregisterGameTickListener(updateListenerId);
+                }
+
+            }, 5000);
         }
     }
 }

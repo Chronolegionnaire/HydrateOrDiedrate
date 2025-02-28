@@ -16,6 +16,8 @@ namespace HydrateOrDiedrate.Keg
         public float MeshAngle;
         private Config.Config config;
         private const int UpdateIntervalMs = 1000;
+        private long updateListenerId;
+        private float tunSpoilRateMultiplier;
         public override string InventoryClassName => "tun";
 
         public override void Initialize(ICoreAPI api)
@@ -29,6 +31,11 @@ namespace HydrateOrDiedrate.Keg
                 UpdateTunMultiplier();
             }
             RegisterGameTickListener(UpdateSpoilRate, UpdateIntervalMs);
+
+            if (api.Side == EnumAppSide.Client)
+            {
+                RegisterConfigUpdateListener(api);
+            }
         }
         private void UpdateTunMultiplier()
         {
@@ -39,7 +46,7 @@ namespace HydrateOrDiedrate.Keg
                     inv.TransitionableSpeedMulByType = new Dictionary<EnumTransitionType, float>();
                 }
 
-                float tunMultiplier = config?.TunSpoilRateMultiplier ?? 0.5f;
+                float tunMultiplier = tunSpoilRateMultiplier;
                 inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = tunMultiplier;
             }
         }
@@ -48,39 +55,6 @@ namespace HydrateOrDiedrate.Keg
             this.inventory = new InventoryGeneric(1, null, null, null);
             inventory.BaseWeight = 1.0f;
             inventory.OnGetSuitability = GetSuitability;
-        }
-        private float GetRoomMultiplier()
-        {
-            RoomRegistry roomRegistry = api.ModLoader.GetModSystem<RoomRegistry>();
-            if (roomRegistry == null)
-            {
-                return 1.0f;
-            }
-            Room room = roomRegistry.GetRoomForPosition(Pos);
-            if (room == null)
-            {
-                return 1.0f;
-            }
-            if (room.ExitCount == 0)
-            {
-                return 0.5f;
-            }
-            if (room.SkylightCount > 0)
-            {
-                return 1.2f;
-            }
-
-            return 1.0f;
-        }
-        private float GetTemperatureFactor()
-        {
-            ClimateCondition climate = api.World.BlockAccessor.GetClimateAt(Pos, EnumGetClimateMode.NowValues);
-            if (climate == null)
-            {
-                return 1.0f;
-            }
-            float normalizedTemperature = climate.Temperature / 20f;
-            return Math.Max(0.5f, Math.Min(2.0f, normalizedTemperature));
         }
         private void UpdateSpoilRate(float dt)
         {
@@ -94,11 +68,8 @@ namespace HydrateOrDiedrate.Keg
                 {
                     inv.TransitionableSpeedMulByType.Clear();
                 }
-                float roomMultiplier = GetRoomMultiplier();
-                float tunMultiplier = config?.TunSpoilRateMultiplier ?? 0.5f;
-                float temperatureFactor = GetTemperatureFactor();
-                float finalSpoilRate = tunMultiplier * roomMultiplier * temperatureFactor;
-                inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = finalSpoilRate;
+                float tunMultiplier = tunSpoilRateMultiplier;
+                inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = tunMultiplier;
             }
         }
         private float GetSuitability(ItemSlot sourceSlot, ItemSlot targetSlot, bool isMerge)
@@ -155,6 +126,23 @@ namespace HydrateOrDiedrate.Keg
             }
 
             base.OnBlockBroken(byPlayer);
+        }
+        private void LoadConfigValues()
+        {
+            tunSpoilRateMultiplier = HydrateOrDiedrateModSystem.LoadedConfig.TunSpoilRateMultiplier;
+        }
+        private void RegisterConfigUpdateListener(ICoreAPI api)
+        {
+            updateListenerId = api.Event.RegisterGameTickListener(dt =>
+            {
+                float newTunSpoilRateMultiplier = HydrateOrDiedrateModSystem.LoadedConfig.TunSpoilRateMultiplier;
+                if (newTunSpoilRateMultiplier != tunSpoilRateMultiplier)
+                {
+                    LoadConfigValues();
+                    api.Event.UnregisterGameTickListener(updateListenerId);
+                }
+
+            }, 5000);
         }
     }
 }
