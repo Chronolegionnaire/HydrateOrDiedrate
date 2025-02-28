@@ -208,6 +208,10 @@ public class Config : IModConfig
     
     [ProtoMember(88)] 
     public float WinchRaiseSpeed { get; set; }
+    [ProtoMember(89, IsRequired = true)] 
+    public bool KegDropWithLiquid { get; set; }
+    [ProtoMember(90, IsRequired = true)] 
+    public bool TunDropWithLiquid { get; set; }
 
 
     public Config()
@@ -324,6 +328,9 @@ public class Config : IModConfig
 
         WinchLowerSpeed = 0.8f;
         WinchRaiseSpeed = 0.8f;
+        
+        KegDropWithLiquid = true;
+        TunDropWithLiquid = false;
     }
     public Config(ICoreAPI api, Config previousConfig = null)
     {
@@ -439,5 +446,8 @@ public class Config : IModConfig
          
          WinchLowerSpeed = previousConfig?.WinchLowerSpeed ?? 0.8f;
          WinchRaiseSpeed = previousConfig?.WinchRaiseSpeed ?? 0.8f;
+         
+         KegDropWithLiquid = previousConfig?.KegDropWithLiquid ?? true;
+         TunDropWithLiquid = previousConfig?.TunDropWithLiquid ?? false;
     }
 }

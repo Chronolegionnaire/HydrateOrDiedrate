@@ -9,6 +9,7 @@ namespace HydrateOrDiedrate.Keg
     {
         private float tunCapacityLitres;
         private long updateListenerId;
+        private bool tunDropWithLiquid;
 
         public override void OnLoaded(ICoreAPI api)
         {
@@ -24,6 +25,7 @@ namespace HydrateOrDiedrate.Keg
         private void LoadConfigValues()
         {
             tunCapacityLitres = HydrateOrDiedrateModSystem.LoadedConfig.TunCapacityLitres;
+            tunDropWithLiquid = HydrateOrDiedrateModSystem.LoadedConfig.TunDropWithLiquid;
         }
 
         private void RegisterConfigUpdateListener(ICoreAPI api)
@@ -31,7 +33,8 @@ namespace HydrateOrDiedrate.Keg
             updateListenerId = api.Event.RegisterGameTickListener(dt =>
             {
                 float newTunCapacity = HydrateOrDiedrateModSystem.LoadedConfig.TunCapacityLitres;
-                if (newTunCapacity != tunCapacityLitres)
+                bool newTunDropWithLiquid = HydrateOrDiedrateModSystem.LoadedConfig.TunDropWithLiquid;
+                if (newTunCapacity != tunCapacityLitres || newTunDropWithLiquid != tunDropWithLiquid)
                 {
                     LoadConfigValues();
                     api.Event.UnregisterGameTickListener(updateListenerId);
@@ -91,6 +94,12 @@ namespace HydrateOrDiedrate.Keg
         }
         public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
         {
+            if (tunDropWithLiquid)
+            {
+                base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+                return;
+            }
+
             bool preventDefault = false;
             foreach (BlockBehavior blockBehavior in this.BlockBehaviors)
             {

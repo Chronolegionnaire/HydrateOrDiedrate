@@ -122,6 +122,9 @@ namespace HydrateOrDiedrate.Config
         
         private const string settingWinchLowerSpeed = "hydrateordiedrate:Config.Setting.WinchLowerSpeed";
         private const string settingWinchRaiseSpeed = "hydrateordiedrate:Config.Setting.WinchRaiseSpeed";
+        
+        private const string settingKegDropWithLiquid = "hydrateordiedrate:Config.Setting.KegDropWithLiquid";
+        private const string settingTunDropWithLiquid = "hydrateordiedrate:Config.Setting.TunDropWithLiquid";
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
             if (!api.ModLoader.IsModEnabled("configlib"))
@@ -615,6 +618,14 @@ namespace HydrateOrDiedrate.Config
             float winchRaiseSpeed = config.WinchRaiseSpeed;
             ImGui.DragFloat(Lang.Get(settingWinchRaiseSpeed) + $"##winchRaiseSpeed-{id}", ref winchRaiseSpeed, 0.01f, 0.0f, 5.0f);
             config.WinchRaiseSpeed = winchRaiseSpeed;
+            
+            bool kegDropWithLiquid = config.KegDropWithLiquid;
+            ImGui.Checkbox(Lang.Get(settingKegDropWithLiquid) + $"##kegDropWithLiquid-{id}", ref kegDropWithLiquid);
+            config.KegDropWithLiquid = kegDropWithLiquid;
+            
+            bool tunDropWithLiquid = config.TunDropWithLiquid;
+            ImGui.Checkbox(Lang.Get(settingTunDropWithLiquid) + $"##tunDropWithLiquid-{id}", ref tunDropWithLiquid);
+            config.TunDropWithLiquid = tunDropWithLiquid;
         }
     }
 }

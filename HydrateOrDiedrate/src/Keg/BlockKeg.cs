@@ -14,6 +14,7 @@ namespace HydrateOrDiedrate.Keg
         private float kegCapacityLitres;
         private float ironHoopDropChance;
         private float kegTapDropChance;
+        private bool kegDropWithLiquid;
         private long updateListenerId;
 
         public override void OnLoaded(ICoreAPI api)
@@ -32,6 +33,7 @@ namespace HydrateOrDiedrate.Keg
             kegCapacityLitres = HydrateOrDiedrateModSystem.LoadedConfig.KegCapacityLitres;
             ironHoopDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegIronHoopDropChance;
             kegTapDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegTapDropChance;
+            kegDropWithLiquid = HydrateOrDiedrateModSystem.LoadedConfig.KegDropWithLiquid;
         }
 
         private void RegisterConfigUpdateListener(ICoreAPI api)
@@ -41,9 +43,11 @@ namespace HydrateOrDiedrate.Keg
                 float newKegCapacity = HydrateOrDiedrateModSystem.LoadedConfig.KegCapacityLitres;
                 float newIronHoopDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegIronHoopDropChance;
                 float newKegTapDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegTapDropChance;
+                bool newKegDropWithLiquid = HydrateOrDiedrateModSystem.LoadedConfig.KegDropWithLiquid;
                 if (newKegCapacity != kegCapacityLitres || 
                     newIronHoopDropChance != ironHoopDropChance || 
-                    newKegTapDropChance != kegTapDropChance)
+                    newKegTapDropChance != kegTapDropChance ||
+                    newKegDropWithLiquid != kegDropWithLiquid)
                 {
                     LoadConfigValues();
                     api.Event.UnregisterGameTickListener(updateListenerId);
@@ -461,6 +465,11 @@ namespace HydrateOrDiedrate.Keg
         }
         public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
         {
+            if (kegDropWithLiquid)
+            {
+                base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+                return;
+            }
             bool preventDefault = false;
             foreach (BlockBehavior blockBehavior in this.BlockBehaviors)
             {
