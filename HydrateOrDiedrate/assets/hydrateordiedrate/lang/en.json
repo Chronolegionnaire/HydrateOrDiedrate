@@ -108,6 +108,8 @@
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltTransitionHours": "Well Water (Poisoned Salt) Transition Hours",
   "hydrateordiedrate:Config.Setting.WinchLowerSpeed": "Winch Lower Speed",
   "hydrateordiedrate:Config.Setting.WinchRaiseSpeed": "Winch Raise Speed",
+  "hydrateordiedrate:Config.Setting.KegDropWithLiquid": "Keg retains liquid when broken",
+  "hydrateordiedrate:Config.Setting.TunDropWithLiquid": "Tun retains liquid when broken",
   "hydrateordiedrate:ability-dromedary": "Dromedary",
   "hydrateordiedrate:abilitydesc-dromedary": "Increases max thirst capacity.",
   "hydrateordiedrate:ability-equatidian": "Equatidian",
