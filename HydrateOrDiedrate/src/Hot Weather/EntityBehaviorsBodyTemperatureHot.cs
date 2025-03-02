@@ -28,8 +28,9 @@ namespace HydrateOrDiedrate.Hot_Weather
             get => _rawClothingCooling;
             set
             {
-                _rawClothingCooling = GameMath.Clamp(value, 0, float.MaxValue);
-                entity.WatchedAttributes.SetFloat("currentCoolingHot", _rawClothingCooling);
+                float safeValue = float.IsNaN(value) ? 0f : GameMath.Clamp(value, 0, float.MaxValue);
+                _rawClothingCooling = safeValue;
+                entity.WatchedAttributes.SetFloat("currentCoolingHot", safeValue);
                 entity.WatchedAttributes.MarkPathDirty("currentCoolingHot");
             }
         }
@@ -38,8 +39,9 @@ namespace HydrateOrDiedrate.Hot_Weather
             get => _adjustedCooling;
             set
             {
-                _adjustedCooling = GameMath.Clamp(value, 0, float.MaxValue);
-                entity.WatchedAttributes.SetFloat("adjustedCoolingHot", _adjustedCooling);
+                float safeValue = float.IsNaN(value) ? 0f : GameMath.Clamp(value, 0, float.MaxValue);
+                _adjustedCooling = safeValue;
+                entity.WatchedAttributes.SetFloat("adjustedCoolingHot", safeValue);
                 entity.WatchedAttributes.MarkPathDirty("adjustedCoolingHot");
             }
         }
@@ -54,7 +56,6 @@ namespace HydrateOrDiedrate.Hot_Weather
             InitializeFields();
             isMedievalExpansionInstalled = IsMedievalExpansionInstalled(entity.World.Api);
         }
-
 
         public EntityBehaviorBodyTemperatureHot(Entity entity, Config.Config config) : base(entity)
         {
@@ -113,7 +114,6 @@ namespace HydrateOrDiedrate.Hot_Weather
 
             for (int i = 0; i < inventory.Count; i++)
             {
-
                 var slot = inventory[i];
                 float itemDisplayCooling = 0f;
                 float itemActualCooling = 0f;
@@ -124,7 +124,9 @@ namespace HydrateOrDiedrate.Hot_Weather
                     finalCooling += itemActualCooling;
                     float baseCooling = CoolingManager.GetMaxCooling(slot.Itemstack);
                     float condition = slot.Itemstack.Attributes.GetFloat("condition", 1f);
+                    condition = float.IsNaN(condition) ? 1f : condition;
                     float rawValue = baseCooling * condition;
+                    rawValue = float.IsNaN(rawValue) ? 0f : rawValue;
                     itemDisplayCooling = (float)Math.Round(rawValue, 1, MidpointRounding.AwayFromZero);
                 }
                 else
@@ -138,7 +140,7 @@ namespace HydrateOrDiedrate.Hot_Weather
             }
             displayCoolingTotal += unequippedSlots * _config.UnequippedSlotCooling;
             finalCooling += unequippedSlots * _config.UnequippedSlotCooling;
-            RawClothingCooling = displayCoolingTotal;
+            RawClothingCooling = float.IsNaN(displayCoolingTotal) ? 0f : displayCoolingTotal;
             if (entity.WatchedAttributes.GetFloat("wetness", 0f) > 0)
             {
                 finalCooling *= _config.WetnessCoolingFactor;
@@ -156,15 +158,13 @@ namespace HydrateOrDiedrate.Hot_Weather
             double hourOfDay = world.Calendar?.HourOfDay ?? 0;
 
             float sunlightCooling = (16 - sunlightLevel) / 16f * _config.SunlightCoolingFactor;
-            double distanceTo4AM =
-                GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(4.0, hourOfDay, 24.0) / 12.0));
-            double distanceTo3PM =
-                GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0));
+            double distanceTo4AM = GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(4.0, hourOfDay, 24.0) / 12.0));
+            double distanceTo3PM = GameMath.SmoothStep(Math.Abs(GameMath.CyclicValueDistance(15.0, hourOfDay, 24.0) / 12.0));
 
             double diurnalCooling = (0.5 - distanceTo4AM - distanceTo3PM) * _config.DiurnalVariationAmplitude;
             finalCooling += (float)(sunlightCooling + diurnalCooling);
             finalCooling *= CoolingMultiplier;
-            AdjustedCooling = Math.Max(0, finalCooling);
+            AdjustedCooling = float.IsNaN(finalCooling) ? 0f : Math.Max(0, finalCooling);
         }
         private void CheckRoom()
         {
@@ -220,7 +220,7 @@ namespace HydrateOrDiedrate.Hot_Weather
                     }
                 }
             }
-
+            nearHeatSourceStrength = float.IsNaN(nearHeatSourceStrength) ? 0f : nearHeatSourceStrength;
             entity.WatchedAttributes.MarkPathDirty("bodyTemp");
         }
         private bool CheckRefrigeration(Room room)

@@ -7,54 +7,79 @@ namespace HydrateOrDiedrate.HUD;
 public class HudElementThirstBar : HudElement
 {
     private GuiElementStatbar _statbar;
-    private bool isFlashing;
-    public bool showThirstBar = true;
+    private bool _isFlashing;
+    private int _tickCounter;
+    private float _lastCurrentThirst = -1f;
+    private float _lastMaxThirst = -1f;
+    private float _lastLineInterval = -1f;
+    
+    public bool ShowThirstBar = true;
     public override double InputOrder => 1.0;
     
     public HudElementThirstBar(ICoreClientAPI capi) : base(capi)
     {
         ComposeGuis();
         capi.Event.RegisterGameTickListener(OnGameTick, 100);
-        capi.Event.RegisterGameTickListener(OnFlashStatbars, 1200);
     }
-    
+
     public void OnGameTick(float dt)
     {
+        if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || 
+            capi.World.Player.WorldData.CurrentGameMode == EnumGameMode.Spectator)
+        {
+            return;
+        }
+
         UpdateThirst();
+        
+        _tickCounter++;
+        if (_tickCounter >= 12)
+        {
+            CheckFlash();
+            _tickCounter = 0;
+        }
     }
-    
-    private void OnFlashStatbars(float dt)
+
+    private void CheckFlash()
     {
         if (_statbar == null) return;
-    
-        var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
-        var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
-    
-        if (currentThirst < maxThirst * 0.2f)
+
+        if (_lastCurrentThirst < _lastMaxThirst * 0.2f)
         {
-            isFlashing = !isFlashing;
-            _statbar.ShouldFlash = isFlashing;
+            _isFlashing = !_isFlashing;
+            _statbar.ShouldFlash = _isFlashing;
         }
         else
         {
             _statbar.ShouldFlash = false;
+            _isFlashing = false;
         }
     }
-    
+
     private void UpdateThirst()
     {
         if (_statbar == null) return;
-    
+
         var currentThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("currentThirst");
         var maxThirst = capi.World.Player.Entity.WatchedAttributes.GetFloat("maxThirst");
-        
-        float lineInterval = Math.Max(100f, maxThirst / 100f);
-    
-        _statbar.SetValues(currentThirst, 0.0f, maxThirst);
-        _statbar.SetLineInterval(lineInterval);
+
+        if (currentThirst != _lastCurrentThirst || maxThirst != _lastMaxThirst)
+        {
+            if (maxThirst != _lastMaxThirst)
+            {
+                var newLineInterval = Math.Max(100f, maxThirst / 100f);
+                if (Math.Abs(newLineInterval - _lastLineInterval) > 0.001f)
+                {
+                    _statbar.SetLineInterval(newLineInterval);
+                    _lastLineInterval = newLineInterval;
+                }
+            }
+
+            _statbar.SetValues(currentThirst, 0.0f, maxThirst);
+            _lastCurrentThirst = currentThirst;
+            _lastMaxThirst = maxThirst;
+        }
     }
-    
-    
     private void ComposeGuis()
     {
         const float statsBarParentWidth = 850f;
@@ -93,23 +118,18 @@ public class HudElementThirstBar : HudElement
     
         TryOpen();
     }
-    
     public override void OnOwnPlayerDataReceived()
     {
         ComposeGuis();
         UpdateThirst();
     }
-    
     public override void OnRenderGUI(float deltaTime)
     {
         if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics) return;
-    
         if (capi.World.Player.WorldData.CurrentGameMode == EnumGameMode.Spectator) return;
-    
+
         base.OnRenderGUI(deltaTime);
     }
-    
-    
     public override bool TryClose() => false;
     
     public override bool ShouldReceiveKeyboardEvents() => false;

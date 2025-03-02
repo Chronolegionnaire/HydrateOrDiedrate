@@ -26,17 +26,35 @@ namespace HydrateOrDiedrate.patches
                 ItemStack itemStack = inSlot.Itemstack;
                 ensureConditionExistsMethod?.Invoke(itemWearable, new object[] { inSlot });
                 float condition = inSlot.Itemstack.Attributes.GetFloat("condition", 1f);
-                if (float.IsNaN(condition)) condition = 0;
+                if (float.IsNaN(condition))
+                {
+                    condition = 0f;
+                }
                 float maxWarmth = inSlot.Itemstack.ItemAttributes["warmth"].AsFloat(0f);
+                if (float.IsNaN(maxWarmth))
+                {
+                    maxWarmth = 0f;
+                }
                 float actualWarmth = maxWarmth * condition;
+                if (float.IsNaN(actualWarmth))
+                {
+                    actualWarmth = 0f;
+                }
                 float maxCooling = CoolingManager.GetMaxCooling(itemStack);
-                if (float.IsNaN(maxCooling)) maxCooling = 0;
+                if (float.IsNaN(maxCooling))
+                {
+                    maxCooling = 0f;
+                }
                 float actualCooling = maxCooling * condition;
+                if (float.IsNaN(actualCooling))
+                {
+                    actualCooling = 0f;
+                }
+
                 string existingText = dsc.ToString();
                 if (maxWarmth > 0 || maxCooling > 0)
                 {
                     string updatedWarmthLine = $"Warmth:<font color=\"#ff8444\"> +{actualWarmth:0.#}°C</font>";
-
                     if (actualCooling != 0)
                     {
                         updatedWarmthLine += $", Cooling:<font color=\"#84dfff\"> +{actualCooling:0.#}°C</font>";
@@ -97,8 +115,7 @@ namespace HydrateOrDiedrate.patches
             return Lang.Get("clothingcondition-terrible", (int)(condition * 100f));
         }
 
-        private static void AppendMaxCoolingInfo(StringBuilder dsc, string existingText, float maxCooling,
-            ItemSlot inSlot)
+        private static void AppendMaxCoolingInfo(StringBuilder dsc, string existingText, float maxCooling, ItemSlot inSlot)
         {
             if ((inSlot.Itemstack.ItemAttributes["warmth"].Exists || maxCooling > 0) &&
                 !existingText.Contains("Max Cooling:"))
@@ -111,8 +128,7 @@ namespace HydrateOrDiedrate.patches
                     int endOfMaxWarmthLine = existingText.IndexOf("\n", maxWarmthIndex);
                     if (endOfMaxWarmthLine == -1) endOfMaxWarmthLine = existingText.Length;
 
-                    string maxWarmthLine = existingText.Substring(maxWarmthIndex, endOfMaxWarmthLine - maxWarmthIndex)
-                        .Trim();
+                    string maxWarmthLine = existingText.Substring(maxWarmthIndex, endOfMaxWarmthLine - maxWarmthIndex).Trim();
                     string updatedMaxWarmthLine = $"{maxWarmthLine} | Max Cooling: {maxCooling:0.#}°C";
 
                     dsc.Replace(maxWarmthLine, updatedMaxWarmthLine);

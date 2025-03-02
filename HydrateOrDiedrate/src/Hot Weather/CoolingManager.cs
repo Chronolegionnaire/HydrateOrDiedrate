@@ -14,6 +14,11 @@ public static class CoolingManager
 
     public static void SetCooling(ICoreAPI api, CollectibleObject collectible, float coolingValue)
     {
+        // Guard against NaN values before setting the cooling value.
+        if (float.IsNaN(coolingValue))
+        {
+            coolingValue = 0f;
+        }
         if (collectible.Attributes == null)
         {
             collectible.Attributes = new JsonObject(new JObject());
@@ -30,7 +35,8 @@ public static class CoolingManager
             return 0f;
         }
 
-        return collectible.Attributes.Token[CoolingAttributeKey]?.ToObject<float>() ?? 0f;
+        float maxCooling = collectible.Attributes.Token[CoolingAttributeKey]?.ToObject<float>() ?? 0f;
+        return float.IsNaN(maxCooling) ? 0f : maxCooling;
     }
 
     public static List<JObject> GetLastAppliedPatches()
@@ -105,25 +111,27 @@ public static class CoolingManager
 
             if (patch.ContainsKey(CoolingAttributeKey))
             {
-                cp.DirectCooling = patch[CoolingAttributeKey].ToObject<float>();
+                float directCooling = patch[CoolingAttributeKey].ToObject<float>();
+                cp.DirectCooling = float.IsNaN(directCooling) ? 0f : directCooling;
             }
             else if (patch.ContainsKey("coolingByType"))
             {
                 var coolingByType = patch["coolingByType"].ToObject<Dictionary<string, float>>();
                 foreach (var kvp in coolingByType)
                 {
+                    float value = float.IsNaN(kvp.Value) ? 0f : kvp.Value;
                     if (kvp.Key == "*")
                     {
-                        cp.CatchAll = kvp.Value;
+                        cp.CatchAll = value;
                     }
                     else if (kvp.Key.Contains("*"))
                     {
                         var subPattern = "^" + Regex.Escape(kvp.Key).Replace("\\*", ".*") + "$";
-                        cp.SubWildcard.Add((new Regex(subPattern, RegexOptions.Compiled), kvp.Value));
+                        cp.SubWildcard.Add((new Regex(subPattern, RegexOptions.Compiled), value));
                     }
                     else
                     {
-                        cp.SubExactMatches[kvp.Key] = kvp.Value;
+                        cp.SubExactMatches[kvp.Key] = value;
                     }
                 }
             }

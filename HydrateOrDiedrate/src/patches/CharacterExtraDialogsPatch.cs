@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using Cairo;
 using HarmonyLib;
 using Vintagestory.API.Client;
-using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
@@ -19,6 +16,19 @@ namespace HydrateOrDiedrate.patches
             typeof(GuiComposer), "Compose", new Type[] { typeof(bool) });
         private static readonly MethodInfo InjectExtraUiMethod = AccessTools.Method(
             typeof(CharacterExtraDialogs_ComposeStatsGui_Transpiler), nameof(InjectExtraUi));
+        private static FieldInfo cachedCapiField;
+        private static PropertyInfo cachedComposersProperty;
+        private static MethodInfo cachedIsOpenedMethod;
+        private static Dictionary<object, CachedUIElements> cachedUIElements = new Dictionary<object, CachedUIElements>();
+
+        private class CachedUIElements
+        {
+            public GuiComposer composer;
+            public dynamic thirstDynamicText;
+            public dynamic thirstRateDynamicText;
+            public dynamic nutritionDeficitDynamicText;
+            public dynamic currentCoolingDynamicText;
+        }
 
         private static bool ShouldSkipPatch()
         {
@@ -37,7 +47,6 @@ namespace HydrateOrDiedrate.patches
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
                     yield return new CodeInstruction(OpCodes.Call, InjectExtraUiMethod);
-
                     injected = true;
                 }
                 yield return instruction;
@@ -94,7 +103,6 @@ namespace HydrateOrDiedrate.patches
                 );
             float thirstRateVerticalOffset = -10f;
             float thirstRateXOffset = 0.0f;
-
             ElementBounds thirstRateLeftBounds = hydrationLeftBounds.BelowCopy(thirstRateVerticalOffset)
                 .WithFixedPosition(
                     hydrationLeftBounds.fixedX + thirstRateXOffset,
@@ -105,7 +113,6 @@ namespace HydrateOrDiedrate.patches
                     thirstRateLeftBounds.fixedX + rightColumnHorizontalOffset,
                     thirstRateLeftBounds.fixedY
                 );
-
             composer
                 .AddStaticText(
                     Lang.Get("Thirst Rate"),
@@ -121,7 +128,6 @@ namespace HydrateOrDiedrate.patches
                 );
             float nutritionDeficitVerticalOffset = -10.0f;
             float nutritionDeficitXOffset = 0.0f;
-
             ElementBounds nutritionDeficitLeftBounds = thirstRateLeftBounds.BelowCopy(nutritionDeficitVerticalOffset)
                 .WithFixedPosition(
                     thirstRateLeftBounds.fixedX + nutritionDeficitXOffset,
@@ -132,7 +138,6 @@ namespace HydrateOrDiedrate.patches
                     nutritionDeficitLeftBounds.fixedX + rightColumnHorizontalOffset,
                     nutritionDeficitLeftBounds.fixedY
                 );
-
             composer
                 .AddStaticText(
                     Lang.Get("Nutrition Deficit"),
@@ -148,7 +153,6 @@ namespace HydrateOrDiedrate.patches
                 );
             float currentCoolingVerticalOffset = -10.0f;
             float currentCoolingXOffset = 0.0f;
-
             ElementBounds currentCoolingLeftBounds = nutritionDeficitLeftBounds.BelowCopy(currentCoolingVerticalOffset)
                 .WithFixedPosition(
                     nutritionDeficitLeftBounds.fixedX + currentCoolingXOffset,
@@ -159,7 +163,6 @@ namespace HydrateOrDiedrate.patches
                     currentCoolingLeftBounds.fixedX + rightColumnHorizontalOffset,
                     currentCoolingLeftBounds.fixedY
                 );
-
             composer
                 .AddStaticText(
                     Lang.Get("Current Cooling"),
@@ -173,34 +176,31 @@ namespace HydrateOrDiedrate.patches
                     currentCoolingRightBounds,
                     "currentCoolingHot"
                 );
+            CachedUIElements cached = new CachedUIElements
+            {
+                composer = composer,
+                thirstDynamicText = composer.GetDynamicText("hydrateordiedrate_thirst"),
+                thirstRateDynamicText = composer.GetDynamicText("hydrateordiedrate_thirstrate"),
+                nutritionDeficitDynamicText = composer.GetDynamicText("nutritionDeficit"),
+                currentCoolingDynamicText = composer.GetDynamicText("currentCoolingHot")
+            };
+            cachedUIElements[__instance] = cached;
+            UpdateDynamicTexts(__instance, cached);
         }
-
-        [HarmonyPatch("UpdateStats")]
-        [HarmonyPostfix]
-        [HarmonyPriority(Priority.Low)]
-        public static void UpdateStats_Postfix(object __instance)
+        private static void UpdateDynamicTexts(object __instance, CachedUIElements cached)
         {
-            if (ShouldSkipPatch()) return;
-
             Type type = __instance.GetType();
-            FieldInfo capiField = type.GetField("capi", BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo capiField = cachedCapiField ?? AccessTools.Field(type, "capi");
+            if (cachedCapiField == null) cachedCapiField = capiField;
             ICoreClientAPI capi = (ICoreClientAPI)capiField.GetValue(__instance);
-            PropertyInfo composersProperty = type.GetProperty("Composers", BindingFlags.NonPublic | BindingFlags.Instance);
-            var composers = composersProperty.GetValue(__instance) as GuiDialog.DlgComposers;
-            MethodInfo isOpenedMethod = type.GetMethod("IsOpened", BindingFlags.NonPublic | BindingFlags.Instance);
-            bool isOpened = (bool)isOpenedMethod.Invoke(__instance, null);
-            if (!isOpened) return;
 
             var entity = capi.World.Player.Entity;
-            var compo = composers?["playerstats"];
-            if (compo == null) return;
 
             float currentThirst = entity.WatchedAttributes.GetFloat("currentThirst", 0f);
             float maxThirst = entity.WatchedAttributes.GetFloat("maxThirst", 1500f);
-            var thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst");
-            if (thirstDynamicText != null)
+            if (cached.thirstDynamicText != null)
             {
-                thirstDynamicText.SetNewText($"{(int)currentThirst} / {(int)maxThirst}", false, false, false);
+                cached.thirstDynamicText.SetNewText($"{(int)currentThirst} / {(int)maxThirst}", false, false, false);
             }
             float currentThirstRate = entity.WatchedAttributes.GetFloat("thirstRate", 0.01f);
             float normalThirstRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
@@ -210,24 +210,64 @@ namespace HydrateOrDiedrate.patches
             float normalizedThirstRate = currentThirstRate / multiplierPerGameSec;
             float thirstRatePercentage = (normalizedThirstRate / normalThirstRate) * 100;
             thirstRatePercentage = Math.Max(0, thirstRatePercentage);
-
-            var thirstRateDynamicText = compo.GetDynamicText("hydrateordiedrate_thirstrate");
-            if (thirstRateDynamicText != null)
+            if (cached.thirstRateDynamicText != null)
             {
-                thirstRateDynamicText.SetNewText($"{(int)thirstRatePercentage}%", false, false, false);
+                cached.thirstRateDynamicText.SetNewText($"{(int)thirstRatePercentage}%", false, false, false);
             }
             float hungerReductionAmount = entity.WatchedAttributes.GetFloat("hungerReductionAmount", 0f);
-            var nutritionDeficitDynamicText = compo.GetDynamicText("nutritionDeficit");
-            if (nutritionDeficitDynamicText != null)
+            if (cached.nutritionDeficitDynamicText != null)
             {
-                nutritionDeficitDynamicText.SetNewText($"{hungerReductionAmount}", false, false, false);
+                cached.nutritionDeficitDynamicText.SetNewText($"{hungerReductionAmount}", false, false, false);
             }
             float rawCoolingValue = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f);
-            var currentCoolingDynamicText = compo.GetDynamicText("currentCoolingHot");
-            if (currentCoolingDynamicText != null)
+            if (cached.currentCoolingDynamicText != null)
             {
-                currentCoolingDynamicText.SetNewText($"{rawCoolingValue:0.##}", false, false, false);
+                cached.currentCoolingDynamicText.SetNewText($"{rawCoolingValue:0.##}", false, false, false);
             }
+        }
+
+        [HarmonyPatch("UpdateStats")]
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Low)]
+        public static void UpdateStats_Postfix(object __instance)
+        {
+            if (ShouldSkipPatch()) return;
+            Type type = __instance.GetType();
+            if (cachedCapiField == null)
+            {
+                cachedCapiField = type.GetField("capi", BindingFlags.NonPublic | BindingFlags.Instance);
+            }
+            ICoreClientAPI capi = (ICoreClientAPI)cachedCapiField.GetValue(__instance);
+
+            if (cachedComposersProperty == null)
+            {
+                cachedComposersProperty = type.GetProperty("Composers", BindingFlags.NonPublic | BindingFlags.Instance);
+            }
+            var composers = cachedComposersProperty.GetValue(__instance) as GuiDialog.DlgComposers;
+            if (composers == null) return;
+
+            if (cachedIsOpenedMethod == null)
+            {
+                cachedIsOpenedMethod = type.GetMethod("IsOpened", BindingFlags.NonPublic | BindingFlags.Instance);
+            }
+            bool isOpened = (bool)cachedIsOpenedMethod.Invoke(__instance, null);
+            if (!isOpened) return;
+
+            var compo = composers["playerstats"];
+            if (compo == null) return;
+
+            if (!cachedUIElements.TryGetValue(__instance, out var cached))
+            {
+                cached = new CachedUIElements();
+                cached.composer = compo;
+                cached.thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst");
+                cached.thirstRateDynamicText = compo.GetDynamicText("hydrateordiedrate_thirstrate");
+                cached.nutritionDeficitDynamicText = compo.GetDynamicText("nutritionDeficit");
+                cached.currentCoolingDynamicText = compo.GetDynamicText("currentCoolingHot");
+                cachedUIElements[__instance] = cached;
+            }
+            
+            UpdateDynamicTexts(__instance, cached);
         }
     }
 }

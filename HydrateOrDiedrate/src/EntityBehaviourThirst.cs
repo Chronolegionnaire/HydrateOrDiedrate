@@ -18,19 +18,24 @@ namespace HydrateOrDiedrate
         public float CurrentThirst
         {
             get => entity.WatchedAttributes.TryGetFloat("currentThirst") ?? MaxThirst;
-            set => entity.WatchedAttributes.SetFloat("currentThirst", GameMath.Clamp(value, 0, MaxThirst));
+            set
+            {
+                float safeValue = float.IsNaN(value) ? MaxThirst : value;
+                safeValue = GameMath.Clamp(safeValue, 0, MaxThirst);
+                entity.WatchedAttributes.SetFloat("currentThirst", safeValue);
+            }
         }
 
         public float MaxThirst
         {
             get => entity.WatchedAttributes.TryGetFloat("maxThirst") ?? HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
-            set => entity.WatchedAttributes.SetFloat("maxThirst", Math.Max(value, 0));
+            set => entity.WatchedAttributes.SetFloat("maxThirst", float.IsNaN(value) ? 0f : Math.Max(value, 0));
         }
 
         public float ThirstRate
         {
             get => entity.WatchedAttributes.GetFloat("thirstRate", HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate);
-            set => entity.WatchedAttributes.SetFloat("thirstRate", Math.Max(value, 0));
+            set => entity.WatchedAttributes.SetFloat("thirstRate", float.IsNaN(value) ? 0f : Math.Max(value, 0));
         }
 
         private float _movementPenalty;
@@ -39,10 +44,11 @@ namespace HydrateOrDiedrate
             get => _movementPenalty;
             set
             {
-                value = GameMath.Clamp(value, 0, HydrateOrDiedrateModSystem.LoadedConfig.MaxMovementSpeedPenalty);
-                if(_movementPenalty != value)
+                float safeValue = float.IsNaN(value) ? 0f : value;
+                safeValue = GameMath.Clamp(safeValue, 0, HydrateOrDiedrateModSystem.LoadedConfig.MaxMovementSpeedPenalty);
+                if (_movementPenalty != safeValue)
                 {
-                    _movementPenalty = value;
+                    _movementPenalty = safeValue;
                     UpdateWalkSpeed();
                 }
             }
@@ -57,7 +63,7 @@ namespace HydrateOrDiedrate
         public float HungerReductionAmount
         {
             get => entity.WatchedAttributes.GetFloat("hungerReductionAmount");
-            set => entity.WatchedAttributes.SetFloat("hungerReductionAmount", Math.Max((float)Math.Ceiling(value), 0f));
+            set => entity.WatchedAttributes.SetFloat("hungerReductionAmount", float.IsNaN(value) ? 0f : Math.Max((float)Math.Ceiling(value), 0f));
         }
 
         public EntityBehaviorThirst(Entity entity) : base(entity)
@@ -65,12 +71,16 @@ namespace HydrateOrDiedrate
             entity.WatchedAttributes.RegisterModifiedListener("currentThirst", OnCurrentThirstModified);
             
             MaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
-            if(!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || entity.WatchedAttributes.TryGetFloat("currentThirst") == null) CurrentThirst = MaxThirst;
+            if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || entity.WatchedAttributes.TryGetFloat("currentThirst") == null)
+            {
+                CurrentThirst = MaxThirst;
+            }
         }
 
         private void OnCurrentThirstModified()
         {
-            var currentThirst = CurrentThirst;
+            float currentThirst = CurrentThirst;
+            if (float.IsNaN(currentThirst)) currentThirst = MaxThirst;
             
             if (currentThirst <= 0)
             {
@@ -80,7 +90,10 @@ namespace HydrateOrDiedrate
             {
                 MovementPenalty = HydrateOrDiedrateModSystem.LoadedConfig.MaxMovementSpeedPenalty * (1 - (currentThirst / HydrateOrDiedrateModSystem.LoadedConfig.MovementSpeedPenaltyThreshold));
             }
-            else MovementPenalty = 0;
+            else
+            {
+                MovementPenalty = 0;
+            }
         }
 
         public void Reset(Config.Config newConfig)
@@ -90,9 +103,11 @@ namespace HydrateOrDiedrate
 
         public override void OnGameTick(float deltaTime)
         {
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || !entity.Alive || entity is not EntityPlayer playerEntity) return;
+            if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || !entity.Alive || entity is not EntityPlayer playerEntity)
+                return;
 
-            if (playerEntity.Player?.WorldData?.CurrentGameMode is EnumGameMode.Creative or EnumGameMode.Spectator or EnumGameMode.Guest) return;
+            if (playerEntity.Player?.WorldData?.CurrentGameMode is EnumGameMode.Creative or EnumGameMode.Spectator or EnumGameMode.Guest)
+                return;
 
             thirstDelta += deltaTime;
             if (thirstDelta > 10)
@@ -101,14 +116,12 @@ namespace HydrateOrDiedrate
                 thirstDelta = 0;
             }
 
-            if(CurrentThirst <= 0)
+            if (CurrentThirst <= 0)
             {
                 thirstDamageDelta += deltaTime;
-
                 if (thirstDamageDelta > 10)
                 {
                     ApplyDamage();
-
                     thirstDamageDelta -= 10f;
                 }
             }
@@ -122,11 +135,11 @@ namespace HydrateOrDiedrate
             float currentCalendarSpeedMul = entity.Api?.World?.Calendar?.CalendarSpeedMul ?? DefaultCalendarSpeedMul;
             float multiplierPerGameSec = (currentSpeedOfTime / DefaultSpeedOfTime) *
                                          (currentCalendarSpeedMul / DefaultCalendarSpeedMul);
+            if (float.IsNaN(multiplierPerGameSec)) multiplierPerGameSec = 1f;
 
             if (hydrationLossDelay > 0)
             {
-                HydrationLossDelay =
-                    hydrationLossDelay - Math.Max(1, (int)Math.Floor(multiplierPerGameSec * deltaTime));
+                HydrationLossDelay = hydrationLossDelay - Math.Max(1, (int)Math.Floor(multiplierPerGameSec * deltaTime));
                 return;
             }
 
@@ -139,7 +152,6 @@ namespace HydrateOrDiedrate
                     {
                         thirstDecayRate *= HydrateOrDiedrateModSystem.LoadedConfig.SprintThirstMultiplier;
                     }
-
                     if (controls.TriesToMove || controls.Jump || controls.LeftMouseDown || controls.RightMouseDown)
                     {
                         lastMoveMs = entity.World.ElapsedMilliseconds;
@@ -149,22 +161,24 @@ namespace HydrateOrDiedrate
 
             if (HydrateOrDiedrateModSystem.LoadedConfig.HarshHeat)
             {
-                var climate =
-                    entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues);
-
+                var climate = entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues);
                 if (climate.Temperature > HydrateOrDiedrateModSystem.LoadedConfig.TemperatureThreshold)
                 {
-                    float temperatureDifference =
-                        climate.Temperature - HydrateOrDiedrateModSystem.LoadedConfig.TemperatureThreshold;
-                    float temperatureFactor =
-                        HydrateOrDiedrateModSystem.LoadedConfig.ThirstIncreasePerDegreeMultiplier *
-                        (float)Math.Exp(HydrateOrDiedrateModSystem.LoadedConfig.HarshHeatExponentialGainMultiplier *
-                                        temperatureDifference);
+                    float temperatureDifference = climate.Temperature - HydrateOrDiedrateModSystem.LoadedConfig.TemperatureThreshold;
+                    if (float.IsNaN(temperatureDifference)) temperatureDifference = 0f;
+
+                    float temperatureFactor = HydrateOrDiedrateModSystem.LoadedConfig.ThirstIncreasePerDegreeMultiplier *
+                        (float)Math.Exp(HydrateOrDiedrateModSystem.LoadedConfig.HarshHeatExponentialGainMultiplier * temperatureDifference);
+                    if (float.IsNaN(temperatureFactor)) temperatureFactor = 0f;
 
                     thirstDecayRate += temperatureFactor;
 
                     float coolingFactor = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f);
+                    if (float.IsNaN(coolingFactor)) coolingFactor = 0f;
+
                     float coolingEffect = coolingFactor * (1f / (1f + (float)Math.Exp(-0.5f * temperatureDifference)));
+                    if (float.IsNaN(coolingEffect)) coolingEffect = 0f;
+
                     thirstDecayRate -= Math.Min(coolingEffect,
                         thirstDecayRate - HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate);
                 }
@@ -172,6 +186,7 @@ namespace HydrateOrDiedrate
 
             thirstDecayRate = Math.Min(thirstDecayRate, HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate *
                                                         HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRateMax);
+            if (float.IsNaN(thirstDecayRate)) thirstDecayRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
 
             if (currentSpeedOfTime > DefaultSpeedOfTime || currentCalendarSpeedMul > DefaultCalendarSpeedMul)
             {
@@ -183,8 +198,10 @@ namespace HydrateOrDiedrate
             {
                 thirstDecayRate /= 4f;
             }
-            ModifyThirst(-thirstDecayRate * deltaTime * 0.1f);
-            ThirstRate = thirstDecayRate;
+            float deltaThirst = -thirstDecayRate * deltaTime * 0.1f;
+            if (float.IsNaN(deltaThirst)) deltaThirst = 0f;
+            ModifyThirst(deltaThirst);
+            ThirstRate = float.IsNaN(thirstDecayRate) ? 0f : thirstDecayRate;
         }
 
         public void OnRespawn()
@@ -206,10 +223,14 @@ namespace HydrateOrDiedrate
 
         public void ModifyThirst(float amount, float hydLossDelay = 0)
         {
-            CurrentThirst += amount;
+            float newThirst = CurrentThirst + amount;
+            if (float.IsNaN(newThirst))
+            {
+                newThirst = CurrentThirst;
+            }
+            CurrentThirst = newThirst;
 
             int hydrationLossDelay = HydrationLossDelay;
-
             if (hydLossDelay > hydrationLossDelay)
             {
                 HydrationLossDelay = (int)Math.Floor(hydLossDelay);

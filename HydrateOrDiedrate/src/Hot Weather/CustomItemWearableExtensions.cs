@@ -13,16 +13,24 @@ namespace HydrateOrDiedrate.Hot_Weather
 
             ItemStack itemStack = inslot.Itemstack;
             float maxCooling = CoolingManager.GetMaxCooling(itemStack);
-
             if (float.IsNaN(maxCooling))
             {
-                maxCooling = 0;
+                maxCooling = 0f;
             }
 
             float condition = itemStack.Attributes.GetFloat("condition", 1f);
-            float cooling = Math.Min(maxCooling, condition * 2f * maxCooling);
-
-            return float.IsNaN(cooling) ? 0 : cooling;
+            if (float.IsNaN(condition))
+            {
+                condition = 1f;
+                itemStack.Attributes.SetFloat("condition", condition);
+            }
+            float candidateCooling = condition * 2f * maxCooling;
+            if (float.IsNaN(candidateCooling))
+            {
+                candidateCooling = 0f;
+            }
+            float cooling = Math.Min(maxCooling, candidateCooling);
+            return float.IsNaN(cooling) ? 0f : cooling;
         }
 
         private static void EnsureConditionExists(ItemSlot slot, ICoreAPI api)
@@ -31,6 +39,12 @@ namespace HydrateOrDiedrate.Hot_Weather
 
             if (slot.Itemstack.Attributes.HasAttribute("condition"))
             {
+                float condition = slot.Itemstack.Attributes.GetFloat("condition", 1f);
+                if (float.IsNaN(condition))
+                {
+                    slot.Itemstack.Attributes.SetFloat("condition", 1f);
+                    slot.MarkDirty();
+                }
                 return;
             }
 
@@ -38,7 +52,7 @@ namespace HydrateOrDiedrate.Hot_Weather
             {
                 JsonObject itemAttributes = slot.Itemstack.ItemAttributes;
 
-                float maxCooling = itemAttributes?[CoolingManager.CoolingAttributeKey]?.AsFloat(0f) ?? 0f; // Updated to use the key from CoolingManager
+                float maxCooling = itemAttributes?[CoolingManager.CoolingAttributeKey]?.AsFloat(0f) ?? 0f;
                 float maxWarmth = itemAttributes?["warmth"]?.AsFloat(0f) ?? 0f;
 
                 bool shouldAssignCondition = !(IsZeroNaNOrNull(maxCooling) && IsZeroNaNOrNull(maxWarmth));
