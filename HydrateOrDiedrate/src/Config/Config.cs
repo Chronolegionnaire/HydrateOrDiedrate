@@ -215,8 +215,10 @@ public class Config : IModConfig
     
     [ProtoMember(91, IsRequired = true)] 
     public bool SprintToDrink { get; set; }
-
-
+    [ProtoMember(92)] 
+    public int AquiferRatingCeilingAboveSeaLevel { get; set; }
+    [ProtoMember(93)] 
+    public float AquiferDepthMultiplierScale { get; set; }
     public Config()
     {
         // Thirst Settings
@@ -336,6 +338,9 @@ public class Config : IModConfig
         TunDropWithLiquid = false;
 
         SprintToDrink = false;
+
+        AquiferRatingCeilingAboveSeaLevel = 30;
+        AquiferDepthMultiplierScale = 1.0f;
     }
     public Config(ICoreAPI api, Config previousConfig = null)
     {
@@ -457,5 +462,7 @@ public class Config : IModConfig
          
          SprintToDrink = previousConfig?.SprintToDrink ?? false;
 
+         AquiferRatingCeilingAboveSeaLevel = previousConfig?.AquiferRatingCeilingAboveSeaLevel ?? 30;
+         AquiferDepthMultiplierScale = previousConfig?.AquiferDepthMultiplierScale ?? 1.0f;
     }
 }

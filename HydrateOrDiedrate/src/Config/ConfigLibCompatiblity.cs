@@ -128,6 +128,8 @@ namespace HydrateOrDiedrate.Config
         
         private const string settingSprintToDrink = "hydrateordiedrate:Config.Setting.SprintToDrink";
 
+        private const string settingAquiferRatingCeilingAboveSeaLevel = "hydrateordiedrate:Config.Setting.settingAquiferRatingCeilingAboveSeaLevel";
+        private const string settingAquiferDepthMultiplierScale = "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale";
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
             if (!api.ModLoader.IsModEnabled("configlib"))
@@ -633,6 +635,14 @@ namespace HydrateOrDiedrate.Config
             bool sprintToDrink = config.SprintToDrink;
             ImGui.Checkbox(Lang.Get(settingSprintToDrink) + $"##sprintToDrink-{id}", ref sprintToDrink);
             config.SprintToDrink = sprintToDrink;
+            
+            int aquiferRatingCeilingAboveSeaLevel = config.AquiferRatingCeilingAboveSeaLevel;
+            ImGui.DragInt(Lang.Get(settingAquiferRatingCeilingAboveSeaLevel) + $"##aquiferRatingCeilingAboveSeaLevel-{id}", ref aquiferRatingCeilingAboveSeaLevel, 1, 0, 100);
+            config.AquiferRatingCeilingAboveSeaLevel = aquiferRatingCeilingAboveSeaLevel;
+
+            float aquiferDepthMultiplierScale = config.AquiferDepthMultiplierScale;
+            ImGui.DragFloat(Lang.Get(settingAquiferDepthMultiplierScale) + $"##aquiferDepthMultiplierScale-{id}", ref aquiferDepthMultiplierScale, 0.01f, 0.5f, 5.0f);
+            config.AquiferDepthMultiplierScale = aquiferDepthMultiplierScale;
         }
     }
 }

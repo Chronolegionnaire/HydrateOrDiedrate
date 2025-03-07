@@ -31,9 +31,11 @@ namespace HydrateOrDiedrate.patches
 
             Task.Run(() =>
             {
-                Vec2i chunkCoord = new Vec2i(pos.X / GlobalConstants.ChunkSize, pos.Z / GlobalConstants.ChunkSize);
-                var aquiferData =
-                    HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager.GetAquiferData(chunkCoord);
+                int chunkX = pos.X / GlobalConstants.ChunkSize;
+                int chunkY = pos.Y / GlobalConstants.ChunkSize;
+                int chunkZ = pos.Z / GlobalConstants.ChunkSize;
+                ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);
+                var aquiferData = HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager.GetAquiferData(chunkCoord);
 
                 if (aquiferData == null)
                 {
@@ -59,9 +61,7 @@ namespace HydrateOrDiedrate.patches
 
             if (HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
             {
-                double waterLineY = Math.Round(0.4296875 * worldHeight);
-                double depthFactor = (waterLineY - posY) / (waterLineY - 1);
-                effectiveRating = (int)Math.Round(rating * depthFactor);
+                effectiveRating = rating;
             }
 
             string aquiferType = isSalty ? "salt" : "fresh";

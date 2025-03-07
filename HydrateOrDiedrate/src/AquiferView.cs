@@ -69,9 +69,7 @@ namespace HydrateOrDiedrate
 
                     for (int x = playerPos.X - blockRadius; x <= playerPos.X + blockRadius; x++)
                     {
-                        for (int y = Math.Max(1, playerPos.Y - 6);
-                             y < Math.Min(capi.World.BlockAccessor.MapSizeY, playerPos.Y + 6);
-                             y++)
+                        for (int y = Math.Max(1, playerPos.Y - 50); y < Math.Min(capi.World.BlockAccessor.MapSizeY, playerPos.Y + 6); y++)
                         {
                             for (int z = playerPos.Z - blockRadius; z <= playerPos.Z + blockRadius; z++)
                             {
@@ -79,24 +77,29 @@ namespace HydrateOrDiedrate
 
                                 BlockPos currentPos = new BlockPos(x, y, z);
                                 Block block = capi.World.BlockAccessor.GetBlock(currentPos);
-                                if (block == null || block.BlockId == 0 || !IsSoilGravelSandRock(block)) continue;
-                                if (!IsTopExposed(currentPos)) continue;
-
-                                Vec2i chunkPos = new Vec2i(x / GlobalConstants.ChunkSize,
-                                    z / GlobalConstants.ChunkSize);
+                                if (block == null || block.BlockId == 0 || !IsSoilGravelSandRock(block))
+                                    continue;
+                                if (!IsTopExposed(currentPos))
+                                    continue;
+                                ChunkPos3D chunkPos = new ChunkPos3D(
+                                    x / GlobalConstants.ChunkSize, 
+                                    y / GlobalConstants.ChunkSize, 
+                                    z / GlobalConstants.ChunkSize
+                                );
                                 var aquiferData = GetAquiferData(chunkPos);
 
-                                if (aquiferData == null) continue;
+                                if (aquiferData == null)
+                                    continue;
 
                                 int color = GetColorForRating(aquiferData.AquiferRating, aquiferData.IsSalty);
-                                if (color == 0) continue;
+                                if (color == 0)
+                                    continue;
 
                                 highlightPositions.Add(currentPos);
                                 highlightColors.Add(color);
                             }
                         }
                     }
-
                     capi.Event.EnqueueMainThreadTask(() =>
                     {
                         if (!isOn) return;
@@ -136,30 +139,47 @@ namespace HydrateOrDiedrate
         }
 
 
-        private AquiferManager.AquiferData GetAquiferData(Vec2i chunkCoord)
+        private AquiferManager.AquiferData GetAquiferData(ChunkPos3D chunkCoord)
         {
             return HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager?.GetAquiferData(chunkCoord);
         }
 
         private int GetColorForRating(int rating, bool isSalty)
         {
+            float t = Math.Max(0, Math.Min(100, rating)) / 100f;
+
             if (isSalty)
             {
-                if (rating <= 20) return ColorUtil.ToRgba(128, 200, 100, 255); // Purple
-                else if (rating <= 40) return ColorUtil.ToRgba(128, 150, 0, 255); // Deep Blue
-                else if (rating <= 60) return ColorUtil.ToRgba(128, 255, 140, 50); // Reddish Orange
-                else if (rating <= 80) return ColorUtil.ToRgba(128, 255, 80, 0); // Bright Orange
-                else if (rating <= 100) return ColorUtil.ToRgba(128, 255, 0, 0); // Red
+                int startColor = ColorUtil.ToRgba(128, 200, 100, 255);
+                int endColor   = ColorUtil.ToRgba(128, 255, 0, 0);
+                return LerpColor(startColor, endColor, t);
             }
             else
             {
-                if (rating <= 20) return ColorUtil.ToRgba(128, 255, 200, 100); // Light Blue
-                else if (rating <= 40) return ColorUtil.ToRgba(128, 0, 200, 0); // Green
-                else if (rating <= 60) return ColorUtil.ToRgba(128, 0, 255, 255); // Yellow
-                else if (rating <= 80) return ColorUtil.ToRgba(128, 0, 140, 255); // Orange
-                else if (rating <= 100) return ColorUtil.ToRgba(128, 0, 0, 255); // Red
+                int startColor = ColorUtil.ToRgba(128, 255, 200, 100);
+                int endColor   = ColorUtil.ToRgba(128, 0, 0, 255);
+                return LerpColor(startColor, endColor, t);
             }
-            return 0;
+        }
+
+        private int LerpColor(int colorA, int colorB, float t)
+        {
+            int a1 = (colorA >> 24) & 0xFF;
+            int r1 = (colorA >> 16) & 0xFF;
+            int g1 = (colorA >> 8) & 0xFF;
+            int b1 = colorA & 0xFF;
+
+            int a2 = (colorB >> 24) & 0xFF;
+            int r2 = (colorB >> 16) & 0xFF;
+            int g2 = (colorB >> 8) & 0xFF;
+            int b2 = colorB & 0xFF;
+
+            int a = (int)(a1 + (a2 - a1) * t);
+            int r = (int)(r1 + (r2 - r1) * t);
+            int g = (int)(g1 + (g2 - g1) * t);
+            int b = (int)(b1 + (b2 - b1) * t);
+
+            return (a << 24) | (r << 16) | (g << 8) | b;
         }
     }
 }

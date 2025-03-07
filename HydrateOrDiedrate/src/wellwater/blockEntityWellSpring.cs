@@ -58,8 +58,10 @@ namespace HydrateOrDiedrate.wellwater
 
         private void OnTick(float dt)
         {
-            Vec2i chunkCoord = new Vec2i(Pos.X / sapi.World.BlockAccessor.ChunkSize,
-                Pos.Z / sapi.World.BlockAccessor.ChunkSize);
+            int chunkX = Pos.X / GlobalConstants.ChunkSize;
+            int chunkY = Pos.Y / GlobalConstants.ChunkSize;
+            int chunkZ = Pos.Z / GlobalConstants.ChunkSize;
+            ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);
             var aquiferData = _aquiferManager.GetAquiferData(chunkCoord);
             if (aquiferData == null || aquiferData.AquiferRating == 0)
             {

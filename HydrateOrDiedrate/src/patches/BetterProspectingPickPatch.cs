@@ -75,9 +75,11 @@ namespace HydrateOrDiedrate.patches
                 return;
             }
             BlockPos pos = blockSel.Position;
-            Vec2i chunkCoord = new Vec2i(pos.X / GlobalConstants.ChunkSize, pos.Z / GlobalConstants.ChunkSize);
+            int chunkX = pos.X / GlobalConstants.ChunkSize;
+            int chunkY = pos.Y / GlobalConstants.ChunkSize;
+            int chunkZ = pos.Z / GlobalConstants.ChunkSize;
+            ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);         
             var aquiferData = HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager.GetAquiferData(chunkCoord);
-
             if (aquiferData == null)
             {
                 SendMessageToPlayer(world, serverPlayer, "No aquifer data available for this region.");

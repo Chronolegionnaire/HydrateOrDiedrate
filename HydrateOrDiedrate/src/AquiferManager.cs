@@ -10,26 +10,42 @@ using Vintagestory.API.Server;
 
 namespace HydrateOrDiedrate
 {
+    public struct ChunkPos3D
+    {
+        public int X;
+        public int Y;
+        public int Z;
+
+        public ChunkPos3D(int x, int y, int z)
+        {
+            X = x; Y = y; Z = z;
+        }
+    }
+
     public class AquiferManager
     {
         private readonly ICoreServerAPI serverAPI;
-        private readonly ConcurrentQueue<(Vec2i chunkCoord, IWorldChunk[] chunks)> calculationQueue;
-        private readonly ConcurrentDictionary<Vec2i, List<WellspringInfo>> wellspringRegistry;
-        private readonly ConcurrentDictionary<Vec2i, (int attempts, IWorldChunk[] chunks)> failedChunks;
-        private const int MaxFailedAttempts = 5;
+        private readonly ConcurrentQueue<(ChunkPos3D pos, IWorldChunk chunk)> calculationQueue;
+        private readonly ConcurrentDictionary<ChunkPos3D, IWorldChunk> loadedChunks;
+        private readonly ConcurrentDictionary<ChunkPos3D, (int attempts, IWorldChunk chunk)> failedChunks;
+        private readonly ConcurrentDictionary<ChunkPos3D, List<WellspringInfo>> wellspringRegistry;
+        private const int CurrentAquiferDataVersion = 1;
         private bool isEnabled;
         private bool runGamePhaseReached;
         private bool isInitialized;
-        private const int CurrentAquiferDataVersion = 1;
+        private const int MaxFailedAttempts = 5;
+
         public AquiferManager(ICoreServerAPI api)
         {
             serverAPI = api;
-            calculationQueue = new ConcurrentQueue<(Vec2i chunkCoord, IWorldChunk[] chunks)>();
-            wellspringRegistry = new ConcurrentDictionary<Vec2i, List<WellspringInfo>>();
-            failedChunks = new ConcurrentDictionary<Vec2i, (int attempts, IWorldChunk[] chunks)>();
+            calculationQueue = new ConcurrentQueue<(ChunkPos3D pos, IWorldChunk chunk)>();
+            loadedChunks = new ConcurrentDictionary<ChunkPos3D, IWorldChunk>();
+            failedChunks = new ConcurrentDictionary<ChunkPos3D, (int attempts, IWorldChunk chunk)>();
+            wellspringRegistry = new ConcurrentDictionary<ChunkPos3D, List<WellspringInfo>>();
             isEnabled = true;
             runGamePhaseReached = false;
             isInitialized = false;
+
             serverAPI.Event.PlayerNowPlaying += OnPlayerNowPlaying;
             serverAPI.Event.ChunkColumnLoaded += OnChunkColumnLoaded;
             serverAPI.Event.ServerRunPhase(EnumServerRunPhase.RunGame, OnRunGamePhaseEntered);
@@ -52,83 +68,72 @@ namespace HydrateOrDiedrate
                     {
                         if (t.Exception != null)
                         {
-                            serverAPI.Logger.Error($"Error in ProcessQueuedCalculationsAsync: {t.Exception}");
+                            serverAPI.Logger.Error($"Error in ProcessQueuedCalculations: {t.Exception}");
                         }
                     }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
-
-
         private void OnChunkColumnLoaded(Vec2i chunkCoord, IWorldChunk[] chunks)
         {
             if (!isEnabled) return;
-            calculationQueue.Enqueue((chunkCoord, chunks));
+            for (int i = 0; i < chunks.Length; i++)
+            {
+                var chunk = chunks[i];
+                if (chunk == null) continue;
+                var pos3D = new ChunkPos3D(chunkCoord.X, i, chunkCoord.Y);
+                loadedChunks[pos3D] = chunk;
+                calculationQueue.Enqueue((pos3D, chunk));
+            }
             AttemptReprocessingOfFailedChunks();
         }
 
         private async Task ProcessQueuedCalculations()
         {
             var tasks = new List<Task>();
-            while (calculationQueue.TryDequeue(out var chunkData))
+            while (calculationQueue.TryDequeue(out var item))
             {
-                if (AreChunksValid(chunkData.chunks))
+                if (IsChunkValid(item.chunk))
                 {
-                    tasks.Add(ProcessChunkColumn(chunkData.chunkCoord, chunkData.chunks));
+                    tasks.Add(ProcessChunk(item.pos, item.chunk));
                 }
                 else
                 {
-                    RegisterFailedChunk(chunkData.chunkCoord, chunkData.chunks);
+                    RegisterFailedChunk(item.pos, item.chunk);
                 }
             }
             await Task.WhenAll(tasks);
         }
-
-        private async Task ProcessChunkColumn(Vec2i chunkCoord, IWorldChunk[] chunks)
+        private async Task ProcessChunk(ChunkPos3D pos, IWorldChunk chunk)
         {
-            if (chunks == null || chunks.Length == 0) return;
-
-            var mainChunk = chunks[0];
-            if (mainChunk == null) return;
-            mainChunk.Unpack();
-            var data = mainChunk.GetModdata<AquiferChunkData>("aquiferData", null);
+            if (chunk == null || !IsChunkValid(chunk)) return;
+            chunk.Unpack();
+            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
 
             if (data == null || data.Version < CurrentAquiferDataVersion)
             {
-                var pre = await Task.Run(() => CalculateAquiferData(chunks, chunkCoord));
+                var pre = await Task.Run(() => CalculateAquiferData(chunk, pos));
                 data = new AquiferChunkData
                 {
                     PreSmoothedData = pre,
                     SmoothedData = null,
                     Version = CurrentAquiferDataVersion
                 };
-                mainChunk.SetModdata("aquiferData", data);
+                chunk.SetModdata("aquiferData", data);
             }
 
             if (data.SmoothedData == null)
             {
-                await Task.Run(() => SmoothWithNeighbors(mainChunk, chunkCoord));
+                await Task.Run(() => SmoothWithNeighbors(chunk, pos));
             }
-        }
-        private bool AreChunksValid(IWorldChunk[] chunks)
-        {
-            foreach (var chunk in chunks)
-            {
-                if (chunk == null)
-                {
-                    return false;
-                }
-                if (chunk.Disposed)
-                {
-                    return false;
-                }
-                if (chunk.Data == null || chunk.Data.Length == 0)
-                {
-                    return false;
-                }
-            }
-            return true;
         }
 
+        private bool IsChunkValid(IWorldChunk chunk)
+        {
+            if (chunk == null) return false;
+            if (chunk.Disposed) return false;
+            if (chunk.Data == null || chunk.Data.Length == 0) return false;
+            return true;
+        }
 
         private void SetupRetryTimer()
         {
@@ -146,45 +151,38 @@ namespace HydrateOrDiedrate
         {
             foreach (var kvp in failedChunks)
             {
-                var chunkCoord = kvp.Key;
-                var (attempts, chunks) = kvp.Value;
+                var pos = kvp.Key;
+                var (attempts, chunk) = kvp.Value;
 
                 if (attempts >= 10)
                 {
-                    failedChunks.TryRemove(chunkCoord, out _);
+                    failedChunks.TryRemove(pos, out _);
                     continue;
                 }
 
-                if (AreChunksValid(chunks))
+                if (IsChunkValid(chunk))
                 {
-                    if (failedChunks.TryRemove(chunkCoord, out _))
+                    if (failedChunks.TryRemove(pos, out _))
                     {
-                        calculationQueue.Enqueue((chunkCoord, chunks));
+                        calculationQueue.Enqueue((pos, chunk));
                     }
                 }
                 else
                 {
-                    failedChunks[chunkCoord] = (attempts + 1, chunks);
+                    failedChunks[pos] = (attempts + 1, chunk);
                 }
             }
         }
 
-        private void RegisterFailedChunk(Vec2i chunkCoord, IWorldChunk[] chunks)
+        private void RegisterFailedChunk(ChunkPos3D pos, IWorldChunk chunk)
         {
             failedChunks.AddOrUpdate(
-                chunkCoord,
-                (1, chunks),
+                pos,
+                (1, chunk),
                 (key, existingValue) =>
                 {
                     int attempts = existingValue.attempts + 1;
-                    if (attempts < 30)
-                    {
-                        return (attempts, chunks);
-                    }
-                    else
-                    {
-                        return existingValue;
-                    }
+                    return (attempts, chunk);
                 });
         }
 
@@ -192,11 +190,11 @@ namespace HydrateOrDiedrate
         {
             foreach (var kvp in failedChunks)
             {
-                if (AreChunksValid(kvp.Value.chunks))
+                if (IsChunkValid(kvp.Value.chunk))
                 {
                     if (failedChunks.TryRemove(kvp.Key, out var value))
                     {
-                        calculationQueue.Enqueue((kvp.Key, value.chunks));
+                        calculationQueue.Enqueue((kvp.Key, value.chunk));
                     }
                 }
             }
@@ -228,7 +226,7 @@ namespace HydrateOrDiedrate
             return Math.Clamp(normalizedRating, 0, 100);
         }
 
-        private AquiferData CalculateAquiferData(IWorldChunk[] chunks, Vec2i chunkCoord)
+        private AquiferData CalculateAquiferData(IWorldChunk chunk, ChunkPos3D pos)
         {
             try
             {
@@ -243,51 +241,51 @@ namespace HydrateOrDiedrate
                 double saltWaterMultiplier = config.AquiferSaltWaterMultiplier;
                 int boilingWaterMultiplier = config.AquiferBoilingWaterMultiplier;
                 double randomMultiplierChance = config.AquiferRandomMultiplierChance;
+
                 int worldSeed = serverAPI.WorldManager.SaveGame.Seed;
-                int chunkSeed = worldSeed ^ (chunkCoord.X * 73856093) ^ (chunkCoord.Y * 19349663);
+                int chunkSeed = worldSeed ^ (pos.X * 73856093) ^ (pos.Z * 19349663) ^ (pos.Y * 83492791);
                 Random random = new Random(chunkSeed);
                 object lockObj = new object();
-                BlockPos center = new BlockPos(chunkCoord.X * chunkSize + chunkSize / 2, 0,
-                    chunkCoord.Y * chunkSize + chunkSize / 2);
+                BlockPos center = new BlockPos(
+                    pos.X * chunkSize + chunkSize / 2,
+                    pos.Y * chunkSize + chunkSize / 2,
+                    pos.Z * chunkSize + chunkSize / 2
+                );
                 ClimateCondition climate =
                     serverAPI.World.BlockAccessor.GetClimateAt(center, EnumGetClimateMode.WorldGenValues);
                 float rainMul = 0.75f + (climate?.Rainfall ?? 0f);
+                int worldHeight = serverAPI.WorldManager.MapSizeY;
+                int seaLevel = (int)Math.Round(0.4296875 * worldHeight);
+                int chunkCenterY = center.Y;
 
-                Parallel.For(0, chunks.Length,
+                int blockCount = chunk.Data.Length;
+
+                Parallel.For(0, chunkSize,
                     () => new LocalCounts(),
-                    (index, state, localCounts) =>
+                    (y, state, localCounts) =>
                     {
-                        var chunk = chunks[index];
-                        if (chunk == null || chunk.Disposed || chunk.Data == null || chunk.Data.Length == 0)
-                            return localCounts;
-                        var chunkData = chunk.Data;
-                        int blockCount = chunkData.Length;
-
-                        for (int y = 0; y < chunkSize; y += step)
+                        for (int x = 0; x < chunkSize; x += step)
                         {
-                            for (int x = 0; x < chunkSize; x += step)
+                            for (int z = 0; z < chunkSize; z += step)
                             {
-                                for (int z = 0; z < chunkSize; z += step)
+                                int idx = (y * chunkSize + z) * chunkSize + x;
+                                if (idx < 0 || idx >= blockCount) continue;
+                                int blockId = chunk.Data[idx];
+                                if (blockId < 0) continue;
+
+                                Block block = serverAPI.World.GetBlock(blockId);
+                                if (block?.Code?.Path == null) continue;
+
+                                if (block.Code.Path.Contains("boilingwater"))
                                 {
-                                    int idx = (y * chunkSize + z) * chunkSize + x;
-                                    if (idx < 0 || idx >= blockCount) continue;
-                                    int blockId = chunkData[idx];
-                                    if (blockId < 0) continue;
-
-                                    Block block = serverAPI.World.GetBlock(blockId);
-                                    if (block?.Code?.Path == null) continue;
-
-                                    if (block.Code.Path.Contains("boilingwater"))
+                                    localCounts.BoilingCount++;
+                                }
+                                else if (block.Code.Path.Contains("water"))
+                                {
+                                    localCounts.NormalCount++;
+                                    if (block.Code.Path.Contains("saltwater"))
                                     {
-                                        localCounts.BoilingCount++;
-                                    }
-                                    else if (block.Code.Path.Contains("water"))
-                                    {
-                                        localCounts.NormalCount++;
-                                        if (block.Code.Path.Contains("saltwater"))
-                                        {
-                                            localCounts.SaltCount++;
-                                        }
+                                        localCounts.SaltCount++;
                                     }
                                 }
                             }
@@ -324,7 +322,18 @@ namespace HydrateOrDiedrate
                 double totalWeighted = (weightedNormal + weightedSalt + weightedBoiling) * rainMul;
 
                 int rating = NormalizeAquiferRating(totalWeighted);
-                if (random.NextDouble() < randomMultiplierChance)
+                if (chunkCenterY > seaLevel)
+                {
+                    rating = Math.Min(rating, config.AquiferRatingCeilingAboveSeaLevel);
+                }
+                double depthMultiplier = 1.0;
+                if (chunkCenterY < seaLevel)
+                {
+                    double depthDifference = seaLevel - chunkCenterY;
+                    double normalizedDepth = depthDifference / (double)seaLevel;
+                    depthMultiplier = 1 + normalizedDepth * config.AquiferDepthMultiplierScale;
+                }
+                if (random.NextDouble() < randomMultiplierChance * depthMultiplier)
                 {
                     int baseAdd = random.Next(1, 11);
                     rating += baseAdd;
@@ -348,78 +357,58 @@ namespace HydrateOrDiedrate
             }
         }
 
-        private void SmoothWithNeighbors(IWorldChunk mainChunk, Vec2i chunkCoord)
+        private void SmoothWithNeighbors(IWorldChunk chunk, ChunkPos3D pos)
         {
             if (!isEnabled) return;
 
-            if (mainChunk?.GetModdata<AquiferChunkData>("aquiferData", null) == null)
-            {
-                RegisterFailedChunk(chunkCoord, new[] { mainChunk });
-                return;
-            }
-
-            var data = mainChunk?.GetModdata<AquiferChunkData>("aquiferData", null);
+            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
             if (data == null)
             {
-                RegisterFailedChunk(chunkCoord, new[] { mainChunk });
+                RegisterFailedChunk(pos, chunk);
+                return;
             }
-
-            if (data == null || data.SmoothedData != null) return;
-
             double centralChunkRating = data.PreSmoothedData.AquiferRating;
-            int radius = 2;
-            var neighborCoords = new List<Vec2i>();
-
+            int radius = 1;
+            var neighborPositions = new List<ChunkPos3D>();
             for (int dx = -radius; dx <= radius; dx++)
             {
                 for (int dy = -radius; dy <= radius; dy++)
                 {
-                    if (dx == 0 && dy == 0) continue;
-                    double dist = Math.Sqrt(dx * dx + dy * dy);
-                    if (dist <= radius)
+                    for (int dz = -radius; dz <= radius; dz++)
                     {
-                        neighborCoords.Add(new Vec2i(chunkCoord.X + dx, chunkCoord.Y + dy));
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        neighborPositions.Add(new ChunkPos3D(pos.X + dx, pos.Y + dy, pos.Z + dz));
                     }
                 }
             }
 
             int worldSeed = serverAPI.WorldManager.SaveGame.Seed;
-            int chunkSeed = worldSeed ^ (chunkCoord.X * 73856093) ^ (chunkCoord.Y * 19349663);
+            int chunkSeed = worldSeed ^ (pos.X * 73856093) ^ (pos.Z * 19349663) ^ (pos.Y * 83492791);
             Random random = new Random(chunkSeed);
-            bool hasInvalidNeighbors = false;
             int highestNeighborRating = 0;
             int saltyNeighbors = 0;
-            int totalNeighbors = 0;
-
-            foreach (var ncoord in neighborCoords)
+            int totalValidNeighbors = 0;
+            foreach (var npos in neighborPositions)
             {
-                var neighborChunk = serverAPI.World.BlockAccessor.GetChunk(ncoord.X, 0, ncoord.Y);
-                if (neighborChunk == null || neighborChunk.Disposed)
+                var neighborChunk = GetChunkAt(npos);
+                if (neighborChunk == null || !IsChunkValid(neighborChunk))
                 {
-                    hasInvalidNeighbors = true;
-                    RegisterFailedChunk(ncoord,
-                        neighborChunk == null ? Array.Empty<IWorldChunk>() : new[] { neighborChunk });
                     continue;
                 }
 
                 neighborChunk.Unpack();
                 AquiferChunkData neighborAqData = null;
-
                 try
                 {
                     neighborAqData = neighborChunk.GetModdata<AquiferChunkData>("aquiferData", null);
                 }
                 catch (Exception ex)
                 {
-                    RegisterFailedChunk(ncoord, new[] { neighborChunk });
-                    hasInvalidNeighbors = true;
                     continue;
                 }
 
                 if (neighborAqData == null)
                 {
-                    hasInvalidNeighbors = true;
-                    RegisterFailedChunk(ncoord, new[] { neighborChunk });
                     continue;
                 }
 
@@ -428,14 +417,12 @@ namespace HydrateOrDiedrate
                 bool isNeighborSalty = neighborAq.IsSalty;
 
                 highestNeighborRating = Math.Max(highestNeighborRating, neighborRating);
-
                 if (isNeighborSalty) saltyNeighbors++;
-                totalNeighbors++;
+                totalValidNeighbors++;
             }
-
-            if (hasInvalidNeighbors)
+            if (totalValidNeighbors == 0)
             {
-                RegisterFailedChunk(chunkCoord, new[] { mainChunk });
+                RegisterFailedChunk(pos, chunk);
                 return;
             }
             if (highestNeighborRating > centralChunkRating)
@@ -444,7 +431,7 @@ namespace HydrateOrDiedrate
                 centralChunkRating = highestNeighborRating - (highestNeighborRating * reductionFactor);
             }
 
-            bool finalIsSalty = saltyNeighbors > (totalNeighbors / 2.0);
+            bool finalIsSalty = saltyNeighbors > (totalValidNeighbors / 2.0);
 
             data.SmoothedData = new AquiferData
             {
@@ -452,13 +439,27 @@ namespace HydrateOrDiedrate
                 IsSalty = finalIsSalty
             };
 
-            mainChunk.SetModdata("aquiferData", data);
+            chunk.SetModdata("aquiferData", data);
+            if (totalValidNeighbors < neighborPositions.Count)
+            {
+                RegisterFailedChunk(pos, chunk);
+            }
         }
 
-        public AquiferData GetAquiferData(Vec2i chunkCoord)
+        private IWorldChunk GetChunkAt(ChunkPos3D pos)
+        {
+            if (loadedChunks.TryGetValue(pos, out var chunk))
+            {
+                return chunk;
+            }
+            var column = serverAPI.World.BlockAccessor.GetChunk(pos.X, 0, pos.Z);
+            if (column == null || column.Disposed) return null;
+            return null;
+        }
+        public AquiferData GetAquiferData(ChunkPos3D pos)
         {
             if (!isEnabled) return null;
-            var chunk = serverAPI.World.BlockAccessor.GetChunk(chunkCoord.X, 0, chunkCoord.Y);
+            var chunk = GetChunkAt(pos);
             if (chunk == null) return null;
             var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
             if (data == null) return null;
@@ -468,15 +469,10 @@ namespace HydrateOrDiedrate
         public void ClearAquiferData()
         {
             if (!isEnabled) return;
-            int cX = serverAPI.WorldManager.MapSizeX / GlobalConstants.ChunkSize;
-            int cZ = serverAPI.WorldManager.MapSizeZ / GlobalConstants.ChunkSize;
-            for (int x = 0; x < cX; x++)
+            foreach (var kvp in loadedChunks)
             {
-                for (int z = 0; z < cZ; z++)
-                {
-                    var c = serverAPI.World.BlockAccessor.GetChunk(x, 0, z);
-                    if (c != null) c.RemoveModdata("aquiferData");
-                }
+                var chunk = kvp.Value;
+                if (chunk != null) chunk.RemoveModdata("aquiferData");
             }
         }
 
@@ -495,7 +491,6 @@ namespace HydrateOrDiedrate
             [ProtoMember(3)] public int Version { get; set; }
         }
 
-
         public class LocalCounts
         {
             public int NormalCount { get; set; }
@@ -505,8 +500,11 @@ namespace HydrateOrDiedrate
 
         public void RegisterWellspring(BlockPos pos, double depthFactor)
         {
-            Vec2i c = new Vec2i(pos.X / GlobalConstants.ChunkSize, pos.Z / GlobalConstants.ChunkSize);
-            var info = new WellspringInfo { Position = pos, DepthFactor = depthFactor };
+            int chunkX = pos.X / GlobalConstants.ChunkSize;
+            int chunkY = pos.Y / GlobalConstants.ChunkSize;
+            int chunkZ = pos.Z / GlobalConstants.ChunkSize;
+            var c = new ChunkPos3D(chunkX, chunkY, chunkZ);
+            var info = new WellspringInfo { Position = pos, DepthFactor = 1 };
             wellspringRegistry.AddOrUpdate(c, _ => new List<WellspringInfo> { info }, (_, list) =>
             {
                 lock (list) list.Add(info);
@@ -516,16 +514,19 @@ namespace HydrateOrDiedrate
 
         public void UnregisterWellspring(BlockPos pos)
         {
-            Vec2i c = new Vec2i(pos.X / GlobalConstants.ChunkSize, pos.Z / GlobalConstants.ChunkSize);
+            int chunkX = pos.X / GlobalConstants.ChunkSize;
+            int chunkY = pos.Y / GlobalConstants.ChunkSize;
+            int chunkZ = pos.Z / GlobalConstants.ChunkSize;
+            var c = new ChunkPos3D(chunkX, chunkY, chunkZ);
             if (wellspringRegistry.TryGetValue(c, out var list))
             {
                 lock (list) list.RemoveAll(ws => ws.Position.Equals(pos));
             }
         }
 
-        public List<WellspringInfo> GetWellspringsInChunk(Vec2i chunkCoord)
+        public List<WellspringInfo> GetWellspringsInChunk(ChunkPos3D pos)
         {
-            if (wellspringRegistry.TryGetValue(chunkCoord, out var list))
+            if (wellspringRegistry.TryGetValue(pos, out var list))
             {
                 lock (list) return new List<WellspringInfo>(list);
             }
