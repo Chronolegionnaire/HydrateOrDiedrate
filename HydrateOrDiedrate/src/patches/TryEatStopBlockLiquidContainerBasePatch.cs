@@ -4,138 +4,142 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.patches;
-
-[HarmonyPatch(typeof(BlockLiquidContainerBase), "tryEatStop")]
-public class TryEatStopBlockLiquidContainerBasePatch
+namespace HydrateOrDiedrate.patches
 {
-    private static bool ShouldSkipPatch()
+    [HarmonyPatch(typeof(BlockLiquidContainerBase), "tryEatStop")]
+    public class TryEatStopBlockLiquidContainerBasePatch
     {
-        return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
-    }
-
-    private static bool alreadyCalled = false;
-
-    [HarmonyPrefix]
-    static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity, out PatchState __state)
-    {
-        __state = null;
-
-        if (ShouldSkipPatch())
+        private static bool ShouldSkipPatch()
         {
-            return;
+            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
         }
 
-        alreadyCalled = false;
+        private static bool alreadyCalled = false;
 
-        var api = byEntity?.World?.Api;
-        if (api == null || api.Side != EnumAppSide.Server || slot?.Itemstack == null)
+        [HarmonyPrefix]
+        static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity, out PatchState __state)
         {
-            return;
-        }
+            __state = null;
 
-        BlockLiquidContainerBase block = slot.Itemstack.Block as BlockLiquidContainerBase;
-        if (block == null)
-        {
-            return;
-        }
-
-        FoodNutritionProperties nutriProps = slot.Itemstack.Collectible.GetNutritionProperties(byEntity.World, slot.Itemstack, byEntity);
-        if (nutriProps != null && secondsUsed >= 0.95f)
-        {
-            float currentLitres = block.GetCurrentLitres(slot.Itemstack);
-            if (currentLitres <= 0) return;
-
-            ItemStack contentStack = block.GetContent(slot.Itemstack);
-            if (contentStack == null)
+            if (ShouldSkipPatch())
             {
                 return;
             }
-            float hydrationValue = HydrationManager.GetHydration(contentStack);
 
-            if (hydrationValue != 0 && byEntity is EntityPlayer player)
+            alreadyCalled = false;
+
+            var api = byEntity?.World?.Api;
+            if (api == null || api.Side != EnumAppSide.Server || slot?.Itemstack == null)
             {
-                float drinkCapLitres = 1f;
-                float litresToDrink = Math.Min(drinkCapLitres, currentLitres);
-                float calculatedHydration = (hydrationValue * litresToDrink) / drinkCapLitres;
-                float intoxicationValue = nutriProps.Intoxication;
-                var config = HydrateOrDiedrateModSystem.LoadedConfig;
-                float hydLossDelay = 0;
-
-                if (intoxicationValue == 0)
-                {
-                    hydLossDelay = (calculatedHydration / 2) * config.HydrationLossDelayMultiplier;
-                }
-                else if (intoxicationValue < 0.2)
-                {
-                    hydLossDelay = (calculatedHydration / 2) * config.HydrationLossDelayMultiplier * (float)(Math.Log(1 + intoxicationValue * 100f));
-                }
-                else if (intoxicationValue > 0.7)
-                {
-                    hydLossDelay = (calculatedHydration / 2) * config.HydrationLossDelayMultiplier * (float)Math.Pow(5f, intoxicationValue);
-                }
-                else
-                {
-                    float logValue_0_2 = (float)Math.Log(1 + 0.2 * 100f);
-                    float expValue_0_7 = (float)Math.Pow(5f, 0.7);
-                    float blendRatio = (intoxicationValue - 0.2f) / 0.5f;
-                    float blendedValue = logValue_0_2 * (1 - blendRatio) + expValue_0_7 * blendRatio;
-                    hydLossDelay = (calculatedHydration / 2) * config.HydrationLossDelayMultiplier * blendedValue;
-                }
-
-                float hungerReduction = 0;
-                if (nutriProps.Satiety < 0)
-                {
-                    hungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
-                }
-
-                __state = new PatchState
-                {
-                    Player = player,
-                    HydrationAmount = calculatedHydration,
-                    HydLossDelay = hydLossDelay,
-                    HungerReduction = hungerReduction
-                };
-            }
-        }
-    }
-
-    [HarmonyPostfix]
-    static void Postfix(PatchState __state)
-    {
-        if (ShouldSkipPatch() || alreadyCalled)
-        {
-            return;
-        }
-        alreadyCalled = true;
-
-        if (__state == null || __state.Player == null || __state.HydrationAmount == 0)
-        {
-            return;
-        }
-
-        var thirstBehavior = __state.Player.GetBehavior<EntityBehaviorThirst>();
-        if (thirstBehavior != null)
-        {
-            if (thirstBehavior.HungerReductionAmount < 0)
-            {
-                thirstBehavior.HungerReductionAmount = 0;
+                return;
             }
 
-            thirstBehavior.ModifyThirst(__state.HydrationAmount, __state.HydLossDelay);
-
-            if (__state.HungerReduction > 0)
+            BlockLiquidContainerBase block = slot.Itemstack.Block as BlockLiquidContainerBase;
+            if (block == null)
             {
-                thirstBehavior.HungerReductionAmount += __state.HungerReduction;
+                return;
+            }
+
+            FoodNutritionProperties nutriProps = slot.Itemstack.Collectible.GetNutritionProperties(byEntity.World, slot.Itemstack, byEntity);
+            if (nutriProps != null && secondsUsed >= 0.95f)
+            {
+                float currentLitres = block.GetCurrentLitres(slot.Itemstack);
+                if (currentLitres <= 0) return;
+
+                ItemStack contentStack = block.GetContent(slot.Itemstack);
+                if (contentStack == null)
+                {
+                    return;
+                }
+                float hydrationValue = HydrationManager.GetHydration(contentStack);
+
+                if (hydrationValue != 0 && byEntity is EntityPlayer player)
+                {
+                    float drinkCapLitres = 1f;
+                    float litresToDrink = Math.Min(drinkCapLitres, currentLitres);
+                    float calculatedHydration = (hydrationValue * litresToDrink) / drinkCapLitres;
+                    float intoxicationValue = nutriProps.Intoxication;
+                    var config = HydrateOrDiedrateModSystem.LoadedConfig;
+                    float baseMultiplier = 0.05f;
+                    float effectiveMultiplier = baseMultiplier * config.HydrationLossDelayMultiplierNormalized;
+
+                    float hydLossDelay = 0;
+
+                    if (intoxicationValue == 0)
+                    {
+                        hydLossDelay = (calculatedHydration / 2) * effectiveMultiplier;
+                    }
+                    else if (intoxicationValue < 0.2)
+                    {
+                        hydLossDelay = (calculatedHydration / 2) * effectiveMultiplier * (float)(Math.Log(1 + intoxicationValue * 100f));
+                    }
+                    else if (intoxicationValue > 0.7)
+                    {
+                        hydLossDelay = (calculatedHydration / 2) * effectiveMultiplier * (float)Math.Pow(5f, intoxicationValue);
+                    }
+                    else
+                    {
+                        float logValue_0_2 = (float)Math.Log(1 + 0.2 * 100f);
+                        float expValue_0_7 = (float)Math.Pow(5f, 0.7);
+                        float blendRatio = (intoxicationValue - 0.2f) / 0.5f;
+                        float blendedValue = logValue_0_2 * (1 - blendRatio) + expValue_0_7 * blendRatio;
+                        hydLossDelay = (calculatedHydration / 2) * effectiveMultiplier * blendedValue;
+                    }
+
+                    float hungerReduction = 0;
+                    if (nutriProps.Satiety < 0)
+                    {
+                        hungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
+                    }
+
+                    __state = new PatchState
+                    {
+                        Player = player,
+                        HydrationAmount = calculatedHydration,
+                        HydLossDelay = hydLossDelay,
+                        HungerReduction = hungerReduction
+                    };
+                }
             }
         }
-    }
 
-    private class PatchState
-    {
-        public EntityPlayer Player;
-        public float HydrationAmount;
-        public float HydLossDelay;
-        public float HungerReduction;
+        [HarmonyPostfix]
+        static void Postfix(PatchState __state)
+        {
+            if (ShouldSkipPatch() || alreadyCalled)
+            {
+                return;
+            }
+            alreadyCalled = true;
+
+            if (__state == null || __state.Player == null || __state.HydrationAmount == 0)
+            {
+                return;
+            }
+
+            var thirstBehavior = __state.Player.GetBehavior<EntityBehaviorThirst>();
+            if (thirstBehavior != null)
+            {
+                if (thirstBehavior.HungerReductionAmount < 0)
+                {
+                    thirstBehavior.HungerReductionAmount = 0;
+                }
+
+                thirstBehavior.ModifyThirst(__state.HydrationAmount, __state.HydLossDelay);
+
+                if (__state.HungerReduction > 0)
+                {
+                    thirstBehavior.HungerReductionAmount += __state.HungerReduction;
+                }
+            }
+        }
+
+        private class PatchState
+        {
+            public EntityPlayer Player;
+            public float HydrationAmount;
+            public float HydLossDelay;
+            public float HungerReduction;
+        }
     }
 }

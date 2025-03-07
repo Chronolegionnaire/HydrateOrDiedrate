@@ -13,7 +13,7 @@ public class Config : IModConfig
     [ProtoMember(2)] public float ThirstDamage { get; set; }
     [ProtoMember(3)] public float ThirstDecayRate { get; set; }
     [ProtoMember(4)] public float ThirstDecayRateMax { get; set; }
-    [ProtoMember(5)] public float HydrationLossDelayMultiplier { get; set; }
+    [ProtoMember(5)] public float HydrationLossDelayMultiplierNormalized { get; set; }
     [ProtoMember(6, IsRequired = true)] public bool EnableThirstMechanics { get; set; }
     [ProtoMember(7)] public float WaterSatiety { get; set; }
     [ProtoMember(8)] public float SaltWaterSatiety { get; set; }
@@ -212,6 +212,9 @@ public class Config : IModConfig
     public bool KegDropWithLiquid { get; set; }
     [ProtoMember(90, IsRequired = true)] 
     public bool TunDropWithLiquid { get; set; }
+    
+    [ProtoMember(91, IsRequired = true)] 
+    public bool SprintToDrink { get; set; }
 
 
     public Config()
@@ -221,7 +224,7 @@ public class Config : IModConfig
         ThirstDamage = 1f;
         ThirstDecayRate = 10f;
         ThirstDecayRateMax = 5.0f;
-        HydrationLossDelayMultiplier = 0.05f;
+        HydrationLossDelayMultiplierNormalized = 1f;
         EnableThirstMechanics = true;
         WaterSatiety = -100f;
         SaltWaterSatiety = -100f;
@@ -331,6 +334,8 @@ public class Config : IModConfig
         
         KegDropWithLiquid = true;
         TunDropWithLiquid = false;
+
+        SprintToDrink = false;
     }
     public Config(ICoreAPI api, Config previousConfig = null)
     {
@@ -339,7 +344,7 @@ public class Config : IModConfig
         ThirstDamage = previousConfig?.ThirstDamage ?? 1f;
         ThirstDecayRate = previousConfig?.ThirstDecayRate ?? 10f;
         ThirstDecayRateMax = previousConfig?.ThirstDecayRateMax ?? 5.0f;
-        HydrationLossDelayMultiplier = previousConfig?.HydrationLossDelayMultiplier ?? 0.05f;
+        HydrationLossDelayMultiplierNormalized = previousConfig?.HydrationLossDelayMultiplierNormalized ?? 1f;
         EnableThirstMechanics = previousConfig?.EnableThirstMechanics ?? true;
         WaterSatiety = previousConfig?.WaterSatiety ?? -100f;
         SaltWaterSatiety = previousConfig?.SaltWaterSatiety ?? -100f;
@@ -449,5 +454,8 @@ public class Config : IModConfig
          
          KegDropWithLiquid = previousConfig?.KegDropWithLiquid ?? true;
          TunDropWithLiquid = previousConfig?.TunDropWithLiquid ?? false;
+         
+         SprintToDrink = previousConfig?.SprintToDrink ?? false;
+
     }
 }

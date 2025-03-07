@@ -168,7 +168,8 @@ namespace HydrateOrDiedrate.Keg
                     world.RegisterCallback((dt) =>
                     {
                         StopAxeAnimation(byPlayer);
-                        world.BlockAccessor.BreakBlock(blockSel.Position, byPlayer);
+                        world.BlockAccessor.ExchangeBlock(0, blockSel.Position);
+                        world.BlockAccessor.RemoveBlockEntity(blockSel.Position);
                         DropKegItems(world, blockSel.Position, this.Code.Path == "kegtapped");
                         choppingComplete = true;
                     }, 500);
@@ -511,5 +512,4 @@ namespace HydrateOrDiedrate.Keg
             world.BlockAccessor.SetBlock(0, pos);
         }
     }
-    
 }

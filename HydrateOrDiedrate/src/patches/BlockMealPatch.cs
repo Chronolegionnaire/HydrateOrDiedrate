@@ -42,14 +42,15 @@ namespace HydrateOrDiedrate.patches
                 if (player == null) return;
 
                 float servingsBeforeConsume = (slot.Itemstack.Collectible as BlockMeal).GetQuantityServings(byEntity.World, slot.Itemstack);
-                float configHydrationLossDelayMultiplier = HydrateOrDiedrateModSystem.LoadedConfig.HydrationLossDelayMultiplier;
+                float baseMultiplier = 0.05f;
+                float effectiveMultiplier = baseMultiplier * HydrateOrDiedrateModSystem.LoadedConfig.HydrationLossDelayMultiplierNormalized;
 
                 __state = new PatchState
                 {
                     Player = player,
                     TotalHydration = totalHydration,
                     ServingsBeforeConsume = servingsBeforeConsume,
-                    HydLossDelay = (totalHydration / servingsBeforeConsume / 2) * configHydrationLossDelayMultiplier
+                    HydLossDelay = (totalHydration / servingsBeforeConsume / 2) * effectiveMultiplier
                 };
             }
         }

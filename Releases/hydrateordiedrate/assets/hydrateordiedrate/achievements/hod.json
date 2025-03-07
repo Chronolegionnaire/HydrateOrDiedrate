@@ -1,0 +1,101 @@
+﻿[
+  {
+    "enabled": "true",
+    "id": "hoddrinkwater",
+    "graphicCode": "game:waterportion",
+    "criteriaType": "EatAny",
+    "criteriaData": [
+      "game:waterportion"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hoddrinkboiledwater",
+    "graphicCode": "hydrateordiedrate:boiledwaterportion",
+    "criteriaType": "EatAny",
+    "criteriaData": [
+      "hydrateordiedrate:boiledwaterportion"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hoddrinkdistilledwater",
+    "graphicCode": "hydrateordiedrate:istilledwaterportion",
+    "criteriaType": "EatAny",
+    "criteriaData": [
+      "hydrateordiedrate:distilledwaterportion"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hoddrinkrainwater",
+    "graphicCode": "hydrateordiedrate:rainwaterportion",
+    "criteriaType": "EatAny",
+    "criteriaData": [
+      "hydrateordiedrate:rainwaterportion"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hoddrinkboiledrainwater",
+    "graphicCode": "hydrateordiedrate:boildrainwaterportion",
+    "criteriaType": "EatAny",
+    "criteriaData": [
+      "hydrateordiedrate:boiledrainwaterportion"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hoddrinkfreshwellwater",
+    "graphicCode": "hydrateordiedrate:wellwaterportion-fresh",
+    "criteriaType": "EatAny",
+    "criteriaData": [
+      "hydrateordiedrate:wellwaterportion-fresh"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hoddrinkfreshwellwater",
+    "graphicCode": "hydrateordiedrate:wellwaterportion-fresh",
+    "criteriaType": "EatAny",
+    "criteriaData": [
+      "hydrateordiedrate:wellwaterportion-fresh"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hoddrinktaintedwellwater",
+    "graphicCode": "hydrateordiedrate:wellwaterportion-tainted",
+    "criteriaType": "EatAny",
+    "criteriaData": [
+      "hydrateordiedrate:wellwaterportion-tainted"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hodplacewellwinch",
+    "graphicCode": "hydrateordiedrate:winch-oak-east",
+    "criteriaType": "CreateAnyFromGridRecipe",
+    "criteriaData": [
+      "hydrateordiedrate:winch*"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hodplacekeg",
+    "graphicCode": "hydrateordiedrate:kegtapped",
+    "criteriaType": "CreateAnyFromGridRecipe",
+    "criteriaData": [
+      "hydrateordiedrate:keg"
+    ]
+  },
+  {
+    "enabled": "true",
+    "id": "hodplacetun",
+    "graphicCode": "hydrateordiedrate:tun-east",
+    "criteriaType": "CreateAnyFromGridRecipe",
+    "criteriaData": [
+      "hydrateordiedrate:tun*"
+    ]
+  }
+]

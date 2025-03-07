@@ -17,9 +17,9 @@ namespace HydrateOrDiedrate.winch
         public BEBehaviorMPConsumer mechPowerPart;
         private ICoreClientAPI api;
         private BlockPos pos;
-        private MeshRef meshref;
-        private MeshRef bucketMeshRef;
-        private MeshRef liquidContentsMeshRef;
+        private MultiTextureMeshRef meshref;
+        private MultiTextureMeshRef bucketMeshRef;
+        private MultiTextureMeshRef liquidContentsMeshRef;
         private ItemStack lastBucketStack;
         private ItemStack lastContentStack;
         private bool lastIsRaising = false;
@@ -42,7 +42,7 @@ namespace HydrateOrDiedrate.winch
 
             if (topMesh != null)
             {
-                this.meshref = coreClientAPI.Render.UploadMesh(topMesh);
+                this.meshref = coreClientAPI.Render.UploadMultiTextureMesh(topMesh);
             }
         }
 
@@ -127,7 +127,7 @@ namespace HydrateOrDiedrate.winch
                 contentMesh.Flags[i] &= ~4096;
             }
 
-            liquidContentsMeshRef = api.Render.UploadMesh(contentMesh);
+            liquidContentsMeshRef = api.Render.UploadMultiTextureMesh(contentMesh);
         }
 
         public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
@@ -139,7 +139,6 @@ namespace HydrateOrDiedrate.winch
             rpi.GlDisableCullFace();
             rpi.GlToggleBlend(true, EnumBlendMode.Standard);
             IStandardShaderProgram prog = rpi.PreparedStandardShader(pos.X, pos.Y, pos.Z);
-            prog.Tex2D = api.BlockTextureAtlas.AtlasTextures[0].TextureId;
 
             float yRotation = 0f;
             switch (Direction)
@@ -171,10 +170,10 @@ namespace HydrateOrDiedrate.winch
                             this.AngleRad = mechAngle * turnDirSign;
                             break;
                         case "south":
-                            this.AngleRad = mechAngle * 1f;
+                            this.AngleRad = mechAngle;
                             break;
                         default:
-                            this.AngleRad = -mechAngle * 1f;
+                            this.AngleRad = -mechAngle;
                             break;
                     }
                 }
@@ -203,7 +202,7 @@ namespace HydrateOrDiedrate.winch
                 .Values;
             prog.ViewMatrix = rpi.CameraMatrixOriginf;
             prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-            rpi.RenderMesh(this.meshref);
+            rpi.RenderMultiTextureMesh(this.meshref, "tex", 0);
             prog.Stop();
 
             if (be is BlockEntityWinch beWinch2)
@@ -237,7 +236,7 @@ namespace HydrateOrDiedrate.winch
                             return;
                         }
 
-                        bucketMeshRef = api.Render.UploadMesh(itemMesh);
+                        bucketMeshRef = api.Render.UploadMultiTextureMesh(itemMesh);
                     }
                     else
                     {
@@ -247,15 +246,6 @@ namespace HydrateOrDiedrate.winch
                     if (bucketMeshRef != null)
                     {
                         IStandardShaderProgram bucketProg = rpi.PreparedStandardShader(pos.X, pos.Y, pos.Z);
-
-                        if (bucketStack.Class == EnumItemClass.Item)
-                        {
-                            bucketProg.Tex2D = api.ItemTextureAtlas.AtlasTextures[0].TextureId;
-                        }
-                        else
-                        {
-                            bucketProg.Tex2D = api.BlockTextureAtlas.AtlasTextures[0].TextureId;
-                        }
 
                         float yRotationBucket = 0f;
                         switch (Direction)
@@ -275,7 +265,7 @@ namespace HydrateOrDiedrate.winch
 
                         bucketProg.ViewMatrix = rpi.CameraMatrixOriginf;
                         bucketProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-                        rpi.RenderMesh(bucketMeshRef);
+                        rpi.RenderMultiTextureMesh(bucketMeshRef, "tex", 0);
                         bucketProg.Stop();
                         if (liquidContentsMeshRef != null)
                         {
@@ -289,7 +279,6 @@ namespace HydrateOrDiedrate.winch
                                     if (props != null)
                                     {
                                         IStandardShaderProgram contentProg = rpi.PreparedStandardShader(pos.X, pos.Y, pos.Z);
-                                        contentProg.Tex2D = api.BlockTextureAtlas.AtlasTextures[0].TextureId;
 
                                         float maxLiquidHeight = 0.435f;
                                         float liquidPercentage = (float)contentStack.StackSize / (props.ItemsPerLitre * 10f);
@@ -306,7 +295,7 @@ namespace HydrateOrDiedrate.winch
 
                                         contentProg.ViewMatrix = rpi.CameraMatrixOriginf;
                                         contentProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-                                        rpi.RenderMesh(liquidContentsMeshRef);
+                                        rpi.RenderMultiTextureMesh(liquidContentsMeshRef, "tex", 0);
                                         contentProg.Stop();
                                     }
                                 }

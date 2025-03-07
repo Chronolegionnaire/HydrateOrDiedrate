@@ -12,7 +12,7 @@ namespace HydrateOrDiedrate
         
         private float thirstDelta;
         private float thirstDamageDelta;
-        
+        private float hydrationTickDelta;
         private long lastMoveMs;
 
         public float CurrentThirst
@@ -103,11 +103,12 @@ namespace HydrateOrDiedrate
 
         public override void OnGameTick(float deltaTime)
         {
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || !entity.Alive || entity is not EntityPlayer playerEntity)
-                return;
-
-            if (playerEntity.Player?.WorldData?.CurrentGameMode is EnumGameMode.Creative or EnumGameMode.Spectator or EnumGameMode.Guest)
-                return;
+            hydrationTickDelta += deltaTime;
+            if (hydrationTickDelta >= 1f)
+            {
+                UpdateHydrationLossDelay(hydrationTickDelta);
+                hydrationTickDelta = 0f;
+            }
 
             thirstDelta += deltaTime;
             if (thirstDelta > 10)
@@ -126,6 +127,20 @@ namespace HydrateOrDiedrate
                 }
             }
         }
+        private void UpdateHydrationLossDelay(float elapsedSeconds)
+        {
+            int currentDelay = HydrationLossDelay;
+            float currentSpeedOfTime = entity.Api?.World?.Calendar?.SpeedOfTime ?? DefaultSpeedOfTime;
+            float currentCalendarSpeedMul = entity.Api?.World?.Calendar?.CalendarSpeedMul ?? DefaultCalendarSpeedMul;
+            float multiplierPerGameSec = (currentSpeedOfTime / DefaultSpeedOfTime) *
+                                         (currentCalendarSpeedMul / DefaultCalendarSpeedMul);
+            if (float.IsNaN(multiplierPerGameSec))
+            {
+                multiplierPerGameSec = 1f;
+            }
+            int decrement = Math.Max(1, (int)Math.Floor(multiplierPerGameSec * elapsedSeconds));
+            HydrationLossDelay = Math.Max(0, currentDelay - decrement);
+        }
 
         private void HandleAccumulatedThirstDecay(float deltaTime)
         {
@@ -139,7 +154,6 @@ namespace HydrateOrDiedrate
 
             if (hydrationLossDelay > 0)
             {
-                HydrationLossDelay = hydrationLossDelay - Math.Max(1, (int)Math.Floor(multiplierPerGameSec * deltaTime));
                 return;
             }
 

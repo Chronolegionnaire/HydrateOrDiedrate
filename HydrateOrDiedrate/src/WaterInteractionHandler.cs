@@ -108,7 +108,8 @@ namespace HydrateOrDiedrate
                 playerDrinkData[player.PlayerUID] = drinkData;
             }
 
-            if (player.Entity.Controls.Sneak && player.Entity.Controls.RightMouseDown)
+            bool drinkingKey = _config.SprintToDrink ? player.Entity.Controls.Sprint : player.Entity.Controls.Sneak;
+            if (drinkingKey && player.Entity.Controls.RightMouseDown)
             {
                 var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
                 var hungerBehavior = player.Entity.GetBehavior<EntityBehaviorHunger>();
@@ -119,6 +120,21 @@ namespace HydrateOrDiedrate
                     return;
                 }
                 var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
+                if (block.GetType().GetInterface("IAqueduct") != null || block.Code.Path.StartsWith("furrowedland"))
+                {
+                    var fluidBlock =
+                        player.Entity.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
+                    if (fluidBlock != null && fluidBlock.BlockMaterial == EnumBlockMaterial.Liquid)
+                    {
+                        block = fluidBlock;
+                    }
+                    else
+                    {
+                        StopDrinking(player, drinkData);
+                        return;
+                    }
+                }
+
                 if (block.BlockMaterial == EnumBlockMaterial.Liquid &&
                     ((player.Entity.RightHandItemSlot?.Itemstack != null) ||
                      (player.Entity.LeftHandItemSlot?.Itemstack != null)))
@@ -127,6 +143,7 @@ namespace HydrateOrDiedrate
                     StopDrinking(player, drinkData);
                     return;
                 }
+
                 if (IsHeadInWater(player))
                 {
                     StopDrinking(player, drinkData);
@@ -305,6 +322,14 @@ namespace HydrateOrDiedrate
                     {
                         var fluidBlock = _api.World.BlockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid);
                         if (fluidBlock != null && fluidBlock.LiquidLevel > 0)
+                        {
+                            return new BlockSelection { Position = blockPos, HitPosition = currentPos.Clone() };
+                        }
+                    }
+                    else if (block.Code.Path.StartsWith("furrowedland"))
+                    {
+                        var fluidBlock = _api.World.BlockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid);
+                        if (fluidBlock != null && fluidBlock.BlockMaterial == EnumBlockMaterial.Liquid && fluidBlock.LiquidLevel > 0)
                         {
                             return new BlockSelection { Position = blockPos, HitPosition = currentPos.Clone() };
                         }

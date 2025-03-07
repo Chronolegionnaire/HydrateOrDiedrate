@@ -75,21 +75,24 @@ namespace HydrateOrDiedrate.patches
 
                     float intoxicationValue = nutriProps.Intoxication;
                     var config = HydrateOrDiedrateModSystem.LoadedConfig;
+                    float baseMultiplier = 0.05f;
+                    float effectiveMultiplier = baseMultiplier * config.HydrationLossDelayMultiplierNormalized;
+                    
                     float scalingFactorLow = 100f;
                     float scalingFactorHigh = 5f;
                     float capturedHydLossDelay;
 
                     if (intoxicationValue == 0)
                     {
-                        capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier;
+                        capturedHydLossDelay = (capturedHydrationAmount / 2) * effectiveMultiplier;
                     }
                     else if (intoxicationValue < 0.2)
                     {
-                        capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier * (float)(Math.Log(1 + intoxicationValue * scalingFactorLow));
+                        capturedHydLossDelay = (capturedHydrationAmount / 2) * effectiveMultiplier * (float)Math.Log(1 + intoxicationValue * scalingFactorLow);
                     }
                     else if (intoxicationValue > 0.7)
                     {
-                        capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier * (float)Math.Pow(scalingFactorHigh, intoxicationValue);
+                        capturedHydLossDelay = (capturedHydrationAmount / 2) * effectiveMultiplier * (float)Math.Pow(scalingFactorHigh, intoxicationValue);
                     }
                     else
                     {
@@ -97,7 +100,7 @@ namespace HydrateOrDiedrate.patches
                         float expValue_0_7 = (float)Math.Pow(scalingFactorHigh, 0.7);
                         float blendRatio = (intoxicationValue - 0.2f) / 0.5f;
                         float blendedValue = logValue_0_2 * (1 - blendRatio) + expValue_0_7 * blendRatio;
-                        capturedHydLossDelay = (capturedHydrationAmount / 2) * config.HydrationLossDelayMultiplier * blendedValue;
+                        capturedHydLossDelay = (capturedHydrationAmount / 2) * effectiveMultiplier * blendedValue;
                     }
 
                     float capturedHungerReduction = 0;

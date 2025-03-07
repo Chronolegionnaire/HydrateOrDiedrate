@@ -14,7 +14,7 @@ namespace HydrateOrDiedrate.Config
         private const string settingThirstDamage = "hydrateordiedrate:Config.Setting.ThirstDamage";
         private const string settingThirstDecayRate = "hydrateordiedrate:Config.Setting.ThirstDecayRate";
         private const string settingThirstDecayRateMax = "hydrateordiedrate:Config.Setting.ThirstDecayRateMax";
-        private const string settingHydrationLossDelayMultiplier = "hydrateordiedrate:Config.Setting.HydrationLossDelayMultiplier";
+        private const string settingHydrationLossDelayMultiplierNormalized = "hydrateordiedrate:Config.Setting.HydrationLossDelayMultiplier";
         private const string settingWaterSatiety = "hydrateordiedrate:Config.Setting.WaterSatiety";
         private const string settingSaltWaterSatiety = "hydrateordiedrate:Config.Setting.SaltWaterSatiety";
         private const string settingBoilingWaterSatiety = "hydrateordiedrate:Config.Setting.BoilingWaterSatiety";
@@ -125,6 +125,9 @@ namespace HydrateOrDiedrate.Config
         
         private const string settingKegDropWithLiquid = "hydrateordiedrate:Config.Setting.KegDropWithLiquid";
         private const string settingTunDropWithLiquid = "hydrateordiedrate:Config.Setting.TunDropWithLiquid";
+        
+        private const string settingSprintToDrink = "hydrateordiedrate:Config.Setting.SprintToDrink";
+
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
             if (!api.ModLoader.IsModEnabled("configlib"))
@@ -227,9 +230,9 @@ namespace HydrateOrDiedrate.Config
             ImGui.DragFloat(Lang.Get(settingThirstDecayRateMax) + $"##thirstDecayRateMax-{id}", ref thirstDecayRateMax, 0.1f, 0.0f, 50.0f);
             config.ThirstDecayRateMax = thirstDecayRateMax;
 
-            float hydrationLossDelayMultiplier = config.HydrationLossDelayMultiplier;
-            ImGui.DragFloat(Lang.Get(settingHydrationLossDelayMultiplier) + $"##hydrationLossDelayMultiplier-{id}", ref hydrationLossDelayMultiplier, 0.01f, 0.0f, 1.0f);
-            config.HydrationLossDelayMultiplier = hydrationLossDelayMultiplier;
+            float hydrationLossDelayMultiplierNormalized = config.HydrationLossDelayMultiplierNormalized;
+            ImGui.DragFloat(Lang.Get(settingHydrationLossDelayMultiplierNormalized) + $"##hydrationLossDelayMultiplierNormalized-{id}", ref hydrationLossDelayMultiplierNormalized, 0.1f, 0.0f, 10.0f);
+            config.HydrationLossDelayMultiplierNormalized = hydrationLossDelayMultiplierNormalized;
 
             float waterSatiety = config.WaterSatiety;
             ImGui.DragFloat(Lang.Get(settingWaterSatiety) + $"##waterSatiety-{id}", ref waterSatiety, 1.0f, -1000.0f, 1000.0f);
@@ -626,6 +629,10 @@ namespace HydrateOrDiedrate.Config
             bool tunDropWithLiquid = config.TunDropWithLiquid;
             ImGui.Checkbox(Lang.Get(settingTunDropWithLiquid) + $"##tunDropWithLiquid-{id}", ref tunDropWithLiquid);
             config.TunDropWithLiquid = tunDropWithLiquid;
+            
+            bool sprintToDrink = config.SprintToDrink;
+            ImGui.Checkbox(Lang.Get(settingSprintToDrink) + $"##sprintToDrink-{id}", ref sprintToDrink);
+            config.SprintToDrink = sprintToDrink;
         }
     }
 }

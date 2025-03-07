@@ -28,6 +28,7 @@ namespace HydrateOrDiedrate.patches
             public dynamic thirstRateDynamicText;
             public dynamic nutritionDeficitDynamicText;
             public dynamic currentCoolingDynamicText;
+            public dynamic hydrationDelayDynamicText;
         }
 
         private static bool ShouldSkipPatch()
@@ -176,13 +177,38 @@ namespace HydrateOrDiedrate.patches
                     currentCoolingRightBounds,
                     "currentCoolingHot"
                 );
+            float hydrationDelayVerticalOffset = -10.0f;
+            ElementBounds hydrationDelayLeftBounds = currentCoolingLeftBounds.BelowCopy(hydrationDelayVerticalOffset)
+                .WithFixedPosition(
+                    currentCoolingLeftBounds.fixedX,
+                    currentCoolingLeftBounds.fixedY + currentCoolingLeftBounds.fixedHeight + hydrationDelayVerticalOffset
+                );
+            ElementBounds hydrationDelayRightBounds = hydrationDelayLeftBounds.FlatCopy()
+                .WithFixedPosition(
+                    hydrationDelayLeftBounds.fixedX + rightColumnHorizontalOffset,
+                    hydrationDelayLeftBounds.fixedY
+                );
+            composer
+                .AddStaticText(
+                    Lang.Get("Hydration Delay"),
+                    CairoFont.WhiteDetailText(),
+                    hydrationDelayLeftBounds,
+                    "hydrateordiedrate_delayStaticText"
+                )
+                .AddDynamicText(
+                    "00:00:00",
+                    CairoFont.WhiteDetailText(),
+                    hydrationDelayRightBounds,
+                    "hydrateordiedrate_delay"
+                );
             CachedUIElements cached = new CachedUIElements
             {
                 composer = composer,
                 thirstDynamicText = composer.GetDynamicText("hydrateordiedrate_thirst"),
                 thirstRateDynamicText = composer.GetDynamicText("hydrateordiedrate_thirstrate"),
                 nutritionDeficitDynamicText = composer.GetDynamicText("nutritionDeficit"),
-                currentCoolingDynamicText = composer.GetDynamicText("currentCoolingHot")
+                currentCoolingDynamicText = composer.GetDynamicText("currentCoolingHot"),
+                hydrationDelayDynamicText = composer.GetDynamicText("hydrateordiedrate_delay")
             };
             cachedUIElements[__instance] = cached;
             UpdateDynamicTexts(__instance, cached);
@@ -223,6 +249,13 @@ namespace HydrateOrDiedrate.patches
             if (cached.currentCoolingDynamicText != null)
             {
                 cached.currentCoolingDynamicText.SetNewText($"{rawCoolingValue:0.##}", false, false, false);
+            }
+            int hydrationDelay = entity.WatchedAttributes.GetInt("hydrationLossDelay");
+            TimeSpan delayTime = TimeSpan.FromSeconds(hydrationDelay);
+            string formattedDelay = $"{delayTime.Hours:D2}:{delayTime.Minutes:D2}:{delayTime.Seconds:D2}";
+            if (cached.hydrationDelayDynamicText != null)
+            {
+                cached.hydrationDelayDynamicText.SetNewText(formattedDelay, false, false, false);
             }
         }
 
