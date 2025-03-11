@@ -63,6 +63,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
         waterPatches.PrepareWellWaterSatietyPatches(api);
         waterPatches.PrepareWaterPerishPatches(api);
         waterPatches.PrepareWellWaterPerishPatches(api);
+    }
+
+    public override void AssetsFinalize(ICoreAPI api)
+    {
+        base.AssetsFinalize(api);
         LoadAndApplyCoolingPatches(api);
 
         if (LoadedConfig.EnableThirstMechanics)
