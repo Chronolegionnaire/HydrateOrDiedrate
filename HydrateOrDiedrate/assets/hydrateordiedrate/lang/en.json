@@ -81,7 +81,7 @@
   "hydrateordiedrate:Config.Setting.WellWaterMuddySaltSatiety": "Muddy Salty Well Water Satiety",
   "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltSatiety": "Tainted Salty Well Water Satiety",
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltSatiety": "Poisoned Salty Well Water Satiety",
-  "hydrateordiedrate:Config.Setting.AquiferDepthScaling": "Aquifer Depth Scaling: Turn off to make depth irrelevant.",
+  "hydrateordiedrate:Config.Setting.ProspectingRadius": "The chunk radius that will be checked when prospecting for aquifers",
   "hydrateordiedrate:Config.Setting.RainWaterFreshHours": "Rain Water Fresh Hours",
   "hydrateordiedrate:Config.Setting.RainWaterTransitionHours": "Rain Water Transition Hours",
   "hydrateordiedrate:Config.Setting.BoiledWaterFreshHours": "Boiled Water Fresh Hours",
@@ -106,6 +106,7 @@
   "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltTransitionHours": "Well Water (Tainted Salt) Transition Hours",
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltFreshHours": "Well Water (Poisoned Salt) Fresh Hours",
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltTransitionHours": "Well Water (Poisoned Salt) Transition Hours",
+  "hydrateordiedrate:Config.Setting.WaterPerish": "Set to false to remove water transition entirely so new water types will never perish into regular water",
   "hydrateordiedrate:Config.Setting.WinchLowerSpeed": "Winch Lower Speed",
   "hydrateordiedrate:Config.Setting.WinchRaiseSpeed": "Winch Raise Speed",
   "hydrateordiedrate:Config.Setting.KegDropWithLiquid": "Keg retains liquid when broken",
@@ -179,3 +180,4 @@
   "achievement-hodplacetun-desc": "*Slaps Tun* This baby can fit so much liquid."
 
 }
+ 

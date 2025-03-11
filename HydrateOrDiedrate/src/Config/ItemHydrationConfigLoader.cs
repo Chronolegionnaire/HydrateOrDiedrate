@@ -420,12 +420,12 @@ namespace HydrateOrDiedrate.Config
                     new JObject
                     {
                         ["itemname"] = "game:honeyportion",
-                        ["hydration"] = 300
+                        ["hydration"] = -15
                     },
                     new JObject
                     {
                         ["itemname"] = "game:jamhoneyportion",
-                        ["hydration"] = 350
+                        ["hydration"] = -10
                     },
                     new JObject
                     {
@@ -445,7 +445,7 @@ namespace HydrateOrDiedrate.Config
                     new JObject
                     {
                         ["itemname"] = "game:milkportion",
-                        ["hydration"] = 500
+                        ["hydration"] = 800
                     },
                     new JObject
                     {
@@ -740,7 +740,7 @@ namespace HydrateOrDiedrate.Config
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:pasteurizedmilkportion",
-                        ["hydration"] = 500
+                        ["hydration"] = 800
                     },
                     new JObject
                     {
@@ -804,9 +804,9 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "expandedfoods:soymilk-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 200,
-                            ["expandedfoods:soymilk-raw"] = 200,
-                            ["expandedfoods:soymilk-edible"] = 400
+                            ["*"] = 600,
+                            ["expandedfoods:soymilk-raw"] = 600,
+                            ["expandedfoods:soymilk-edible"] = 700
                         }
                     },
                     new JObject

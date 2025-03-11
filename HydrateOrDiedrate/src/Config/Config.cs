@@ -126,8 +126,8 @@ public class Config : IModConfig
     [ProtoMember(61)] 
     public float WellWaterPoisonedSaltSatiety { get; set; }
     
-    [ProtoMember(62, IsRequired = true)] 
-    public bool AquiferDepthScaling { get; set; }
+    [ProtoMember(62)] 
+    public int ProspectingRadius { get; set; }
     
     // Liquid Perish Rates
     
@@ -219,6 +219,8 @@ public class Config : IModConfig
     public int AquiferRatingCeilingAboveSeaLevel { get; set; }
     [ProtoMember(93)] 
     public float AquiferDepthMultiplierScale { get; set; }
+    [ProtoMember(94, IsRequired = true)] 
+    public bool WaterPerish { get; set; }
     public Config()
     {
         // Thirst Settings
@@ -303,7 +305,7 @@ public class Config : IModConfig
         WellWaterMuddySaltSatiety = -75f;
         WellWaterTaintedSaltSatiety = -400f;
         WellWaterPoisonedSaltSatiety = 0f;
-        AquiferDepthScaling = true;
+        ProspectingRadius = 3;
         
         // Liquid Perish Rates
         RainWaterFreshHours = 150f;
@@ -341,6 +343,8 @@ public class Config : IModConfig
 
         AquiferRatingCeilingAboveSeaLevel = 30;
         AquiferDepthMultiplierScale = 1.0f;
+
+        WaterPerish = true;
     }
     public Config(ICoreAPI api, Config previousConfig = null)
     {
@@ -426,8 +430,7 @@ public class Config : IModConfig
         WellWaterMuddySaltSatiety = previousConfig?.WellWaterMuddySaltSatiety ?? -75f;
         WellWaterTaintedSaltSatiety = previousConfig?.WellWaterTaintedSaltSatiety ?? -400f;
         WellWaterPoisonedSaltSatiety = previousConfig?.WellWaterPoisonedSaltSatiety ?? 0f;
-        AquiferDepthScaling = previousConfig?.AquiferDepthScaling ?? true;
-        
+        ProspectingRadius = previousConfig?.ProspectingRadius ?? 3;
         // Liquid Perish Rates
          RainWaterFreshHours = previousConfig?.RainWaterFreshHours ?? 150f;
          RainWaterTransitionHours = previousConfig?.RainWaterTransitionHours ?? 36f;
@@ -464,5 +467,7 @@ public class Config : IModConfig
 
          AquiferRatingCeilingAboveSeaLevel = previousConfig?.AquiferRatingCeilingAboveSeaLevel ?? 30;
          AquiferDepthMultiplierScale = previousConfig?.AquiferDepthMultiplierScale ?? 1.0f;
+         
+         WaterPerish = previousConfig?.WaterPerish ?? true;
     }
 }

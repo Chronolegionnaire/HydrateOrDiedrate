@@ -329,8 +329,7 @@ namespace HydrateOrDiedrate
                 double depthMultiplier = 1.0;
                 if (chunkCenterY < seaLevel)
                 {
-                    double depthDifference = seaLevel - chunkCenterY;
-                    double normalizedDepth = depthDifference / (double)seaLevel;
+                    double normalizedDepth = (seaLevel - chunkCenterY) / (double)(seaLevel - 1);
                     depthMultiplier = 1 + normalizedDepth * config.AquiferDepthMultiplierScale;
                 }
                 if (random.NextDouble() < randomMultiplierChance * depthMultiplier)
@@ -367,6 +366,7 @@ namespace HydrateOrDiedrate
                 RegisterFailedChunk(pos, chunk);
                 return;
             }
+
             double centralChunkRating = data.PreSmoothedData.AquiferRating;
             int radius = 1;
             var neighborPositions = new List<ChunkPos3D>();
@@ -420,11 +420,13 @@ namespace HydrateOrDiedrate
                 if (isNeighborSalty) saltyNeighbors++;
                 totalValidNeighbors++;
             }
+
             if (totalValidNeighbors == 0)
             {
                 RegisterFailedChunk(pos, chunk);
                 return;
             }
+
             if (highestNeighborRating > centralChunkRating)
             {
                 double reductionFactor = 0.2 + (random.NextDouble() * 0.3);
@@ -432,6 +434,19 @@ namespace HydrateOrDiedrate
             }
 
             bool finalIsSalty = saltyNeighbors > (totalValidNeighbors / 2.0);
+            var config = HydrateOrDiedrateModSystem.LoadedConfig;
+            int chunkSize = GlobalConstants.ChunkSize;
+            BlockPos center = new BlockPos(
+                pos.X * chunkSize + chunkSize / 2,
+                pos.Y * chunkSize + chunkSize / 2,
+                pos.Z * chunkSize + chunkSize / 2
+            );
+            int worldHeight = serverAPI.WorldManager.MapSizeY;
+            int seaLevel = (int)Math.Round(0.4296875 * worldHeight);
+            if (center.Y > seaLevel)
+            {
+                centralChunkRating = Math.Min(centralChunkRating, config.AquiferRatingCeilingAboveSeaLevel);
+            }
 
             data.SmoothedData = new AquiferData
             {

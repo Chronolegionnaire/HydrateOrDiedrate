@@ -141,7 +141,7 @@ namespace HydrateOrDiedrate
 
         private AquiferManager.AquiferData GetAquiferData(ChunkPos3D chunkCoord)
         {
-            return HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager?.GetAquiferData(chunkCoord);
+            return HydrateOrDiedrateModSystem.AquiferManager?.GetAquiferData(chunkCoord);
         }
 
         private int GetColorForRating(int rating, bool isSalty)

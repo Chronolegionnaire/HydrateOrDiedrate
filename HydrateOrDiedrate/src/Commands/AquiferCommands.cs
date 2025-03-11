@@ -13,9 +13,9 @@ namespace HydrateOrDiedrate.Commands
                 .RequiresPrivilege(Privilege.controlserver)
                 .HandleWith(static args =>
                 {
-                    if(HydrateOrDiedrateGlobals.AquiferManager == null) return TextCommandResult.Error("Aquifer system is not initialized.");
+                    if(HydrateOrDiedrateModSystem.AquiferManager == null) return TextCommandResult.Error("Aquifer system is not initialized.");
 
-                    HydrateOrDiedrateGlobals.AquiferManager.ClearAquiferData();
+                    HydrateOrDiedrateModSystem.AquiferManager.ClearAquiferData();
                     return TextCommandResult.Success("Aquifer data has been cleared successfully.");
                 });
         }

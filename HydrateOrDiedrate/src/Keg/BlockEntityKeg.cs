@@ -16,11 +16,9 @@ namespace HydrateOrDiedrate.Keg
         private ICoreAPI api;
         private BlockKeg ownBlock;
         public float MeshAngle;
-        private Config.Config config;
         private const int UpdateIntervalMs = 1000;
-        private long updateListenerId;
-        private float spoilRateTapped;
-        private float spoilRateUntapped;
+        private float spoilRateTapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateTapped;
+        private float spoilRateUntapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateUntapped;
         public override string InventoryClassName => "keg";
 
         public override void Initialize(ICoreAPI api)
@@ -34,10 +32,6 @@ namespace HydrateOrDiedrate.Keg
                 UpdateKegMultiplier();
             }
             RegisterGameTickListener(UpdateSpoilRate, UpdateIntervalMs);
-            if (api.Side == EnumAppSide.Client)
-            {
-                RegisterConfigUpdateListener(api);
-            }
         }
         private void UpdateKegMultiplier()
         {
@@ -81,7 +75,7 @@ namespace HydrateOrDiedrate.Keg
         }
         private float GetSuitability(ItemSlot sourceSlot, ItemSlot targetSlot, bool isMerge)
         {
-            if (targetSlot == inventory[1])
+            if (targetSlot == inventory[0])
             {
                 if (inventory[0].StackSize > 0)
                 {
@@ -139,26 +133,6 @@ namespace HydrateOrDiedrate.Keg
             }
 
             base.OnBlockBroken(byPlayer);
-        }
-        private void LoadConfigValues()
-        {
-            spoilRateTapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateTapped;
-            spoilRateUntapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateUntapped;
-        }
-        private void RegisterConfigUpdateListener(ICoreAPI api)
-        {
-            updateListenerId = api.Event.RegisterGameTickListener(dt =>
-            {
-                float newSpoilRateTapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateTapped;
-                float newSpoilRateUntapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateUntapped;
-                if (newSpoilRateTapped != spoilRateTapped || 
-                    newSpoilRateUntapped != spoilRateUntapped)
-                {
-                    LoadConfigValues();
-                    api.Event.UnregisterGameTickListener(updateListenerId);
-                }
-
-            }, 5000);
         }
     }
 }

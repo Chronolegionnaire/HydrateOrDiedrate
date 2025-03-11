@@ -27,24 +27,11 @@ namespace HydrateOrDiedrate.wellwater
             sapi = api as ICoreServerAPI;
             if (sapi != null)
             {
-                _aquiferManager = HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager;
+                _aquiferManager = HydrateOrDiedrateModSystem.AquiferManager;
                 if (_aquiferManager == null) return;
-
-                depthFactor = CalculateDepthFactor();
                 _aquiferManager.RegisterWellspring(Pos, depthFactor);
                 RegisterGameTickListener(OnTick, updateIntervalMs);
             }
-        }
-        private double CalculateDepthFactor()
-        {
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
-            {
-                return 1.0;
-            }
-            double maxWorldHeight = sapi.WorldManager.MapSizeY;
-            double waterLineY = Math.Round(0.4296875 * maxWorldHeight);
-            double calculatedDepthFactor = (waterLineY - Pos.Y) / (waterLineY - 1);
-            return Math.Max(calculatedDepthFactor, 0);
         }
         public override void OnBlockRemoved()
         {
@@ -109,7 +96,6 @@ namespace HydrateOrDiedrate.wellwater
 
             if (wellsprings.Count > 0)
             {
-                depthFactor = CalculateDepthFactor();
                 double remainingRating = aquiferData.AquiferRating / wellsprings.Count;
                 var thisSpring = wellsprings.FirstOrDefault(ws => ws.Position.Equals(Pos));
                 if (thisSpring == null)
@@ -313,7 +299,7 @@ namespace HydrateOrDiedrate.wellwater
             accumulatedWater = tree.GetDouble("accumulatedWater", 0.0);
             if (worldForResolving.Api.Side == EnumAppSide.Server)
             {
-                _aquiferManager = HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager;
+                _aquiferManager = HydrateOrDiedrateModSystem.AquiferManager;
             }
         }
         public override void ToTreeAttributes(ITreeAttribute tree)
