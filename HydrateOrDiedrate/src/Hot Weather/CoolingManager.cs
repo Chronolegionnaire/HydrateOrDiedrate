@@ -14,7 +14,6 @@ public static class CoolingManager
 
     public static void SetCooling(ICoreAPI api, CollectibleObject collectible, float coolingValue)
     {
-        // Guard against NaN values before setting the cooling value.
         if (float.IsNaN(coolingValue))
         {
             coolingValue = 0f;

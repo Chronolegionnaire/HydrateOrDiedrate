@@ -92,7 +92,7 @@ namespace HydrateOrDiedrate.Config
         private const string settingWellWaterMuddySaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterMuddySaltSatiety";
         private const string settingWellWaterTaintedSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltSatiety";
         private const string settingWellWaterPoisonedSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltSatiety";
-        private const string settingAquiferDepthScaling = "hydrateordiedrate:Config.Setting.AquiferDepthScaling";
+        private const string settingProspectingRadius = "hydrateordiedrate:Config.Setting.ProspectingRadius";
 
         // Liquid Perish Rate Settings (new)
         private const string settingRainWaterFreshHours = "hydrateordiedrate:Config.Setting.RainWaterFreshHours";
@@ -128,6 +128,10 @@ namespace HydrateOrDiedrate.Config
         
         private const string settingSprintToDrink = "hydrateordiedrate:Config.Setting.SprintToDrink";
 
+        private const string settingAquiferRatingCeilingAboveSeaLevel = "hydrateordiedrate:Config.Setting.settingAquiferRatingCeilingAboveSeaLevel";
+        private const string settingAquiferDepthMultiplierScale = "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale";
+        
+        private const string settingWaterPerish = "hydrateordiedrate:Config.Setting.WaterPerish";
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
             if (!api.ModLoader.IsModEnabled("configlib"))
@@ -510,9 +514,9 @@ namespace HydrateOrDiedrate.Config
             ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltSatiety) + $"##wellWaterPoisonedSaltSatiety-{id}", ref wellWaterPoisonedSaltSatiety, 1.0f, -1000.0f, 1000.0f);
             config.WellWaterPoisonedSaltSatiety = wellWaterPoisonedSaltSatiety;
             
-            bool aquiferDepthScaling = config.AquiferDepthScaling;
-            ImGui.Checkbox(Lang.Get(settingAquiferDepthScaling) + $"##aquiferDepthScaling-{id}", ref aquiferDepthScaling);
-            config.AquiferDepthScaling = aquiferDepthScaling;
+            int prospectingRadius = config.ProspectingRadius;
+            ImGui.DragInt(Lang.Get(settingProspectingRadius) + $"##prospectingRadius-{id}", ref prospectingRadius, 1, 1, 10);
+            config.ProspectingRadius = prospectingRadius;
             
             ImGui.SeparatorText("Liquid Perish Rates");
 
@@ -633,6 +637,18 @@ namespace HydrateOrDiedrate.Config
             bool sprintToDrink = config.SprintToDrink;
             ImGui.Checkbox(Lang.Get(settingSprintToDrink) + $"##sprintToDrink-{id}", ref sprintToDrink);
             config.SprintToDrink = sprintToDrink;
+            
+            int aquiferRatingCeilingAboveSeaLevel = config.AquiferRatingCeilingAboveSeaLevel;
+            ImGui.DragInt(Lang.Get(settingAquiferRatingCeilingAboveSeaLevel) + $"##aquiferRatingCeilingAboveSeaLevel-{id}", ref aquiferRatingCeilingAboveSeaLevel, 1, 0, 100);
+            config.AquiferRatingCeilingAboveSeaLevel = aquiferRatingCeilingAboveSeaLevel;
+
+            float aquiferDepthMultiplierScale = config.AquiferDepthMultiplierScale;
+            ImGui.DragFloat(Lang.Get(settingAquiferDepthMultiplierScale) + $"##aquiferDepthMultiplierScale-{id}", ref aquiferDepthMultiplierScale, 0.01f, 0.5f, 5.0f);
+            config.AquiferDepthMultiplierScale = aquiferDepthMultiplierScale;
+            
+            bool waterPerish = config.WaterPerish;
+            ImGui.Checkbox(Lang.Get(settingWaterPerish) + $"##waterPerish-{id}", ref waterPerish);
+            config.WaterPerish = waterPerish;
         }
     }
 }

@@ -18,7 +18,7 @@ namespace HydrateOrDiedrate.patches
             {
                 return;
             }
-            if (HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager == null)
+            if (HydrateOrDiedrateModSystem.AquiferManager == null)
             {
                 return;
             }
@@ -75,30 +75,52 @@ namespace HydrateOrDiedrate.patches
                 return;
             }
             BlockPos pos = blockSel.Position;
-            Vec2i chunkCoord = new Vec2i(pos.X / GlobalConstants.ChunkSize, pos.Z / GlobalConstants.ChunkSize);
-            var aquiferData = HydrateOrDiedrateModSystem.HydrateOrDiedrateGlobals.AquiferManager.GetAquiferData(chunkCoord);
-
+            int chunkX = pos.X / GlobalConstants.ChunkSize;
+            int chunkY = pos.Y / GlobalConstants.ChunkSize;
+            int chunkZ = pos.Z / GlobalConstants.ChunkSize;
+            ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);         
+            var aquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkCoord);
             if (aquiferData == null)
             {
                 SendMessageToPlayer(world, serverPlayer, "No aquifer data available for this region.");
             }
             else
             {
-                double worldHeight = world.BlockAccessor.MapSizeY;
-                double posY = pos.Y;
-
-                string aquiferInfo;
-                if (HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
+                int currentRating = aquiferData.AquiferRating;
+                string aquiferInfo = currentRating == 0 
+                    ? "There is no aquifer here." 
+                    : $"This area has an aquifer rating of {currentRating}.";
+                int radius = HydrateOrDiedrateModSystem.LoadedConfig.ProspectingRadius;
+                int bestRating = currentRating;
+                ChunkPos3D bestChunk = chunkCoord;
+                
+                for (int dx = -radius; dx <= radius; dx++)
                 {
-                    aquiferInfo = GetAquiferDescription(aquiferData.IsSalty, aquiferData.AquiferRating, worldHeight, posY);
+                    for (int dy = -radius; dy <= radius; dy++)
+                    {
+                        for (int dz = -radius; dz <= radius; dz++)
+                        {
+                            if (dx == 0 && dy == 0 && dz == 0) continue;
+                            
+                            ChunkPos3D checkChunk = new ChunkPos3D(chunkX + dx, chunkY + dy, chunkZ + dz);
+                            var checkAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(checkChunk);
+                            if (checkAquiferData != null && checkAquiferData.AquiferRating > bestRating)
+                            {
+                                bestRating = checkAquiferData.AquiferRating;
+                                bestChunk = checkChunk;
+                            }
+                        }
+                    }
                 }
-                else
+                if (bestRating > currentRating)
                 {
-                    aquiferInfo = aquiferData.AquiferRating == 0
-                        ? "There is no aquifer here."
-                        : $"This area has an aquifer rating of {aquiferData.AquiferRating}.";
+                    int dxDir = bestChunk.X - chunkCoord.X;
+                    int dyDir = bestChunk.Y - chunkCoord.Y;
+                    int dzDir = bestChunk.Z - chunkCoord.Z;
+                    string directionHint = GetDirectionHint(dxDir, dyDir, dzDir);
+                    aquiferInfo += $" The aquifer seems to get stronger to the {directionHint}.";
                 }
-
+                
                 SendMessageToPlayer(world, serverPlayer, aquiferInfo);
             }
         }
@@ -106,16 +128,7 @@ namespace HydrateOrDiedrate.patches
         private static string GetAquiferDescription(bool isSalty, int rating, double worldHeight, double posY)
         {
             int effectiveRating = rating;
-
-            if (HydrateOrDiedrateModSystem.LoadedConfig.AquiferDepthScaling)
-            {
-                double waterLineY = Math.Round(0.4296875 * worldHeight);
-                double depthFactor = (waterLineY - posY) / (waterLineY - 1);
-                effectiveRating = (int)Math.Round(rating * depthFactor);
-            }
-
             string aquiferType = isSalty ? "salt" : "fresh";
-
             return effectiveRating switch
             {
                 <= 0 => "No aquifer detected.",
@@ -125,6 +138,34 @@ namespace HydrateOrDiedrate.patches
                 <= 60 => $"Moderate {aquiferType} water aquifer detected.",
                 _ => $"Heavy {aquiferType} water aquifer detected."
             };
+        }
+        private static string GetDirectionHint(int dx, int dy, int dz)
+        {
+            string horizontal = "";
+            string verticalHor = "";
+            
+            if (dz < 0) verticalHor = "north";
+            else if (dz > 0) verticalHor = "south";
+
+            if (dx > 0) horizontal = "east";
+            else if (dx < 0) horizontal = "west";
+
+            string horizontalPart = "";
+            if (!string.IsNullOrEmpty(verticalHor) && !string.IsNullOrEmpty(horizontal))
+                horizontalPart = verticalHor + "-" + horizontal;
+            else
+                horizontalPart = !string.IsNullOrEmpty(verticalHor) ? verticalHor : horizontal;
+            string verticalDepth = "";
+            if (dy > 0) verticalDepth = "above";
+            else if (dy < 0) verticalDepth = "below";
+            if (!string.IsNullOrEmpty(horizontalPart) && !string.IsNullOrEmpty(verticalDepth))
+                return horizontalPart + " and " + verticalDepth;
+            else if (!string.IsNullOrEmpty(horizontalPart))
+                return horizontalPart;
+            else if (!string.IsNullOrEmpty(verticalDepth))
+                return verticalDepth;
+            else
+                return "here";
         }
 
         private static void SendMessageToPlayer(IWorldAccessor world, IServerPlayer splr, string message)
