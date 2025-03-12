@@ -108,7 +108,8 @@ namespace HydrateOrDiedrate.patches
                     {
                         capturedHungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
                     }
-
+                    float maxDelay = 600f; 
+                    capturedHydLossDelay = Math.Min(capturedHydLossDelay, maxDelay);
                     __state = new PatchState
                     {
                         Player = player,

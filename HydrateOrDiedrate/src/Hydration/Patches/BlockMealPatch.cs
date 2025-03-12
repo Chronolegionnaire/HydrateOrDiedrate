@@ -44,13 +44,13 @@ namespace HydrateOrDiedrate.patches
                 float servingsBeforeConsume = (slot.Itemstack.Collectible as BlockMeal).GetQuantityServings(byEntity.World, slot.Itemstack);
                 float baseMultiplier = 0.05f;
                 float effectiveMultiplier = baseMultiplier * HydrateOrDiedrateModSystem.LoadedConfig.HydrationLossDelayMultiplierNormalized;
-
+                float maxDelay = 600f; 
                 __state = new PatchState
                 {
                     Player = player,
                     TotalHydration = totalHydration,
                     ServingsBeforeConsume = servingsBeforeConsume,
-                    HydLossDelay = (totalHydration / servingsBeforeConsume / 2) * effectiveMultiplier
+                    HydLossDelay = Math.Min(((totalHydration / servingsBeforeConsume / 2) * effectiveMultiplier), maxDelay)
                 };
             }
         }
@@ -80,7 +80,8 @@ namespace HydrateOrDiedrate.patches
 
                 float hydrationPerServing = __state.TotalHydration / __state.ServingsBeforeConsume;
                 float totalHydrationConsumed = hydrationPerServing * servingsConsumed;
-
+                float maxDelay = 600f; 
+                __state.HydLossDelay = Math.Min( __state.HydLossDelay, maxDelay);
                 var thirstBehavior = __state.Player.GetBehavior<EntityBehaviorThirst>();
                 thirstBehavior?.ModifyThirst(totalHydrationConsumed, __state.HydLossDelay);
             }

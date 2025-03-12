@@ -62,7 +62,7 @@ namespace HydrateOrDiedrate.patches
                     var config = HydrateOrDiedrateModSystem.LoadedConfig;
                     float baseMultiplier = 0.05f;
                     float effectiveMultiplier = baseMultiplier * config.HydrationLossDelayMultiplierNormalized;
-
+                    float maxDelay = 600f; 
                     float hydLossDelay = 0;
 
                     if (intoxicationValue == 0)
@@ -91,7 +91,7 @@ namespace HydrateOrDiedrate.patches
                     {
                         hungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
                     }
-
+                    hydLossDelay = Math.Min(hydLossDelay, maxDelay);
                     __state = new PatchState
                     {
                         Player = player,
