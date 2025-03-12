@@ -8,7 +8,6 @@ namespace HydrateOrDiedrate.patches
     public static class PropickReading_ToHumanReadable_Patch
     {
         public static bool AppendAquiferInfo = true;
-        // Temporary storage for the aquifer reading
         private static OreReading aquiferBackup;
 
         static void Prefix(PropickReading __instance)
@@ -22,14 +21,11 @@ namespace HydrateOrDiedrate.patches
 
         static void Postfix(PropickReading __instance, string languageCode, Dictionary<string, string> pageCodes, ref string __result)
         {
-            // Restore the aquifer reading if it was removed
             if (aquiferBackup != null)
             {
                 __instance.OreReadings["$aquifer$"] = aquiferBackup;
             }
             if (!AppendAquiferInfo || aquiferBackup == null) return;
-
-            // Now use aquiferBackup instead of fetching from the dictionary
             OreReading aquiferEntry = aquiferBackup;
             bool isSalty = (aquiferEntry.DepositCode == "salty");
             int rating = (int)aquiferEntry.PartsPerThousand;
