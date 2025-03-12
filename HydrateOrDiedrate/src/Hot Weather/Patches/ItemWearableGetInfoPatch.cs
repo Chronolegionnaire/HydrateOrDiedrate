@@ -35,7 +35,7 @@ namespace HydrateOrDiedrate.patches
                 {
                     maxWarmth = 0f;
                 }
-                float actualWarmth = maxWarmth * condition;
+                float actualWarmth = Math.Min(maxWarmth, condition * 2f * maxWarmth);
                 if (float.IsNaN(actualWarmth))
                 {
                     actualWarmth = 0f;
@@ -45,7 +45,7 @@ namespace HydrateOrDiedrate.patches
                 {
                     maxCooling = 0f;
                 }
-                float actualCooling = maxCooling * condition;
+                float actualCooling = Math.Min(maxCooling, condition * 2f * maxCooling);
                 if (float.IsNaN(actualCooling))
                 {
                     actualCooling = 0f;

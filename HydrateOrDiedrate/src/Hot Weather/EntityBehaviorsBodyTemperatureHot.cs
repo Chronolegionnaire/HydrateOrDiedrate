@@ -125,7 +125,7 @@ namespace HydrateOrDiedrate.Hot_Weather
                     float baseCooling = CoolingManager.GetMaxCooling(slot.Itemstack);
                     float condition = slot.Itemstack.Attributes.GetFloat("condition", 1f);
                     condition = float.IsNaN(condition) ? 1f : condition;
-                    float rawValue = baseCooling * condition;
+                    float rawValue = Math.Min(baseCooling, condition * 2f * baseCooling);
                     rawValue = float.IsNaN(rawValue) ? 0f : rawValue;
                     itemDisplayCooling = (float)Math.Round(rawValue, 1, MidpointRounding.AwayFromZero);
                 }
