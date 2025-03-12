@@ -221,6 +221,8 @@ public class Config : IModConfig
     public float AquiferDepthMultiplierScale { get; set; }
     [ProtoMember(94, IsRequired = true)] 
     public bool WaterPerish { get; set; }
+    [ProtoMember(95, IsRequired = true)] 
+    public bool AquiferDataOnProspectingNodeMode { get; set; }
     public Config()
     {
         // Thirst Settings
@@ -345,6 +347,8 @@ public class Config : IModConfig
         AquiferDepthMultiplierScale = 1.0f;
 
         WaterPerish = true;
+
+        AquiferDataOnProspectingNodeMode = false;
     }
     public Config(ICoreAPI api, Config previousConfig = null)
     {
@@ -469,5 +473,6 @@ public class Config : IModConfig
          AquiferDepthMultiplierScale = previousConfig?.AquiferDepthMultiplierScale ?? 1.0f;
          
          WaterPerish = previousConfig?.WaterPerish ?? true;
+         AquiferDataOnProspectingNodeMode = previousConfig?.AquiferDataOnProspectingNodeMode ?? false;
     }
 }

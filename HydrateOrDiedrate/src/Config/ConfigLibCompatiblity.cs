@@ -132,6 +132,7 @@ namespace HydrateOrDiedrate.Config
         private const string settingAquiferDepthMultiplierScale = "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale";
         
         private const string settingWaterPerish = "hydrateordiedrate:Config.Setting.WaterPerish";
+        private const string settingAquiferDataOnProspectingNodeMode = "hydrateordiedrate:Config.Setting.AquiferDataOnProspectingNodeMode";
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
             if (!api.ModLoader.IsModEnabled("configlib"))
@@ -649,6 +650,10 @@ namespace HydrateOrDiedrate.Config
             bool waterPerish = config.WaterPerish;
             ImGui.Checkbox(Lang.Get(settingWaterPerish) + $"##waterPerish-{id}", ref waterPerish);
             config.WaterPerish = waterPerish;
+            
+            bool aquiferDataOnProspectingNodeMode = config.AquiferDataOnProspectingNodeMode;
+            ImGui.Checkbox(Lang.Get(settingAquiferDataOnProspectingNodeMode) + $"##aquiferDataOnProspectingNodeMode-{id}", ref aquiferDataOnProspectingNodeMode);
+            config.AquiferDataOnProspectingNodeMode = aquiferDataOnProspectingNodeMode;
         }
     }
 }
