@@ -10,7 +10,7 @@
   "shape": { "base": "block/food/meal/liquid" },
   "ingredients": [
     {
-      "code": "water",
+      "code": "water1",
       "validStacks": [
         {
           "type": "item",
@@ -19,6 +19,45 @@
         }
       ],
       "minQuantity": 1,
+      "maxQuantity": 1,
+      "portionSizeLitres": 1
+    },
+    {
+      "code": "water2",
+      "validStacks": [
+        {
+          "type": "item",
+          "code": "hydrateordiedrate:rainwaterportion",
+          "shapeElement": "game:bowl/water"
+        }
+      ],
+      "minQuantity": 0,
+      "maxQuantity": 1,
+      "portionSizeLitres": 1
+    },
+    {
+      "code": "water3",
+      "validStacks": [
+        {
+          "type": "item",
+          "code": "hydrateordiedrate:rainwaterportion",
+          "shapeElement": "game:bowl/water"
+        }
+      ],
+      "minQuantity": 0,
+      "maxQuantity": 1,
+      "portionSizeLitres": 1
+    },
+    {
+      "code": "water4",
+      "validStacks": [
+        {
+          "type": "item",
+          "code": "hydrateordiedrate:rainwaterportion",
+          "shapeElement": "game:bowl/water"
+        }
+      ],
+      "minQuantity": 0,
       "maxQuantity": 1,
       "portionSizeLitres": 1
     }
