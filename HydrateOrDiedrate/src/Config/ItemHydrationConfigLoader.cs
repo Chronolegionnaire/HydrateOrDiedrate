@@ -2163,6 +2163,14 @@ namespace HydrateOrDiedrate.Config
                     },
                     new JObject
                     {
+                        ["itemname"] = "wildcraftfruit:lemonade-*",
+                        ["hydrationByType"] = new JObject
+                        {
+                            ["*"] = 850
+                        }
+                    },
+                    new JObject
+                    {
                         ["itemname"] = "acorns:flour-acorn-*",
                         ["hydrationByType"] = new JObject
                         {
