@@ -48,6 +48,18 @@ namespace HydrateOrDiedrate.winch
 
         private void UpdateLiquidMesh(ItemStack bucketStack)
         {
+            string containerCodePath = bucketStack?.Collectible?.Code?.Path ?? "";
+            if (!(containerCodePath.StartsWith("woodbucket") ||
+                  containerCodePath.StartsWith("temporalbucket")))
+            {
+                if (liquidContentsMeshRef != null)
+                {
+                    liquidContentsMeshRef.Dispose();
+                    liquidContentsMeshRef = null;
+                    lastContentStack = null;
+                }
+                return;
+            }
             if (bucketStack?.Attributes?.HasAttribute("contents") != true)
             {
                 if (liquidContentsMeshRef != null)
@@ -75,7 +87,6 @@ namespace HydrateOrDiedrate.winch
             }
 
             lastContentStack = contentStack.Clone();
-            
             if (liquidContentsMeshRef != null)
             {
                 liquidContentsMeshRef.Dispose();
@@ -269,34 +280,40 @@ namespace HydrateOrDiedrate.winch
                         bucketProg.Stop();
                         if (liquidContentsMeshRef != null)
                         {
-                            var contents = bucketStack.Attributes?.GetTreeAttribute("contents");
-                            if (contents != null)
+                            string containerCodePath = bucketStack?.Collectible?.Code?.Path ?? "";
+                            if (containerCodePath.StartsWith("woodbucket") || containerCodePath.StartsWith("temporalbucket"))
                             {
-                                var contentStack = contents.GetItemstack("0");
-                                if (contentStack?.Collectible != null)
+                                var contents = bucketStack.Attributes?.GetTreeAttribute("contents");
+                                if (contents != null)
                                 {
-                                    var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
-                                    if (props != null)
+                                    var contentStack = contents.GetItemstack("0");
+                                    if (contentStack?.Collectible != null)
                                     {
-                                        IStandardShaderProgram contentProg = rpi.PreparedStandardShader(pos.X, pos.Y, pos.Z);
+                                        var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
+                                        if (props != null)
+                                        {
+                                            IStandardShaderProgram contentProg = rpi.PreparedStandardShader(pos.X, pos.Y, pos.Z);
 
-                                        float maxLiquidHeight = 0.435f;
-                                        float liquidPercentage = (float)contentStack.StackSize / (props.ItemsPerLitre * 10f);
-                                        float liquidHeight = liquidPercentage * maxLiquidHeight;
-                                        float liquidOffset = 0f;
+                                            float maxLiquidHeight = 0.435f;
+                                            BlockLiquidContainerBase container = bucketStack.Collectible as BlockLiquidContainerBase;
+                                            float containerCapacity = container != null ? container.CapacityLitres : 10f;
+                                            float liquidPercentage = (float)contentStack.StackSize / (props.ItemsPerLitre * containerCapacity);
+                                            float liquidHeight = liquidPercentage * maxLiquidHeight;
+                                            float liquidOffset = 0f;
 
-                                        contentProg.ModelMatrix = ModelMat
-                                            .Identity()
-                                            .Translate(pos.X - camPos.X, pos.Y - camPos.Y - lastBucketDepth + liquidHeight + liquidOffset, pos.Z - camPos.Z)
-                                            .Translate(0.5f, 0f, 0.5f)
-                                            .RotateY(yRotationBucket)
-                                            .Translate(-0.5f, 0f, -0.5f)
-                                            .Values;
+                                            contentProg.ModelMatrix = ModelMat
+                                                .Identity()
+                                                .Translate(pos.X - camPos.X, pos.Y - camPos.Y - lastBucketDepth + liquidHeight + liquidOffset, pos.Z - camPos.Z)
+                                                .Translate(0.5f, 0f, 0.5f)
+                                                .RotateY(yRotationBucket)
+                                                .Translate(-0.5f, 0f, -0.5f)
+                                                .Values;
 
-                                        contentProg.ViewMatrix = rpi.CameraMatrixOriginf;
-                                        contentProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-                                        rpi.RenderMultiTextureMesh(liquidContentsMeshRef, "tex", 0);
-                                        contentProg.Stop();
+                                            contentProg.ViewMatrix = rpi.CameraMatrixOriginf;
+                                            contentProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+                                            rpi.RenderMultiTextureMesh(liquidContentsMeshRef, "tex", 0);
+                                            contentProg.Stop();
+                                        }
                                     }
                                 }
                             }

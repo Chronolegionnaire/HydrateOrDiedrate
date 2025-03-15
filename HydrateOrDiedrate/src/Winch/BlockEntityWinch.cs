@@ -329,11 +329,13 @@ namespace HydrateOrDiedrate.winch
 
         private void FillBucketAtPos(BlockPos pos)
         {
-            var (waterType, extracted) = ExtractWaterAtPos(pos, 10);
-            if (extracted <= 0) return;
+            if (InputSlot.Empty) return;
+            BlockLiquidContainerBase container = InputSlot.Itemstack.Collectible as BlockLiquidContainerBase;
+            if (container == null) return;
             if (!BucketIsEmpty()) return;
-            if (InputSlot.Itemstack?.Collectible?.Code.Path.StartsWith("woodbucket") != true) return;
-
+            int bucketCapacity = (int) container.CapacityLitres;
+            var (waterType, extracted) = ExtractWaterAtPos(pos, bucketCapacity);
+            if (extracted <= 0) return;
             ItemStack filledBucket = InputSlot.Itemstack.Clone();
             TreeAttribute contents = new TreeAttribute();
             int totalWaterItems = extracted * 100;
@@ -700,76 +702,64 @@ namespace HydrateOrDiedrate.winch
                         bucketMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation, 0f);
                         bucketMesh.Translate(0f, -bucketDepth, 0f);
                         mesher.AddMeshData(bucketMesh);
-                        if (InputSlot.Itemstack.Attributes?.HasAttribute("contents") == true)
+                        string containerCodePath = InputSlot.Itemstack?.Collectible?.Code?.Path ?? "";
+                        if (containerCodePath.StartsWith("woodbucket") ||
+                            containerCodePath.StartsWith("temporalbucket"))
                         {
-                            var contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
-                            if (contents != null)
+                            if (InputSlot.Itemstack.Attributes?.HasAttribute("contents") == true)
                             {
-                                var contentStack = contents.GetItemstack("0");
-                                if (contentStack != null && contentStack.Collectible == null)
+                                var contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
+                                if (contents != null)
                                 {
-                                    contentStack.ResolveBlockOrItem(Api.World);
-                                }
-
-                                if (contentStack?.Collectible != null)
-                                {
-                                    var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
-                                    if (props != null)
+                                    var contentStack = contents.GetItemstack("0");
+                                    if (contentStack != null && contentStack.Collectible == null)
                                     {
-                                        Shape contentShape = null;
-                                        string shapePath = "game:shapes/block/wood/bucket/liquidcontents";
-                                        if (props.IsOpaque)
-                                        {
-                                            shapePath = "game:shapes/block/wood/bucket/contents";
-                                        }
+                                        contentStack.ResolveBlockOrItem(Api.World);
+                                    }
 
-                                        contentShape = Shape.TryGet(Api, shapePath + ".json");
-                                        if (contentShape != null)
+                                    if (contentStack?.Collectible != null)
+                                    {
+                                        var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
+                                        if (props != null)
                                         {
-                                            ContainerTextureSource textureSource = new ContainerTextureSource(
-                                                Api as ICoreClientAPI,
-                                                contentStack,
-                                                props.Texture
-                                            );
-                                            MeshData contentMesh;
-                                            tesselator.TesselateShape(GetType().Name, contentShape, out contentMesh,
-                                                textureSource);
-
-                                            if (contentMesh != null)
+                                            Shape contentShape = null;
+                                            string shapePath = "game:shapes/block/wood/bucket/liquidcontents";
+                                            if (props.IsOpaque)
                                             {
-                                                float maxLiquidHeight = 0.435f;
-                                                float liquidPercentage = (float)contentStack.StackSize /
-                                                                         (props.ItemsPerLitre * 10f);
-                                                float liquidHeight = liquidPercentage * maxLiquidHeight;
-                                                float liquidOffset = 0f;
-                                                contentMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation,
-                                                    0f);
-                                                contentMesh.Translate(0f, -bucketDepth + liquidHeight + liquidOffset, 0f);
-                                                if (props.ClimateColorMap != null)
-                                                {
-                                                    int col = (Api as ICoreClientAPI).World.ApplyColorMapOnRgba(
-                                                        props.ClimateColorMap,
-                                                        null,
-                                                        -1,
-                                                        Pos.X,
-                                                        Pos.Y,
-                                                        Pos.Z,
-                                                        false
-                                                    );
+                                                shapePath = "game:shapes/block/wood/bucket/contents";
+                                            }
 
-                                                    byte[] rgba = ColorUtil.ToBGRABytes(col);
-                                                    for (int i = 0; i < contentMesh.Rgba.Length; i++)
-                                                    {
-                                                        contentMesh.Rgba[i] =
-                                                            (byte)(contentMesh.Rgba[i] * rgba[i % 4] / 255);
-                                                    }
-                                                }
-                                                for (int i = 0; i < contentMesh.FlagsCount; i++)
-                                                {
-                                                    contentMesh.Flags[i] &= ~4096;
-                                                }
+                                            contentShape = Shape.TryGet(Api, shapePath + ".json");
+                                            if (contentShape != null)
+                                            {
+                                                ContainerTextureSource textureSource = new ContainerTextureSource(
+                                                    Api as ICoreClientAPI,
+                                                    contentStack,
+                                                    props.Texture
+                                                );
+                                                MeshData contentMesh;
+                                                tesselator.TesselateShape(GetType().Name, contentShape, out contentMesh,
+                                                    textureSource);
 
-                                                mesher.AddMeshData(contentMesh);
+                                                if (contentMesh != null)
+                                                {
+                                                    float maxLiquidHeight = 0.435f;
+                                                    BlockLiquidContainerBase container =
+                                                        InputSlot.Itemstack.Collectible as BlockLiquidContainerBase;
+                                                    int bucketCapacity = container != null
+                                                        ? (int)container.CapacityLitres
+                                                        : 10;
+                                                    float liquidPercentage =
+                                                        (float)contentStack.StackSize /
+                                                        (props.ItemsPerLitre * bucketCapacity);
+                                                    float liquidHeight = liquidPercentage * maxLiquidHeight;
+                                                    float liquidOffset = 0f;
+                                                    contentMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation,
+                                                        0f);
+                                                    contentMesh.Translate(0f,
+                                                        -bucketDepth + liquidHeight + liquidOffset, 0f);
+                                                    mesher.AddMeshData(contentMesh);
+                                                }
                                             }
                                         }
                                     }
