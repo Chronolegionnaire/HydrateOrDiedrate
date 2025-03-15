@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using HydrateOrDiedrate.wellwater;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
@@ -87,14 +88,14 @@ namespace HydrateOrDiedrate
             {
                 drinkData.IsDrinking = false;
                 drinkData.DrinkStartTime = 0;
-                SendDrinkProgressToClient(player, 0f, false,false);
+                SendDrinkProgressToClient(player, 0f, false, false);
             }
         }
 
         private bool IsHeadInWater(IServerPlayer player)
         {
             var headPos = player.Entity.ServerPos.XYZ.Add(0, player.Entity.LocalEyePos.Y, 0);
-            var headBlockPos = new BlockPos((int)headPos.X, (int)headPos.Y, (int)headPos.Z, (int)headPos.Y/32768);
+            var headBlockPos = new BlockPos((int)headPos.X, (int)headPos.Y, (int)headPos.Z, (int)headPos.Y / 32768);
             var block = _api.World.BlockAccessor.GetBlock(headBlockPos);
             return block.BlockMaterial == EnumBlockMaterial.Liquid;
         }
@@ -139,7 +140,8 @@ namespace HydrateOrDiedrate
                     ((player.Entity.RightHandItemSlot?.Itemstack != null) ||
                      (player.Entity.LeftHandItemSlot?.Itemstack != null)))
                 {
-                    player.SendIngameError("handsfull", "You must have both hands free to drink.");
+                    // Use a localized error message.
+                    player.SendIngameError("handsfull", Lang.Get("hydrateordiedrate:waterinteraction-handsfree"));
                     StopDrinking(player, drinkData);
                     return;
                 }
@@ -190,7 +192,6 @@ namespace HydrateOrDiedrate
             return collectible;
         }
 
-
         private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime, CollectibleObject collectible, PlayerDrinkData drinkData)
         {
             if (!drinkData.IsDrinking) return;
@@ -215,7 +216,8 @@ namespace HydrateOrDiedrate
 
                 if (thirstBehavior == null || thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
                 {
-                    player.SendIngameError("fullhydration", "You are already fully hydrated!");
+                    // Localize the full hydration error message.
+                    player.SendIngameError("fullhydration", Lang.Get("hydrateordiedrate:waterinteraction-fullhydration"));
                     StopDrinking(player, drinkData);
                     return;
                 }
@@ -233,7 +235,6 @@ namespace HydrateOrDiedrate
                     {
                         thirstBehavior.HungerReductionAmount += hungerReduction;
                     }
-
                 }
 
                 if (healthEffect != 0)

@@ -32,7 +32,7 @@ namespace HydrateOrDiedrate.patches
 
                 if (totalHydration != 0)
                 {
-                    string hydrationText = Lang.Get("Hydration Per Serving: {0}", totalHydration);
+                    string hydrationText = Lang.Get("hydrateordiedrate:blockcrock-hydration", totalHydration);
                     if (!dsc.ToString().Contains(hydrationText))
                     {
                         dsc.AppendLine(hydrationText);

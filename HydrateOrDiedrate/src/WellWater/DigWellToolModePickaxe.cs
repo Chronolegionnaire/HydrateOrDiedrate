@@ -34,7 +34,7 @@ namespace HydrateOrDiedrate.wellwater
                     digMode = new SkillItem
                     {
                         Code = new AssetLocation("digmode"),
-                        Name = Lang.Get("Dig Mode")
+                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digmode")
                     }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
                         new AssetLocation("game:textures/icons/rocks.svg"),
                         48, 48, 5, ColorUtil.WhiteArgb));
@@ -42,7 +42,7 @@ namespace HydrateOrDiedrate.wellwater
                     wellMode = new SkillItem
                     {
                         Code = new AssetLocation("digwellspring"),
-                        Name = Lang.Get("Dig Well Spring")
+                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
                     }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
                         new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
                         48, 48, 5, ColorUtil.WhiteArgb));
@@ -52,13 +52,13 @@ namespace HydrateOrDiedrate.wellwater
                     digMode = new SkillItem
                     {
                         Code = new AssetLocation("digmode"),
-                        Name = "Dig Mode"
+                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digmode")
                     };
 
                     wellMode = new SkillItem
                     {
                         Code = new AssetLocation("digwellspring"),
-                        Name = "Dig Well Spring"
+                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
                     };
                 }
                 customModes.AddRange(new[] { digMode, wellMode });
@@ -71,7 +71,7 @@ namespace HydrateOrDiedrate.wellwater
                     wellMode = new SkillItem
                     {
                         Code = new AssetLocation("digwellspring"),
-                        Name = Lang.Get("Dig Well Spring")
+                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
                     }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
                         new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
                         48, 48, 5, ColorUtil.WhiteArgb));
@@ -111,7 +111,7 @@ namespace HydrateOrDiedrate.wellwater
                     wellMode = new SkillItem
                     {
                         Code = new AssetLocation("digwellspring"),
-                        Name = "Dig Well Spring"
+                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
                     };
                     customModes.Add(wellMode);
                 }

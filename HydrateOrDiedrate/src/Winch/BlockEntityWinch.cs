@@ -868,7 +868,7 @@ namespace HydrateOrDiedrate.winch
         }
         public virtual string DialogTitle
         {
-            get { return Lang.Get("hydrateordiedrate:Winch"); }
+            get { return Lang.Get("hydrateordiedrate:hydrateordiedrate:Winch"); }
         }
     }
 }

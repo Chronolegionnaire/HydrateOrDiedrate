@@ -30,7 +30,7 @@ namespace HydrateOrDiedrate.patches
 
                 float totalHydration = HydrationCalculator.GetTotalHydration(world, contentStacks);
 
-                string hydrationText = Lang.Get("Hydration Per Serving: {0}", totalHydration);
+                string hydrationText = Lang.Get("hydrateordiedrate:blockcookedcontainer-hydration", totalHydration);
                 if (!dsc.ToString().Contains(hydrationText))
                 {
                     dsc.AppendLine(hydrationText);

@@ -91,7 +91,7 @@ namespace HydrateOrDiedrate.patches
 
             composer
                 .AddStaticText(
-                    Lang.Get("Hydration"),
+                    Lang.Get("hydrateordiedrate:characterextradialogs-hydration"),
                     CairoFont.WhiteDetailText(),
                     hydrationLeftBounds,
                     "hydrateordiedrate_thirstStaticText"
@@ -116,7 +116,7 @@ namespace HydrateOrDiedrate.patches
                 );
             composer
                 .AddStaticText(
-                    Lang.Get("Thirst Rate"),
+                    Lang.Get("hydrateordiedrate:characterextradialogs-thirstrate"),
                     CairoFont.WhiteDetailText(),
                     thirstRateLeftBounds,
                     "hydrateordiedrate_thirstRateStaticText"
@@ -141,7 +141,7 @@ namespace HydrateOrDiedrate.patches
                 );
             composer
                 .AddStaticText(
-                    Lang.Get("Nutrition Deficit"),
+                    Lang.Get("hydrateordiedrate:characterextradialogs-nutritiondeficit"),
                     CairoFont.WhiteDetailText(),
                     nutritionDeficitLeftBounds,
                     "nutritionDeficitStaticText"
@@ -166,7 +166,7 @@ namespace HydrateOrDiedrate.patches
                 );
             composer
                 .AddStaticText(
-                    Lang.Get("Current Cooling"),
+                    Lang.Get("hydrateordiedrate:characterextradialogs-currentcooling"),
                     CairoFont.WhiteDetailText(),
                     currentCoolingLeftBounds,
                     "currentCoolingHotStaticText"
@@ -190,7 +190,7 @@ namespace HydrateOrDiedrate.patches
                 );
             composer
                 .AddStaticText(
-                    Lang.Get("Hydration Delay"),
+                    Lang.Get("hydrateordiedrate:characterextradialogs-hydrationdelay"),
                     CairoFont.WhiteDetailText(),
                     hydrationDelayLeftBounds,
                     "hydrateordiedrate_delayStaticText"

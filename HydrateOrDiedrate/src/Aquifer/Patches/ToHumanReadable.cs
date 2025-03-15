@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using Vintagestory.GameContent;
 using System.Collections.Generic;
+using Vintagestory.API.Config;
 
 namespace HydrateOrDiedrate.patches
 {
@@ -26,29 +27,35 @@ namespace HydrateOrDiedrate.patches
                 __instance.OreReadings["$aquifer$"] = aquiferBackup;
             }
             if (!AppendAquiferInfo || aquiferBackup == null) return;
+
             OreReading aquiferEntry = aquiferBackup;
             bool isSalty = (aquiferEntry.DepositCode == "salty");
             int rating = (int)aquiferEntry.PartsPerThousand;
-
             string descriptor = rating switch
             {
-                <= 0 => "No aquifer detected.",
-                <= 10 => "Very poor",
-                <= 20 => "Poor",
-                <= 40 => "Light",
-                <= 60 => "Moderate",
-                _ => "Heavy"
+                <= 0 => Lang.Get("hydrateordiedrate:noaquiferdetected"),
+                <= 10 => Lang.Get("hydrateordiedrate:verypoor"),
+                <= 20 => Lang.Get("hydrateordiedrate:poor"),
+                <= 40 => Lang.Get("hydrateordiedrate:light"),
+                <= 60 => Lang.Get("hydrateordiedrate:moderate"),
+                _ => Lang.Get("hydrateordiedrate:heavy")
             };
 
-            string aquiferType = isSalty ? "Salt" : "Fresh";
-            string aquiferLine = descriptor == "No aquifer detected."
-                ? "\n[Aquifer Info] " + descriptor
-                : $"\n[Aquifer Info] {descriptor}, {aquiferType} Water";
-            __result += aquiferLine;
-
+            string aquiferType = isSalty
+                ? Lang.Get("hydrateordiedrate:saltwater")
+                : Lang.Get("hydrateordiedrate:freshwater");
+            if (descriptor == Lang.Get("hydrateordiedrate:noaquiferdetected"))
+            {
+                __result += $"\n{Lang.Get("hydrateordiedrate:aquiferinfo")} {descriptor}";
+            }
+            else
+            {
+                __result += $"\n{Lang.Get("hydrateordiedrate:aquiferinfo")} {descriptor}, {aquiferType}";
+            }
             aquiferBackup = null;
         }
     }
+
     [HarmonyPatch(typeof(ItemProspectingPick), "PrintProbeResults")]
     public static class PrintProbeResults_ChatPatch
     {

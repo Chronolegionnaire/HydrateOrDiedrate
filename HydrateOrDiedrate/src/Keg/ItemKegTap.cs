@@ -12,17 +12,19 @@ namespace HydrateOrDiedrate.Keg
         {
             return null;
         }
+        
         public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
         {
             if (!IsHammerInOffHand(byEntity))
             {
                 ICoreClientAPI coreClientAPI = this.api as ICoreClientAPI;
-                coreClientAPI?.TriggerIngameError(this, "nohammer", Lang.Get("Requires a hammer in the off hand"));
+                coreClientAPI?.TriggerIngameError(this, "nohammer", Lang.Get("hydrateordiedrate:itemkegtap-requireshammer"));
                 handling = EnumHandHandling.PreventDefaultAction;
                 return;
             }
             handling = EnumHandHandling.PreventDefaultAction;
         }
+        
         public override void OnHeldAttackStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, ref EnumHandHandling handling)
         {
             IPlayer byPlayer = (byEntity as EntityPlayer)?.Player;
@@ -30,12 +32,13 @@ namespace HydrateOrDiedrate.Keg
             if (!IsHammerInOffHand(byEntity))
             {
                 ICoreClientAPI coreClientAPI = this.api as ICoreClientAPI;
-                coreClientAPI?.TriggerIngameError(this, "nohammer", Lang.Get("Requires a hammer in the off hand"));
+                coreClientAPI?.TriggerIngameError(this, "nohammer", Lang.Get("hydrateordiedrate:itemkegtap-requireshammer"));
                 handling = EnumHandHandling.PreventDefaultAction;
                 return;
             }
             handling = EnumHandHandling.PreventDefaultAction;
         }
+        
         private bool IsHammerInOffHand(Entity entity)
         {
             if (entity is EntityAgent entityAgent)
@@ -48,22 +51,22 @@ namespace HydrateOrDiedrate.Keg
             }
             return false;
         }
+        
         public override string GetHeldTpUseAnimation(ItemSlot activeHotbarSlot, Entity forEntity)
         {
             if (IsHammerInOffHand(forEntity))
             {
                 return "use";
             }
-
             return null;
         }
+        
         public override string GetHeldTpHitAnimation(ItemSlot slot, Entity byEntity)
         {
             if (IsHammerInOffHand(byEntity))
             {
                 return "hit";
             }
-
             return null;
         }
     }

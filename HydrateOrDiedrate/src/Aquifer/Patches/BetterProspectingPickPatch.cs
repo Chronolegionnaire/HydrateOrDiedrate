@@ -68,7 +68,6 @@ namespace HydrateOrDiedrate.patches
             {
                 return;
             }
-
             IServerPlayer serverPlayer = byPlayer as IServerPlayer;
             if (serverPlayer == null)
             {
@@ -78,22 +77,22 @@ namespace HydrateOrDiedrate.patches
             int chunkX = pos.X / GlobalConstants.ChunkSize;
             int chunkY = pos.Y / GlobalConstants.ChunkSize;
             int chunkZ = pos.Z / GlobalConstants.ChunkSize;
-            ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);         
+            ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);
             var aquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkCoord);
             if (aquiferData == null)
             {
-                SendMessageToPlayer(world, serverPlayer, "No aquifer data available for this region.");
+                SendMessageToPlayer(world, serverPlayer, Lang.Get("hydrateordiedrate:aquifer-no-data"));
             }
             else
             {
                 int currentRating = aquiferData.AquiferRating;
-                string aquiferInfo = currentRating == 0 
-                    ? "There is no aquifer here." 
-                    : $"This area has an aquifer rating of {currentRating}.";
+                string aquiferInfo = currentRating == 0
+                    ? Lang.Get("hydrateordiedrate:aquifer-none")
+                    : GetAquiferDescription(aquiferData.IsSalty, currentRating, world.BlockAccessor.MapSizeY, pos.Y);
                 int radius = HydrateOrDiedrateModSystem.LoadedConfig.ProspectingRadius;
                 int bestRating = currentRating;
                 ChunkPos3D bestChunk = chunkCoord;
-                
+
                 for (int dx = -radius; dx <= radius; dx++)
                 {
                     for (int dy = -radius; dy <= radius; dy++)
@@ -101,7 +100,6 @@ namespace HydrateOrDiedrate.patches
                         for (int dz = -radius; dz <= radius; dz++)
                         {
                             if (dx == 0 && dy == 0 && dz == 0) continue;
-                            
                             ChunkPos3D checkChunk = new ChunkPos3D(chunkX + dx, chunkY + dy, chunkZ + dz);
                             var checkAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(checkChunk);
                             if (checkAquiferData != null && checkAquiferData.AquiferRating > bestRating)
@@ -118,54 +116,54 @@ namespace HydrateOrDiedrate.patches
                     int dyDir = bestChunk.Y - chunkCoord.Y;
                     int dzDir = bestChunk.Z - chunkCoord.Z;
                     string directionHint = GetDirectionHint(dxDir, dyDir, dzDir);
-                    aquiferInfo += $" The aquifer seems to get stronger to the {directionHint}.";
+                    aquiferInfo += Lang.Get("hydrateordiedrate:aquifer-direction", directionHint);
                 }
-                
+
                 SendMessageToPlayer(world, serverPlayer, aquiferInfo);
             }
         }
 
         private static string GetAquiferDescription(bool isSalty, int rating, double worldHeight, double posY)
         {
-            int effectiveRating = rating;
-            string aquiferType = isSalty ? "salt" : "fresh";
-            return effectiveRating switch
+            string aquiferType = isSalty ? Lang.Get("hydrateordiedrate:aquifer-salt") : Lang.Get("hydrateordiedrate:aquifer-fresh");
+            return rating switch
             {
-                <= 0 => "No aquifer detected.",
-                <= 10 => $"Very poor {aquiferType} water aquifer detected.",
-                <= 20 => $"Poor {aquiferType} water aquifer detected.",
-                <= 40 => $"Light {aquiferType} water aquifer detected.",
-                <= 60 => $"Moderate {aquiferType} water aquifer detected.",
-                _ => $"Heavy {aquiferType} water aquifer detected."
+                <= 0 => Lang.Get("hydrateordiedrate:aquifer-none-detected"),
+                <= 10 => Lang.Get("hydrateordiedrate:aquifer-very-poor", aquiferType),
+                <= 20 => Lang.Get("hydrateordiedrate:aquifer-poor", aquiferType),
+                <= 40 => Lang.Get("hydrateordiedrate:aquifer-light", aquiferType),
+                <= 60 => Lang.Get("hydrateordiedrate:aquifer-moderate", aquiferType),
+                _ => Lang.Get("hydrateordiedrate:aquifer-heavy", aquiferType)
             };
         }
+
         private static string GetDirectionHint(int dx, int dy, int dz)
         {
             string horizontal = "";
             string verticalHor = "";
-            
-            if (dz < 0) verticalHor = "north";
-            else if (dz > 0) verticalHor = "south";
 
-            if (dx > 0) horizontal = "east";
-            else if (dx < 0) horizontal = "west";
+            if (dz < 0) verticalHor = Lang.Get("hydrateordiedrate:direction-north");
+            else if (dz > 0) verticalHor = Lang.Get("hydrateordiedrate:direction-south");
+
+            if (dx > 0) horizontal = Lang.Get("hydrateordiedrate:direction-east");
+            else if (dx < 0) horizontal = Lang.Get("hydrateordiedrate:direction-west");
 
             string horizontalPart = "";
             if (!string.IsNullOrEmpty(verticalHor) && !string.IsNullOrEmpty(horizontal))
-                horizontalPart = verticalHor + "-" + horizontal;
+                horizontalPart = verticalHor + " " + Lang.Get("hydrateordiedrate:direction-and") + " " + horizontal;
             else
                 horizontalPart = !string.IsNullOrEmpty(verticalHor) ? verticalHor : horizontal;
             string verticalDepth = "";
-            if (dy > 0) verticalDepth = "above";
-            else if (dy < 0) verticalDepth = "below";
+            if (dy > 0) verticalDepth = Lang.Get("hydrateordiedrate:direction-above");
+            else if (dy < 0) verticalDepth = Lang.Get("hydrateordiedrate:direction-below");
             if (!string.IsNullOrEmpty(horizontalPart) && !string.IsNullOrEmpty(verticalDepth))
-                return horizontalPart + " and " + verticalDepth;
+                return horizontalPart + " " + Lang.Get("hydrateordiedrate:direction-and") + " " + verticalDepth;
             else if (!string.IsNullOrEmpty(horizontalPart))
                 return horizontalPart;
             else if (!string.IsNullOrEmpty(verticalDepth))
                 return verticalDepth;
             else
-                return "here";
+                return Lang.Get("hydrateordiedrate:direction-here");
         }
 
         private static void SendMessageToPlayer(IWorldAccessor world, IServerPlayer splr, string message)

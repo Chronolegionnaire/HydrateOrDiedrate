@@ -97,10 +97,9 @@ namespace HydrateOrDiedrate.Keg
         {
             ItemSlot itemSlot = inventory[0];
             if (itemSlot.Empty)
-                dsc.AppendLine(Lang.Get("Empty"));
+                dsc.AppendLine(Lang.Get("hydrateordiedrate:blockentitykeg-empty"));
             else
-                dsc.AppendLine(Lang.Get("Contents: {0}x{1}", itemSlot.Itemstack.StackSize, itemSlot.Itemstack.GetName()));
-            
+                dsc.AppendLine(Lang.Get("hydrateordiedrate:blockentitykeg-contents", itemSlot.Itemstack.StackSize, itemSlot.Itemstack.GetName()));
         }
 
         public override void OnBlockBroken(IPlayer byPlayer = null)

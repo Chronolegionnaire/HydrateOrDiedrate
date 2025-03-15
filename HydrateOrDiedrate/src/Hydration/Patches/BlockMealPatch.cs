@@ -2,6 +2,7 @@
 using System.Text;
 using HarmonyLib;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
@@ -81,7 +82,7 @@ namespace HydrateOrDiedrate.patches
                 float hydrationPerServing = __state.TotalHydration / __state.ServingsBeforeConsume;
                 float totalHydrationConsumed = hydrationPerServing * servingsConsumed;
                 float maxDelay = 600f; 
-                __state.HydLossDelay = Math.Min( __state.HydLossDelay, maxDelay);
+                __state.HydLossDelay = Math.Min(__state.HydLossDelay, maxDelay);
                 var thirstBehavior = __state.Player.GetBehavior<EntityBehaviorThirst>();
                 thirstBehavior?.ModifyThirst(totalHydrationConsumed, __state.HydLossDelay);
             }
@@ -112,7 +113,7 @@ namespace HydrateOrDiedrate.patches
                 float servings = (inSlot.Itemstack.Collectible as BlockMeal).GetQuantityServings(world, inSlot.Itemstack);
                 float hydrationPerServing = servings > 1 ? totalHydration / servings : totalHydration;
 
-                string hydrationText = $"Hydration Per Serving: {hydrationPerServing}";
+                string hydrationText = Lang.Get("hydrateordiedrate:blockmeal-hydration", hydrationPerServing);
                 if (!dsc.ToString().Contains(hydrationText))
                 {
                     dsc.AppendLine(hydrationText);
