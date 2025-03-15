@@ -1,0 +1,57 @@
+[
+  {
+    "op": "add",
+    "path": "/ingredients/0/validStacks/1",
+    "value": {
+      "type": "item",
+      "code": "hydrateordiedrate:boiledwaterportion",
+      "shapeElement": "bowl/water"
+    },
+    "file": "game:recipes/cooking/acid.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/ingredients/0/validStacks/2",
+    "value": {
+      "type": "item",
+      "code": "hydrateordiedrate:boiledrainwaterportion",
+      "shapeElement": "bowl/water"
+    },
+    "file": "game:recipes/cooking/acid.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/ingredients/0/validStacks/3",
+    "value": {
+      "type": "item",
+      "code": "hydrateordiedrate:rainwaterportion",
+      "shapeElement": "bowl/water"
+    },
+    "file": "game:recipes/cooking/acid.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/ingredients/0/validStacks/4",
+    "value": {
+      "type": "item",
+      "code": "hydrateordiedrate:distilledwaterportion",
+      "shapeElement": "bowl/water"
+    },
+    "file": "game:recipes/cooking/acid.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/ingredients/0/validStacks/5",
+    "value": {
+      "type": "item",
+      "code": "hydrateordiedrate:wellwaterportion-fresh",
+      "shapeElement": "bowl/water"
+    },
+    "file": "game:recipes/cooking/acid.json",
+    "side": "Server"
+  }
+]

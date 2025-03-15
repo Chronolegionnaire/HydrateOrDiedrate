@@ -14,7 +14,7 @@
     }
   },
   "shape": {
-    "base": "block/meal/pastahot"
+    "base": "game:block/meal/pastahot"
   },
   "ingredients": [
     {

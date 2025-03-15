@@ -1,0 +1,52 @@
+[
+  {
+    "op": "add",
+    "path": "/attributesByType/claypot-cooked/textureMapping/rainwaterportion",
+    "value": [
+      "water",
+      "group2"
+    ],
+    "file": "game:blocktypes/clay/pot.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/attributesByType/claypot-cooked/textureMapping/boiledrainwaterportion",
+    "value": [
+      "water",
+      "group2"
+    ],
+    "file": "game:blocktypes/clay/pot.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/attributesByType/claypot-cooked/textureMapping/distilledwaterportion",
+    "value": [
+      "water",
+      "group2"
+    ],
+    "file": "game:blocktypes/clay/pot.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/attributesByType/claypot-cooked/textureMapping/boiledwaterportion",
+    "value": [
+      "water",
+      "group2"
+    ],
+    "file": "game:blocktypes/clay/pot.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/attributesByType/claypot-cooked/textureMapping/wellwaterportion-fresh",
+    "value": [
+      "water",
+      "group2"
+    ],
+    "file": "game:blocktypes/clay/pot.json",
+    "side": "Server"
+  }
+]
