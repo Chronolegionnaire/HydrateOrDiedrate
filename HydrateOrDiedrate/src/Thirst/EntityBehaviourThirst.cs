@@ -71,9 +71,11 @@ namespace HydrateOrDiedrate
         public EntityBehaviorThirst(Entity entity) : base(entity)
         {
             entity.WatchedAttributes.RegisterModifiedListener("currentThirst", OnCurrentThirstModified);
-            
-            MaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || entity.WatchedAttributes.TryGetFloat("currentThirst") == null)
+            if (!entity.WatchedAttributes.HasAttribute("maxThirst"))
+            {
+                MaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
+            }
+            if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || !entity.WatchedAttributes.HasAttribute("currentThirst"))
             {
                 CurrentThirst = MaxThirst;
             }

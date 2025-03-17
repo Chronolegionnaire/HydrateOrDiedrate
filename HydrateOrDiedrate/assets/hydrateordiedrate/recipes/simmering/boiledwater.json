@@ -1,0 +1,54 @@
+[
+  {
+    Ingredients: [
+      {
+        type: "item",
+        code: "waterportion",
+        quantity: 100
+      },
+      {
+        type: "item",
+        code: "waterportion",
+        quantity: 100
+      }
+    ],
+    Simmering: {
+      meltingPoint: 100,
+      meltingDuration: 90,
+      smeltedRatio: 1,
+      smeltingType: "bake",
+      smeltedStack: {
+        type: "item",
+        code: "hydrateordiedrate:boiledwaterportion",
+        "quantity":  100
+      },
+      requiresContainer: false
+    }
+  },
+  {
+    Ingredients: [
+      {
+        type: "item",
+        code: "hydrateordiedrate:rainwaterportion",
+        quantity: 100
+      },
+      {
+        type: "item",
+        code: "hydrateordiedrate:rainwaterportion",
+        quantity: 100
+      }
+    ],
+    Simmering: {
+      meltingPoint: 100,
+      meltingDuration: 90,
+      smeltedRatio: 1,
+      smeltingType: "bake",
+      smeltedStack: {
+        type: "item",
+        code: "hydrateordiedrate:boiledrainwaterportion",
+        "quantity":  100
+      },
+      requiresContainer: false
+    }
+  }
+]

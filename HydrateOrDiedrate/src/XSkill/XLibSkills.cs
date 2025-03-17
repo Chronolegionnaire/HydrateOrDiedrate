@@ -53,26 +53,24 @@ namespace HydrateOrDiedrate.XSkill
             }
 
             IPlayer player = playerAbility.PlayerSkill.PlayerSkillSet.Player;
-            if (player == null)
-            {
-                return;
-            }
-
+            if (player == null) return;
             EntityPlayer entity = player.Entity;
-            if (entity == null)
-            {
-                return;
-            }
-
-            EntityBehaviorThirst behavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
-            if (behavior == null)
-            {
-                return;
-            }
+            if (entity == null) return;
+            EntityBehaviorThirst behavior = entity.GetBehavior<EntityBehaviorThirst>();
+            if (behavior == null) return;
             if (playerAbility.Tier < 1)
             {
+                float defaultMaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
+                behavior.CurrentThirst = behavior.CurrentThirst / behavior.MaxThirst * defaultMaxThirst;
+                behavior.MaxThirst = defaultMaxThirst;
+                entity.WatchedAttributes.SetBool("dromedaryActive", false);
                 return;
             }
+            else
+            {
+                entity.WatchedAttributes.SetBool("dromedaryActive", true);
+            }
+
             float baseMultiplier = HydrateOrDiedrateModSystem.LoadedConfig.DromedaryMultiplierPerLevel;
             float multiplier = 1 + baseMultiplier + (baseMultiplier * (playerAbility.Tier - 1));
             float newMaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst * multiplier;

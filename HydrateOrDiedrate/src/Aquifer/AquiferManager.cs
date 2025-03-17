@@ -515,6 +515,45 @@ namespace HydrateOrDiedrate
                 if (chunk != null) chunk.RemoveModdata("aquiferData");
             }
         }
+        
+        public bool SetAquiferRating(ChunkPos3D pos, int rating)
+        {
+            if (rating < 0 || rating > 100)
+            {
+                return false;
+            }
+            IWorldChunk chunk = GetChunkAt(pos);
+            if (chunk == null)
+            {
+                return false;
+            }
+            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
+            if (data == null)
+            {
+                data = new AquiferChunkData
+                {
+                    PreSmoothedData = new AquiferData { AquiferRating = rating, IsSalty = false },
+                    SmoothedData = new AquiferData { AquiferRating = rating, IsSalty = false },
+                    Version = CurrentAquiferDataVersion
+                };
+            }
+            else
+            {
+                if (data.SmoothedData == null)
+                {
+                    data.SmoothedData = new AquiferData();
+                }
+                data.SmoothedData.AquiferRating = rating;
+
+                if (data.PreSmoothedData == null)
+                {
+                    data.PreSmoothedData = new AquiferData();
+                }
+                data.PreSmoothedData.AquiferRating = rating;
+            }
+            chunk.SetModdata("aquiferData", data);
+            return true;
+        }
 
         [ProtoContract]
         public class AquiferData

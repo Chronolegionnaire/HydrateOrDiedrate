@@ -306,9 +306,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 thirstBehavior.CurrentThirst = thirstBehavior.MaxThirst;
                 thirstBehavior.MovementPenalty = 0f; 
             }
-            if (thirstBehavior.HungerReductionAmount < 0)
+            bool dromedaryActive = entity.WatchedAttributes.GetBool("dromedaryActive", false);
+            if (!dromedaryActive)
             {
-                thirstBehavior.HungerReductionAmount = 0;
+                float defaultMaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
+                thirstBehavior.CurrentThirst = thirstBehavior.CurrentThirst / thirstBehavior.MaxThirst * defaultMaxThirst;
+                thirstBehavior.MaxThirst = defaultMaxThirst;
             }
         }
     }
