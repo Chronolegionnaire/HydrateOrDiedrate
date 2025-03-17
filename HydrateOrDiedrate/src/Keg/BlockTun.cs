@@ -94,55 +94,48 @@ namespace HydrateOrDiedrate.Keg
         }
         public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
         {
-            if (tunDropWithLiquid)
+            var blockEntityTun = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityTun;
+            bool containsRot = blockEntityTun?.GetContent()?.Collectible?.Code?.ToString() == "game:rot";
+
+            if (tunDropWithLiquid && !containsRot)
             {
                 base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
                 return;
             }
 
             bool preventDefault = false;
-            foreach (BlockBehavior blockBehavior in this.BlockBehaviors)
+            foreach (var behavior in this.BlockBehaviors)
             {
                 EnumHandling handled = EnumHandling.PassThrough;
-                blockBehavior.OnBlockBroken(world, pos, byPlayer, ref handled);
+                behavior.OnBlockBroken(world, pos, byPlayer, ref handled);
                 if (handled == EnumHandling.PreventDefault)
-                {
                     preventDefault = true;
-                }
                 if (handled == EnumHandling.PreventSubsequent)
-                {
                     return;
-                }
             }
+
             if (preventDefault)
-            {
                 return;
-            }
+
             if (world.Side == EnumAppSide.Server && (byPlayer == null || byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative))
             {
-                Block variantBlock = world.GetBlock(new AssetLocation("hydrateordiedrate", "tun-east"));
-                if (variantBlock == null)
+                ItemStack dropStack = new ItemStack(this);
+
+                if (blockEntityTun != null && !containsRot)
                 {
-                    return;
+                    var contentStack = blockEntityTun.GetContent();
+                    if (contentStack != null)
+                    {
+                        dropStack.Attributes.SetItemstack("tunContent", contentStack);
+                    }
                 }
-                ItemStack[] drops = new ItemStack[]
-                {
-                    new ItemStack(variantBlock, 1)
-                };
-                for (int i = 0; i < drops.Length; i++)
-                {
-                    world.SpawnItemEntity(drops[i], pos, null);
-                }
-                world.PlaySoundAt(variantBlock.Sounds.GetBreakSound(byPlayer), pos, 0.0, byPlayer, true, 32f, 1f);
+
+                world.SpawnItemEntity(dropStack, pos.ToVec3d().Add(0.5, 0.5, 0.5));
+                world.PlaySoundAt(this.Sounds.GetBreakSound(byPlayer), pos, 0.0, byPlayer, true, 32f, 1f);
             }
-            if (this.EntityClass != null)
-            {
-                BlockEntity entity = world.BlockAccessor.GetBlockEntity(pos);
-                if (entity != null)
-                {
-                    entity.OnBlockBroken(null);
-                }
-            }
+
+            var entity = world.BlockAccessor.GetBlockEntity(pos);
+            entity?.OnBlockBroken(null);
             world.BlockAccessor.SetBlock(0, pos);
         }
     }

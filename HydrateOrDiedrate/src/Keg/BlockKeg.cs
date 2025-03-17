@@ -466,16 +466,22 @@ namespace HydrateOrDiedrate.Keg
         }
         public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1f)
         {
-            if (kegDropWithLiquid)
+            var blockEntityKeg = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityKeg;
+            bool containsRot = blockEntityKeg?.GetContent()?.Collectible?.Code?.ToString() == "game:rot";
+
+            if (kegDropWithLiquid && !containsRot)
             {
                 base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
                 return;
             }
+
             bool preventDefault = false;
+
             foreach (BlockBehavior blockBehavior in this.BlockBehaviors)
             {
                 EnumHandling handled = EnumHandling.PassThrough;
                 blockBehavior.OnBlockBroken(world, pos, byPlayer, ref handled);
+
                 if (handled == EnumHandling.PreventDefault)
                 {
                     preventDefault = true;
@@ -485,30 +491,35 @@ namespace HydrateOrDiedrate.Keg
                     return;
                 }
             }
+
             if (preventDefault)
             {
                 return;
             }
+
             if (world.Side == EnumAppSide.Server && (byPlayer == null || byPlayer.WorldData.CurrentGameMode != EnumGameMode.Creative))
             {
-                ItemStack[] drops = new ItemStack[]
+                ItemStack kegStack = new ItemStack(this, 1);
+
+                if (blockEntityKeg != null && !containsRot)
                 {
-                    new ItemStack(this, 1)
-                };
-                for (int i = 0; i < drops.Length; i++)
-                {
-                    world.SpawnItemEntity(drops[i], pos, null);
+                    var contentStack = blockEntityKeg.GetContent();
+                    if (contentStack != null)
+                    {
+                        kegStack.Attributes.SetItemstack("kegContent", contentStack);
+                    }
                 }
+
+                world.SpawnItemEntity(kegStack, pos.ToVec3d().Add(0.5, 0.5, 0.5));
                 world.PlaySoundAt(this.Sounds.GetBreakSound(byPlayer), pos, 0.0, byPlayer, true, 32f, 1f);
             }
+
             if (this.EntityClass != null)
             {
                 BlockEntity entity = world.BlockAccessor.GetBlockEntity(pos);
-                if (entity != null)
-                {
-                    entity.OnBlockBroken(null);
-                }
+                entity?.OnBlockBroken(null);
             }
+
             world.BlockAccessor.SetBlock(0, pos);
         }
     }

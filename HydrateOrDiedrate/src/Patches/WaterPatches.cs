@@ -121,12 +121,10 @@ public class WaterPatches
 {
     if (!HydrateOrDiedrateModSystem.LoadedConfig.WaterPerish)
     {
-        // When water perish is disabled, remove perish properties from the water JSON files.
         RemoveWaterPerishPatches(api);
         return;
     }
 
-    // Otherwise, apply the perish patches as before.
     float rainWaterFreshFreshHours = HydrateOrDiedrateModSystem.LoadedConfig.RainWaterFreshHours;
     float rainWaterFreshTransitionHours = HydrateOrDiedrateModSystem.LoadedConfig.RainWaterTransitionHours;
     float boiledWaterFreshFreshHours = HydrateOrDiedrateModSystem.LoadedConfig.BoiledWaterFreshHours;
