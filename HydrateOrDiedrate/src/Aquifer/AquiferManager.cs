@@ -273,71 +273,89 @@ namespace HydrateOrDiedrate
             try
             {
                 var config = HydrateOrDiedrateModSystem.LoadedConfig;
-
-                int normalWaterBlockCount = 0;
-                int saltWaterBlockCount = 0;
-                int boilingWaterBlockCount = 0;
                 int chunkSize = GlobalConstants.ChunkSize;
-                int step = config.AquiferStep;
+                int? modNormalWaterBlockCount = chunk.GetModdata<int?>("game:water");
+                int? modSaltWaterBlockCount = chunk.GetModdata<int?>("game:saltwater");
+                int? modBoilingWaterBlockCount = chunk.GetModdata<int?>("game:boilingwater");
+                int normalWaterBlockCount;
+                int saltWaterBlockCount;
+                int boilingWaterBlockCount;
+                if (modNormalWaterBlockCount.HasValue || modSaltWaterBlockCount.HasValue ||
+                    modBoilingWaterBlockCount.HasValue)
+                {
+                    normalWaterBlockCount = modNormalWaterBlockCount.Value;
+                    saltWaterBlockCount = modSaltWaterBlockCount.Value;
+                    boilingWaterBlockCount = modBoilingWaterBlockCount.Value;
+                }
+                else
+                {
+                    normalWaterBlockCount = 0;
+                    saltWaterBlockCount = 0;
+                    boilingWaterBlockCount = 0;
+
+                    int step = config.AquiferStep;
+                    int totalBlocks = chunk.Data.Length;
+                    int iterY = chunkSize;
+                    int iterX = (int)Math.Ceiling((double)chunkSize / step);
+                    int iterZ = (int)Math.Ceiling((double)chunkSize / step);
+                    int totalIterations = iterY * iterX * iterZ;
+
+                    Parallel.ForEach(Partitioner.Create(0, totalIterations), range =>
+                    {
+                        var localCounts = new LocalCounts();
+                        for (int i = range.Item1; i < range.Item2; i++)
+                        {
+                            int y = i / (iterX * iterZ);
+                            int rem = i % (iterX * iterZ);
+                            int xIndex = rem / iterZ;
+                            int zIndex = rem % iterZ;
+                            int x = xIndex * step;
+                            int z = zIndex * step;
+
+                            int idx = (y * chunkSize + z) * chunkSize + x;
+                            if (idx < 0 || idx >= totalBlocks) continue;
+                            int blockId = chunk.Data[idx];
+                            if (blockId < 0) continue;
+
+                            Block block = GetCachedBlock(blockId);
+                            if (block?.Code?.Path == null) continue;
+
+                            if (block.Code.Path.Contains("boilingwater"))
+                            {
+                                localCounts.BoilingCount++;
+                            }
+                            else if (block.Code.Path.Contains("water"))
+                            {
+                                localCounts.NormalCount++;
+                                if (block.Code.Path.Contains("saltwater"))
+                                {
+                                    localCounts.SaltCount++;
+                                }
+                            }
+                        }
+
+                        Interlocked.Add(ref normalWaterBlockCount, localCounts.NormalCount);
+                        Interlocked.Add(ref saltWaterBlockCount, localCounts.SaltCount);
+                        Interlocked.Add(ref boilingWaterBlockCount, localCounts.BoilingCount);
+                    });
+                }
                 double waterBlockMultiplier = config.AquiferWaterBlockMultiplier;
                 double saltWaterMultiplier = config.AquiferSaltWaterMultiplier;
                 int boilingWaterMultiplier = config.AquiferBoilingWaterMultiplier;
                 double randomMultiplierChance = config.AquiferRandomMultiplierChance;
-
                 int worldHeight = serverAPI.WorldManager.MapSizeY;
                 int seaLevel = (int)Math.Round(0.4296875 * worldHeight);
                 int chunkCenterY = (pos.Y * chunkSize) + (chunkSize / 2);
 
-                int totalBlocks = chunk.Data.Length;
+                double weightedNormal = CalculateDiminishingReturns(normalWaterBlockCount, 300.0, 1.0, 0.99) *
+                                        waterBlockMultiplier;
+                double weightedSalt = CalculateDiminishingReturns(saltWaterBlockCount, 300.0, 1.0, 0.99) *
+                                      saltWaterMultiplier;
+                double weightedBoiling = CalculateDiminishingReturns(boilingWaterBlockCount, 1000.0, 10.0, 0.5) *
+                                         boilingWaterMultiplier;
 
-                int iterY = chunkSize;
-                int iterX = (int)Math.Ceiling((double)chunkSize / step);
-                int iterZ = (int)Math.Ceiling((double)chunkSize / step);
-                int totalIterations = iterY * iterX * iterZ;
-
-                Parallel.ForEach(Partitioner.Create(0, totalIterations), range =>
-                {
-                    var localCounts = new LocalCounts();
-                    for (int i = range.Item1; i < range.Item2; i++)
-                    {
-                        int y = i / (iterX * iterZ);
-                        int rem = i % (iterX * iterZ);
-                        int xIndex = rem / iterZ;
-                        int zIndex = rem % iterZ;
-                        int x = xIndex * step;
-                        int z = zIndex * step;
-
-                        int idx = (y * chunkSize + z) * chunkSize + x;
-                        if (idx < 0 || idx >= totalBlocks) continue;
-                        int blockId = chunk.Data[idx];
-                        if (blockId < 0) continue;
-
-                        Block block = GetCachedBlock(blockId);
-                        if (block?.Code?.Path == null) continue;
-
-                        if (block.Code.Path.Contains("boilingwater"))
-                        {
-                            localCounts.BoilingCount++;
-                        }
-                        else if (block.Code.Path.Contains("water"))
-                        {
-                            localCounts.NormalCount++;
-                            if (block.Code.Path.Contains("saltwater"))
-                            {
-                                localCounts.SaltCount++;
-                            }
-                        }
-                    }
-                    Interlocked.Add(ref normalWaterBlockCount, localCounts.NormalCount);
-                    Interlocked.Add(ref saltWaterBlockCount, localCounts.SaltCount);
-                    Interlocked.Add(ref boilingWaterBlockCount, localCounts.BoilingCount);
-                });
-
-                double weightedNormal = CalculateDiminishingReturns(normalWaterBlockCount, 300.0, 1.0, 0.99) * waterBlockMultiplier;
-                double weightedSalt = CalculateDiminishingReturns(saltWaterBlockCount, 300.0, 1.0, 0.99) * saltWaterMultiplier;
-                double weightedBoiling = CalculateDiminishingReturns(boilingWaterBlockCount, 1000.0, 10.0, 0.5) * boilingWaterMultiplier;
                 double totalWeighted = (weightedNormal + weightedSalt + weightedBoiling) *
-                    (0.75 + (GetCachedClimate(pos, chunkSize)?.Rainfall ?? 0f));
+                                       (0.75 + (GetCachedClimate(pos, chunkSize)?.Rainfall ?? 0f));
 
                 int rating = NormalizeAquiferRating(totalWeighted);
                 if (chunkCenterY > seaLevel)
