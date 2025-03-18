@@ -86,6 +86,18 @@ namespace HydrateOrDiedrate.encumbrance
             {
                 isEncumbered = CheckInventorySlots(hotbarInventory);
             }
+            var mouseSlot = inventoryManager.MouseItemSlot;
+            if (!isEncumbered && mouseSlot != null && mouseSlot.Itemstack != null)
+            {
+                if (mouseSlot.Itemstack.Block is BlockLiquidContainerBase)
+                {
+                    float totalLitres = GetTotalLitresInStack(mouseSlot.Itemstack);
+                    if (totalLitres > _config.EncumbranceLimit)
+                    {
+                        isEncumbered = true;
+                    }
+                }
+            }
 
             if (isEncumbered)
             {
