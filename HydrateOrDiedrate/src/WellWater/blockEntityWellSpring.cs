@@ -310,7 +310,7 @@ namespace HydrateOrDiedrate.wellwater
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             base.GetBlockInfo(forPlayer, dsc);
-            string description = Lang.Get("hydrateordiedrate:hydrateordiedrate:block-wellspring-description");
+            string description = Lang.Get("hydrateordiedrate:block-wellspring-description");
             dsc.AppendLine(description);
         }
 

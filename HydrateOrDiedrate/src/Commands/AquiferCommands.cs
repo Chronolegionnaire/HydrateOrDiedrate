@@ -57,12 +57,10 @@ namespace HydrateOrDiedrate.Commands
                 });
             api.ChatCommands.Create("getaquifer")
                 .WithDescription(Lang.Get("hydrateordiedrate:getaquifer-description"))
+                .RequiresPrivilege("controlserver")
                 .HandleWith(static args =>
                 {
-                    if (args.Caller is not IPlayer player)
-                    {
-                        return TextCommandResult.Error(Lang.Get("hydrateordiedrate:command-only-for-players"));
-                    }
+                    IPlayer player = args.Caller.Player;
 
                     if (HydrateOrDiedrateModSystem.AquiferManager == null)
                     {
@@ -74,7 +72,7 @@ namespace HydrateOrDiedrate.Commands
                     int chunkY = pos.Y / GlobalConstants.ChunkSize;
                     int chunkZ = pos.Z / GlobalConstants.ChunkSize;
                     var chunkPos = new ChunkPos3D(chunkX, chunkY, chunkZ);
-
+                    Console.WriteLine("Command="+chunkPos.X+","+chunkPos.Y+","+chunkPos.Z);
                     var aqData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkPos);
                     if (aqData == null)
                     {

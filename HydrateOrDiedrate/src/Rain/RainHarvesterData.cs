@@ -138,11 +138,57 @@ namespace HydrateOrDiedrate
 
         public float CalculateFillRate(float rainIntensity)
         {
+            float areaMultiplier = 1.0f;
+            if (BlockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
+            {
+                float totalArea = 0f;
+                for (int i = 0; i < groundStorage.Inventory.Count; i++)
+                {
+                    var slot = groundStorage.Inventory[i];
+                    if (slot.Empty) continue;
+
+                    var collectible = slot.Itemstack?.Collectible;
+                    if (collectible is BlockLiquidContainerBase blockContainer && blockContainer.IsTopOpened)
+                    {
+                        Block collectorBlock = collectible as Block;
+                        if (collectorBlock != null && collectorBlock.CollisionBoxes != null &&
+                            collectorBlock.CollisionBoxes.Length > 0)
+                        {
+                            Cuboidf box = collectorBlock.CollisionBoxes[0];
+                            float area = (box.X2 - box.X1) * (box.Z2 - box.Z1);
+                            totalArea += area;
+                        }
+                        else
+                        {
+                            totalArea += 1f;
+                        }
+                    }
+                }
+
+                if (totalArea > 0)
+                {
+                    areaMultiplier = totalArea;
+                }
+            }
+            else
+            {
+                var block = BlockEntity.Block;
+                if (block != null && block.CollisionBoxes != null && block.CollisionBoxes.Length > 0)
+                {
+                    Cuboidf box = block.CollisionBoxes[0];
+                    areaMultiplier = (box.X2 - box.X1) * (box.Z2 - box.Z1);
+                }
+                else
+                {
+                    areaMultiplier = 1.0f;
+                }
+            }
             var calendar = BlockEntity.Api.World.Calendar;
             float currentSpeedOfTime = calendar.SpeedOfTime;
             float currentCalendarSpeedMul = calendar.CalendarSpeedMul;
             float gameSpeedMultiplier = (currentSpeedOfTime / 60f) * (currentCalendarSpeedMul / 0.5f);
-            return 3f * rainIntensity * gameSpeedMultiplier * rainMultiplier;
+            float baseFillRate = 8f;
+            return baseFillRate * rainIntensity * gameSpeedMultiplier * rainMultiplier * areaMultiplier;
         }
 
         public bool IsOpenToSky(BlockPos pos)

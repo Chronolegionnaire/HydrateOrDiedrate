@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -9,15 +10,22 @@ namespace HydrateOrDiedrate.patches
     [HarmonyPatch(typeof(ItemProspectingPick), "GenProbeResults")]
     public static class GenProbeResultsPatch
     {
-        static void Postfix(ref PropickReading __result, IWorldAccessor world, BlockPos pos)
+        static void Prefix(IWorldAccessor world, BlockPos pos, out BlockPos __state)
+        {
+            __state = pos.Copy();
+        }
+        static void Postfix(ref PropickReading __result, IWorldAccessor world, BlockPos pos, BlockPos __state)
         {
             if (world.Side != EnumAppSide.Server) return;
             if (HydrateOrDiedrateModSystem.AquiferManager == null) return;
-            int cx = pos.X / GlobalConstants.ChunkSize;
-            int cy = pos.Y / GlobalConstants.ChunkSize;
-            int cz = pos.Z / GlobalConstants.ChunkSize;
-            var chunkPos = new ChunkPos3D(cx, cy, cz);
-            var aquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkPos);
+            BlockPos originalPos = __state;
+            int chunkX = originalPos.X / GlobalConstants.ChunkSize;
+            int chunkY = originalPos.Y / GlobalConstants.ChunkSize;
+            int chunkZ = originalPos.Z / GlobalConstants.ChunkSize;
+            ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);
+            Console.WriteLine("GenProbeResults=" + chunkCoord.X + "," + chunkCoord.Y + "," + chunkCoord.Z);
+            
+            var aquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkCoord);
             if (aquiferData == null) return;
             __result.OreReadings["$aquifer$"] = new OreReading()
             {

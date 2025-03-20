@@ -100,7 +100,7 @@ namespace HydrateOrDiedrate.winch
                 {
                     new WorldInteraction
                     {
-                        ActionLangCode = Lang.Get("hydrateordiedrate:hydrateordiedrate:blockhelp-winch-addremoveitems"),
+                        ActionLangCode = Lang.Get("hydrateordiedrate:blockhelp-winch-addremoveitems"),
                         MouseButton = EnumMouseButton.Right
                     }
                 }.Append(base.GetPlacedBlockInteractionHelp(world, selection, forPlayer));
@@ -109,7 +109,7 @@ namespace HydrateOrDiedrate.winch
             {
                 new WorldInteraction
                 {
-                    ActionLangCode = Lang.Get("hydrateordiedrate:hydrateordiedrate:blockhelp-winch-lower"),
+                    ActionLangCode = Lang.Get("hydrateordiedrate:blockhelp-winch-lower"),
                     MouseButton = EnumMouseButton.Right,
                     ShouldApply = (wi, bs, es) =>
                     {
@@ -119,7 +119,7 @@ namespace HydrateOrDiedrate.winch
                 },
                 new WorldInteraction
                 {
-                    ActionLangCode = Lang.Get("hydrateordiedrate:hydrateordiedrate:blockhelp-winch-raise"),
+                    ActionLangCode = Lang.Get("hydrateordiedrate:blockhelp-winch-raise"),
                     MouseButton = EnumMouseButton.Right,
                     HotKeyCode = ("sneak"),
                     ShouldApply = (wi, bs, es) =>
