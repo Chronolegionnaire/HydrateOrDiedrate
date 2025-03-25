@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.wellwater;
 using Newtonsoft.Json;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -869,6 +870,54 @@ namespace HydrateOrDiedrate.winch
         public virtual string DialogTitle
         {
             get { return Lang.Get("hydrateordiedrate:Winch"); }
+        }
+        
+        public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
+        {
+            base.GetBlockInfo(forPlayer, dsc);
+            if (!HydrateOrDiedrateModSystem.LoadedConfig.WinchOutputInfo)
+            {
+                return;
+            }
+
+            BlockPos searchPos = Pos.DownCopy();
+            BlockEntityWellSpring foundSpring = null;
+
+            int maxSearchDepth = 256;
+            int searchLevels = 0;
+
+            while (searchPos.Y >= 0 && searchLevels < maxSearchDepth)
+            {
+                BlockEntity be = Api.World.BlockAccessor.GetBlockEntity(searchPos);
+                if (be is BlockEntityWellSpring spring)
+                {
+                    foundSpring = spring;
+                    break;
+                }
+                Block block = Api.World.BlockAccessor.GetBlock(searchPos);
+                if (block != null && block.Code != null)
+                {
+                    string codePath = block.Code.Path.ToLowerInvariant();
+                    if (codePath.StartsWith("game:soil") || codePath.StartsWith("game:stone"))
+                    {
+                        break;
+                    }
+                }
+                searchPos = searchPos.DownCopy();
+                searchLevels++;
+            }
+
+            if (foundSpring != null)
+            {
+                dsc.AppendLine("Wellspring detected below:");
+                dsc.AppendLine($"  Water Type: {foundSpring.GetWaterType()}");
+                dsc.AppendLine($"  Output Rate: {foundSpring.GetCurrentOutputRate():F1} L/day");
+                dsc.AppendLine($"  Retention Depth: {foundSpring.GetRetentionDepth()} blocks");
+            }
+            else
+            {
+                dsc.AppendLine("No wellspring detected below winch.");
+            }
         }
     }
 }

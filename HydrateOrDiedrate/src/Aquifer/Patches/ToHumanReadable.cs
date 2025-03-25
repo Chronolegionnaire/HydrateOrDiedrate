@@ -13,6 +13,9 @@ namespace HydrateOrDiedrate.patches
 
         static void Prefix(PropickReading __instance)
         {
+            if (!HydrateOrDiedrateModSystem.LoadedConfig.ShowAquiferProspectingDataOnMap)
+                return;
+
             if (__instance.OreReadings.ContainsKey("$aquifer$"))
             {
                 aquiferBackup = __instance.OreReadings["$aquifer$"];
@@ -22,6 +25,9 @@ namespace HydrateOrDiedrate.patches
 
         static void Postfix(PropickReading __instance, string languageCode, Dictionary<string, string> pageCodes, ref string __result)
         {
+            if (!HydrateOrDiedrateModSystem.LoadedConfig.ShowAquiferProspectingDataOnMap)
+                return;
+
             if (aquiferBackup != null)
             {
                 __instance.OreReadings["$aquifer$"] = aquiferBackup;
@@ -59,7 +65,15 @@ namespace HydrateOrDiedrate.patches
     [HarmonyPatch(typeof(ItemProspectingPick), "PrintProbeResults")]
     public static class PrintProbeResults_ChatPatch
     {
-        static void Prefix() => PropickReading_ToHumanReadable_Patch.AppendAquiferInfo = false;
-        static void Postfix() => PropickReading_ToHumanReadable_Patch.AppendAquiferInfo = true;
+        static void Prefix()
+        {
+            if (HydrateOrDiedrateModSystem.LoadedConfig.ShowAquiferProspectingDataOnMap)
+                PropickReading_ToHumanReadable_Patch.AppendAquiferInfo = false;
+        }
+        static void Postfix()
+        {
+            if (HydrateOrDiedrateModSystem.LoadedConfig.ShowAquiferProspectingDataOnMap)
+                PropickReading_ToHumanReadable_Patch.AppendAquiferInfo = true;
+        }
     }
 }

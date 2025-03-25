@@ -81,18 +81,19 @@ namespace HydrateOrDiedrate
                 lastRainHarvestDay = currentDay;
                 return;
             }
+
             double elapsedDays = currentDay - lastRainHarvestDay;
             if (elapsedDays <= 0)
                 return;
             lastRainHarvestDay = currentDay;
-            double litersThisCycle = CalculateFillRate(rainIntensity) * elapsedDays;
-            accumulatedRainWater += litersThisCycle;
+
+            double baseLitersThisCycle = CalculateFillRate(rainIntensity) * elapsedDays;
+            accumulatedRainWater += baseLitersThisCycle;
             if (accumulatedRainWater < 0.1)
                 return;
             int increments = (int)Math.Floor(accumulatedRainWater / 0.1);
             float waterToAdd = increments * 0.1f;
             accumulatedRainWater -= waterToAdd;
-
             if (BlockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
             {
                 for (int i = 0; i < groundStorage.Inventory.Count; i++)
@@ -100,6 +101,7 @@ namespace HydrateOrDiedrate
                     var slot = groundStorage.Inventory[i];
                     if (slot.Empty)
                         continue;
+
                     var collectible = slot.Itemstack?.Collectible;
                     var codePath = collectible?.Code?.Path;
                     if (string.IsNullOrEmpty(codePath))
@@ -113,8 +115,17 @@ namespace HydrateOrDiedrate
 
                     if (collectible is BlockLiquidContainerBase blockContainer && blockContainer.IsTopOpened)
                     {
+                        float area = 1f;
+                        Block collectorBlock = collectible as Block;
+                        if (collectorBlock != null && collectorBlock.CollisionBoxes != null &&
+                            collectorBlock.CollisionBoxes.Length > 0)
+                        {
+                            Cuboidf box = collectorBlock.CollisionBoxes[0];
+                            area = (box.X2 - box.X1) * (box.Z2 - box.Z1);
+                        }
+                        float desiredLiters = waterToAdd * area;
+
                         rainWaterStack.StackSize = 100;
-                        float desiredLiters = waterToAdd;
                         float addedAmount = blockContainer.TryPutLiquid(slot.Itemstack, rainWaterStack, desiredLiters);
                         if (addedAmount > 0)
                         {
@@ -138,57 +149,27 @@ namespace HydrateOrDiedrate
 
         public float CalculateFillRate(float rainIntensity)
         {
-            float areaMultiplier = 1.0f;
-            if (BlockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty)
-            {
-                float totalArea = 0f;
-                for (int i = 0; i < groundStorage.Inventory.Count; i++)
-                {
-                    var slot = groundStorage.Inventory[i];
-                    if (slot.Empty) continue;
-
-                    var collectible = slot.Itemstack?.Collectible;
-                    if (collectible is BlockLiquidContainerBase blockContainer && blockContainer.IsTopOpened)
-                    {
-                        Block collectorBlock = collectible as Block;
-                        if (collectorBlock != null && collectorBlock.CollisionBoxes != null &&
-                            collectorBlock.CollisionBoxes.Length > 0)
-                        {
-                            Cuboidf box = collectorBlock.CollisionBoxes[0];
-                            float area = (box.X2 - box.X1) * (box.Z2 - box.Z1);
-                            totalArea += area;
-                        }
-                        else
-                        {
-                            totalArea += 1f;
-                        }
-                    }
-                }
-
-                if (totalArea > 0)
-                {
-                    areaMultiplier = totalArea;
-                }
-            }
-            else
-            {
-                var block = BlockEntity.Block;
-                if (block != null && block.CollisionBoxes != null && block.CollisionBoxes.Length > 0)
-                {
-                    Cuboidf box = block.CollisionBoxes[0];
-                    areaMultiplier = (box.X2 - box.X1) * (box.Z2 - box.Z1);
-                }
-                else
-                {
-                    areaMultiplier = 1.0f;
-                }
-            }
             var calendar = BlockEntity.Api.World.Calendar;
             float currentSpeedOfTime = calendar.SpeedOfTime;
             float currentCalendarSpeedMul = calendar.CalendarSpeedMul;
             float gameSpeedMultiplier = (currentSpeedOfTime / 60f) * (currentCalendarSpeedMul / 0.5f);
             float baseFillRate = 8f;
-            return baseFillRate * rainIntensity * gameSpeedMultiplier * rainMultiplier * areaMultiplier;
+            float baseRate = baseFillRate * rainIntensity * gameSpeedMultiplier * rainMultiplier;
+            if (!(BlockEntity is BlockEntityGroundStorage groundStorage && !groundStorage.Inventory.Empty))
+            {
+                var block = BlockEntity.Block;
+                if (block != null && block.CollisionBoxes != null && block.CollisionBoxes.Length > 0)
+                {
+                    Cuboidf box = block.CollisionBoxes[0];
+                    float area = (box.X2 - box.X1) * (box.Z2 - box.Z1);
+                    return baseRate * area;
+                }
+                else
+                {
+                    return baseRate;
+                }
+            }
+            return baseRate;
         }
 
         public bool IsOpenToSky(BlockPos pos)

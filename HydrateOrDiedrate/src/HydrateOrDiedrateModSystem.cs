@@ -215,24 +215,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
     }
     private void OnDrinkProgressReceived(DrinkProgressPacket msg)
     {
-        if (hudOverlayRenderer == null)
-        {
-            return;
-        }
-
-        hudOverlayRenderer.CircleVisible = msg.IsDrinking;
-
-        if (!msg.IsDrinking || msg.Progress <= 0)
-        {
-            hudOverlayRenderer.CircleProgress = 0f;
-            hudOverlayRenderer.CircleVisible = false;
-        }
-        else
-        {
-            hudOverlayRenderer.CircleProgress = msg.Progress;
-            hudOverlayRenderer.IsDangerous = msg.IsDangerous;
-        }
+        if (hudOverlayRenderer == null) return;
+        hudOverlayRenderer.ProcessDrinkProgress(msg.Progress, msg.IsDrinking, msg.IsDangerous);
     }
+
 
     private void CheckAndInitializeCustomHud(float dt)
     {

@@ -21,45 +21,6 @@
       "minQuantity": 1,
       "maxQuantity": 1,
       "portionSizeLitres": 1
-    },
-    {
-      "code": "water2",
-      "validStacks": [
-        {
-          "type": "item",
-          "code": "hydrateordiedrate:rainwaterportion",
-          "shapeElement": "bowl/liquid"
-        }
-      ],
-      "minQuantity": 0,
-      "maxQuantity": 1,
-      "portionSizeLitres": 1
-    },
-    {
-      "code": "water3",
-      "validStacks": [
-        {
-          "type": "item",
-          "code": "hydrateordiedrate:rainwaterportion",
-          "shapeElement": "bowl/liquid"
-        }
-      ],
-      "minQuantity": 0,
-      "maxQuantity": 1,
-      "portionSizeLitres": 1
-    },
-    {
-      "code": "water4",
-      "validStacks": [
-        {
-          "type": "item",
-          "code": "hydrateordiedrate:rainwaterportion",
-          "shapeElement": "bowl/liquid"
-        }
-      ],
-      "minQuantity": 0,
-      "maxQuantity": 1,
-      "portionSizeLitres": 1
     }
   ],
   "cooksInto": { "type": "Item", "code": "hydrateordiedrate:boiledrainwaterportion", "quantity": 100 }

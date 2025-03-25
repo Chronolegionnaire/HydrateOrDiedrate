@@ -168,9 +168,7 @@ namespace HydrateOrDiedrate.patches
 
         private static void SendMessageToPlayer(IWorldAccessor world, IServerPlayer splr, string message)
         {
-            world.Api.Event.EnqueueMainThreadTask(
-                () => { splr.SendMessage(GlobalConstants.InfoLogChatGroup, message, EnumChatType.Notification, null); },
-                "SendAquiferMessage");
+            splr.SendMessage(GlobalConstants.InfoLogChatGroup, message, EnumChatType.Notification, null);
         }
     }
 }

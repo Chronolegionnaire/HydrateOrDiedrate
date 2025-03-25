@@ -11,45 +11,18 @@ namespace HydrateOrDiedrate.HUD
         private const int CircleMaxSteps = 32;
         private const float OuterRadius = 24f;
         private const float InnerRadius = 18f;
-        private const int MaxChecks = 5;
+        private const double DrinkDurationMs = 1000;
         
-        private bool wasDrinking = false;
         private MeshRef circleMesh = null;
         private ICoreClientAPI api;
         private float circleAlpha = 0.0F;
         private float circleProgress = 0.0F;
         private float targetCircleProgress = 0.0F;
         
-        private float lastCircleProgress = -1.0F;
-        private int unchangedProgressCount = 0;
+        private int drinkStartTime = 0;
+        private bool isDrinking = false;
 
         public bool CircleVisible { get; set; }
-
-        public float CircleProgress
-        {
-            get => targetCircleProgress;
-            set
-            {
-                targetCircleProgress = value >= 0.86f ? 1.0f : GameMath.Clamp(value, 0.0F, 1.0F);
-
-                if (targetCircleProgress > 0.0F)
-                {
-                    if (!wasDrinking)
-                    {
-                        circleProgress = 0.0F;
-                        wasDrinking = true;
-                    }
-
-                    CircleVisible = true;
-                }
-                else
-                {
-                    wasDrinking = false;
-                    CircleVisible = false;
-                }
-            }
-        }
-
         public bool IsDangerous { get; set; }
 
         public DrinkHudOverlayRenderer(ICoreClientAPI api)
@@ -59,16 +32,34 @@ namespace HydrateOrDiedrate.HUD
             UpdateCircleMesh(1);
         }
 
+        public void ProcessDrinkProgress(float progress, bool drinking, bool dangerous)
+        {
+            IsDangerous = dangerous;
+            if (drinking)
+            {
+                if (!isDrinking)
+                {
+                    drinkStartTime = Environment.TickCount;
+                    isDrinking = true;
+                    circleAlpha = 1.0f;
+                }
+                CircleVisible = true;
+            }
+            else
+            {
+                isDrinking = false;
+                CircleVisible = false;
+                targetCircleProgress = 0f;
+            }
+        }
+
         private void UpdateCircleMesh(float progress)
         {
             const float ringSize = (float)InnerRadius / OuterRadius;
             const float stepSize = 1.0F / CircleMaxSteps;
-
             int steps = Math.Max(1, 1 + (int)Math.Ceiling(Math.Min(CircleMaxSteps * progress, int.MaxValue / CircleMaxSteps)));
-
             int vertexCapacity = steps * 2;
             int indexCapacity = steps * 6;
-
             var data = new MeshData(vertexCapacity, indexCapacity, withUv: true, withRgba: false, withFlags: false);
 
             for (int i = 0; i < steps; i++)
@@ -105,49 +96,28 @@ namespace HydrateOrDiedrate.HUD
 
         public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
         {
-            if (CircleVisible)
+            if (CircleVisible && isDrinking)
             {
-                circleAlpha = Math.Min(1.0F, circleAlpha + (deltaTime * CircleAlphaIn));
-
-                float smoothingSpeed = 5f;
+                circleAlpha = 1.0f;
+                int elapsed = Environment.TickCount - drinkStartTime;
+                float rawProgress = (float)elapsed / (float)DrinkDurationMs;
+                float cycleProgress = rawProgress - (float)Math.Floor(rawProgress);
+                targetCircleProgress = cycleProgress;
+                float smoothingSpeed = 20f;
                 circleProgress = GameMath.Lerp(circleProgress, targetCircleProgress, deltaTime * smoothingSpeed);
-
-                if (circleProgress >= 0.86f)
-                {
-                    circleProgress = 1.0f;
-                }
-
-                if (circleProgress == lastCircleProgress)
-                {
-                    unchangedProgressCount++;
-                }
-                else
-                {
-                    unchangedProgressCount = 0;
-                }
-
-                if (unchangedProgressCount >= MaxChecks)
-                {
-                    CircleVisible = false;
-                    circleProgress = 0.0F;
-                    targetCircleProgress = 0.0F;
-                    unchangedProgressCount = 0;
-                }
-
-                lastCircleProgress = circleProgress;
             }
-            else if (circleAlpha > 0.0F)
+            else if (circleAlpha > 0.0f)
             {
-                circleAlpha = Math.Max(0.0F, circleAlpha - (deltaTime * CircleAlphaOut));
+                circleAlpha = Math.Max(0.0f, circleAlpha - (deltaTime * CircleAlphaOut));
             }
 
-            if (circleAlpha <= 0.0F && !CircleVisible)
+            if (circleAlpha <= 0.0f && !CircleVisible)
             {
-                circleProgress = 0.0F;
-                targetCircleProgress = 0.0F;
+                circleProgress = 0.0f;
+                targetCircleProgress = 0.0f;
             }
 
-            if (circleAlpha > 0.0F)
+            if (circleAlpha > 0.0f || CircleVisible)
             {
                 UpdateCircleMesh(circleProgress);
             }

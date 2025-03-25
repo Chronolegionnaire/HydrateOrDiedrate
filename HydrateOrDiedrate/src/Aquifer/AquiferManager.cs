@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Buffers;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 using System.Linq;
 using ProtoBuf;
 using Vintagestory.API.Common;
@@ -26,32 +21,11 @@ namespace HydrateOrDiedrate
     public class AquiferManager
     {
         private readonly ICoreServerAPI serverAPI;
-
-        private readonly Channel<(ChunkPos3D pos, IWorldChunk chunk)> calculationChannel;
-        private readonly ConcurrentDictionary<ChunkPos3D, ChunkStatus> chunkStatuses;
-        private class FailedChunkInfo
-        {
-            public int Attempts;
-            public IWorldChunk Chunk;
-            public DateTime NextRetryTime;
-        }
-        private class ChunkStatus
-        {
-            public IWorldChunk Chunk { get; set; }
-            public FailedChunkInfo FailedInfo { get; set; }
-            public bool IsUnpacked { get; set; }
-        }
-
-        private readonly ConcurrentDictionary<ChunkPos3D, List<WellspringInfo>> wellspringRegistry;
-        private readonly ConcurrentDictionary<int, Block> blockCache = new();
-        private readonly ConcurrentDictionary<ChunkPos3D, float> climateCache = new();
-        private readonly ThreadLocal<Random> threadLocalRandom = new(() => new Random());
+        private readonly Random random = new Random();
         private const int CurrentAquiferDataVersion = 1;
         private bool isEnabled;
         private bool runGamePhaseReached;
         private bool isInitialized;
-        private const int MaxFailedAttempts = 10;
-        private readonly int TimerIntervalMs = 5000;
         private static readonly ChunkPos3D[] NeighborOffsets = GenerateNeighborOffsets();
         private static ChunkPos3D[] GenerateNeighborOffsets()
         {
@@ -73,14 +47,6 @@ namespace HydrateOrDiedrate
         public AquiferManager(ICoreServerAPI api)
         {
             serverAPI = api;
-            calculationChannel = Channel.CreateBounded<(ChunkPos3D, IWorldChunk)>(new BoundedChannelOptions(100)
-            {
-                FullMode = BoundedChannelFullMode.Wait,
-                SingleReader = true,
-                SingleWriter = false,
-            });
-            chunkStatuses = new ConcurrentDictionary<ChunkPos3D, ChunkStatus>();
-            wellspringRegistry = new ConcurrentDictionary<ChunkPos3D, List<WellspringInfo>>();
             isEnabled = true;
             runGamePhaseReached = false;
             isInitialized = false;
@@ -88,14 +54,9 @@ namespace HydrateOrDiedrate
             serverAPI.Event.PlayerNowPlaying += OnPlayerNowPlaying;
             serverAPI.Event.ChunkColumnLoaded += OnChunkColumnLoaded;
             serverAPI.Event.ServerRunPhase(EnumServerRunPhase.RunGame, OnRunGamePhaseEntered);
-            SetupMergedTimer();
-            StartBackgroundProcessor();
         }
 
-        private void OnRunGamePhaseEntered()
-        {
-            runGamePhaseReached = true;
-        }
+        private void OnRunGamePhaseEntered() => runGamePhaseReached = true;
 
         private void OnPlayerNowPlaying(IPlayer player)
         {
@@ -111,107 +72,161 @@ namespace HydrateOrDiedrate
                 var chunk = chunks[i];
                 if (chunk == null) continue;
                 var pos3D = new ChunkPos3D(chunkCoord.X, i, chunkCoord.Y);
-                var status = chunkStatuses.GetOrAdd(pos3D, _ => new ChunkStatus());
-                status.Chunk = chunk;
-                EnqueueChunkProcessing(pos3D, chunk);
-            }
-            AttemptReprocessingOfFailedChunks();
-        }
-
-        private void StartBackgroundProcessor()
-        {
-            Task.Factory.StartNew(async () =>
-            {
-                await foreach (var (pos, chunk) in calculationChannel.Reader.ReadAllAsync())
-                {
-                    if (IsChunkValid(chunk))
-                    {
-                        await ProcessChunk(pos, chunk);
-                    }
-                    else
-                    {
-                        RegisterFailedChunk(pos, chunk);
-                    }
-                }
-            }, TaskCreationOptions.LongRunning);
-        }
-
-        private void EnqueueChunkProcessing(ChunkPos3D pos, IWorldChunk chunk)
-        {
-            calculationChannel.Writer.TryWrite((pos, chunk));
-        }
-
-        private void SetupMergedTimer()
-        {
-            serverAPI.Event.RegisterGameTickListener(dt =>
-            {
-                RetryFailedChunks();
-            }, TimerIntervalMs);
-        }
-
-        private void RetryFailedChunks()
-        {
-            DateTime now = DateTime.UtcNow;
-            foreach (var kvp in chunkStatuses)
-            {
-                var pos = kvp.Key;
-                var status = kvp.Value;
-                if (status.FailedInfo == null)
-                    continue;
-                if (status.FailedInfo.Attempts >= MaxFailedAttempts)
-                {
-                    status.FailedInfo = null;
-                    continue;
-                }
-                if (now >= status.FailedInfo.NextRetryTime && IsChunkValid(status.FailedInfo.Chunk))
-                {
-                    EnqueueChunkProcessing(pos, status.FailedInfo.Chunk);
-                    status.FailedInfo = null;
-                }
+                ProcessChunk(pos3D, chunk);
             }
         }
 
-        private void RegisterFailedChunk(ChunkPos3D pos, IWorldChunk chunk)
+        private void ProcessChunk(ChunkPos3D pos, IWorldChunk chunk)
         {
-            var status = chunkStatuses.GetOrAdd(pos, _ => new ChunkStatus());
-            if (status.FailedInfo == null)
+            if (chunk == null || !IsChunkValid(chunk))
             {
-                status.FailedInfo = new FailedChunkInfo
+                return;
+            }
+
+            chunk.Unpack();
+            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
+            if (data == null || data.Version < CurrentAquiferDataVersion)
+            {
+                var pre = CalculateAquiferData(chunk, pos);
+                data = new AquiferChunkData
                 {
-                    Attempts = 1,
-                    Chunk = chunk,
-                    NextRetryTime = DateTime.UtcNow.AddMilliseconds(TimerIntervalMs)
+                    PreSmoothedData = pre,
+                    SmoothedData = null,
+                    Version = CurrentAquiferDataVersion
                 };
+                chunk.SetModdata("aquiferData", data);
             }
-            else
+            if (data.SmoothedData == null)
             {
-                status.FailedInfo.Attempts++;
-                status.FailedInfo.NextRetryTime = DateTime.UtcNow.AddMilliseconds(TimerIntervalMs * Math.Pow(2, status.FailedInfo.Attempts));
-                status.FailedInfo.Chunk = chunk;
+                SmoothWithNeighbors(chunk, pos);
             }
         }
 
-        private void AttemptReprocessingOfFailedChunks()
+        private Block GetBlock(int blockId)
         {
-            foreach (var kvp in chunkStatuses)
+            return serverAPI.World.GetBlock(blockId);
+        }
+
+        private AquiferData CalculateAquiferData(IWorldChunk chunk, ChunkPos3D pos)
+        {
+            try
             {
-                var pos = kvp.Key;
-                var status = kvp.Value;
-                if (status.FailedInfo != null && IsChunkValid(status.FailedInfo.Chunk))
+                var config = HydrateOrDiedrateModSystem.LoadedConfig;
+                int chunkSize = GlobalConstants.ChunkSize;
+                int normalWaterBlockCount;
+                int saltWaterBlockCount;
+                int boilingWaterBlockCount;
+                WaterCounts waterCounts = chunk.GetModdata<WaterCounts>("hydrateordiedrate:watercounts", null);
+                if (waterCounts != null)
                 {
-                    EnqueueChunkProcessing(pos, status.FailedInfo.Chunk);
-                    status.FailedInfo = null;
+                    normalWaterBlockCount = waterCounts.GameWater;
+                    saltWaterBlockCount = waterCounts.SaltWater;
+                    boilingWaterBlockCount = waterCounts.BoilingWater;
                 }
+                else
+                {
+                    normalWaterBlockCount = 0;
+                    saltWaterBlockCount = 0;
+                    boilingWaterBlockCount = 0;
+
+                    int step = config.AquiferStep;
+                    int totalBlocks = chunk.Data.Length;
+                    int iterY = chunkSize;
+                    int iterX = (int)Math.Ceiling((double)chunkSize / step);
+                    int iterZ = (int)Math.Ceiling((double)chunkSize / step);
+                    int totalIterations = iterY * iterX * iterZ;
+
+                    for (int i = 0; i < totalIterations; i++)
+                    {
+                        int y = i / (iterX * iterZ);
+                        int rem = i % (iterX * iterZ);
+                        int xIndex = rem / iterZ;
+                        int zIndex = rem % iterZ;
+                        int x = xIndex * step;
+                        int z = zIndex * step;
+
+                        int idx = (y * chunkSize + z) * chunkSize + x;
+                        if (idx < 0 || idx >= totalBlocks) continue;
+
+                        int blockId = chunk.Data[idx];
+                        if (blockId < 0) continue;
+
+                        Block block = GetBlock(blockId);
+                        if (block?.Code?.Path == null) continue;
+                        if (block.Code.Path.Contains("boilingwater"))
+                        {
+                            boilingWaterBlockCount++;
+                        }
+                        else if (block.Code.Path.Contains("water"))
+                        {
+                            normalWaterBlockCount++;
+                            if (block.Code.Path.Contains("saltwater"))
+                            {
+                                saltWaterBlockCount++;
+                            }
+                        }
+                    }
+                    waterCounts = new WaterCounts
+                    {
+                        GameWater = normalWaterBlockCount,
+                        SaltWater = saltWaterBlockCount,
+                        BoilingWater = boilingWaterBlockCount
+                    };
+                    chunk.SetModdata("hydrateordiedrate:watercounts", waterCounts);
+                }
+                double waterBlockMultiplier = config.AquiferWaterBlockMultiplier;
+                double saltWaterMultiplier = config.AquiferSaltWaterMultiplier;
+                int boilingWaterMultiplier = config.AquiferBoilingWaterMultiplier;
+                double randomMultiplierChance = config.AquiferRandomMultiplierChance;
+                int worldHeight = serverAPI.WorldManager.MapSizeY;
+                int seaLevel = (int)Math.Round(0.4296875 * worldHeight);
+                int chunkCenterY = (pos.Y * GlobalConstants.ChunkSize) + (GlobalConstants.ChunkSize / 2);
+
+                double weightedNormal = CalculateDiminishingReturns(normalWaterBlockCount, 300.0, 1.0, 0.99) *
+                                        waterBlockMultiplier;
+                double weightedSalt = CalculateDiminishingReturns(saltWaterBlockCount, 300.0, 1.0, 0.99) *
+                                      saltWaterMultiplier;
+                double weightedBoiling = CalculateDiminishingReturns(boilingWaterBlockCount, 1000.0, 10.0, 0.5) *
+                                         boilingWaterMultiplier;
+                var climate = serverAPI.World.BlockAccessor.GetClimateAt(
+                    new BlockPos(pos.X * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2,
+                        pos.Y * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2,
+                        pos.Z * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2),
+                    EnumGetClimateMode.WorldGenValues);
+                float rainfall = climate?.Rainfall ?? 0f;
+
+                double totalWeighted = (weightedNormal + weightedSalt + weightedBoiling) * (0.75 + rainfall);
+                int rating = NormalizeAquiferRating(totalWeighted);
+                if (chunkCenterY > seaLevel)
+                {
+                    rating = Math.Min(rating, config.AquiferRatingCeilingAboveSeaLevel);
+                }
+                double depthMultiplier = 1.0;
+                if (chunkCenterY < seaLevel)
+                {
+                    double normalizedDepth = (seaLevel - chunkCenterY) / (double)(seaLevel - 1);
+                    depthMultiplier = 1 + normalizedDepth * config.AquiferDepthMultiplierScale;
+                }
+
+                if (random.NextDouble() < randomMultiplierChance * depthMultiplier)
+                {
+                    int baseAdd = random.Next(1, 11);
+                    rating += baseAdd;
+                    double rndMul = random.NextDouble() * (10.0 - 1.1) + 1.1;
+                    rating = (int)(rating * rndMul);
+                    rating = Math.Clamp(rating, 0, 100);
+                }
+
+                bool salty = saltWaterBlockCount > normalWaterBlockCount * 0.5;
+                return new AquiferData { AquiferRating = rating, IsSalty = salty };
+            }
+            catch (Exception ex)
+            {
+                serverAPI.Logger.Error("CalculateAquiferData exception: " + ex);
+                return new AquiferData { AquiferRating = 0, IsSalty = false };
             }
         }
 
-        private bool IsChunkValid(IWorldChunk chunk)
-        {
-            return chunk != null && !chunk.Disposed && chunk.Data != null && chunk.Data.Length > 0;
-        }
-
-        private Block GetCachedBlock(int blockId)
-            => blockCache.GetOrAdd(blockId, id => serverAPI.World.GetBlock(id));
         private double CalculateDiminishingReturns(int blockCount, double startValue, double minValue, double decayRate)
         {
             double total = 0;
@@ -237,182 +252,17 @@ namespace HydrateOrDiedrate
             int normalizedRating = (int)((weightedWaterBlocks - minWeightedValue) / (maxWeightedValue - minWeightedValue) * 100);
             return Math.Clamp(normalizedRating, 0, 100);
         }
-        
-        private async Task ProcessChunk(ChunkPos3D pos, IWorldChunk chunk)
+        private bool ShouldSimulateEmptyChunk(ChunkPos3D pos)
         {
-            if (chunk == null || !IsChunkValid(chunk)) return;
-
-            var status = chunkStatuses.GetOrAdd(pos, _ => new ChunkStatus { Chunk = chunk });
-            if (!status.IsUnpacked)
-            {
-                chunk.Unpack();
-                status.IsUnpacked = true;
-            }
-
-            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
-            if (data == null || data.Version < CurrentAquiferDataVersion)
-            {
-                var pre = CalculateAquiferData(chunk, pos);
-                data = new AquiferChunkData
-                {
-                    PreSmoothedData = pre,
-                    SmoothedData = null,
-                    Version = CurrentAquiferDataVersion
-                };
-                chunk.SetModdata("aquiferData", data);
-            }
-
-            if (data.SmoothedData == null)
-            {
-                SmoothWithNeighbors(chunk, pos);
-            }
+            int chunkSize = GlobalConstants.ChunkSize;
+            if (pos.Y < 0) return true;
+            int sampleX = pos.X * chunkSize + chunkSize / 2;
+            int sampleZ = pos.Z * chunkSize + chunkSize / 2;
+            BlockPos samplePos = new BlockPos(sampleX, 0, sampleZ);
+            int terrainHeight = serverAPI.World.BlockAccessor.GetTerrainMapheightAt(samplePos);
+            int terrainChunkY = terrainHeight / chunkSize;
+            return (terrainChunkY < pos.Y);
         }
-
-        private AquiferData CalculateAquiferData(IWorldChunk chunk, ChunkPos3D pos)
-        {
-            try
-            {
-                var config = HydrateOrDiedrateModSystem.LoadedConfig;
-                int chunkSize = GlobalConstants.ChunkSize;
-                int? modNormalWaterBlockCount = chunk.GetModdata<int?>("game:water");
-                int? modSaltWaterBlockCount = chunk.GetModdata<int?>("game:saltwater");
-                int? modBoilingWaterBlockCount = chunk.GetModdata<int?>("game:boilingwater");
-                int normalWaterBlockCount;
-                int saltWaterBlockCount;
-                int boilingWaterBlockCount;
-                if (modNormalWaterBlockCount.HasValue || modSaltWaterBlockCount.HasValue ||
-                    modBoilingWaterBlockCount.HasValue)
-                {
-                    normalWaterBlockCount = modNormalWaterBlockCount.Value;
-                    saltWaterBlockCount = modSaltWaterBlockCount.Value;
-                    boilingWaterBlockCount = modBoilingWaterBlockCount.Value;
-                }
-                else
-                {
-                    normalWaterBlockCount = 0;
-                    saltWaterBlockCount = 0;
-                    boilingWaterBlockCount = 0;
-
-                    int step = config.AquiferStep;
-                    int totalBlocks = chunk.Data.Length;
-                    int iterY = chunkSize;
-                    int iterX = (int)Math.Ceiling((double)chunkSize / step);
-                    int iterZ = (int)Math.Ceiling((double)chunkSize / step);
-                    int totalIterations = iterY * iterX * iterZ;
-
-                    Parallel.ForEach(Partitioner.Create(0, totalIterations), range =>
-                    {
-                        var localCounts = new LocalCounts();
-                        for (int i = range.Item1; i < range.Item2; i++)
-                        {
-                            int y = i / (iterX * iterZ);
-                            int rem = i % (iterX * iterZ);
-                            int xIndex = rem / iterZ;
-                            int zIndex = rem % iterZ;
-                            int x = xIndex * step;
-                            int z = zIndex * step;
-
-                            int idx = (y * chunkSize + z) * chunkSize + x;
-                            if (idx < 0 || idx >= totalBlocks) continue;
-                            int blockId = chunk.Data[idx];
-                            if (blockId < 0) continue;
-
-                            Block block = GetCachedBlock(blockId);
-                            if (block?.Code?.Path == null) continue;
-
-                            if (block.Code.Path.Contains("boilingwater"))
-                            {
-                                localCounts.BoilingCount++;
-                            }
-                            else if (block.Code.Path.Contains("water"))
-                            {
-                                localCounts.NormalCount++;
-                                if (block.Code.Path.Contains("saltwater"))
-                                {
-                                    localCounts.SaltCount++;
-                                }
-                            }
-                        }
-
-                        Interlocked.Add(ref normalWaterBlockCount, localCounts.NormalCount);
-                        Interlocked.Add(ref saltWaterBlockCount, localCounts.SaltCount);
-                        Interlocked.Add(ref boilingWaterBlockCount, localCounts.BoilingCount);
-                    });
-                }
-                double waterBlockMultiplier = config.AquiferWaterBlockMultiplier;
-                double saltWaterMultiplier = config.AquiferSaltWaterMultiplier;
-                int boilingWaterMultiplier = config.AquiferBoilingWaterMultiplier;
-                double randomMultiplierChance = config.AquiferRandomMultiplierChance;
-                int worldHeight = serverAPI.WorldManager.MapSizeY;
-                int seaLevel = (int)Math.Round(0.4296875 * worldHeight);
-                int chunkCenterY = (pos.Y * chunkSize) + (chunkSize / 2);
-
-                double weightedNormal = CalculateDiminishingReturns(normalWaterBlockCount, 300.0, 1.0, 0.99) *
-                                        waterBlockMultiplier;
-                double weightedSalt = CalculateDiminishingReturns(saltWaterBlockCount, 300.0, 1.0, 0.99) *
-                                      saltWaterMultiplier;
-                double weightedBoiling = CalculateDiminishingReturns(boilingWaterBlockCount, 1000.0, 10.0, 0.5) *
-                                         boilingWaterMultiplier;
-
-                double totalWeighted = (weightedNormal + weightedSalt + weightedBoiling) *
-                                       (0.75 + (GetCachedClimate(pos, chunkSize)?.Rainfall ?? 0f));
-
-                int rating = NormalizeAquiferRating(totalWeighted);
-                if (chunkCenterY > seaLevel)
-                {
-                    rating = Math.Min(rating, config.AquiferRatingCeilingAboveSeaLevel);
-                }
-                double depthMultiplier = 1.0;
-                if (chunkCenterY < seaLevel)
-                {
-                    double normalizedDepth = (seaLevel - chunkCenterY) / (double)(seaLevel - 1);
-                    depthMultiplier = 1 + normalizedDepth * config.AquiferDepthMultiplierScale;
-                }
-                var random = threadLocalRandom.Value;
-                if (random.NextDouble() < randomMultiplierChance * depthMultiplier)
-                {
-                    int baseAdd = random.Next(1, 11);
-                    rating += baseAdd;
-                    double rndMul = random.NextDouble() * (10.0 - 1.1) + 1.1;
-                    rating = (int)(rating * rndMul);
-                    rating = Math.Clamp(rating, 0, 100);
-                }
-
-                bool salty = saltWaterBlockCount > normalWaterBlockCount * 0.5;
-
-                return new AquiferData
-                {
-                    AquiferRating = rating,
-                    IsSalty = salty
-                };
-            }
-            catch (Exception ex)
-            {
-                serverAPI.Logger.Error("CalculateAquiferData exception: " + ex);
-                return new AquiferData { AquiferRating = 0, IsSalty = false };
-            }
-        }
-
-        private ClimateData GetCachedClimate(ChunkPos3D pos, int chunkSize)
-        {
-            var center = new BlockPos(
-                pos.X * chunkSize + chunkSize / 2,
-                pos.Y * chunkSize + chunkSize / 2,
-                pos.Z * chunkSize + chunkSize / 2
-            );
-            if (climateCache.TryGetValue(pos, out float rainfall))
-            {
-                return new ClimateData { Rainfall = rainfall };
-            }
-            else
-            {
-                var climate = serverAPI.World.BlockAccessor.GetClimateAt(center, EnumGetClimateMode.WorldGenValues);
-                float rain = climate?.Rainfall ?? 0f;
-                climateCache[pos] = rain;
-                return new ClimateData { Rainfall = rain };
-            }
-        }
-
         private void SmoothWithNeighbors(IWorldChunk chunk, ChunkPos3D pos)
         {
             if (!isEnabled) return;
@@ -420,7 +270,6 @@ namespace HydrateOrDiedrate
             var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
             if (data == null)
             {
-                RegisterFailedChunk(pos, chunk);
                 return;
             }
 
@@ -428,50 +277,45 @@ namespace HydrateOrDiedrate
             int saltyNeighbors = 0;
             int totalValidNeighbors = 0;
             int highestNeighborRating = 0;
+
             foreach (var offset in NeighborOffsets)
             {
                 var npos = new ChunkPos3D(pos.X + offset.X, pos.Y + offset.Y, pos.Z + offset.Z);
-                var neighborChunk = GetChunkAt(npos);
-                if (neighborChunk == null || !IsChunkValid(neighborChunk))
+                AquiferData neighborAq = null;
+                IWorldChunk neighborChunk = GetChunkAt(npos);
+                if (neighborChunk != null && IsChunkValid(neighborChunk))
                 {
-                    continue;
+                    var neighborData = neighborChunk.GetModdata<AquiferChunkData>("aquiferData", null);
+                    if (neighborData != null)
+                    {
+                        neighborAq = neighborData.SmoothedData ?? neighborData.PreSmoothedData;
+                    }
                 }
-                var neighborStatus = chunkStatuses.GetOrAdd(npos, _ => new ChunkStatus());
-                if (!neighborStatus.IsUnpacked)
+                else if (ShouldSimulateEmptyChunk(npos))
                 {
-                    neighborChunk.Unpack();
-                    neighborStatus.IsUnpacked = true;
+                    neighborAq = new AquiferData { AquiferRating = 0, IsSalty = false };
                 }
-                AquiferChunkData neighborAqData = null;
-                try
-                {
-                    neighborAqData = neighborChunk.GetModdata<AquiferChunkData>("aquiferData", null);
-                }
-                catch
-                {
-                    continue;
-                }
-                if (neighborAqData == null) continue;
 
-                var neighborAq = neighborAqData.SmoothedData ?? neighborAqData.PreSmoothedData;
-                int neighborRating = neighborAq.AquiferRating;
-                bool isNeighborSalty = neighborAq.IsSalty;
-
-                highestNeighborRating = Math.Max(highestNeighborRating, neighborRating);
-                if (isNeighborSalty) saltyNeighbors++;
-                totalValidNeighbors++;
+                if (neighborAq != null)
+                {
+                    if (neighborAq.IsSalty)
+                        saltyNeighbors++;
+                    totalValidNeighbors++;
+                    highestNeighborRating = Math.Max(highestNeighborRating, neighborAq.AquiferRating);
+                }
             }
+
+            data.ProcessedNeighborCount = totalValidNeighbors;
+            data.NeedsReprocess = totalValidNeighbors < 26;
 
             if (totalValidNeighbors == 0)
             {
-                RegisterFailedChunk(pos, chunk);
                 return;
             }
 
-            var rnd = threadLocalRandom.Value;
             if (highestNeighborRating > centralChunkRating)
             {
-                double reductionFactor = 0.2 + (rnd.NextDouble() * 0.3);
+                double reductionFactor = 0.2 + (random.NextDouble() * 0.3);
                 centralChunkRating = highestNeighborRating - (highestNeighborRating * reductionFactor);
             }
 
@@ -497,119 +341,76 @@ namespace HydrateOrDiedrate
             };
 
             chunk.SetModdata("aquiferData", data);
-            if (totalValidNeighbors < NeighborOffsets.Length)
+            if (data.NeedsReprocess)
             {
-                RegisterFailedChunk(pos, chunk);
+                TriggerNeighborReprocess(pos);
             }
         }
 
         private IWorldChunk GetChunkAt(ChunkPos3D pos)
         {
-            if (chunkStatuses.TryGetValue(pos, out var status))
+            return serverAPI.World.BlockAccessor.GetChunk(pos.X, pos.Y, pos.Z);
+        }
+
+        private void TriggerNeighborReprocess(ChunkPos3D pos)
+        {
+            int reprocessedCount = 0;
+            foreach (var offset in NeighborOffsets)
             {
-                return status.Chunk;
+                var neighborPos = new ChunkPos3D(pos.X + offset.X, pos.Y + offset.Y, pos.Z + offset.Z);
+                IWorldChunk neighborChunk = GetChunkAt(neighborPos);
+                if (neighborChunk != null && IsChunkValid(neighborChunk))
+                {
+                    ProcessChunk(neighborPos, neighborChunk);
+                    reprocessedCount++;
+                }
+                else if (ShouldSimulateEmptyChunk(neighborPos))
+                {
+                    reprocessedCount++;
+                }
             }
-            var column = serverAPI.World.BlockAccessor.GetChunk(pos.X, 0, pos.Z);
-            if (column == null || column.Disposed) return null;
-            return null;
         }
 
         public AquiferData GetAquiferData(ChunkPos3D pos)
         {
-            if (!isEnabled) return null;
-            var chunk = GetChunkAt(pos);
+            IWorldChunk chunk = GetChunkAt(pos);
             if (chunk == null) return null;
             var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
-            if (data == null) return null;
-            return data.SmoothedData;
+            return data?.SmoothedData;
         }
-
-        public void ClearAquiferData()
+        public void ClearAquiferData(ChunkPos3D pos)
         {
-            if (!isEnabled) return;
-            foreach (var kvp in chunkStatuses)
+            IWorldChunk chunk = GetChunkAt(pos);
+            if (chunk != null)
             {
-                var chunk = kvp.Value.Chunk;
-                if (chunk != null) chunk.RemoveModdata("aquiferData");
+                chunk.RemoveModdata("aquiferData");
             }
         }
         
         public bool SetAquiferRating(ChunkPos3D pos, int rating)
         {
-            if (rating < 0 || rating > 100)
-            {
-                return false;
-            }
+            if (rating < 0 || rating > 100) return false;
             IWorldChunk chunk = GetChunkAt(pos);
-            if (chunk == null)
-            {
-                return false;
-            }
-            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
-            if (data == null)
-            {
-                data = new AquiferChunkData
-                {
-                    PreSmoothedData = new AquiferData { AquiferRating = rating, IsSalty = false },
-                    SmoothedData = new AquiferData { AquiferRating = rating, IsSalty = false },
-                    Version = CurrentAquiferDataVersion
-                };
-            }
-            else
-            {
-                if (data.SmoothedData == null)
-                {
-                    data.SmoothedData = new AquiferData();
-                }
-                data.SmoothedData.AquiferRating = rating;
-
-                if (data.PreSmoothedData == null)
-                {
-                    data.PreSmoothedData = new AquiferData();
-                }
-                data.PreSmoothedData.AquiferRating = rating;
-            }
+            if (chunk == null) return false;
+            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null) ?? new AquiferChunkData { Version = CurrentAquiferDataVersion };
+            data.PreSmoothedData = new AquiferData { AquiferRating = rating, IsSalty = false };
+            data.SmoothedData = new AquiferData { AquiferRating = rating, IsSalty = false };
             chunk.SetModdata("aquiferData", data);
             return true;
         }
 
-        [ProtoContract]
-        public class AquiferData
-        {
-            [ProtoMember(1)] public int AquiferRating { get; set; }
-            [ProtoMember(2)] public bool IsSalty { get; set; }
-        }
-
-        [ProtoContract]
-        public class AquiferChunkData
-        {
-            [ProtoMember(1)] public AquiferData PreSmoothedData { get; set; }
-            [ProtoMember(2)] public AquiferData SmoothedData { get; set; }
-            [ProtoMember(3)] public int Version { get; set; }
-        }
-
-        public class LocalCounts
-        {
-            public int NormalCount { get; set; }
-            public int SaltCount { get; set; }
-            public int BoilingCount { get; set; }
-        }
-
-        public void RegisterWellspring(BlockPos pos, double depthFactor)
+        public void RegisterWellspring(BlockPos pos)
         {
             int chunkX = pos.X / GlobalConstants.ChunkSize;
             int chunkY = pos.Y / GlobalConstants.ChunkSize;
             int chunkZ = pos.Z / GlobalConstants.ChunkSize;
-            var c = new ChunkPos3D(chunkX, chunkY, chunkZ);
-            var info = new WellspringInfo { Position = pos, DepthFactor = depthFactor };
-            wellspringRegistry.AddOrUpdate(c, _ => new List<WellspringInfo> { info }, (_, list) =>
-            {
-                lock (list)
-                {
-                    list.Add(info);
-                }
-                return list;
-            });
+            IWorldChunk chunk = serverAPI.World.BlockAccessor.GetChunk(chunkX, chunkY, chunkZ);
+            if (chunk == null || chunk.Disposed) return;
+
+            var wellsData = chunk.GetModdata<WellspringData>("wellspringData", null) 
+                              ?? new WellspringData { Wellsprings = new List<WellspringInfo>() };
+            wellsData.Wellsprings.Add(new WellspringInfo { Position = pos });
+            chunk.SetModdata("wellspringData", wellsData);
         }
 
         public void UnregisterWellspring(BlockPos pos)
@@ -617,30 +418,91 @@ namespace HydrateOrDiedrate
             int chunkX = pos.X / GlobalConstants.ChunkSize;
             int chunkY = pos.Y / GlobalConstants.ChunkSize;
             int chunkZ = pos.Z / GlobalConstants.ChunkSize;
-            var c = new ChunkPos3D(chunkX, chunkY, chunkZ);
-            if (wellspringRegistry.TryGetValue(c, out var list))
-            {
-                lock (list) list.RemoveAll(ws => ws.Position.Equals(pos));
-            }
+            IWorldChunk chunk = serverAPI.World.BlockAccessor.GetChunk(chunkX, chunkY, chunkZ);
+            if (chunk == null || chunk.Disposed) return;
+
+            var wellsData = chunk.GetModdata<WellspringData>("wellspringData", null);
+            if (wellsData == null) return;
+            wellsData.Wellsprings.RemoveAll(ws => ws.Position.Equals(pos));
+            chunk.SetModdata("wellspringData", wellsData);
         }
 
         public List<WellspringInfo> GetWellspringsInChunk(ChunkPos3D pos)
         {
-            if (wellspringRegistry.TryGetValue(pos, out var list))
+            IWorldChunk chunk = GetChunkAt(pos);
+            if (chunk == null) return new List<WellspringInfo>();
+
+            var wellsData = chunk.GetModdata<WellspringData>("wellspringData", null);
+            if (wellsData == null || wellsData.Wellsprings == null)
             {
-                lock (list) return new List<WellspringInfo>(list);
+                return new List<WellspringInfo>();
             }
-            return new List<WellspringInfo>();
+            return new List<WellspringInfo>(wellsData.Wellsprings);
         }
 
+        public void AddWellspringToChunk(ChunkPos3D pos, BlockPos blockPos)
+        {
+            IWorldChunk chunk = GetChunkAt(pos);
+            if (chunk == null) return;
+
+            var wellsData = chunk.GetModdata<WellspringData>("wellspringData", null);
+            if (wellsData == null)
+            {
+                wellsData = new WellspringData { Wellsprings = new List<WellspringInfo>() };
+            }
+            else if (wellsData.Wellsprings == null)
+            {
+                wellsData.Wellsprings = new List<WellspringInfo>();
+            }
+            if (!wellsData.Wellsprings.Any(ws => ws.Position.Equals(blockPos)))
+            {
+                wellsData.Wellsprings.Add(new WellspringInfo { Position = blockPos });
+                chunk.SetModdata("wellspringData", wellsData);
+            }
+        }
+
+
+        private bool IsChunkValid(IWorldChunk chunk)
+        {
+            return chunk != null && !chunk.Disposed && chunk.Data != null && chunk.Data.Length > 0;
+        }
+
+        [ProtoContract]
+        public class AquiferData
+        {
+            [ProtoMember(1)]
+            public int AquiferRating { get; set; }
+            [ProtoMember(2)]
+            public bool IsSalty { get; set; }
+        }
+
+        [ProtoContract]
+        public class AquiferChunkData
+        {
+            [ProtoMember(1)]
+            public AquiferData PreSmoothedData { get; set; }
+            [ProtoMember(2)]
+            public AquiferData SmoothedData { get; set; }
+            [ProtoMember(3)]
+            public int Version { get; set; }
+            [ProtoMember(4)]
+            public int ProcessedNeighborCount { get; set; }
+            [ProtoMember(5)]
+            public bool NeedsReprocess { get; set; }
+        }
+
+        [ProtoContract]
+        public class WellspringData
+        {
+            [ProtoMember(1)]
+            public List<WellspringInfo> Wellsprings { get; set; }
+        }
+
+        [ProtoContract]
         public class WellspringInfo
         {
+            [ProtoMember(1)]
             public BlockPos Position { get; set; }
-            public double DepthFactor { get; set; }
-        }
-        private class ClimateData
-        {
-            public float Rainfall { get; set; }
         }
     }
 }

@@ -133,6 +133,8 @@ namespace HydrateOrDiedrate.Config
         
         private const string settingWaterPerish = "hydrateordiedrate:Config.Setting.WaterPerish";
         private const string settingAquiferDataOnProspectingNodeMode = "hydrateordiedrate:Config.Setting.AquiferDataOnProspectingNodeMode";
+        private const string settingShowAquiferProspectingDataOnMap = "hydrateordiedrate:Config.Setting.ShowAquiferProspectingDataOnMap";
+        private const string settingWinchOutputInfo = "hydrateordiedrate:Config.Setting.WinchOutputInfo";
         public ConfigLibCompatibility(ICoreClientAPI api)
         {
             if (!api.ModLoader.IsModEnabled("configlib"))
@@ -654,6 +656,14 @@ namespace HydrateOrDiedrate.Config
             bool aquiferDataOnProspectingNodeMode = config.AquiferDataOnProspectingNodeMode;
             ImGui.Checkbox(Lang.Get(settingAquiferDataOnProspectingNodeMode) + $"##aquiferDataOnProspectingNodeMode-{id}", ref aquiferDataOnProspectingNodeMode);
             config.AquiferDataOnProspectingNodeMode = aquiferDataOnProspectingNodeMode;
+            
+            bool showAquiferProspectingDataOnMap = config.ShowAquiferProspectingDataOnMap;
+            ImGui.Checkbox(Lang.Get(settingShowAquiferProspectingDataOnMap) + $"##showAquiferProspectingDataOnMap-{id}", ref showAquiferProspectingDataOnMap);
+            config.ShowAquiferProspectingDataOnMap = showAquiferProspectingDataOnMap;
+                
+            bool winchOutputInfo = config.WinchOutputInfo;
+            ImGui.Checkbox(Lang.Get(settingWinchOutputInfo) + $"##winchOutputInfo-{id}", ref winchOutputInfo);
+            config.WinchOutputInfo = winchOutputInfo;
         }
     }
 }

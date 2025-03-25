@@ -223,6 +223,10 @@ public class Config : IModConfig
     public bool WaterPerish { get; set; }
     [ProtoMember(95, IsRequired = true)] 
     public bool AquiferDataOnProspectingNodeMode { get; set; }
+    [ProtoMember(96, IsRequired = true)] 
+    public bool ShowAquiferProspectingDataOnMap { get; set; }
+    [ProtoMember(97, IsRequired = true)] 
+    public bool WinchOutputInfo { get; set; }
     public Config()
     {
         // Thirst Settings
@@ -349,6 +353,8 @@ public class Config : IModConfig
         WaterPerish = true;
 
         AquiferDataOnProspectingNodeMode = false;
+        ShowAquiferProspectingDataOnMap = true;
+        WinchOutputInfo = true;
     }
     public Config(ICoreAPI api, Config previousConfig = null)
     {
@@ -474,5 +480,7 @@ public class Config : IModConfig
          
          WaterPerish = previousConfig?.WaterPerish ?? true;
          AquiferDataOnProspectingNodeMode = previousConfig?.AquiferDataOnProspectingNodeMode ?? false;
+         ShowAquiferProspectingDataOnMap = previousConfig?.ShowAquiferProspectingDataOnMap ?? true;
+         WinchOutputInfo = previousConfig?.WinchOutputInfo ?? true;
     }
 }

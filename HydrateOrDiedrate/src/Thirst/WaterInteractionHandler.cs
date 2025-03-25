@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using HydrateOrDiedrate.wellwater;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -14,6 +15,13 @@ namespace HydrateOrDiedrate
         private ICoreAPI _api;
         private Config.Config _config;
         private IServerNetworkChannel serverChannel;
+        private static readonly HashSet<string> allowedBlockCodes = new HashSet<string>
+        {
+            "wellwater",
+            "water",
+            "boilingwater",
+            "saltwater",
+        };
 
         private class PlayerDrinkData
         {
@@ -82,6 +90,7 @@ namespace HydrateOrDiedrate
             if (player == null || player.Entity == null) return;
             CheckPlayerInteraction(dt, player);
         }
+
         private void StopDrinking(IServerPlayer player, PlayerDrinkData drinkData)
         {
             if (drinkData.IsDrinking)
@@ -112,8 +121,6 @@ namespace HydrateOrDiedrate
             bool drinkingKey = _config.SprintToDrink ? player.Entity.Controls.Sprint : player.Entity.Controls.Sneak;
             if (drinkingKey && player.Entity.Controls.RightMouseDown)
             {
-                var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
-                var hungerBehavior = player.Entity.GetBehavior<EntityBehaviorHunger>();
                 var blockSel = RayCastForFluidBlocks(player);
                 if (blockSel == null)
                 {
@@ -123,8 +130,7 @@ namespace HydrateOrDiedrate
                 var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
                 if (block.GetType().GetInterface("IAqueduct") != null || block.Code.Path.StartsWith("furrowedland"))
                 {
-                    var fluidBlock =
-                        player.Entity.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
+                    var fluidBlock = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
                     if (fluidBlock != null && fluidBlock.BlockMaterial == EnumBlockMaterial.Liquid)
                     {
                         block = fluidBlock;
@@ -140,7 +146,6 @@ namespace HydrateOrDiedrate
                     ((player.Entity.RightHandItemSlot?.Itemstack != null) ||
                      (player.Entity.LeftHandItemSlot?.Itemstack != null)))
                 {
-                    // Use a localized error message.
                     player.SendIngameError("handsfull", Lang.Get("hydrateordiedrate:waterinteraction-handsfree"));
                     StopDrinking(player, drinkData);
                     return;
@@ -152,23 +157,26 @@ namespace HydrateOrDiedrate
                     return;
                 }
 
-                var collectible = GetCollectibleObject(block);
-                if (collectible == null)
+                if (block == null || block.Code == null || block.Code.Path == null ||
+                    (!allowedBlockCodes.Any(prefix => block.Code.Path.StartsWith(prefix)) &&
+                     !block.Code.Path.StartsWith("furrowedland") &&
+                     block.GetType().GetInterface("IAqueduct") == null))
                 {
                     StopDrinking(player, drinkData);
                     return;
                 }
 
-                float hydrationValue = BlockHydrationManager.GetHydrationValue(collectible, "*");
+                float hydrationValue = BlockHydrationManager.GetHydrationValue(block, "*");
                 if (hydrationValue != 0)
                 {
                     if (!drinkData.IsDrinking)
                     {
                         drinkData.IsDrinking = true;
                         drinkData.DrinkStartTime = currentTime;
+                        bool isDangerous = hydrationValue < 0 || BlockHydrationManager.IsBlockBoiling(block);
+                        SendDrinkProgressToClient(player, 0f, true, isDangerous);
                     }
-
-                    HandleDrinkingStep(player, blockSel, currentTime, collectible, drinkData);
+                    HandleDrinkingStep(player, blockSel, currentTime, block, drinkData);
                 }
                 else
                 {
@@ -181,18 +189,8 @@ namespace HydrateOrDiedrate
             }
         }
 
-        private CollectibleObject GetCollectibleObject(Block block)
-        {
-            if (block == null)
-            {
-                return null;
-            }
-
-            var collectible = _api.World.Collectibles?.Find(c => c.Code.Path == block.Code.Path);
-            return collectible;
-        }
-
-        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime, CollectibleObject collectible, PlayerDrinkData drinkData)
+        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime,
+            CollectibleObject collectible, PlayerDrinkData drinkData)
         {
             if (!drinkData.IsDrinking) return;
 
@@ -206,18 +204,17 @@ namespace HydrateOrDiedrate
 
             bool isDangerous = hydrationValue < 0 || isBoiling;
 
-            SendDrinkProgressToClient(player, progress, drinkData.IsDrinking, isDangerous);
-
             if (progress >= 1f)
             {
-                SendDrinkProgressToClient(player, 1f, drinkData.IsDrinking, isDangerous);
+                SendDrinkProgressToClient(player, 1f, false, isDangerous);
+
                 var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
                 var hungerBehavior = player.Entity.GetBehavior<EntityBehaviorHunger>();
 
                 if (thirstBehavior == null || thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
                 {
-                    // Localize the full hydration error message.
-                    player.SendIngameError("fullhydration", Lang.Get("hydrateordiedrate:waterinteraction-fullhydration"));
+                    player.SendIngameError("fullhydration",
+                        Lang.Get("hydrateordiedrate:waterinteraction-fullhydration"));
                     StopDrinking(player, drinkData);
                     return;
                 }
@@ -253,14 +250,13 @@ namespace HydrateOrDiedrate
                 {
                     ApplyHeatDamage(player);
                 }
+
                 var block = _api.World.BlockAccessor.GetBlock(blockSel.Position);
                 if (block.Code.Path.StartsWith("wellwater"))
                 {
                     var blockBehavior = block.GetBehavior<BlockBehaviorWellWaterFinite>();
-                    var naturalSourcePos = blockBehavior?.FindNaturalSourceInLiquidChain(
-                        _api.World.BlockAccessor,
-                        blockSel.Position
-                    );
+                    var naturalSourcePos =
+                        blockBehavior?.FindNaturalSourceInLiquidChain(_api.World.BlockAccessor, blockSel.Position);
                     if (naturalSourcePos != null)
                     {
                         var blockEntity = _api.World.BlockAccessor.GetBlockEntity(naturalSourcePos);
@@ -277,11 +273,19 @@ namespace HydrateOrDiedrate
                         }
                     }
                 }
+
                 _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), blockSel.HitPosition.X,
                     blockSel.HitPosition.Y, blockSel.HitPosition.Z, null, true, 32f, 1f);
                 SpawnWaterParticles(blockSel.HitPosition);
-                drinkData.DrinkStartTime = currentTime;
-                SendDrinkProgressToClient(player, 0f, drinkData.IsDrinking, isDangerous);
+                if (player.Entity.Controls.RightMouseDown)
+                {
+                    drinkData.DrinkStartTime = currentTime;
+                    SendDrinkProgressToClient(player, 0f, true, isDangerous);
+                }
+                else
+                {
+                    StopDrinking(player, drinkData);
+                }
             }
         }
 
@@ -301,127 +305,101 @@ namespace HydrateOrDiedrate
 
         private BlockSelection RayCastForFluidBlocks(IServerPlayer player)
         {
-            if (player == null || player.Entity == null)
-            {
-                return null;
-            }
-            if (player.Entity.ServerPos == null || player.Entity.LocalEyePos == null)
-            {
-                return null;
-            }
-            if (_api == null || _api.World == null || _api.World.BlockAccessor == null)
-            {
-                return null;
-            }
-            if (player.Entity.ServerPos.XYZ == null)
-            {
-                return null;
-            }
-            var fromPos = player.Entity.ServerPos.XYZ.Add(0, player.Entity.LocalEyePos.Y, 0);
-            var toPos = fromPos.AheadCopy(5, player.Entity.ServerPos.Pitch, player.Entity.ServerPos.Yaw);
-            var step = toPos.Sub(fromPos).Normalize().Mul(0.1);
-            var currentPos = fromPos.Clone();
+            Vec3d eyePos = player.Entity.ServerPos.XYZ.Add(0, player.Entity.LocalEyePos.Y, 0);
+            Vec3d direction = eyePos.AheadCopy(1, player.Entity.ServerPos.Pitch, player.Entity.ServerPos.Yaw)
+                .Sub(eyePos).Normalize();
+            float maxDistance = 5f;
 
-            while (currentPos.SquareDistanceTo(fromPos) <= 5 * 5)
+            int x = (int)Math.Floor(eyePos.X);
+            int y = (int)Math.Floor(eyePos.Y);
+            int z = (int)Math.Floor(eyePos.Z);
+
+            int stepX = Math.Sign(direction.X);
+            int stepY = Math.Sign(direction.Y);
+            int stepZ = Math.Sign(direction.Z);
+
+            double epsilon = 1e-6;
+            double deltaX = Math.Abs(direction.X) > epsilon ? 1.0 / Math.Abs(direction.X) : double.MaxValue;
+            double deltaY = Math.Abs(direction.Y) > epsilon ? 1.0 / Math.Abs(direction.Y) : double.MaxValue;
+            double deltaZ = Math.Abs(direction.Z) > epsilon ? 1.0 / Math.Abs(direction.Z) : double.MaxValue;
+
+            double tMaxX = (stepX > 0 ? (x + 1 - eyePos.X) : (eyePos.X - x)) * deltaX;
+            double tMaxY = (stepY > 0 ? (y + 1 - eyePos.Y) : (eyePos.Y - y)) * deltaY;
+            double tMaxZ = (stepZ > 0 ? (z + 1 - eyePos.Z) : (eyePos.Z - z)) * deltaZ;
+
+            double t = 0;
+            while (t < maxDistance)
             {
-                var blockPos = new BlockPos((int)currentPos.X, (int)currentPos.Y, (int)currentPos.Z);
+                BlockPos blockPos = new BlockPos(x, y, z);
                 var block = _api.World.BlockAccessor.GetBlock(blockPos);
-
-                if (block == null)
+                if (block != null && block.BlockMaterial == EnumBlockMaterial.Liquid)
                 {
-                    currentPos.Add(step);
-                    continue;
-                }
-
-                if (block.BlockMaterial == EnumBlockMaterial.Liquid)
-                {
+                    Vec3d hitPos = eyePos.Add(direction.Mul(t));
                     return new BlockSelection
                     {
                         Position = blockPos,
-                        HitPosition = currentPos.Clone()
+                        HitPosition = hitPos
                     };
+                }
+                if (tMaxX < tMaxY)
+                {
+                    if (tMaxX < tMaxZ)
+                    {
+                        x += stepX;
+                        t = tMaxX;
+                        tMaxX += deltaX;
+                    }
+                    else
+                    {
+                        z += stepZ;
+                        t = tMaxZ;
+                        tMaxZ += deltaZ;
+                    }
                 }
                 else
                 {
-                    var blockType = block.GetType();
-                    var aqueductInterface = blockType.GetInterface("IAqueduct");
-                    if (aqueductInterface != null)
+                    if (tMaxY < tMaxZ)
                     {
-                        var fluidBlock = _api.World.BlockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid);
-                        if (fluidBlock != null && fluidBlock.LiquidLevel > 0)
-                        {
-                            return new BlockSelection
-                            {
-                                Position = blockPos,
-                                HitPosition = currentPos.Clone()
-                            };
-                        }
+                        y += stepY;
+                        t = tMaxY;
+                        tMaxY += deltaY;
                     }
-                    else if (block.Code != null && block.Code.Path != null &&
-                             block.Code.Path.StartsWith("furrowedland"))
+                    else
                     {
-                        var fluidBlock = _api.World.BlockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid);
-                        if (fluidBlock != null &&
-                            fluidBlock.BlockMaterial == EnumBlockMaterial.Liquid &&
-                            fluidBlock.LiquidLevel > 0)
-                        {
-                            return new BlockSelection
-                            {
-                                Position = blockPos,
-                                HitPosition = currentPos.Clone()
-                            };
-                        }
-                    }
-                    if (block.BlockMaterial != EnumBlockMaterial.Air)
-                    {
-                        return null;
+                        z += stepZ;
+                        t = tMaxZ;
+                        tMaxZ += deltaZ;
                     }
                 }
-
-                currentPos.Add(step);
             }
+
             return null;
         }
+
         private void SpawnWaterParticles(Vec3d pos)
         {
-            SetParticleProperties(_waterParticles, pos, 0.4, 10, 1.5f, new Vec3f(0, 0.8f, 0), true);
-            SetParticleProperties(_whiteParticles, pos, 0.4, 5, 1.5f, new Vec3f(0, 0.8f, 0));
-        }
+            _waterParticles.MinPos = new Vec3d(pos.X - 0.2, pos.Y + 0.1, pos.Z - 0.2);
+            _waterParticles.AddPos = new Vec3d(0.4, 0.0, 0.4);
+            _waterParticles.GravityEffect = 1.5f;
+            _waterParticles.MinVelocity = new Vec3f(0, 0.8f, 0);
+            _waterParticles.AddVelocity = new Vec3f(0.2f, 0.8f, 0.2f);
 
-        private void SetParticleProperties(SimpleParticleProperties particles, Vec3d pos, double addPos, int quantity, float gravityEffect, Vec3f velocity, bool randomizeColor = false)
-        {
-            particles.MinPos.X = pos.X - 0.2;
-            particles.MinPos.Y = pos.Y + 0.1;
-            particles.MinPos.Z = pos.Z - 0.2;
-
-            particles.AddPos.X = addPos;
-            particles.AddPos.Y = 0.0;
-            particles.AddPos.Z = addPos;
-
-            particles.GravityEffect = gravityEffect;
-
-            particles.MinVelocity.X = velocity.X;
-            particles.MinVelocity.Y = velocity.Y;
-            particles.MinVelocity.Z = velocity.Z;
-
-            particles.AddVelocity.X = 0.2f;
-            particles.AddVelocity.Y = velocity.Y;
-            particles.AddVelocity.Z = 0.2f;
-
-            for (int i = 0; i < quantity; i++)
-            {
-                if (randomizeColor)
-                {
-                    float colorModifier = (float)_api.World.Rand.NextDouble() * 0.3f;
-                    particles.Color = ColorUtil.ColorFromRgba(
-                        185 + (int)(colorModifier * 70f),
-                        145 + (int)(colorModifier * 110f),
-                        50 + (int)(colorModifier * 205f),
-                        130 + (int)(colorModifier * 30f)
-                    );
-                }
-                _api.World.SpawnParticles(particles, null);
-            }
+            float colorModifier = (float)_api.World.Rand.NextDouble() * 0.3f;
+            _waterParticles.Color = ColorUtil.ColorFromRgba(
+                185 + (int)(colorModifier * 70f),
+                145 + (int)(colorModifier * 110f),
+                50 + (int)(colorModifier * 205f),
+                130 + (int)(colorModifier * 30f)
+            );
+            _waterParticles.AddQuantity = 10;
+            _whiteParticles.MinPos = new Vec3d(pos.X - 0.2, pos.Y + 0.1, pos.Z - 0.2);
+            _whiteParticles.AddPos = new Vec3d(0.4, 0.0, 0.4);
+            _whiteParticles.GravityEffect = 1.5f;
+            _whiteParticles.MinVelocity = new Vec3f(0, 0.8f, 0);
+            _whiteParticles.AddVelocity = new Vec3f(0.2f, 0.8f, 0.2f);
+            _whiteParticles.AddQuantity = 5;
+            _api.World.SpawnParticles(_waterParticles, null);
+            _api.World.SpawnParticles(_whiteParticles, null);
         }
     }
 }

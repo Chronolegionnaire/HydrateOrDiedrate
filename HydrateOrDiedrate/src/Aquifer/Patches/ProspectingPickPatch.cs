@@ -13,8 +13,7 @@ namespace HydrateOrDiedrate.patches
     [HarmonyPatch(typeof(ItemProspectingPick), "PrintProbeResults")]
     public static class PrintProbeResultsPatch
     {
-        static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, IServerPlayer splr, ItemSlot itemslot,
-            BlockPos pos)
+        static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, IServerPlayer splr, ItemSlot itemslot, BlockPos pos)
         {
             if (world.Api.Side != EnumAppSide.Server || HydrateOrDiedrateModSystem.AquiferManager == null)
             {
@@ -33,64 +32,59 @@ namespace HydrateOrDiedrate.patches
             }
 
             splr.Entity?.WatchedAttributes.SetBool(flagKey, true);
+            int chunkX = pos.X / GlobalConstants.ChunkSize;
+            int chunkY = pos.Y / GlobalConstants.ChunkSize;
+            int chunkZ = pos.Z / GlobalConstants.ChunkSize;
+            ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);
+            var currentAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkCoord);
 
-            Task.Run(() =>
+            double worldHeight = world.BlockAccessor.MapSizeY;
+            double posY = pos.Y;
+
+            if (currentAquiferData == null)
             {
-                int chunkX = pos.X / GlobalConstants.ChunkSize;
-                int chunkY = pos.Y / GlobalConstants.ChunkSize;
-                int chunkZ = pos.Z / GlobalConstants.ChunkSize;
-                ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);
-                var currentAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkCoord);
+                SendMessageToPlayer(world, splr, Lang.Get("hydrateordiedrate:aquifer-no-data"));
+            }
+            else
+            {
+                int currentRating = currentAquiferData.AquiferRating;
+                string aquiferInfo = currentRating == 0
+                    ? Lang.Get("hydrateordiedrate:aquifer-none")
+                    : GetAquiferDescription(currentAquiferData.IsSalty, currentRating, worldHeight, posY);
 
-                double worldHeight = world.BlockAccessor.MapSizeY;
-                double posY = pos.Y;
-                
-                if (currentAquiferData == null)
+                int radius = HydrateOrDiedrateModSystem.LoadedConfig.ProspectingRadius;
+                int bestRating = currentRating;
+                ChunkPos3D bestChunk = chunkCoord;
+                for (int dx = -radius; dx <= radius; dx++)
                 {
-                    SendMessageToPlayer(world, splr, Lang.Get("hydrateordiedrate:aquifer-no-data"));
-                }
-                else
-                {
-                    int currentRating = currentAquiferData.AquiferRating;
-                    string aquiferInfo = currentRating == 0
-                        ? Lang.Get("hydrateordiedrate:aquifer-none")
-                        : GetAquiferDescription(currentAquiferData.IsSalty, currentRating, worldHeight, posY);
-
-                    int radius = HydrateOrDiedrateModSystem.LoadedConfig.ProspectingRadius;
-                    int bestRating = currentRating;
-                    ChunkPos3D bestChunk = chunkCoord;
-                    for (int dx = -radius; dx <= radius; dx++)
+                    for (int dy = -radius; dy <= radius; dy++)
                     {
-                        for (int dy = -radius; dy <= radius; dy++)
+                        for (int dz = -radius; dz <= radius; dz++)
                         {
-                            for (int dz = -radius; dz <= radius; dz++)
+                            if (dx == 0 && dy == 0 && dz == 0) continue;
+                            
+                            ChunkPos3D checkChunk = new ChunkPos3D(chunkX + dx, chunkY + dy, chunkZ + dz);
+                            var checkAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(checkChunk);
+                            if (checkAquiferData != null && checkAquiferData.AquiferRating > bestRating)
                             {
-                                if (dx == 0 && dy == 0 && dz == 0) continue;
-                                
-                                ChunkPos3D checkChunk = new ChunkPos3D(chunkX + dx, chunkY + dy, chunkZ + dz);
-                                var checkAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(checkChunk);
-                                if (checkAquiferData != null && checkAquiferData.AquiferRating > bestRating)
-                                {
-                                    bestRating = checkAquiferData.AquiferRating;
-                                    bestChunk = checkChunk;
-                                }
+                                bestRating = checkAquiferData.AquiferRating;
+                                bestChunk = checkChunk;
                             }
                         }
                     }
-                    if (bestRating > currentRating)
-                    {
-                        int dxDir = bestChunk.X - chunkCoord.X;
-                        int dyDir = bestChunk.Y - chunkCoord.Y;
-                        int dzDir = bestChunk.Z - chunkCoord.Z;
-                        string directionHint = GetDirectionHint(dxDir, dyDir, dzDir);
-                        aquiferInfo += Lang.Get("hydrateordiedrate:aquifer-direction", directionHint);
-                    }
-                    
-                    SendMessageToPlayer(world, splr, aquiferInfo);
                 }
-
-                world.RegisterCallback(_ => { splr.Entity?.WatchedAttributes.SetBool(flagKey, false); }, 500);
-            });
+                if (bestRating > currentRating)
+                {
+                    int dxDir = bestChunk.X - chunkCoord.X;
+                    int dyDir = bestChunk.Y - chunkCoord.Y;
+                    int dzDir = bestChunk.Z - chunkCoord.Z;
+                    string directionHint = GetDirectionHint(dxDir, dyDir, dzDir);
+                    aquiferInfo += Lang.Get("hydrateordiedrate:aquifer-direction", directionHint);
+                }
+                
+                SendMessageToPlayer(world, splr, aquiferInfo);
+            }
+            world.RegisterCallback(_ => { splr.Entity?.WatchedAttributes.SetBool(flagKey, false); }, 500);
         }
 
         private static string GetAquiferDescription(bool isSalty, int rating, double worldHeight, double posY)
@@ -106,6 +100,7 @@ namespace HydrateOrDiedrate.patches
                 _ => Lang.Get("hydrateordiedrate:aquifer-heavy", aquiferType)
             };
         }
+
         private static string GetDirectionHint(int dx, int dy, int dz)
         {
             string horizontal = "";
@@ -167,64 +162,60 @@ namespace HydrateOrDiedrate.patches
                 return;
             }
             splr.Entity?.WatchedAttributes.SetBool(flagKey, true);
-            Task.Run(() =>
+            BlockPos pos = blockSel.Position;
+            int chunkX = pos.X / GlobalConstants.ChunkSize;
+            int chunkY = pos.Y / GlobalConstants.ChunkSize;
+            int chunkZ = pos.Z / GlobalConstants.ChunkSize;
+            ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);
+            var currentAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkCoord);
+
+            double worldHeight = world.BlockAccessor.MapSizeY;
+            double posY = pos.Y;
+
+            if (currentAquiferData == null)
             {
-                BlockPos pos = blockSel.Position;
-                int chunkX = pos.X / GlobalConstants.ChunkSize;
-                int chunkY = pos.Y / GlobalConstants.ChunkSize;
-                int chunkZ = pos.Z / GlobalConstants.ChunkSize;
-                ChunkPos3D chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);
-                var currentAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkCoord);
+                SendMessageToPlayer(world, splr, Lang.Get("hydrateordiedrate:aquifer-no-data"));
+            }
+            else
+            {
+                int currentRating = currentAquiferData.AquiferRating;
+                string aquiferInfo = currentRating == 0
+                    ? Lang.Get("hydrateordiedrate:aquifer-none")
+                    : GetAquiferDescription(currentAquiferData.IsSalty, currentRating, worldHeight, posY);
 
-                double worldHeight = world.BlockAccessor.MapSizeY;
-                double posY = pos.Y;
-
-                if (currentAquiferData == null)
+                int configRadius = HydrateOrDiedrateModSystem.LoadedConfig.ProspectingRadius;
+                int bestRating = currentRating;
+                ChunkPos3D bestChunk = chunkCoord;
+                for (int dx = -configRadius; dx <= configRadius; dx++)
                 {
-                    SendMessageToPlayer(world, splr, Lang.Get("hydrateordiedrate:aquifer-no-data"));
-                }
-                else
-                {
-                    int currentRating = currentAquiferData.AquiferRating;
-                    string aquiferInfo = currentRating == 0
-                        ? Lang.Get("hydrateordiedrate:aquifer-none")
-                        : GetAquiferDescription(currentAquiferData.IsSalty, currentRating, worldHeight, posY);
-
-                    int configRadius = HydrateOrDiedrateModSystem.LoadedConfig.ProspectingRadius;
-                    int bestRating = currentRating;
-                    ChunkPos3D bestChunk = chunkCoord;
-                    for (int dx = -configRadius; dx <= configRadius; dx++)
+                    for (int dy = -configRadius; dy <= configRadius; dy++)
                     {
-                        for (int dy = -configRadius; dy <= configRadius; dy++)
+                        for (int dz = -configRadius; dz <= configRadius; dz++)
                         {
-                            for (int dz = -configRadius; dz <= configRadius; dz++)
+                            if (dx == 0 && dy == 0 && dz == 0) continue;
+                            
+                            ChunkPos3D checkChunk = new ChunkPos3D(chunkX + dx, chunkY + dy, chunkZ + dz);
+                            var checkAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(checkChunk);
+                            if (checkAquiferData != null && checkAquiferData.AquiferRating > bestRating)
                             {
-                                if (dx == 0 && dy == 0 && dz == 0) continue;
-                                
-                                ChunkPos3D checkChunk = new ChunkPos3D(chunkX + dx, chunkY + dy, chunkZ + dz);
-                                var checkAquiferData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(checkChunk);
-                                if (checkAquiferData != null && checkAquiferData.AquiferRating > bestRating)
-                                {
-                                    bestRating = checkAquiferData.AquiferRating;
-                                    bestChunk = checkChunk;
-                                }
+                                bestRating = checkAquiferData.AquiferRating;
+                                bestChunk = checkChunk;
                             }
                         }
                     }
-                    if (bestRating > currentRating)
-                    {
-                        int dxDir = bestChunk.X - chunkCoord.X;
-                        int dyDir = bestChunk.Y - chunkCoord.Y;
-                        int dzDir = bestChunk.Z - chunkCoord.Z;
-                        string directionHint = GetDirectionHint(dxDir, dyDir, dzDir);
-                        aquiferInfo += Lang.Get("hydrateordiedrate:aquifer-direction", directionHint);
-                    }
-                    
-                    SendMessageToPlayer(world, splr, aquiferInfo);
                 }
-
-                world.RegisterCallback(_ => { splr.Entity?.WatchedAttributes.SetBool(flagKey, false); }, 500);
-            });
+                if (bestRating > currentRating)
+                {
+                    int dxDir = bestChunk.X - chunkCoord.X;
+                    int dyDir = bestChunk.Y - chunkCoord.Y;
+                    int dzDir = bestChunk.Z - chunkCoord.Z;
+                    string directionHint = GetDirectionHint(dxDir, dyDir, dzDir);
+                    aquiferInfo += Lang.Get("hydrateordiedrate:aquifer-direction", directionHint);
+                }
+                
+                SendMessageToPlayer(world, splr, aquiferInfo);
+            }
+            world.RegisterCallback(_ => { splr.Entity?.WatchedAttributes.SetBool(flagKey, false); }, 500);
         }
 
         private static string GetAquiferDescription(bool isSalty, int rating, double worldHeight, double posY)
