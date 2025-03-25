@@ -95,19 +95,25 @@ namespace HydrateOrDiedrate.wellwater
 
             bool isMuddy = IsSurroundedBySoil(sapi.World.BlockAccessor, Pos);
             var nearbyWater = CheckForNearbyGameWater(sapi.World.BlockAccessor, Pos);
-
-            if (isMuddy && (nearbyWater.isFresh || nearbyWater.isSalty))
+            if (isMuddy)
             {
-                accumulatedWater += 0.1;
-                if (accumulatedWater >= 1.0)
+                if (nearbyWater.isFresh || nearbyWater.isSalty)
                 {
-                    int wholeLiters = (int)Math.Floor(accumulatedWater);
-                    accumulatedWater -= wholeLiters;
-                    string waterType = nearbyWater.isSalty ? "muddysalt" : "muddy";
-                    AddOrPlaceWater(waterType, wholeLiters);
-                }
+                    accumulatedWater += 0.1;
+                    if (accumulatedWater >= 1.0)
+                    {
+                        int wholeLiters = (int)Math.Floor(accumulatedWater);
+                        accumulatedWater -= wholeLiters;
+                        string waterType = nearbyWater.isSalty ? "muddysalt" : "muddy";
+                        AddOrPlaceWater(waterType, wholeLiters);
+                    }
 
-                return;
+                    return;
+                }
+                else
+                {
+                    return;
+                }
             }
             double remainingRating = (double)aquiferData.AquiferRating / wellsprings.Count;
             var thisSpring = wellsprings.FirstOrDefault(ws => ws.Position.Equals(Pos));
@@ -153,7 +159,7 @@ namespace HydrateOrDiedrate.wellwater
             {
                 BlockPos currentPos = Pos.UpCopy(i + 1);
                 Block currentBlock = blockAccessor.GetBlock(currentPos);
-
+                if (IsBlockingBlock(currentBlock)) break;
                 if (currentBlock?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
                 {
                     var existingBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(currentPos);
@@ -161,6 +167,7 @@ namespace HydrateOrDiedrate.wellwater
                     {
                         int maxVolume = isMuddy ? 9 : 70;
                         int availableCapacity = maxVolume - existingBE.Volume;
+
                         if (availableCapacity > 0)
                         {
                             int addedVolume = Math.Min(availableCapacity, leftoverLiters);
@@ -170,14 +177,17 @@ namespace HydrateOrDiedrate.wellwater
                     }
                 }
             }
+            if (isMuddy && leftoverLiters > 0)
+            {
+                return;
+            }
             for (int i = 0; i < maxDepth && leftoverLiters > 0; i++)
             {
                 BlockPos currentPos = Pos.UpCopy(i + 1);
                 Block currentBlock = blockAccessor.GetBlock(currentPos);
-
+                if (IsBlockingBlock(currentBlock)) break;
                 bool skipPlacementCheck = isMuddy;
                 string blockPath = currentBlock?.Code?.Path;
-
                 bool isAir = blockPath == "air";
                 bool isSpreading = blockPath?.StartsWith($"wellwater{waterType}-spreading-") == true;
                 bool isNatural = blockPath?.StartsWith($"wellwater{waterType}-natural-") == true;
@@ -207,6 +217,15 @@ namespace HydrateOrDiedrate.wellwater
             {
                 accumulatedWater = 0.0;
             }
+        }
+
+        private bool IsBlockingBlock(Block block)
+        {
+            if (block == null) return false;
+            string path = block.Code?.Path ?? "";
+            if (path == "air") return false;
+            if (path.Contains("wellwater")) return false;
+            return true;
         }
         private int DetermineMaxDepthBasedOnCached(string ringMat, int validatedLevels)
         {
@@ -322,15 +341,17 @@ namespace HydrateOrDiedrate.wellwater
         }
         private bool IsValidPlacement(IBlockAccessor blockAccessor, BlockPos pos)
         {
-            Block[] neighbors = new Block[]
-            {
-                blockAccessor.GetBlock(pos.NorthCopy()),
-                blockAccessor.GetBlock(pos.EastCopy()),
-                blockAccessor.GetBlock(pos.SouthCopy()),
-                blockAccessor.GetBlock(pos.WestCopy())
-            };
+            Block northBlock = blockAccessor.GetBlock(pos.NorthCopy());
+            Block eastBlock  = blockAccessor.GetBlock(pos.EastCopy());
+            Block southBlock = blockAccessor.GetBlock(pos.SouthCopy());
+            Block westBlock  = blockAccessor.GetBlock(pos.WestCopy());
 
-            return neighbors.Any(block => block != null && block.SideSolid[BlockFacing.DOWN.Index]);
+            bool northSolid = northBlock != null && northBlock.SideSolid[BlockFacing.SOUTH.Index];
+            bool eastSolid  = eastBlock  != null && eastBlock.SideSolid[BlockFacing.WEST.Index];
+            bool southSolid = southBlock != null && southBlock.SideSolid[BlockFacing.NORTH.Index];
+            bool westSolid  = westBlock  != null && westBlock.SideSolid[BlockFacing.EAST.Index];
+
+            return northSolid && eastSolid && southSolid && westSolid;
         }
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
