@@ -3,6 +3,7 @@ using System.Reflection;
 using HarmonyLib;
 using HydrateOrDiedrate.wellwater;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -37,14 +38,12 @@ namespace HydrateOrDiedrate.patches
             if (string.IsNullOrEmpty(itemCode)) return true;
             var item = api.World.GetItem(new AssetLocation(itemCode));
             if (item == null) return true;
+
             BlockEntityWellWaterData wellWaterData = null;
             var blockBehavior = block.GetBehavior<BlockBehaviorWellWaterFinite>();
             if (blockBehavior != null)
             {
-                var naturalSourcePos = blockBehavior.FindNaturalSourceInLiquidChain(
-                    api.World.BlockAccessor,
-                    pos
-                );
+                var naturalSourcePos = blockBehavior.FindNaturalSourceInLiquidChain(api.World.BlockAccessor, pos);
                 if (naturalSourcePos != null)
                 {
                     var blockEntity = api.World.BlockAccessor.GetBlockEntity(naturalSourcePos);
@@ -68,6 +67,7 @@ namespace HydrateOrDiedrate.patches
                 __result = false;
                 return false;
             }
+
             float availableLitres = wellWaterData.Volume;
             float currentLitres = __instance.GetCurrentLitres(itemslot.Itemstack);
             float containerCapacity = __instance.CapacityLitres - currentLitres;
@@ -76,31 +76,36 @@ namespace HydrateOrDiedrate.patches
                 __result = false;
                 return false;
             }
+
             float transferLitres = Math.Min(availableLitres, containerCapacity);
-            int volumeToTake = (int)transferLitres; 
+            int volumeToTake = (int)transferLitres;
             wellWaterData.Volume -= volumeToTake;
-            float beforeLitres = __instance.GetCurrentLitres(itemslot.Itemstack);
+
             var contentStack = new ItemStack(item)
             {
                 StackSize = (int)(transferLitres * 1000)
             };
-            __instance.TryPutLiquid(itemslot.Itemstack, contentStack, transferLitres);
-            float afterLitres = __instance.GetCurrentLitres(itemslot.Itemstack);
-            if (Math.Abs(afterLitres - beforeLitres) < 0.001f)
+            int moved = __instance.SplitStackAndPerformAction((Entity)byEntity, itemslot, (ItemStack singleItem) =>
+            {
+                float beforeLitres = __instance.GetCurrentLitres(singleItem);
+                int filled = __instance.TryPutLiquid(singleItem, contentStack, transferLitres);
+                float afterLitres = __instance.GetCurrentLitres(singleItem);
+                return (Math.Abs(afterLitres - beforeLitres) >= 0.001f) ? filled : 0;
+            });
+
+            if (moved > 0)
+            {
+                __instance.DoLiquidMovedEffects(byEntity as IPlayer, contentStack, moved, BlockLiquidContainerBase.EnumLiquidDirection.Fill);
+                __result = true;
+            }
+            else
             {
                 __result = false;
-                return false;
             }
-            __instance.DoLiquidMovedEffects(
-                byEntity as IPlayer, 
-                contentStack, 
-                volumeToTake, 
-                BlockLiquidContainerBase.EnumLiquidDirection.Fill
-            );
-            __result = true;
             return false;
         }
     }
+
     [HarmonyPatch(typeof(BlockLiquidContainerBase))]
     [HarmonyPatch("OnGroundIdle", new Type[] { typeof(EntityItem) })]
     public static class Patch_BlockLiquidContainerBase_OnGroundIdle
@@ -169,21 +174,21 @@ namespace HydrateOrDiedrate.patches
                                             float transferLitres = Math.Min(availableLitres, containerCapacity);
                                             int volumeToTake = (int)transferLitres;
                                             wellWaterData.Volume -= volumeToTake;
-                                            float beforeLitres = __instance.GetCurrentLitres(entityItem.Itemstack);
                                             var contentStack = new ItemStack(item)
                                             {
                                                 StackSize = (int)(transferLitres * 100)
                                             };
-                                            __instance.TryPutLiquid(entityItem.Itemstack, contentStack, transferLitres);
-                                            float afterLitres = __instance.GetCurrentLitres(entityItem.Itemstack);
-                                            if (Math.Abs(afterLitres - beforeLitres) >= 0.001f)
+                                            var dummySlot = new DummySlot(entityItem.Itemstack);
+                                            int moved = __instance.SplitStackAndPerformAction(entityItem, dummySlot, (ItemStack singleItem) =>
                                             {
-                                                __instance.DoLiquidMovedEffects(
-                                                    null,
-                                                    contentStack,
-                                                    volumeToTake,
-                                                    BlockLiquidContainerBase.EnumLiquidDirection.Fill
-                                                );
+                                                float beforeLitres = __instance.GetCurrentLitres(singleItem);
+                                                int filled = __instance.TryPutLiquid(singleItem, contentStack, transferLitres);
+                                                float afterLitres = __instance.GetCurrentLitres(singleItem);
+                                                return (Math.Abs(afterLitres - beforeLitres) >= 0.001f) ? filled : 0;
+                                            });
+                                            if (moved > 0)
+                                            {
+                                                __instance.DoLiquidMovedEffects(null, contentStack, moved, BlockLiquidContainerBase.EnumLiquidDirection.Fill);
                                             }
                                         }
                                     }

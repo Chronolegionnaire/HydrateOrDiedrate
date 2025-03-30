@@ -24,7 +24,7 @@ namespace HydrateOrDiedrate.patches
                 var itemWearable = inSlot.Itemstack.Collectible as ItemWearable;
                 if (itemWearable == null) return;
                 ItemStack itemStack = inSlot.Itemstack;
-                ensureConditionExistsMethod?.Invoke(itemWearable, new object[] { inSlot });
+                ensureConditionExistsMethod?.Invoke(itemWearable, new object[] { inSlot, true });
                 float condition = inSlot.Itemstack.Attributes.GetFloat("condition", 1f);
                 if (float.IsNaN(condition))
                 {

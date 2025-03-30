@@ -21,7 +21,7 @@ namespace HydrateOrDiedrate.wellwater
         private bool canPlaceToConfiguredLevel;
         private int partialValidatedHeight;
         private const double MaxDailyOutput = 70.0;
-        private const double MinimumDailyOutput = 1.0;
+        private const double MinimumDailyOutput = 0.0;
         
         private string lastWaterType;
         private double lastDailyLiters ;
@@ -88,24 +88,25 @@ namespace HydrateOrDiedrate.wellwater
             int chunkY = Pos.Y / GlobalConstants.ChunkSize;
             int chunkZ = Pos.Z / GlobalConstants.ChunkSize;
             var chunkCoord = new ChunkPos3D(chunkX, chunkY, chunkZ);
+            bool isMuddy = IsSurroundedBySoil(sapi.World.BlockAccessor, Pos);
             var aquiferData = _aquiferManager.GetAquiferData(chunkCoord);
-            if (aquiferData == null || aquiferData.AquiferRating == 0) return;
+            if (aquiferData.AquiferRating == 0 & !isMuddy) return;
             var wellsprings = _aquiferManager.GetWellspringsInChunk(chunkCoord);
             if (wellsprings.Count == 0) return;
-
-            bool isMuddy = IsSurroundedBySoil(sapi.World.BlockAccessor, Pos);
+            
             var nearbyWater = CheckForNearbyGameWater(sapi.World.BlockAccessor, Pos);
             if (isMuddy)
             {
                 if (nearbyWater.isFresh || nearbyWater.isSalty)
                 {
-                    accumulatedWater += 0.1;
+                    accumulatedWater += 0.001;
                     if (accumulatedWater >= 1.0)
                     {
                         int wholeLiters = (int)Math.Floor(accumulatedWater);
                         accumulatedWater -= wholeLiters;
                         string waterType = nearbyWater.isSalty ? "muddysalt" : "muddy";
                         AddOrPlaceWater(waterType, wholeLiters);
+                        accumulatedWater = 0;
                     }
 
                     return;
@@ -153,13 +154,74 @@ namespace HydrateOrDiedrate.wellwater
         {
             var blockAccessor = sapi.World.BlockAccessor;
             bool isMuddy = IsSurroundedBySoil(blockAccessor, Pos);
+
+            if (waterType == "muddy" || waterType == "muddysalt")
+            {
+                BlockPos firstPos = Pos.UpCopy(1);
+                Block firstBlock = blockAccessor.GetBlock(firstPos);
+                if (IsBlockingBlock(firstBlock))
+                {
+                    accumulatedWater = 0.0;
+                    return;
+                }
+                if (firstBlock?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
+                {
+                    var existingBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(firstPos);
+                    if (existingBE != null)
+                    {
+                        int maxVolume = 9;
+                        if (existingBE.Volume >= maxVolume)
+                        {
+                            accumulatedWater = 0.0;
+                            return;
+                        }
+                        else
+                        {
+                            int addedVolume = Math.Min(maxVolume - existingBE.Volume, litersToAdd);
+                            existingBE.Volume += addedVolume;
+                            accumulatedWater = 0.0;
+                            return;
+                        }
+                    }
+                }
+                bool skipPlacementCheck = isMuddy;
+                string blockPath = firstBlock?.Code?.Path;
+                bool isAir = blockPath == "air";
+                bool isSpreading = blockPath?.StartsWith($"wellwater{waterType}-spreading-") == true;
+                bool isNatural = blockPath?.StartsWith($"wellwater{waterType}-natural-") == true;
+
+                if ((isAir || isSpreading) && !isNatural &&
+                    (skipPlacementCheck || IsValidPlacement(blockAccessor, firstPos)))
+                {
+                    string blockCode = $"hydrateordiedrate:wellwater{waterType}-natural-still-1";
+                    Block waterBlock = sapi.World.GetBlock(new AssetLocation(blockCode));
+                    if (waterBlock != null)
+                    {
+                        blockAccessor.SetBlock(waterBlock.BlockId, firstPos);
+                        blockAccessor.TriggerNeighbourBlockUpdate(firstPos);
+                        var newBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(firstPos);
+                        if (newBE != null)
+                        {
+                            int maxVolume = 9;
+                            int volumeToSet = Math.Min(litersToAdd, maxVolume);
+                            newBE.Volume = volumeToSet;
+                        }
+                    }
+                }
+                accumulatedWater = 0.0;
+                return;
+            }
             int maxDepth = DetermineMaxDepthBasedOnCached(cachedRingMaterial, partialValidatedHeight);
             int leftoverLiters = litersToAdd;
             for (int i = 0; i < maxDepth && leftoverLiters > 0; i++)
             {
                 BlockPos currentPos = Pos.UpCopy(i + 1);
                 Block currentBlock = blockAccessor.GetBlock(currentPos);
-                if (IsBlockingBlock(currentBlock)) break;
+                if (IsBlockingBlock(currentBlock))
+                {
+                    break;
+                }
+
                 if (currentBlock?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
                 {
                     var existingBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(currentPos);
@@ -167,7 +229,6 @@ namespace HydrateOrDiedrate.wellwater
                     {
                         int maxVolume = isMuddy ? 9 : 70;
                         int availableCapacity = maxVolume - existingBE.Volume;
-
                         if (availableCapacity > 0)
                         {
                             int addedVolume = Math.Min(availableCapacity, leftoverLiters);
@@ -177,15 +238,16 @@ namespace HydrateOrDiedrate.wellwater
                     }
                 }
             }
-            if (isMuddy && leftoverLiters > 0)
-            {
-                return;
-            }
+
             for (int i = 0; i < maxDepth && leftoverLiters > 0; i++)
             {
                 BlockPos currentPos = Pos.UpCopy(i + 1);
                 Block currentBlock = blockAccessor.GetBlock(currentPos);
-                if (IsBlockingBlock(currentBlock)) break;
+                if (IsBlockingBlock(currentBlock))
+                {
+                    break;
+                }
+
                 bool skipPlacementCheck = isMuddy;
                 string blockPath = currentBlock?.Code?.Path;
                 bool isAir = blockPath == "air";
@@ -201,7 +263,6 @@ namespace HydrateOrDiedrate.wellwater
                     {
                         blockAccessor.SetBlock(waterBlock.BlockId, currentPos);
                         blockAccessor.TriggerNeighbourBlockUpdate(currentPos);
-
                         var newBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(currentPos);
                         if (newBE != null)
                         {
@@ -213,6 +274,7 @@ namespace HydrateOrDiedrate.wellwater
                     }
                 }
             }
+
             if (leftoverLiters > 0)
             {
                 accumulatedWater = 0.0;
@@ -387,12 +449,11 @@ namespace HydrateOrDiedrate.wellwater
         {
             bool saltyFound = false;
             bool freshFound = false;
-
-            for (int dx = -2; dx <= 2; dx++)
+            for (int dx = -3; dx <= 2; dx++)
             {
-                for (int dy = -2; dy <= 2; dy++)
+                for (int dy = -3; dy <= 2; dy++)
                 {
-                    for (int dz = -2; dz <= 2; dz++)
+                    for (int dz = -3; dz <= 2; dz++)
                     {
                         if (dx == 0 && dy == 0 && dz == 0) continue;
 

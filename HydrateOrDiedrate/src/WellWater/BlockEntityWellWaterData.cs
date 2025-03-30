@@ -60,7 +60,7 @@ namespace HydrateOrDiedrate.wellwater
             }
         }
         private int GetHeightForVolume(int vol) => Math.Min(7, (vol - 1) / 10 + 1);
-        private int GetVolumeForHeight(int height) => height * 10 - 1;
+        private int GetVolumeForHeight(int height) => height * 10 - 9;
         private void ChangeBlockHeight(Block currentBlock, int newHeight)
         {
             if (Api.Side != EnumAppSide.Server) return;

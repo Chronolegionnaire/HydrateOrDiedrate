@@ -113,22 +113,11 @@ namespace HydrateOrDiedrate
             {
                 var config = HydrateOrDiedrateModSystem.LoadedConfig;
                 int chunkSize = GlobalConstants.ChunkSize;
-                int normalWaterBlockCount;
-                int saltWaterBlockCount;
-                int boilingWaterBlockCount;
-                WaterCounts waterCounts = chunk.GetModdata<WaterCounts>("hydrateordiedrate:watercounts", null);
-                if (waterCounts != null)
+                int normalWaterBlockCount = chunk.GetModdata<int>("game:water", 0);
+                int saltWaterBlockCount = chunk.GetModdata<int>("game:saltwater", 0);
+                int boilingWaterBlockCount = chunk.GetModdata<int>("game:boilingwater", 0);
+                if (normalWaterBlockCount == 0 && saltWaterBlockCount == 0 && boilingWaterBlockCount == 0)
                 {
-                    normalWaterBlockCount = waterCounts.GameWater;
-                    saltWaterBlockCount = waterCounts.SaltWater;
-                    boilingWaterBlockCount = waterCounts.BoilingWater;
-                }
-                else
-                {
-                    normalWaterBlockCount = 0;
-                    saltWaterBlockCount = 0;
-                    boilingWaterBlockCount = 0;
-
                     int step = config.AquiferStep;
                     int totalBlocks = chunk.Data.Length;
                     int iterY = chunkSize;
@@ -147,12 +136,12 @@ namespace HydrateOrDiedrate
 
                         int idx = (y * chunkSize + z) * chunkSize + x;
                         if (idx < 0 || idx >= totalBlocks) continue;
-
                         int blockId = chunk.Data[idx];
                         if (blockId < 0) continue;
 
                         Block block = GetBlock(blockId);
                         if (block?.Code?.Path == null) continue;
+
                         if (block.Code.Path.Contains("boilingwater"))
                         {
                             boilingWaterBlockCount++;
@@ -166,14 +155,11 @@ namespace HydrateOrDiedrate
                             }
                         }
                     }
-                    waterCounts = new WaterCounts
-                    {
-                        GameWater = normalWaterBlockCount,
-                        SaltWater = saltWaterBlockCount,
-                        BoilingWater = boilingWaterBlockCount
-                    };
-                    chunk.SetModdata("hydrateordiedrate:watercounts", waterCounts);
+                    chunk.SetModdata("game:water", normalWaterBlockCount);
+                    chunk.SetModdata("game:saltwater", saltWaterBlockCount);
+                    chunk.SetModdata("game:boilingwater", boilingWaterBlockCount);
                 }
+
                 double waterBlockMultiplier = config.AquiferWaterBlockMultiplier;
                 double saltWaterMultiplier = config.AquiferSaltWaterMultiplier;
                 int boilingWaterMultiplier = config.AquiferBoilingWaterMultiplier;
@@ -182,16 +168,11 @@ namespace HydrateOrDiedrate
                 int seaLevel = (int)Math.Round(0.4296875 * worldHeight);
                 int chunkCenterY = (pos.Y * GlobalConstants.ChunkSize) + (GlobalConstants.ChunkSize / 2);
 
-                double weightedNormal = CalculateDiminishingReturns(normalWaterBlockCount, 300.0, 1.0, 0.99) *
-                                        waterBlockMultiplier;
-                double weightedSalt = CalculateDiminishingReturns(saltWaterBlockCount, 300.0, 1.0, 0.99) *
-                                      saltWaterMultiplier;
-                double weightedBoiling = CalculateDiminishingReturns(boilingWaterBlockCount, 1000.0, 10.0, 0.5) *
-                                         boilingWaterMultiplier;
+                double weightedNormal = CalculateDiminishingReturns(normalWaterBlockCount, 300.0, 1.0, 0.99) * waterBlockMultiplier;
+                double weightedSalt = CalculateDiminishingReturns(saltWaterBlockCount, 300.0, 1.0, 0.99) * saltWaterMultiplier;
+                double weightedBoiling = CalculateDiminishingReturns(boilingWaterBlockCount, 1000.0, 10.0, 0.5) * boilingWaterMultiplier;
                 var climate = serverAPI.World.BlockAccessor.GetClimateAt(
-                    new BlockPos(pos.X * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2,
-                        pos.Y * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2,
-                        pos.Z * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2),
+                    new BlockPos(pos.X * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2, pos.Y * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2, pos.Z * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2),
                     EnumGetClimateMode.WorldGenValues);
                 float rainfall = climate?.Rainfall ?? 0f;
 
@@ -207,7 +188,6 @@ namespace HydrateOrDiedrate
                     double normalizedDepth = (seaLevel - chunkCenterY) / (double)(seaLevel - 1);
                     depthMultiplier = 1 + normalizedDepth * config.AquiferDepthMultiplierScale;
                 }
-
                 if (random.NextDouble() < randomMultiplierChance * depthMultiplier)
                 {
                     int baseAdd = random.Next(1, 11);
