@@ -332,7 +332,9 @@ namespace HydrateOrDiedrate
             {
                 BlockPos blockPos = new BlockPos(x, y, z);
                 var block = _api.World.BlockAccessor.GetBlock(blockPos);
-                if (block != null && block.BlockMaterial == EnumBlockMaterial.Liquid)
+                if (block != null && (block.BlockMaterial == EnumBlockMaterial.Liquid ||
+                                      block.Code.Path.StartsWith("furrowedland") ||
+                                      block.GetType().GetInterface("IAqueduct") != null))
                 {
                     Vec3d hitPos = eyePos.Add(direction.Mul(t));
                     return new BlockSelection
@@ -341,6 +343,7 @@ namespace HydrateOrDiedrate
                         HitPosition = hitPos
                     };
                 }
+
                 if (tMaxX < tMaxY)
                 {
                     if (tMaxX < tMaxZ)

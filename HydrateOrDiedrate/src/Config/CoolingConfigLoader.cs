@@ -574,7 +574,44 @@ namespace HydrateOrDiedrate.Config
                     new JObject { ["itemname"] = "simplecloth:clothes-upperbody-tunic-*", ["cooling"] = 1.5 },
                     new JObject { ["itemname"] = "simplecloth:clothes-upperbody-exomis-*", ["cooling"] = 2 },
                     new JObject { ["itemname"] = "simplecloth:clothes-upperbodyover-*", ["cooling"] = 1.5 },
-                    new JObject { ["itemname"] = "simplecloth:clothes-waist-*", ["cooling"] = 0.3 }
+                    new JObject { ["itemname"] = "simplecloth:clothes-waist-*", ["cooling"] = 0.3 },
+                    
+                    new JObject { ["itemname"] = "dressedtokill:clothes-foot-reed-sandals", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-foot-leather-moccasins", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-foot-leather-slipper-boots", ["cooling"] = 0.2 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-foot-blackguard-shoes-repaired", ["cooling"] = 0.2 },
+
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-raw-leather-skirt", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-reed-skirt", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-homespun-pants-brown", ["cooling"] = 0.2 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-homespun-pants-green", ["cooling"] = 0.2 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-homespun-braies", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-homespun-braies-brown", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-homespun-braies-green", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-dungaree-braies", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-lace-leggings", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-lowerbody-blackguard-leggings-repaired", ["cooling"] = 0.2 },
+
+                    new JObject { ["itemname"] = "dressedtokill:clothes-shoulder-fur-scarf", ["cooling"] = 0.2 },
+                    
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-raw-leather-dress", ["cooling"] = 0.2 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-raw-leather-tunic", ["cooling"] = 0.2 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-darkened-raw-leather-tunic", ["cooling"] = 0.2 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-raw-leather-camisole", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-raw-leather-cropped-camisole", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-homespun-shirt-brown", ["cooling"] = 2 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-homespun-shirt-green", ["cooling"] = 2 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-homespun-camisole", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-homespun-camisole-brown", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-homespun-camisole-green", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-homespun-cropped-camisole", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-homespun-cropped-camisole-brown", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-homespun-cropped-camisole-green", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-dungaree-jumpsuit-top", ["cooling"] = 2 },
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-blackguard-shirt-repaired", ["cooling"] = 0.2 },
+                    
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbodyover-leather-vest", ["cooling"] = 1 },
+
                 },
             };
             return defaultConfig;
