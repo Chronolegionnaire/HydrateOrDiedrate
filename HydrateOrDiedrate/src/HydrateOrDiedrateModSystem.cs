@@ -143,6 +143,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             BetterProspectingAquiferPatch.Apply(api);
         }
+        if (api.ModLoader.IsModEnabled("smoothdigestion"))
+        {
+            EntityBehaviorSDHungerPatch.Apply(api);
+        }
     }
     
     public override void StartServerSide(ICoreServerAPI api)

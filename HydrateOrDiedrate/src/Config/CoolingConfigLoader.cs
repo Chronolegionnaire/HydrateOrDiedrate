@@ -611,7 +611,31 @@ namespace HydrateOrDiedrate.Config
                     new JObject { ["itemname"] = "dressedtokill:clothes-upperbody-blackguard-shirt-repaired", ["cooling"] = 0.2 },
                     
                     new JObject { ["itemname"] = "dressedtokill:clothes-upperbodyover-leather-vest", ["cooling"] = 1 },
-
+                    new JObject { ["itemname"] = "dressedtokill:clothes-upperbodyover-sweater", ["cooling"] = 0.2 },
+                    
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-face-cigar", ["cooling"] = 1 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-face-cigarette", ["cooling"] = 1 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-face-cigarillo", ["cooling"] = 1 },
+                    
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-foot-mukluks", ["cooling"] = 0.2 },
+                    
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-hand-leathergloves", ["cooling"] = 0.2 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-hand-leatherglovesfringe", ["cooling"] = 0.2 },
+                    
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-head-strawboaterhat", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-head-derby", ["cooling"] = 2 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-head-cowboyhatopencrown", ["cooling"] = 4 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-head-coonskincap", ["cooling"] = 0.2 },
+                    
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-lowerbody-bluejeans", ["cooling"] = 0.5 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-lowerbody-mountaineerpants", ["cooling"] = 0.2 },
+                    
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-upperbody-cottonshirt", ["cooling"] = 0.8 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-upperbody-cottonshirttucked", ["cooling"] = 0.8 },
+                    
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-upperbodyover-mountaineercoat", ["cooling"] = 0.2 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-upperbodyover-mountaineercoatnofringe", ["cooling"] = 0.2 }
+                    
                 },
             };
             return defaultConfig;
