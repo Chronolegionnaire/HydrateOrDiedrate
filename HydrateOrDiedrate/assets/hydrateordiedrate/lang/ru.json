@@ -273,6 +273,12 @@
   "waterinteraction-handsfree": "Чтобы пить, у вас должны быть свободны обе руки.",
   "waterinteraction-fullhydration": "Вы полностью напились!",
   "pickaxewellmode-digmode": "Режим копания",
-  "pickaxewellmode-digwellspring": "Выкопайте колодезный источник"
+  "pickaxewellmode-digwellspring": "Выкопайте колодезный источник",
+  "winch.springDetected":      "Родник обнаружен ниже:",
+  "winch.noSpring":            "Родник не обнаружен под лебёдкой.",
+  "winch.waterType":           "Тип воды: {0}",
+  "winch.outputRate":          "Производительность: {0}л/день",
+  "winch.retentionVolume":     "Максимальный объем колодца: {0}литров",
+  "winch.totalShaftVolume":    "Текущий объем колодца: {0}л"
 }
  

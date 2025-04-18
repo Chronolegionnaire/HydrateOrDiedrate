@@ -78,6 +78,13 @@
   "hydrateordiedrate:incontainer-item-wellwaterportion-poisoned": "Vergiftetes Brunnenwasser",
   "hydrateordiedrate:incontainer-item-wellwaterportion-muddysalt": "Schlammiges salziges Brunnenwasser",
   "hydrateordiedrate:incontainer-item-wellwaterportion-taintedsalt": "Verunreinigtes salziges Brunnenwasser",
-  "hydrateordiedrate:incontainer-item-wellwaterportion-poisonedsalt": "Vergiftetes salziges Brunnenwasser"
+  "hydrateordiedrate:incontainer-item-wellwaterportion-poisonedsalt": "Vergiftetes salziges Brunnenwasser",
+
+  "winch.springDetected":      "Quellwasser darunter erkannt:",
+  "winch.noSpring":            "Keine Quelle unter der Seilwinde gefunden.",
+  "winch.waterType":           "Wassertyp: {0}",
+  "winch.outputRate":          "Förderrate: {0}L/Tag",
+  "winch.retentionVolume":     "Maximales Brunnenvolumen: {0}Liter",
+  "winch.totalShaftVolume":    "Aktuelles Brunnenvolumen: {0}L"
 
 }

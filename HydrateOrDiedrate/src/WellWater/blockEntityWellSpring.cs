@@ -68,6 +68,7 @@ namespace HydrateOrDiedrate.wellwater
 
         private void OnTick(float dt)
         {
+            double multiplier = HydrateOrDiedrateModSystem.LoadedConfig.WellSpringOutputMultiplier;
             var calendar = sapi.World.Calendar;
             double currentInGameTime = calendar.TotalDays;
             if (lastInGameTime < 0)
@@ -99,7 +100,7 @@ namespace HydrateOrDiedrate.wellwater
             {
                 if (nearbyWater.isFresh || nearbyWater.isSalty)
                 {
-                    accumulatedWater += 0.001;
+                    accumulatedWater += 0.001 * multiplier;
                     if (accumulatedWater >= 1.0)
                     {
                         int wholeLiters = (int)Math.Floor(accumulatedWater);
@@ -120,7 +121,7 @@ namespace HydrateOrDiedrate.wellwater
             var thisSpring = wellsprings.FirstOrDefault(ws => ws.Position.Equals(Pos));
             if (thisSpring == null) return;
 
-            double dailyLiters = Math.Max(MinimumDailyOutput, remainingRating * MaxDailyOutput / 100.0);
+            double dailyLiters = Math.Max(MinimumDailyOutput, (remainingRating * MaxDailyOutput / 100.0)) * multiplier;
             lastDailyLiters = dailyLiters;
             MarkDirty(true);
             double litersThisTick = dailyLiters * elapsedDays;
@@ -418,11 +419,12 @@ namespace HydrateOrDiedrate.wellwater
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);
-            accumulatedWater = tree.GetDouble("accumulatedWater", 0.0);
-            lastDailyLiters = tree.GetDouble("lastDailyLiters", lastDailyLiters);
-            cachedRingMaterial = tree.GetString("cachedRingMaterial", cachedRingMaterial);
-            partialValidatedHeight = tree.GetInt("partialValidatedHeight", 0);
-            lastWaterType = tree.GetString("lastWaterType", "");
+            accumulatedWater     = tree.GetDouble("accumulatedWater", 0.0);
+            lastDailyLiters      = tree.GetDouble("lastDailyLiters", lastDailyLiters);
+            cachedRingMaterial   = tree.GetString("cachedRingMaterial", cachedRingMaterial);
+            partialValidatedHeight = tree.GetInt("partialValidatedHeight", partialValidatedHeight);
+            lastWaterType        = tree.GetString("lastWaterType", lastWaterType);
+            lastInGameTime       = tree.GetDouble("lastInGameTime", lastInGameTime);
             if (worldForResolving.Api.Side == EnumAppSide.Server)
             {
                 _aquiferManager = HydrateOrDiedrateModSystem.AquiferManager;
@@ -436,6 +438,7 @@ namespace HydrateOrDiedrate.wellwater
             tree.SetString("cachedRingMaterial", cachedRingMaterial);
             tree.SetString("lastWaterType", lastWaterType ?? "");
             tree.SetInt("partialValidatedHeight", partialValidatedHeight);
+            tree.SetDouble("lastInGameTime", lastInGameTime);
         }
 
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)

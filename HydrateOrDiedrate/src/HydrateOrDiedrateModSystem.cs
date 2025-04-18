@@ -166,6 +166,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         rainHarvesterManager = new RainHarvesterManager(_serverApi, LoadedConfig);
         api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
         api.Event.PlayerRespawn += OnPlayerRespawn;
+        api.Event.PlayerDisconnect += _waterInteractionHandler.OnPlayerDisconnect;
         api.Event.RegisterGameTickListener(CheckPlayerInteraction, 100);
 
         ThirstCommands.Register(api, LoadedConfig);

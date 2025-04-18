@@ -616,7 +616,9 @@ namespace HydrateOrDiedrate.Config
                     new JObject { ["itemname"] = "americanfrontiersman:clothes-face-cigar", ["cooling"] = 1 },
                     new JObject { ["itemname"] = "americanfrontiersman:clothes-face-cigarette", ["cooling"] = 1 },
                     new JObject { ["itemname"] = "americanfrontiersman:clothes-face-cigarillo", ["cooling"] = 1 },
-                    
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-face-belcourtspectacles", ["cooling"] = 1 },
+                    new JObject { ["itemname"] = "americanfrontiersman:clothes-face-bandanafancy", ["cooling"] = 1 },
+
                     new JObject { ["itemname"] = "americanfrontiersman:clothes-foot-mukluks", ["cooling"] = 0.2 },
                     
                     new JObject { ["itemname"] = "americanfrontiersman:clothes-hand-leathergloves", ["cooling"] = 0.2 },

@@ -54,10 +54,10 @@ namespace HydrateOrDiedrate.patches
                 string existingText = dsc.ToString();
                 if (maxWarmth > 0 || maxCooling > 0)
                 {
-                    string updatedWarmthLine = $"{Lang.Get("hydrateordiedrate:itemwearable-warmth")}:<font color=\"#ff8444\"> +{actualWarmth:0.#}°C</font>";
+                    string updatedWarmthLine = $"Warmth:<font color=\"#ff8444\"> +{actualWarmth:0.#}°C</font>";
                     if (actualCooling != 0)
                     {
-                        updatedWarmthLine += $", {Lang.Get("hydrateordiedrate:itemwearable-cooling")}:<font color=\"#84dfff\"> +{actualCooling:0.#}°C</font>";
+                        updatedWarmthLine += $", Cooling:<font color=\"#84dfff\"> +{actualCooling:0.#}°C</font>";
                     }
                     if (!existingText.Contains(updatedWarmthLine))
                     {
@@ -96,31 +96,31 @@ namespace HydrateOrDiedrate.patches
 
         private static void AppendConditionInfo(StringBuilder dsc, string existingText, float condition)
         {
-            if (!existingText.Contains(Lang.Get("hydrateordiedrate:itemwearable-condition")))
+            if (!existingText.Contains("Condition:"))
             {
                 string condStr = GetConditionString(condition);
                 string color = ColorUtil.Int2Hex(GuiStyle.DamageColorGradient[(int)Math.Min(99f, condition * 200f)]);
-                dsc.AppendLine($"{Lang.Get("hydrateordiedrate:itemwearable-condition")}: <font color=\"{color}\">{condStr}</font>");
+                dsc.AppendLine(Lang.Get("Condition:") + $" <font color=\"{color}\">{condStr}</font>");
                 dsc.AppendLine();
             }
         }
 
         private static string GetConditionString(float condition)
         {
-            if (condition > 0.5f) return Lang.Get("hydrateordiedrate:clothingcondition-good", (int)(condition * 100f));
-            if (condition > 0.4f) return Lang.Get("hydrateordiedrate:clothingcondition-worn", (int)(condition * 100f));
-            if (condition > 0.3f) return Lang.Get("hydrateordiedrate:clothingcondition-heavilyworn", (int)(condition * 100f));
-            if (condition > 0.2f) return Lang.Get("hydrateordiedrate:clothingcondition-tattered", (int)(condition * 100f));
-            if (condition > 0.1f) return Lang.Get("hydrateordiedrate:clothingcondition-heavilytattered", (int)(condition * 100f));
-            return Lang.Get("hydrateordiedrate:clothingcondition-terrible", (int)(condition * 100f));
+            if (condition > 0.5f) return Lang.Get("clothingcondition-good", (int)(condition * 100f));
+            if (condition > 0.4f) return Lang.Get("clothingcondition-worn", (int)(condition * 100f));
+            if (condition > 0.3f) return Lang.Get("clothingcondition-heavilyworn", (int)(condition * 100f));
+            if (condition > 0.2f) return Lang.Get("clothingcondition-tattered", (int)(condition * 100f));
+            if (condition > 0.1f) return Lang.Get("clothingcondition-heavilytattered", (int)(condition * 100f));
+            return Lang.Get("clothingcondition-terrible", (int)(condition * 100f));
         }
 
         private static void AppendMaxCoolingInfo(StringBuilder dsc, string existingText, float maxCooling, ItemSlot inSlot)
         {
             if ((inSlot.Itemstack.ItemAttributes["warmth"].Exists || maxCooling > 0) &&
-                !existingText.Contains(Lang.Get("hydrateordiedrate:itemwearable-maxcooling")))
+                !existingText.Contains("Max Cooling:"))
             {
-                string maxWarmthLinePrefix = $"{Lang.Get("hydrateordiedrate:itemwearable-maxwarmth")}:";
+                string maxWarmthLinePrefix = "Max warmth:";
                 int maxWarmthIndex = existingText.IndexOf(maxWarmthLinePrefix);
 
                 if (maxWarmthIndex != -1)
@@ -129,13 +129,13 @@ namespace HydrateOrDiedrate.patches
                     if (endOfMaxWarmthLine == -1) endOfMaxWarmthLine = existingText.Length;
 
                     string maxWarmthLine = existingText.Substring(maxWarmthIndex, endOfMaxWarmthLine - maxWarmthIndex).Trim();
-                    string updatedMaxWarmthLine = $"{maxWarmthLine} | {Lang.Get("hydrateordiedrate:itemwearable-maxcooling")}: {maxCooling:0.#}°C";
+                    string updatedMaxWarmthLine = $"{maxWarmthLine} | Max Cooling: {maxCooling:0.#}°C";
 
                     dsc.Replace(maxWarmthLine, updatedMaxWarmthLine);
                 }
                 else if (maxCooling > 0)
                 {
-                    dsc.AppendLine($"{Lang.Get("hydrateordiedrate:itemwearable-maxcooling")}: {maxCooling:0.#}°C");
+                    dsc.AppendLine($"Max Cooling: {maxCooling:0.#}°C");
                 }
             }
         }

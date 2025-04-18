@@ -53,14 +53,17 @@ namespace HydrateOrDiedrate
             );
         }
 
-        public void Reset(Config.Config newConfig)
-        {
-            _config = newConfig;
-        }
-
         public void Initialize(IServerNetworkChannel channel)
         {
             serverChannel = channel;
+        }
+        
+        public void OnPlayerDisconnect(IServerPlayer player)
+        {
+            if (player?.PlayerUID != null)
+            {
+                playerDrinkData.Remove(player.PlayerUID);
+            }
         }
 
         private SimpleParticleProperties CreateParticleProperties(int color, Vec3f minVelocity, Vec3f maxVelocity, string climateColorMap = null)
@@ -111,81 +114,94 @@ namespace HydrateOrDiedrate
 
         public void CheckPlayerInteraction(float dt, IServerPlayer player)
         {
-            long currentTime = _api.World.ElapsedMilliseconds;
-            if (!playerDrinkData.TryGetValue(player.PlayerUID, out var drinkData))
+            try
             {
-                drinkData = new PlayerDrinkData();
-                playerDrinkData[player.PlayerUID] = drinkData;
-            }
-
-            bool drinkingKey = _config.SprintToDrink ? player.Entity.Controls.Sprint : player.Entity.Controls.Sneak;
-            if (drinkingKey && player.Entity.Controls.RightMouseDown)
-            {
-                var blockSel = RayCastForFluidBlocks(player);
-                if (blockSel == null)
+                long currentTime = _api.World.ElapsedMilliseconds;
+                if (!playerDrinkData.TryGetValue(player.PlayerUID, out var drinkData))
                 {
-                    StopDrinking(player, drinkData);
-                    return;
+                    drinkData = new PlayerDrinkData();
+                    playerDrinkData[player.PlayerUID] = drinkData;
                 }
-                var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
-                if (block.GetType().GetInterface("IAqueduct") != null || block.Code.Path.StartsWith("furrowedland"))
+
+                bool drinkingKey = _config.SprintToDrink ? player.Entity.Controls.Sprint : player.Entity.Controls.Sneak;
+                if (drinkingKey && player.Entity.Controls.RightMouseDown)
                 {
-                    var fluidBlock = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
-                    if (fluidBlock != null && fluidBlock.BlockMaterial == EnumBlockMaterial.Liquid)
-                    {
-                        block = fluidBlock;
-                    }
-                    else
+                    var blockSel = RayCastForFluidBlocks(player);
+                    if (blockSel?.Position == null)
                     {
                         StopDrinking(player, drinkData);
                         return;
                     }
-                }
 
-                if (block.BlockMaterial == EnumBlockMaterial.Liquid &&
-                    ((player.Entity.RightHandItemSlot?.Itemstack != null) ||
-                     (player.Entity.LeftHandItemSlot?.Itemstack != null)))
-                {
-                    player.SendIngameError("handsfull", Lang.Get("hydrateordiedrate:waterinteraction-handsfree"));
-                    StopDrinking(player, drinkData);
-                    return;
-                }
-
-                if (IsHeadInWater(player))
-                {
-                    StopDrinking(player, drinkData);
-                    return;
-                }
-
-                if (block == null || block.Code == null || block.Code.Path == null ||
-                    (!allowedBlockCodes.Any(prefix => block.Code.Path.StartsWith(prefix)) &&
-                     !block.Code.Path.StartsWith("furrowedland") &&
-                     block.GetType().GetInterface("IAqueduct") == null))
-                {
-                    StopDrinking(player, drinkData);
-                    return;
-                }
-
-                float hydrationValue = BlockHydrationManager.GetHydrationValue(block, "*");
-                if (hydrationValue != 0)
-                {
-                    if (!drinkData.IsDrinking)
+                    var block = player.Entity.World.BlockAccessor.GetBlock(blockSel.Position);
+                    if (block.GetType().GetInterface("IAqueduct") != null || block.Code.Path.StartsWith("furrowedland"))
                     {
-                        drinkData.IsDrinking = true;
-                        drinkData.DrinkStartTime = currentTime;
-                        bool isDangerous = hydrationValue < 0 || BlockHydrationManager.IsBlockBoiling(block);
-                        SendDrinkProgressToClient(player, 0f, true, isDangerous);
+                        var fluidBlock =
+                            player.Entity.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
+                        if (fluidBlock != null && fluidBlock.BlockMaterial == EnumBlockMaterial.Liquid)
+                        {
+                            block = fluidBlock;
+                        }
+                        else
+                        {
+                            StopDrinking(player, drinkData);
+                            return;
+                        }
                     }
-                    HandleDrinkingStep(player, blockSel, currentTime, block, drinkData);
+
+                    if (block.BlockMaterial == EnumBlockMaterial.Liquid &&
+                        ((player.Entity.RightHandItemSlot?.Itemstack != null) ||
+                         (player.Entity.LeftHandItemSlot?.Itemstack != null)))
+                    {
+                        player.SendIngameError("handsfull", Lang.Get("hydrateordiedrate:waterinteraction-handsfree"));
+                        StopDrinking(player, drinkData);
+                        return;
+                    }
+
+                    if (IsHeadInWater(player))
+                    {
+                        StopDrinking(player, drinkData);
+                        return;
+                    }
+
+                    if (block == null || block.Code == null || block.Code.Path == null ||
+                        (!allowedBlockCodes.Any(prefix => block.Code.Path.StartsWith(prefix)) &&
+                         !block.Code.Path.StartsWith("furrowedland") &&
+                         block.GetType().GetInterface("IAqueduct") == null))
+                    {
+                        StopDrinking(player, drinkData);
+                        return;
+                    }
+
+                    float hydrationValue = BlockHydrationManager.GetHydrationValue(block, "*");
+                    if (hydrationValue != 0)
+                    {
+                        if (!drinkData.IsDrinking)
+                        {
+                            drinkData.IsDrinking = true;
+                            drinkData.DrinkStartTime = currentTime;
+                            bool isDangerous = hydrationValue < 0 || BlockHydrationManager.IsBlockBoiling(block);
+                            SendDrinkProgressToClient(player, 0f, true, isDangerous);
+                        }
+
+                        HandleDrinkingStep(player, blockSel, currentTime, block, drinkData);
+                    }
+                    else
+                    {
+                        StopDrinking(player, drinkData);
+                    }
                 }
                 else
                 {
                     StopDrinking(player, drinkData);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                StopDrinking(player, drinkData);
+                if (playerDrinkData.TryGetValue(player.PlayerUID, out var dd))
+                {
+                    StopDrinking(player, dd);
+                }
             }
         }
 
@@ -194,6 +210,12 @@ namespace HydrateOrDiedrate
         {
             if (!drinkData.IsDrinking) return;
 
+            if (collectible == null)
+            {
+                StopDrinking(player, drinkData);
+                return;
+            }
+            
             float progress = (float)(currentTime - drinkData.DrinkStartTime) / (float)drinkDuration;
             progress = Math.Min(1f, progress);
 
@@ -291,7 +313,13 @@ namespace HydrateOrDiedrate
 
         public void SendDrinkProgressToClient(IServerPlayer player, float progress, bool isDrinking, bool isDangerous)
         {
-            serverChannel.SendPacket(new DrinkProgressPacket { Progress = progress, IsDrinking = isDrinking, IsDangerous = isDangerous }, player);
+            if (serverChannel != null && player != null)
+            {
+                serverChannel.SendPacket(
+                    new DrinkProgressPacket { Progress = progress, IsDrinking = isDrinking, IsDangerous = isDangerous },
+                    player
+                );
+            }
         }
 
         private void ApplyHeatDamage(IServerPlayer player)
@@ -305,56 +333,65 @@ namespace HydrateOrDiedrate
 
         private BlockSelection RayCastForFluidBlocks(IServerPlayer player)
         {
-            Vec3d eyePos = player.Entity.ServerPos.XYZ.Add(0, player.Entity.LocalEyePos.Y, 0);
-            Vec3d direction = eyePos.AheadCopy(1, player.Entity.ServerPos.Pitch, player.Entity.ServerPos.Yaw)
-                .Sub(eyePos).Normalize();
+            if (!(_api is ICoreServerAPI)) return null;
+            if (player?.Entity == null) return null;
+
+            var world = _api.World;
+            var accessor = world?.BlockAccessor;
+            if (accessor == null) return null;
+
+            Vec3d eyePos = player.Entity.ServerPos.XYZ
+                .Add(0, player.Entity.LocalEyePos.Y, 0);
+            Vec3d direction = eyePos
+                .AheadCopy(1, player.Entity.ServerPos.Pitch, player.Entity.ServerPos.Yaw)
+                .Sub(eyePos)
+                .Normalize();
             float maxDistance = 5f;
 
             int x = (int)Math.Floor(eyePos.X);
             int y = (int)Math.Floor(eyePos.Y);
             int z = (int)Math.Floor(eyePos.Z);
 
-            int stepX = Math.Sign(direction.X);
-            int stepY = Math.Sign(direction.Y);
-            int stepZ = Math.Sign(direction.Z);
-
             double epsilon = 1e-6;
             double deltaX = Math.Abs(direction.X) > epsilon ? 1.0 / Math.Abs(direction.X) : double.MaxValue;
             double deltaY = Math.Abs(direction.Y) > epsilon ? 1.0 / Math.Abs(direction.Y) : double.MaxValue;
             double deltaZ = Math.Abs(direction.Z) > epsilon ? 1.0 / Math.Abs(direction.Z) : double.MaxValue;
 
-            double tMaxX = (stepX > 0 ? (x + 1 - eyePos.X) : (eyePos.X - x)) * deltaX;
-            double tMaxY = (stepY > 0 ? (y + 1 - eyePos.Y) : (eyePos.Y - y)) * deltaY;
-            double tMaxZ = (stepZ > 0 ? (z + 1 - eyePos.Z) : (eyePos.Z - z)) * deltaZ;
-
+            double tMaxX = (Math.Sign(direction.X) > 0 ? (x + 1 - eyePos.X) : (eyePos.X - x)) * deltaX;
+            double tMaxY = (Math.Sign(direction.Y) > 0 ? (y + 1 - eyePos.Y) : (eyePos.Y - y)) * deltaY;
+            double tMaxZ = (Math.Sign(direction.Z) > 0 ? (z + 1 - eyePos.Z) : (eyePos.Z - z)) * deltaZ;
             double t = 0;
+
             while (t < maxDistance)
             {
-                BlockPos blockPos = new BlockPos(x, y, z);
-                var block = _api.World.BlockAccessor.GetBlock(blockPos);
-                if (block != null && (block.BlockMaterial == EnumBlockMaterial.Liquid ||
-                                      block.Code.Path.StartsWith("furrowedland") ||
-                                      block.GetType().GetInterface("IAqueduct") != null))
+                var pos = new BlockPos(x, y, z);
+                if (!accessor.IsValidPos(pos)) break;
+
+                var block = accessor.GetBlock(pos);
+                if (block != null
+                    && block.Code != null
+                    && (block.BlockMaterial == EnumBlockMaterial.Liquid
+                        || block.Code.Path.StartsWith("furrowedland")
+                        || block.GetType().GetInterface("IAqueduct") != null))
                 {
-                    Vec3d hitPos = eyePos.Add(direction.Mul(t));
+                    var hitPos = eyePos.Add(direction.Mul(t));
                     return new BlockSelection
                     {
-                        Position = blockPos,
+                        Position = pos,
                         HitPosition = hitPos
                     };
                 }
-
                 if (tMaxX < tMaxY)
                 {
                     if (tMaxX < tMaxZ)
                     {
-                        x += stepX;
+                        x += Math.Sign(direction.X);
                         t = tMaxX;
                         tMaxX += deltaX;
                     }
                     else
                     {
-                        z += stepZ;
+                        z += Math.Sign(direction.Z);
                         t = tMaxZ;
                         tMaxZ += deltaZ;
                     }
@@ -363,13 +400,13 @@ namespace HydrateOrDiedrate
                 {
                     if (tMaxY < tMaxZ)
                     {
-                        y += stepY;
+                        y += Math.Sign(direction.Y);
                         t = tMaxY;
                         tMaxY += deltaY;
                     }
                     else
                     {
-                        z += stepZ;
+                        z += Math.Sign(direction.Z);
                         t = tMaxZ;
                         tMaxZ += deltaZ;
                     }

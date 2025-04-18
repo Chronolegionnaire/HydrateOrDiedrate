@@ -871,6 +871,26 @@ namespace HydrateOrDiedrate.winch
         {
             get { return Lang.Get("hydrateordiedrate:Winch"); }
         }
+        private long GetTotalShaftWaterVolume(BlockPos springPos)
+        {
+            long total = 0;
+            var pos = Pos.DownCopy();
+            while (pos.Y >= 0 && !pos.Equals(springPos))
+            {
+                var be = Api.World.BlockAccessor.GetBlockEntity(pos);
+                if (be is HydrateOrDiedrate.wellwater.BlockEntityWellWaterData waterData)
+                {
+                    total += waterData.Volume;
+                }
+                var block = Api.World.BlockAccessor.GetBlock(pos);
+                var path = block.Code.Path.ToLowerInvariant();
+                if (path.StartsWith("game:soil") || path.StartsWith("game:stone")) break;
+
+                pos = pos.DownCopy();
+            }
+            return total;
+        }
+
         
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
@@ -906,17 +926,31 @@ namespace HydrateOrDiedrate.winch
                 searchPos = searchPos.DownCopy();
                 searchLevels++;
             }
-
             if (foundSpring != null)
             {
-                dsc.AppendLine("Wellspring detected below:");
-                dsc.AppendLine($"  Water Type: {foundSpring.GetWaterType()}");
-                dsc.AppendLine($"  Output Rate: {foundSpring.GetCurrentOutputRate():F1} L/day");
-                dsc.AppendLine($"  Retention Depth: {foundSpring.GetRetentionDepth()} blocks");
+                dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.springDetected"));
+                dsc.AppendLine("  " + Lang.Get(
+                    "hydrateordiedrate:winch.waterType",
+                    foundSpring.GetWaterType()
+                ));
+                dsc.AppendLine("  " + Lang.Get(
+                    "hydrateordiedrate:winch.outputRate",
+                    foundSpring.GetCurrentOutputRate().ToString("F1")
+                ));
+                int retentionVol = foundSpring.GetRetentionDepth() * 70;
+                dsc.AppendLine("  " + Lang.Get(
+                    "hydrateordiedrate:winch.retentionVolume",
+                    retentionVol
+                ));
+                long totalVol = GetTotalShaftWaterVolume(foundSpring.Pos);
+                dsc.AppendLine("  " + Lang.Get(
+                    "hydrateordiedrate:winch.totalShaftVolume",
+                    totalVol
+                ));
             }
             else
             {
-                dsc.AppendLine("No wellspring detected below winch.");
+                dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.noSpring"));
             }
         }
     }
