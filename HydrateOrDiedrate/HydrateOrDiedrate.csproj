@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <Reference Include="ACulinaryArtillery">
-      <HintPath>..\..\..\Documents\ACulinaryArtillery.dll</HintPath>
+      <HintPath>refDlls\ACulinaryArtillery.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VintagestoryAPI">
@@ -76,7 +76,7 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="xskills">
-      <HintPath>..\..\..\Documents\xskills.dll</HintPath>
+      <HintPath>refDlls\xskills.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="OpenTK">
