@@ -138,27 +138,27 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:fruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 8,
-                            ["game:fruit-cranberry"] = 10,
-                            ["game:fruit-blueberry"] = 7,
-                            ["game:fruit-pinkapple"] = 12,
+                            ["*"] = 40,
+                            ["game:fruit-cranberry"] = 40,
+                            ["game:fruit-blueberry"] = 40,
+                            ["game:fruit-pinkapple"] = 30,
                             ["game:fruit-lychee"] = 30,
-                            ["game:fruit-redcurrant"] = 15,
+                            ["game:fruit-redcurrant"] = 40,
                             ["game:fruit-breadfruit"] = 5,
-                            ["game:fruit-pineapple"] = 40,
-                            ["game:fruit-blackcurrant"] = 15,
-                            ["game:fruit-saguaro"] = 30,
-                            ["game:fruit-whitecurrant"] = 15,
-                            ["game:fruit-redapple"] = 18,
-                            ["game:fruit-yellowapple"] = 18,
-                            ["game:fruit-cherry"] = 15,
-                            ["game:fruit-peach"] = 25,
-                            ["game:fruit-pear"] = 20,
+                            ["game:fruit-pineapple"] = 35,
+                            ["game:fruit-blackcurrant"] = 40,
+                            ["game:fruit-saguaro"] = 15,
+                            ["game:fruit-whitecurrant"] = 40,
+                            ["game:fruit-redapple"] = 30,
+                            ["game:fruit-yellowapple"] = 30,
+                            ["game:fruit-cherry"] = 40,
+                            ["game:fruit-peach"] = 50,
+                            ["game:fruit-pear"] = 35,
                             ["game:fruit-orange"] = 35,
-                            ["game:fruit-mango"] = 30,
-                            ["game:fruit-pomegranate"] = 20,
-                            ["game:fruit-redgrapes"] = 30,
-                            ["game:fruit-greengrapes"] = 30
+                            ["game:fruit-mango"] = 50,
+                            ["game:fruit-pomegranate"] = 40,
+                            ["game:fruit-redgrapes"] = 40,
+                            ["game:fruit-greengrapes"] = 40
                         }
                     },
                     new JObject
@@ -171,35 +171,35 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:bread-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                            ["game:bread-spelt"] = -5,
-                            ["game:bread-rye"] = -4,
-                            ["game:bread-flax"] = -3,
-                            ["game:bread-rice"] = -6,
-                            ["game:bread-cassava"] = -5,
-                            ["game:bread-amaranth"] = -4,
-                            ["game:bread-sunflower"] = -3,
-                            ["game:bread-spelt-partbaked"] = -5,
-                            ["game:bread-rye-partbaked"] = -4,
-                            ["game:bread-flax-partbaked"] = -3,
-                            ["game:bread-rice-partbaked"] = -6,
-                            ["game:bread-cassava-partbaked"] = -5,
-                            ["game:bread-amaranth-partbaked"] = -4,
-                            ["game:bread-sunflower-partbaked"] = -3,
-                            ["game:bread-spelt-perfect"] = -5,
-                            ["game:bread-rye-perfect"] = -4,
-                            ["game:bread-flax-perfect"] = -3,
-                            ["game:bread-rice-perfect"] = -6,
-                            ["game:bread-cassava-perfect"] = -5,
-                            ["game:bread-amaranth-perfect"] = -4,
-                            ["game:bread-sunflower-perfect"] = -3,
-                            ["game:bread-spelt-charred"] = -10,
-                            ["game:bread-rye-charred"] = -9,
-                            ["game:bread-flax-charred"] = -8,
-                            ["game:bread-rice-charred"] = -11,
-                            ["game:bread-cassava-charred"] = -10,
-                            ["game:bread-amaranth-charred"] = -9,
-                            ["game:bread-sunflower-charred"] = -8
+                            ["*"] = -50,
+                            ["game:bread-spelt"] = -50,
+                            ["game:bread-rye"] = -50,
+                            ["game:bread-flax"] = -40,
+                            ["game:bread-rice"] = -60,
+                            ["game:bread-cassava"] = -50,
+                            ["game:bread-amaranth"] = -40,
+                            ["game:bread-sunflower"] = -50,
+                            ["game:bread-spelt-partbaked"] = -40,
+                            ["game:bread-rye-partbaked"] = -40,
+                            ["game:bread-flax-partbaked"] = -35,
+                            ["game:bread-rice-partbaked"] = -50,
+                            ["game:bread-cassava-partbaked"] = -40,
+                            ["game:bread-amaranth-partbaked"] = -35,
+                            ["game:bread-sunflower-partbaked"] = -40,
+                            ["game:bread-spelt-perfect"] = -50,
+                            ["game:bread-rye-perfect"] = -50,
+                            ["game:bread-flax-perfect"] = -40,
+                            ["game:bread-rice-perfect"] = -60,
+                            ["game:bread-cassava-perfect"] = -50,
+                            ["game:bread-amaranth-perfect"] = -40,
+                            ["game:bread-sunflower-perfect"] = -50,
+                            ["game:bread-spelt-charred"] = -80,
+                            ["game:bread-rye-charred"] = -100,
+                            ["game:bread-flax-charred"] = -70,
+                            ["game:bread-rice-charred"] = -80,
+                            ["game:bread-cassava-charred"] = -80,
+                            ["game:bread-amaranth-charred"] = -70,
+                            ["game:bread-sunflower-charred"] = -80
                         }
                     },
                     new JObject
@@ -207,24 +207,24 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:bushmeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                            ["game:bushmeat-cooked"] = -5,
-                            ["game:bushmeat-cured"] = -10
+                            ["*"] = -80,
+                            ["game:bushmeat-cooked"] = -70,
+                            ["game:bushmeat-cured"] = -90
                         }
                     },
                     new JObject
                     {
                         ["itemname"] = "game:butter",
-                        ["hydration"] = -5
+                        ["hydration"] = -80
                     },
                     new JObject
                     {
                         ["itemname"] = "game:cheese-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                            ["game:cheese-blue-1slice"] = -4,
-                            ["game:cheese-cheddar-1slice"] = -3
+                            ["*"] = -50,
+                            ["game:cheese-blue-1slice"] = -60,
+                            ["game:cheese-cheddar-1slice"] = -45
                         }
                     },
                     new JObject
@@ -248,11 +248,11 @@ namespace HydrateOrDiedrate.Config
                         ["hydrationByType"] = new JObject
                         {
                             ["*"] = -5,
-                            ["game:fish-raw"] = 5,
-                            ["game:fish-cooked"] = -2,
-                            ["game:fish-cured"] = -10,
-                            ["game:fish-smoked"] = -8,
-                            ["game:fish-cured-smoked"] = -12
+                            ["game:fish-raw"] = 15,
+                            ["game:fish-cooked"] = -20,
+                            ["game:fish-cured"] = -70,
+                            ["game:fish-smoked"] = -80,
+                            ["game:fish-cured-smoked"] = -120
                         }
                     },
                     new JObject
@@ -260,7 +260,7 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:grain-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -3
+                            ["*"] = -30
                         }
                     },
                     new JObject
@@ -268,7 +268,7 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:insect-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 2
+                            ["*"] = 10
                         }
                     },
                     new JObject
@@ -276,7 +276,7 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:legume-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -3
+                            ["*"] = -30
                         }
                     },
                     new JObject
@@ -284,32 +284,32 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:pemmican-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                            ["game:pemmican-raw-basic"] = -5,
-                            ["game:pemmican-raw-salted"] = -7,
-                            ["game:pemmican-dried-basic"] = -10,
-                            ["game:pemmican-dried-salted"] = -12
+                            ["*"] = -150,
+                            ["game:pemmican-raw-basic"] = -75,
+                            ["game:pemmican-raw-salted"] = -120,
+                            ["game:pemmican-dried-basic"] = -150,
+                            ["game:pemmican-dried-salted"] = -200
                         }
                     },
                     new JObject
                     {
                         ["itemname"] = "game:pickledlegume-soybean",
-                        ["hydration"] = 2
+                        ["hydration"] = 20
                     },
                     new JObject
                     {
                         ["itemname"] = "game:pickledvegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 3,
-                            ["game:pickledvegetable-carrot"] = 3,
-                            ["game:pickledvegetable-cabbage"] = 3,
-                            ["game:pickledvegetable-onion"] = 2,
-                            ["game:pickledvegetable-turnip"] = 3,
-                            ["game:pickledvegetable-parsnip"] = 3,
-                            ["game:pickledvegetable-pumpkin"] = 4,
-                            ["game:pickledvegetable-bellpepper"] = 4,
-                            ["game:pickledvegetable-olive"] = 1
+                            ["*"] = 30,
+                            ["game:pickledvegetable-carrot"] = 30,
+                            ["game:pickledvegetable-cabbage"] = 30,
+                            ["game:pickledvegetable-onion"] = 10,
+                            ["game:pickledvegetable-turnip"] = 15,
+                            ["game:pickledvegetable-parsnip"] = 10,
+                            ["game:pickledvegetable-pumpkin"] = 40,
+                            ["game:pickledvegetable-bellpepper"] = 50,
+                            ["game:pickledvegetable-olive"] = 10
                         }
                     },
                     new JObject
@@ -317,9 +317,9 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:poultry-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                            ["game:poultry-cooked"] = -5,
-                            ["game:poultry-cured"] = -10
+                            ["*"] = -40,
+                            ["game:poultry-cooked"] = -50,
+                            ["game:poultry-cured"] = -70
                         }
                     },
                     new JObject
@@ -327,10 +327,10 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:redmeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                            ["game:redmeat-cooked"] = -5,
-                            ["game:redmeat-vintage"] = -8,
-                            ["game:redmeat-cured"] = -10
+                            ["*"] = -50,
+                            ["game:redmeat-cooked"] = -100,
+                            ["game:redmeat-vintage"] = -150,
+                            ["game:redmeat-cured"] = -150
                         }
                     },
                     new JObject
@@ -338,24 +338,24 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 7,
-                            ["game:vegetable-carrot"] = 8,
-                            ["game:vegetable-cabbage"] = 10,
-                            ["game:vegetable-onion"] = 6,
-                            ["game:vegetable-turnip"] = 8,
-                            ["game:vegetable-parsnip"] = 7,
+                            ["*"] = 20,
+                            ["game:vegetable-carrot"] = 20,
+                            ["game:vegetable-cabbage"] = 40,
+                            ["game:vegetable-onion"] = 20,
+                            ["game:vegetable-turnip"] = 15,
+                            ["game:vegetable-parsnip"] = 15,
                             ["game:vegetable-cookedcattailroot"] = 100,
-                            ["game:vegetable-pumpkin"] = 12,
+                            ["game:vegetable-pumpkin"] = 20,
                             ["game:vegetable-cassava"] = 200,
-                            ["game:vegetable-cookedpapyrusroot"] = 5,
-                            ["game:vegetable-bellpepper"] = 12,
-                            ["game:vegetable-olive"] = 4
+                            ["game:vegetable-cookedpapyrusroot"] = 25,
+                            ["game:vegetable-bellpepper"] = 30,
+                            ["game:vegetable-olive"] = 15
                         }
                     },
                     new JObject
                     {
                         ["itemname"] = "game:alcoholportion",
-                        ["hydration"] = -20
+                        ["hydration"] = -40
                     },
                     new JObject
                     {
@@ -365,7 +365,7 @@ namespace HydrateOrDiedrate.Config
                     new JObject
                     {
                         ["itemname"] = "hydrateordiedrate:boiledwaterportion",
-                        ["hydration"] = 500
+                        ["hydration"] = 600
                     },
                     new JObject
                     {
@@ -387,45 +387,45 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:ciderportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 375,
-                            ["game:ciderportion-cranberry"] = 300,
-                            ["game:ciderportion-blueberry"] = 350,
-                            ["game:ciderportion-pinkapple"] = 375,
-                            ["game:ciderportion-lychee"] = 425,
-                            ["game:ciderportion-redcurrant"] = 400,
+                            ["*"] = 500,
+                            ["game:ciderportion-cranberry"] = 450,
+                            ["game:ciderportion-blueberry"] = 500,
+                            ["game:ciderportion-pinkapple"] = 500,
+                            ["game:ciderportion-lychee"] = 550,
+                            ["game:ciderportion-redcurrant"] = 500,
                             ["game:ciderportion-breadfruit"] = 250,
-                            ["game:ciderportion-pineapple"] = 475,
-                            ["game:ciderportion-blackcurrant"] = 400,
+                            ["game:ciderportion-pineapple"] = 500,
+                            ["game:ciderportion-blackcurrant"] = 450,
                             ["game:ciderportion-saguaro"] = 300,
-                            ["game:ciderportion-whitecurrant"] = 400,
-                            ["game:ciderportion-redapple"] = 450,
-                            ["game:ciderportion-yellowapple"] = 450,
+                            ["game:ciderportion-whitecurrant"] = 550,
+                            ["game:ciderportion-redapple"] = 500,
+                            ["game:ciderportion-yellowapple"] = 500,
                             ["game:ciderportion-cherry"] = 400,
                             ["game:ciderportion-peach"] = 475,
-                            ["game:ciderportion-pear"] = 475,
-                            ["game:ciderportion-orange"] = 500,
-                            ["game:ciderportion-mango"] = 475,
+                            ["game:ciderportion-pear"] = 525,
+                            ["game:ciderportion-orange"] = 400,
+                            ["game:ciderportion-mango"] = 525,
                             ["game:ciderportion-pomegranate"] = 425,
-                            ["game:ciderportion-apple"] = 450,
+                            ["game:ciderportion-apple"] = 500,
                             ["game:ciderportion-mead"] = 400,
                             ["game:ciderportion-spelt"] = 450,
                             ["game:ciderportion-rice"] = 450,
                             ["game:ciderportion-rye"] = 450,
                             ["game:ciderportion-amaranth"] = 450,
                             ["game:ciderportion-cassava"] = 450,
-                            ["game:ciderportion-redgrapes"] = 500,
-                            ["game:ciderportion-greengrapes"] = 500
+                            ["game:ciderportion-redgrapes"] = 550,
+                            ["game:ciderportion-greengrapes"] = 550
                         }
                     },
                     new JObject
                     {
                         ["itemname"] = "game:honeyportion",
-                        ["hydration"] = -15
+                        ["hydration"] = -75
                     },
                     new JObject
                     {
                         ["itemname"] = "game:jamhoneyportion",
-                        ["hydration"] = -10
+                        ["hydration"] = -60
                     },
                     new JObject
                     {
@@ -435,7 +435,7 @@ namespace HydrateOrDiedrate.Config
                     new JObject
                     {
                         ["itemname"] = "game:vinegarportion",
-                        ["hydration"] = 50
+                        ["hydration"] = -50
                     },
                     new JObject
                     {
@@ -498,27 +498,27 @@ namespace HydrateOrDiedrate.Config
                         ["hydrationByType"] = new JObject
                         {
                             ["*"] = 0,
-                            ["game:mushroom-flyagaric"] = -5,
-                            ["game:mushroom-earthball"] = -6,
-                            ["game:mushroom-deathcap"] = -15,
-                            ["game:mushroom-elfinsaddle"] = -6,
-                            ["game:mushroom-jackolantern"] = -5,
-                            ["game:mushroom-devilbolete"] = -8,
-                            ["game:mushroom-bitterbolete"] = -1,
-                            ["game:mushroom-devilstooth"] = -2,
-                            ["game:mushroom-golddropmilkcap"] = -2,
-                            ["game:mushroom-beardedtooth"] = 1,
-                            ["game:mushroom-whiteoyster"] = 1,
-                            ["game:mushroom-pinkoyster"] = 1,
-                            ["game:mushroom-dryadsaddle"] = 1,
-                            ["game:mushroom-tinderhoof"] = 1,
-                            ["game:mushroom-chickenofthewoods"] = 1,
-                            ["game:mushroom-reishi"] = 1,
+                            ["game:mushroom-flyagaric"] = -25,
+                            ["game:mushroom-earthball"] = -30,
+                            ["game:mushroom-deathcap"] = -35,
+                            ["game:mushroom-elfinsaddle"] = -30,
+                            ["game:mushroom-jackolantern"] = -25,
+                            ["game:mushroom-devilbolete"] = -80,
+                            ["game:mushroom-bitterbolete"] = -15,
+                            ["game:mushroom-devilstooth"] = -25,
+                            ["game:mushroom-golddropmilkcap"] = -20,
+                            ["game:mushroom-beardedtooth"] = 10,
+                            ["game:mushroom-whiteoyster"] = 10,
+                            ["game:mushroom-pinkoyster"] = 10,
+                            ["game:mushroom-dryadsaddle"] = 10,
+                            ["game:mushroom-tinderhoof"] = 10,
+                            ["game:mushroom-chickenofthewoods"] = 10,
+                            ["game:mushroom-reishi"] = 5,
                             ["game:mushroom-funeralbell"] = -20,
-                            ["game:mushroom-livermushroom"] = 1,
-                            ["game:mushroom-pinkbonnet"] = -5,
-                            ["game:mushroom-shiitake"] = 1,
-                            ["game:mushroom-deerear"] = 1
+                            ["game:mushroom-livermushroom"] = 10,
+                            ["game:mushroom-pinkbonnet"] = -25,
+                            ["game:mushroom-shiitake"] = 5,
+                            ["game:mushroom-deerear"] = 5
                         }
                     },
                     new JObject
@@ -526,34 +526,34 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "game:spiritportion-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 190,
-                            ["game:spiritportion-cranberry"] = 160,
-                            ["game:spiritportion-blueberry"] = 180,
-                            ["game:spiritportion-pinkapple"] = 190,
-                            ["game:spiritportion-lychee"] = 220,
-                            ["game:spiritportion-redcurrant"] = 210,
-                            ["game:spiritportion-breadfruit"] = 130,
-                            ["game:spiritportion-pineapple"] = 250,
-                            ["game:spiritportion-blackcurrant"] = 210,
-                            ["game:spiritportion-saguaro"] = 160,
-                            ["game:spiritportion-whitecurrant"] = 210,
-                            ["game:spiritportion-redapple"] = 240,
-                            ["game:spiritportion-yellowapple"] = 240,
-                            ["game:spiritportion-cherry"] = 210,
-                            ["game:spiritportion-peach"] = 250,
-                            ["game:spiritportion-pear"] = 250,
-                            ["game:spiritportion-orange"] = 270,
-                            ["game:spiritportion-mango"] = 250,
-                            ["game:spiritportion-pomegranate"] = 220,
-                            ["game:spiritportion-apple"] = 240,
+                            ["*"] = 350,
+                            ["game:spiritportion-cranberry"] = 320,
+                            ["game:spiritportion-blueberry"] = 360,
+                            ["game:spiritportion-pinkapple"] = 380,
+                            ["game:spiritportion-lychee"] = 440,
+                            ["game:spiritportion-redcurrant"] = 350,
+                            ["game:spiritportion-breadfruit"] = 230,
+                            ["game:spiritportion-pineapple"] = 400,
+                            ["game:spiritportion-blackcurrant"] = 340,
+                            ["game:spiritportion-saguaro"] = 260,
+                            ["game:spiritportion-whitecurrant"] = 370,
+                            ["game:spiritportion-redapple"] = 400,
+                            ["game:spiritportion-yellowapple"] = 400,
+                            ["game:spiritportion-cherry"] = 330,
+                            ["game:spiritportion-peach"] = 400,
+                            ["game:spiritportion-pear"] = 450,
+                            ["game:spiritportion-orange"] = 370,
+                            ["game:spiritportion-mango"] = 450,
+                            ["game:spiritportion-pomegranate"] = 390,
+                            ["game:spiritportion-apple"] = 400,
                             ["game:spiritportion-mead"] = 200,
                             ["game:spiritportion-spelt"] = 225,
                             ["game:spiritportion-rice"] = 225,
                             ["game:spiritportion-rye"] = 225,
                             ["game:spiritportion-amaranth"] = 225,
                             ["game:spiritportion-cassava"] = 225,
-                            ["game:spiritportion-redgrapes"] = 270,
-                            ["game:spiritportion-greengrapes"] = 270
+                            ["game:spiritportion-redgrapes"] = 380,
+                            ["game:spiritportion-greengrapes"] = 380
                         }
                     },
                     new JObject
@@ -624,15 +624,15 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "butcher:smoked-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = -5,
-                            ["butcher:smoked-none-redmeat"] = -5,
-                            ["butcher:smoked-cured-redmeat"] = -8,
-                            ["butcher:smoked-none-bushmeat"] = -5,
-                            ["butcher:smoked-cured-bushmeat"] = -8,
-                            ["butcher:smoked-none-fish"] = -5,
-                            ["butcher:smoked-cured-fish"] = -8,
-                            ["butcher:smoked-none-primemeat"] = -5,
-                            ["butcher:smoked-healing-primemeat"] = -8
+                            ["*"] = -50,
+                            ["butcher:smoked-none-redmeat"] = -60,
+                            ["butcher:smoked-cured-redmeat"] = -80,
+                            ["butcher:smoked-none-bushmeat"] = -50,
+                            ["butcher:smoked-cured-bushmeat"] = -70,
+                            ["butcher:smoked-none-fish"] = -50,
+                            ["butcher:smoked-cured-fish"] = -80,
+                            ["butcher:smoked-none-primemeat"] = -50,
+                            ["butcher:smoked-healing-primemeat"] = -80
                         }
                     },
                     new JObject
@@ -640,11 +640,11 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "butchering:sausage-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 0,
-                            ["butchering:sausage-bloodsausage-raw"] = -5,
-                            ["butchering:sausage-bloodsausage-cooked"] = -8,
-                            ["butchering:sausage-blackpudding-raw"] = -5,
-                            ["butchering:sausage-blackpudding-cooked"] = -8
+                            ["*"] = -80,
+                            ["butchering:sausage-bloodsausage-raw"] = -50,
+                            ["butchering:sausage-bloodsausage-cooked"] = -80,
+                            ["butchering:sausage-blackpudding-raw"] = -50,
+                            ["butchering:sausage-blackpudding-cooked"] = -80
                         }
                     },
                     new JObject
@@ -652,11 +652,11 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "butchering:primemeat-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 0,
-                            ["butchering:primemeat-raw"] = -5,
-                            ["butchering:primemeat-curedhealing"] = -8,
-                            ["butchering:primemeat-cooked"] = -10,
-                            ["butchering:primemeat-healing"] = -10
+                            ["*"] = -100,
+                            ["butchering:primemeat-raw"] = -50,
+                            ["butchering:primemeat-curedhealing"] = -80,
+                            ["butchering:primemeat-cooked"] = -100,
+                            ["butchering:primemeat-healing"] = -100
                         }
                     },
                     new JObject
@@ -667,12 +667,12 @@ namespace HydrateOrDiedrate.Config
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:birchsapportion",
-                        ["hydration"] = -20
+                        ["hydration"] = 500
                     },
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:breadstarter",
-                        ["hydration"] = 5
+                        ["hydration"] = -75
                     },
                     new JObject
                     {
@@ -735,7 +735,7 @@ namespace HydrateOrDiedrate.Config
                     new JObject
                     {
                         ["itemname"] = "expandedfoods:maplesapportion",
-                        ["hydration"] = 200
+                        ["hydration"] = 600
                     },
                     new JObject
                     {
@@ -1649,7 +1649,7 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "floralzonescaperegion:fruit-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 10
+                            ["*"] = 30
                         }
                     },
                     new JObject
@@ -1657,7 +1657,7 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "floralzonescaperegion:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5
+                            ["*"] = 15
                         }
                     },
                     new JObject
@@ -1665,7 +1665,7 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "floralzonescaribbeanregion:vegetable-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5
+                            ["*"] = 15
                         }
                     },
                     new JObject
@@ -1673,7 +1673,7 @@ namespace HydrateOrDiedrate.Config
                         ["itemname"] = "floralzonescaribbeanregion:vegetable-nonpalm-*",
                         ["hydrationByType"] = new JObject
                         {
-                            ["*"] = 5
+                            ["*"] = 15
                         }
                     },
                     new JObject
