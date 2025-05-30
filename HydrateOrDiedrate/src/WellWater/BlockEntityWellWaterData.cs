@@ -19,7 +19,7 @@ namespace HydrateOrDiedrate.wellwater
 
             if (api.Side == EnumAppSide.Server)
             {
-                if (Block != null)
+                if (Block != null && volume == 0)
                 {
                     int initialHeight = Block.Variant["height"].ToInt();
                     volume = GetVolumeForHeight(initialHeight);
