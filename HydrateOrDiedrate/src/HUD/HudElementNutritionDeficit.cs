@@ -16,7 +16,7 @@ namespace HydrateOrDiedrate.HUD
         public HudElementHungerReductionBar(ICoreClientAPI capi) : base(capi)
         {
             ComposeGuis();
-            capi.Event.RegisterGameTickListener(OnGameTick, 100);
+            capi.Event.RegisterGameTickListener(OnGameTick, 1000);
         }
 
         public void OnGameTick(float dt)

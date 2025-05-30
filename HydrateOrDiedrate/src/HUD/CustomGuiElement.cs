@@ -139,9 +139,18 @@ public class GuiElementCustomStatbar : GuiElementTextBase
 
     public void SetCustomValue(float value)
     {
-        this.customValue = value;
+        var valueChanged = false;
+        if (Math.Abs(customValue - value) > double.Epsilon)
+        {
+            this.customValue = value;
+            valueChanged = true;
+        }
         this.customValuesSet = true;
-        this.RecomposeCustomOverlays();
+
+        if (valueChanged)
+        {
+            this.RecomposeCustomOverlays();
+        }
     }
 
     public float GetCustomValue()
@@ -151,11 +160,30 @@ public class GuiElementCustomStatbar : GuiElementTextBase
 
     public void SetCustomValues(float value, float min, float max)
     {
+        var valueChanged = false;
         this.customValuesSet = true;
-        this.customValue = value;
-        this.customMinValue = min;
-        this.customMaxValue = max;
-        this.RecomposeCustomOverlays();
+        if (Math.Abs(customValue - value) > double.Epsilon)
+        {
+            this.customValue = value;
+            valueChanged = true;
+        }
+
+        if (Math.Abs(this.customMinValue - min) > double.Epsilon)
+        {
+            this.customMinValue = min;
+            valueChanged = true;
+        }
+
+        if (Math.Abs(this.customMaxValue - max) > double.Epsilon)
+        {
+            this.customMaxValue = max;
+            valueChanged = true;
+        }
+        
+        if (valueChanged)
+        {
+            this.RecomposeCustomOverlays();
+        }
     }
 
     public void SetCustomMinMax(float min, float max)
