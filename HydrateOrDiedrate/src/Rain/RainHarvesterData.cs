@@ -315,7 +315,7 @@ namespace HydrateOrDiedrate
             };
 
             Vec3d adjustedOffset;
-            if (groundStorage.StorageProps.Layout == EnumGroundStorageLayout.SingleCenter)
+            if (groundStorage.StorageProps?.Layout == EnumGroundStorageLayout.SingleCenter)
             {
                 adjustedOffset = new Vec3d(0.5, 0.5, 0.5);
             }
