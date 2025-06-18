@@ -6,6 +6,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.Common;
 
 namespace HydrateOrDiedrate
 {
@@ -112,52 +113,72 @@ namespace HydrateOrDiedrate
             try
             {
                 var config = HydrateOrDiedrateModSystem.LoadedConfig;
-                int chunkSize = GlobalConstants.ChunkSize;
-                int normalWaterBlockCount = chunk.GetModdata<int>("game:water", 0);
-                int saltWaterBlockCount = chunk.GetModdata<int>("game:saltwater", 0);
-                int boilingWaterBlockCount = chunk.GetModdata<int>("game:boilingwater", 0);
-                if (normalWaterBlockCount == 0 && saltWaterBlockCount == 0 && boilingWaterBlockCount == 0)
+                
+                //TODO: what about ice? (in case the initial calculation happens mid winter?)
+                //PERFORMANCE: would prob be faster if we cached the ID's of blocks considered to be water instead
+                int? normalWaterBlockCount = chunk.GetModdata<int?>("game:water");
+                int? saltWaterBlockCount = chunk.GetModdata<int?>("game:saltwater");
+                int? boilingWaterBlockCount = chunk.GetModdata<int?>("game:boilingwater");
+                
+                if (normalWaterBlockCount == null && saltWaterBlockCount == null && boilingWaterBlockCount == null)
                 {
-                    int step = config.AquiferStep;
-                    int totalBlocks = chunk.Data.Length;
-                    int iterY = chunkSize;
-                    int iterX = (int)Math.Ceiling((double)chunkSize / step);
-                    int iterZ = (int)Math.Ceiling((double)chunkSize / step);
-                    int totalIterations = iterY * iterX * iterZ;
+                    normalWaterBlockCount = 0;
+                    saltWaterBlockCount = 0;
+                    boilingWaterBlockCount = 0;
 
-                    for (int i = 0; i < totalIterations; i++)
+                    if (chunk.Data is ChunkData chunkData && chunkData.fluidsLayer != null)
                     {
-                        int y = i / (iterX * iterZ);
-                        int rem = i % (iterX * iterZ);
-                        int xIndex = rem / iterZ;
-                        int zIndex = rem % iterZ;
-                        int x = xIndex * step;
-                        int z = zIndex * step;
+                        chunkData.fluidsLayer.readWriteLock.AcquireReadLock();
 
-                        int idx = (y * chunkSize + z) * chunkSize + x;
-                        if (idx < 0 || idx >= totalBlocks) continue;
-                        int blockId = chunk.Data[idx];
-                        if (blockId < 0) continue;
-
-                        Block block = GetBlock(blockId);
-                        if (block?.Code?.Path == null) continue;
-
-                        if (block.Code.Path.Contains("boilingwater"))
+                        var chunkLength = chunkData.Length;
+                        for(var i = 0; i < chunkLength; i++)
                         {
-                            boilingWaterBlockCount++;
-                        }
-                        else if (block.Code.Path.Contains("water"))
-                        {
-                            normalWaterBlockCount++;
-                            if (block.Code.Path.Contains("saltwater"))
+                            var id = chunkData.fluidsLayer.Get(i); //Only check fluids layer
+                            if (id < 1) continue; //skip 0 as it is reserved for air/placeholder
+
+                            Block block = GetBlock(id);
+                            if (block?.Code?.Domain != "game") continue; //Skip non-game blocks
+
+                            if (block.Code.Path.StartsWith("water")) //PERFORMANCE: maybe try StartsWithFast?
+                            {
+                                normalWaterBlockCount++;
+
+                            }
+                            else if (block.Code.Path.StartsWith("saltwater"))
                             {
                                 saltWaterBlockCount++;
                             }
+                            else if (block.Code.Path.StartsWith("boilingwater"))
+                            {
+                                boilingWaterBlockCount++;
+                            }
                         }
+                        chunkData.fluidsLayer.readWriteLock.ReleaseReadLock();
                     }
+
                     chunk.SetModdata("game:water", normalWaterBlockCount);
                     chunk.SetModdata("game:saltwater", saltWaterBlockCount);
                     chunk.SetModdata("game:boilingwater", boilingWaterBlockCount);
+                }
+                else
+                {
+                    if(normalWaterBlockCount == null)
+                    {
+                        chunk.SetModdata("game:water", 0);
+                        normalWaterBlockCount = 0;
+                    }
+
+                    if (saltWaterBlockCount == null)
+                    {
+                        chunk.SetModdata("game:saltwater", 0);
+                        saltWaterBlockCount = 0;
+                    }
+
+                    if (boilingWaterBlockCount == null)
+                    {
+                        chunk.SetModdata("game:boilingwater", 0);
+                        boilingWaterBlockCount = 0;
+                    }
                 }
 
                 double waterBlockMultiplier = config.AquiferWaterBlockMultiplier;
@@ -168,9 +189,9 @@ namespace HydrateOrDiedrate
                 int seaLevel = (int)Math.Round(0.4296875 * worldHeight);
                 int chunkCenterY = (pos.Y * GlobalConstants.ChunkSize) + (GlobalConstants.ChunkSize / 2);
 
-                double weightedNormal = CalculateDiminishingReturns(normalWaterBlockCount, 300.0, 1.0, 0.99) * waterBlockMultiplier;
-                double weightedSalt = CalculateDiminishingReturns(saltWaterBlockCount, 300.0, 1.0, 0.99) * saltWaterMultiplier;
-                double weightedBoiling = CalculateDiminishingReturns(boilingWaterBlockCount, 1000.0, 10.0, 0.5) * boilingWaterMultiplier;
+                double weightedNormal = CalculateDiminishingReturns(normalWaterBlockCount.Value, 300.0, 1.0, 0.99) * waterBlockMultiplier;
+                double weightedSalt = CalculateDiminishingReturns(saltWaterBlockCount.Value, 300.0, 1.0, 0.99) * saltWaterMultiplier;
+                double weightedBoiling = CalculateDiminishingReturns(boilingWaterBlockCount.Value, 1000.0, 10.0, 0.5) * boilingWaterMultiplier;
                 var climate = serverAPI.World.BlockAccessor.GetClimateAt(
                     new BlockPos(pos.X * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2, pos.Y * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2, pos.Z * GlobalConstants.ChunkSize + GlobalConstants.ChunkSize / 2),
                     EnumGetClimateMode.WorldGenValues);
