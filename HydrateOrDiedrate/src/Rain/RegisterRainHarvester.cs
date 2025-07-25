@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Common;
+﻿using HydrateOrDiedrate.Config;
+using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
 namespace HydrateOrDiedrate
@@ -17,7 +18,7 @@ namespace HydrateOrDiedrate
             if (api.Side == EnumAppSide.Server)
             {
                 harvesterManager = api.ModLoader.GetModSystem<HydrateOrDiedrateModSystem>().GetRainHarvesterManager();
-                float configRainMultiplier = HydrateOrDiedrateModSystem.LoadedConfig.RainMultiplier;
+                float configRainMultiplier = ModConfig.Instance.Rain.RainMultiplier;
                 harvesterData = new RainHarvesterData(Blockentity, configRainMultiplier);
                 harvesterManager.RegisterHarvester(Blockentity.Pos, harvesterData);
             }

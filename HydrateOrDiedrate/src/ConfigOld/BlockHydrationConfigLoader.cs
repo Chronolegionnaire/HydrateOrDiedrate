@@ -3,7 +3,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 
-namespace HydrateOrDiedrate.Config
+namespace HydrateOrDiedrate.ConfigOld
 {
     public static class BlockHydrationConfigLoader
     {

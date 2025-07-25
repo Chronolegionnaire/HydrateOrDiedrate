@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.ConfigOld;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -15,7 +16,7 @@ namespace HydrateOrDiedrate.Keg
         private BlockTun ownBlock;
         public float MeshAngle;
         private const int UpdateIntervalMs = 1000;
-        private float tunSpoilRateMultiplier = HydrateOrDiedrateModSystem.LoadedConfig.TunSpoilRateMultiplier;
+        private float tunSpoilRateMultiplier = ModConfig.Instance.Containers.TunSpoilRateMultiplier;
         public override string InventoryClassName => "tun";
 
         public override void Initialize(ICoreAPI api)

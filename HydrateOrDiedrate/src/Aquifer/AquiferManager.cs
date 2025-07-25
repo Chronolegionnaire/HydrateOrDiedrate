@@ -1,7 +1,8 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
+using ProtoBuf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ProtoBuf;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -112,7 +113,7 @@ namespace HydrateOrDiedrate
         {
             try
             {
-                var config = HydrateOrDiedrateModSystem.LoadedConfig;
+                var config = ModConfig.Instance.GroundWater;
                 
                 //TODO: what about ice? (in case the initial calculation happens mid winter?)
                 //PERFORMANCE: would prob be faster if we cached the ID's of blocks considered to be water instead
@@ -321,7 +322,7 @@ namespace HydrateOrDiedrate
             }
 
             bool finalIsSalty = saltyNeighbors > (totalValidNeighbors / 2.0);
-            var config = HydrateOrDiedrateModSystem.LoadedConfig;
+            var config = ModConfig.Instance.GroundWater;
             int chunkSize = GlobalConstants.ChunkSize;
             BlockPos center = new BlockPos(
                 pos.X * chunkSize + chunkSize / 2,

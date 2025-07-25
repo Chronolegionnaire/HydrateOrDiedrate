@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
+using HydrateOrDiedrate.Config;
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
@@ -31,10 +32,7 @@ namespace HydrateOrDiedrate.patches
             public dynamic hydrationDelayDynamicText;
         }
 
-        private static bool ShouldSkipPatch()
-        {
-            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
-        }
+        private static bool ShouldSkipPatch() => !ModConfig.Instance.Thirst.Enabled;
 
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -58,8 +56,7 @@ namespace HydrateOrDiedrate.patches
         {
             if (ShouldSkipPatch()) return;
             Type type = __instance.GetType();
-            FieldInfo capiField = AccessTools.Field(type, "capi");
-            ICoreClientAPI capi = (ICoreClientAPI)capiField.GetValue(__instance);
+
             PropertyInfo composersProp = AccessTools.Property(type, "Composers");
             GuiDialog.DlgComposers composers = (GuiDialog.DlgComposers)composersProp.GetValue(__instance);
             if (composers == null || !composers.ContainsKey("playerstats")) return;
@@ -71,10 +68,8 @@ namespace HydrateOrDiedrate.patches
             {
                 baseBounds = lastElement.Bounds;
             }
-            if (baseBounds == null)
-            {
-                baseBounds = ElementBounds.Fixed(20, 350, 140, 20);
-            }
+            
+            baseBounds ??= ElementBounds.Fixed(20, 350, 140, 20);
             float rightColumnHorizontalOffset = 165.0f;
             float hydrationVerticalOffset = -10.0f;
             float hydrationXOffset = -165.0f;
@@ -224,17 +219,16 @@ namespace HydrateOrDiedrate.patches
 
             float currentThirst = entity.WatchedAttributes.GetFloat("currentThirst", 0f);
             float maxThirst = entity.WatchedAttributes.GetFloat("maxThirst", 1500f);
-            if (cached.thirstDynamicText != null)
-            {
-                cached.thirstDynamicText.SetNewText($"{(int)currentThirst} / {(int)maxThirst}", false, false, false);
-            }
+            
+            cached.thirstDynamicText?.SetNewText($"{(int)currentThirst} / {(int)maxThirst}", false, false, false);
+            
             float currentThirstRate = entity.WatchedAttributes.GetFloat("thirstRate", 0.01f);
-            float normalThirstRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
+
             float currentSpeedOfTime = capi.World.Calendar?.SpeedOfTime ?? 60f;
             float currentCalendarSpeedMul = capi.World.Calendar?.CalendarSpeedMul ?? 0.5f;
             float multiplierPerGameSec = (currentSpeedOfTime / 60f) * (currentCalendarSpeedMul / 0.5f);
             float normalizedThirstRate = currentThirstRate / multiplierPerGameSec;
-            float thirstRatePercentage = (normalizedThirstRate / normalThirstRate) * 100;
+            float thirstRatePercentage = (normalizedThirstRate / ModConfig.Instance.Thirst.ThirstDecayRate) * 100;
             thirstRatePercentage = Math.Max(0, thirstRatePercentage);
             if (cached.thirstRateDynamicText != null)
             {
@@ -266,18 +260,13 @@ namespace HydrateOrDiedrate.patches
         {
             if (ShouldSkipPatch()) return;
             Type type = __instance.GetType();
-            if (cachedCapiField == null)
-            {
-                cachedCapiField = type.GetField("capi", BindingFlags.NonPublic | BindingFlags.Instance);
-            }
-            ICoreClientAPI capi = (ICoreClientAPI)cachedCapiField.GetValue(__instance);
 
             if (cachedComposersProperty == null)
             {
                 cachedComposersProperty = type.GetProperty("Composers", BindingFlags.NonPublic | BindingFlags.Instance);
             }
-            var composers = cachedComposersProperty.GetValue(__instance) as GuiDialog.DlgComposers;
-            if (composers == null) return;
+
+            if (cachedComposersProperty.GetValue(__instance) is not GuiDialog.DlgComposers composers) return;
 
             if (cachedIsOpenedMethod == null)
             {
@@ -291,12 +280,14 @@ namespace HydrateOrDiedrate.patches
 
             if (!cachedUIElements.TryGetValue(__instance, out var cached))
             {
-                cached = new CachedUIElements();
-                cached.composer = compo;
-                cached.thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst");
-                cached.thirstRateDynamicText = compo.GetDynamicText("hydrateordiedrate_thirstrate");
-                cached.nutritionDeficitDynamicText = compo.GetDynamicText("nutritionDeficit");
-                cached.currentCoolingDynamicText = compo.GetDynamicText("currentCoolingHot");
+                cached = new CachedUIElements
+                {
+                    composer = compo,
+                    thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst"),
+                    thirstRateDynamicText = compo.GetDynamicText("hydrateordiedrate_thirstrate"),
+                    nutritionDeficitDynamicText = compo.GetDynamicText("nutritionDeficit"),
+                    currentCoolingDynamicText = compo.GetDynamicText("currentCoolingHot")
+                };
                 cachedUIElements[__instance] = cached;
             }
             

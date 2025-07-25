@@ -1,7 +1,8 @@
 ﻿using HarmonyLib;
-using Vintagestory.GameContent;
+using HydrateOrDiedrate.Config;
 using System.Collections.Generic;
 using Vintagestory.API.Config;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
 {
@@ -13,7 +14,7 @@ namespace HydrateOrDiedrate.patches
 
         static void Prefix(PropickReading __instance)
         {
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.ShowAquiferProspectingDataOnMap)
+            if (!ModConfig.Instance.GroundWater.ShowAquiferProspectingDataOnMap)
                 return;
 
             if (__instance.OreReadings.ContainsKey("$aquifer$"))
@@ -25,7 +26,7 @@ namespace HydrateOrDiedrate.patches
 
         static void Postfix(PropickReading __instance, string languageCode, Dictionary<string, string> pageCodes, ref string __result)
         {
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.ShowAquiferProspectingDataOnMap)
+            if (!ModConfig.Instance.GroundWater.ShowAquiferProspectingDataOnMap)
                 return;
 
             if (aquiferBackup != null)
@@ -67,12 +68,12 @@ namespace HydrateOrDiedrate.patches
     {
         static void Prefix()
         {
-            if (HydrateOrDiedrateModSystem.LoadedConfig.ShowAquiferProspectingDataOnMap)
+            if (ModConfig.Instance.GroundWater.ShowAquiferProspectingDataOnMap)
                 PropickReading_ToHumanReadable_Patch.AppendAquiferInfo = false;
         }
         static void Postfix()
         {
-            if (HydrateOrDiedrateModSystem.LoadedConfig.ShowAquiferProspectingDataOnMap)
+            if (ModConfig.Instance.GroundWater.ShowAquiferProspectingDataOnMap)
                 PropickReading_ToHumanReadable_Patch.AppendAquiferInfo = true;
         }
     }

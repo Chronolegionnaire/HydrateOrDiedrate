@@ -1,7 +1,8 @@
-﻿using System;
+﻿using HarmonyLib;
+using HydrateOrDiedrate.Config;
+using System;
 using System.Linq;
 using System.Reflection;
-using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
@@ -89,7 +90,7 @@ namespace HydrateOrDiedrate.patches
                 string aquiferInfo = currentRating == 0
                     ? Lang.Get("hydrateordiedrate:aquifer-none")
                     : GetAquiferDescription(aquiferData.IsSalty, currentRating, world.BlockAccessor.MapSizeY, pos.Y);
-                int radius = HydrateOrDiedrateModSystem.LoadedConfig.ProspectingRadius;
+                int radius = ModConfig.Instance.GroundWater.ProspectingRadius;
                 int bestRating = currentRating;
                 ChunkPos3D bestChunk = chunkCoord;
 

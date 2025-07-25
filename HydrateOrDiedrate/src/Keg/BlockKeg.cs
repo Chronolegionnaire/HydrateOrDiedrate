@@ -1,10 +1,11 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
+using System;
 using System.Collections.Generic;
-using Vintagestory.API.Common;
-using Vintagestory.API.MathTools;
 using Vintagestory.API.Client;
+using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Keg
@@ -30,20 +31,20 @@ namespace HydrateOrDiedrate.Keg
 
         private void LoadConfigValues()
         {
-            kegCapacityLitres = HydrateOrDiedrateModSystem.LoadedConfig.KegCapacityLitres;
-            ironHoopDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegIronHoopDropChance;
-            kegTapDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegTapDropChance;
-            kegDropWithLiquid = HydrateOrDiedrateModSystem.LoadedConfig.KegDropWithLiquid;
+            kegCapacityLitres = ModConfig.Instance.Containers.KegCapacityLitres;
+            ironHoopDropChance = ModConfig.Instance.Containers.KegIronHoopDropChance;
+            kegTapDropChance = ModConfig.Instance.Containers.KegTapDropChance;
+            kegDropWithLiquid = ModConfig.Instance.Containers.KegDropWithLiquid;
         }
 
         private void RegisterConfigUpdateListener(ICoreAPI api)
         {
             updateListenerId = api.Event.RegisterGameTickListener(dt =>
             {
-                float newKegCapacity = HydrateOrDiedrateModSystem.LoadedConfig.KegCapacityLitres;
-                float newIronHoopDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegIronHoopDropChance;
-                float newKegTapDropChance = HydrateOrDiedrateModSystem.LoadedConfig.KegTapDropChance;
-                bool newKegDropWithLiquid = HydrateOrDiedrateModSystem.LoadedConfig.KegDropWithLiquid;
+                float newKegCapacity = ModConfig.Instance.Containers.KegCapacityLitres;
+                float newIronHoopDropChance = ModConfig.Instance.Containers.KegIronHoopDropChance;
+                float newKegTapDropChance = ModConfig.Instance.Containers.KegTapDropChance;
+                bool newKegDropWithLiquid = ModConfig.Instance.Containers.KegDropWithLiquid;
                 if (newKegCapacity != kegCapacityLitres || 
                     newIronHoopDropChance != ironHoopDropChance || 
                     newKegTapDropChance != kegTapDropChance ||

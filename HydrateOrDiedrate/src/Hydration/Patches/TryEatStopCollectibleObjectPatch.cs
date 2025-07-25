@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using HydrateOrDiedrate.Config;
 using Vintagestory.API.Common;
 
 namespace HydrateOrDiedrate.patches;
@@ -8,10 +9,7 @@ public class TryEatStopCollectibleObjectPatch
 {
     private static bool alreadyCalled = false;
 
-    private static bool ShouldSkipPatch()
-    {
-        return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
-    }
+    private static bool ShouldSkipPatch() => !ModConfig.Instance.Thirst.Enabled;
 
     [HarmonyPrefix]
     static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity, out PatchState __state)

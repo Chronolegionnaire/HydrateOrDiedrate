@@ -4,11 +4,13 @@ using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate.Commands;
 using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.ConfigOld;
 using HydrateOrDiedrate.encumbrance;
 using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.patches;
+using HydrateOrDiedrate.src.Config;
 using HydrateOrDiedrate.wellwater;
 using HydrateOrDiedrate.winch;
 using HydrateOrDiedrate.XSkill;
@@ -30,7 +32,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private HudElementThirstBar _thirstHud;
     private HudElementHungerReductionBar _hungerReductionHud;
-    public static Config.Config LoadedConfig { get; set; }
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
     public static AquiferManager AquiferManager { get; private set; }
@@ -46,13 +47,13 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
+        ConfigManager.EnsureModConfigLoaded(api);
         ItemHydrationConfigLoader.GenerateDefaultHydrationConfig();
         BlockHydrationConfigLoader.GenerateDefaultBlockHydrationConfig();
         CoolingConfigLoader.GenerateDefaultCoolingConfig();
+        
         harmony = new Harmony("com.chronolegionnaire.hydrateordiedrate");
         harmony.PatchAll();
-        var initConfig = new InitConfig();
-        initConfig.LoadConfig(api);
     }
 
     public override void AssetsLoaded(ICoreAPI api)
@@ -70,11 +71,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
         base.AssetsFinalize(api);
         LoadAndApplyCoolingPatches(api);
 
-        if (LoadedConfig.EnableThirstMechanics)
+        if (ModConfig.Instance.Thirst.Enabled)
         {
             LoadAndApplyHydrationPatches(api);
             LoadAndApplyBlockHydrationPatches(api);
         }
+
         foreach (var block in api.World.Blocks)
         {
             if (block is BlockLiquidContainerTopOpened || block is BlockBarrel || block is BlockGroundStorage)
@@ -85,7 +87,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     }
     private void LoadAndApplyHydrationPatches(ICoreAPI api)
     {
-        if (LoadedConfig.EnableThirstMechanics)
+        if (ModConfig.Instance.Thirst.Enabled)
         {
             List<JObject> hydrationPatches = ItemHydrationConfigLoader.LoadHydrationPatches(api);
             HydrationManager.ApplyHydrationPatches(api, hydrationPatches);
@@ -93,7 +95,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     }
     private void LoadAndApplyBlockHydrationPatches(ICoreAPI api)
     {
-        if (LoadedConfig.EnableThirstMechanics)
+        if (ModConfig.Instance.Thirst.Enabled)
         {
             List<JsonObject> loadedPatches = BlockHydrationConfigLoader.LoadBlockHydrationConfig(api)
                 .ConvertAll(jObject => new JsonObject(jObject));
@@ -124,12 +126,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockClass("BlockWinch", typeof(BlockWinch));
         api.RegisterBlockEntityClass("BlockEntityWinch", typeof(BlockEntityWinch));
 
-        if (LoadedConfig.EnableThirstMechanics)
+        if (ModConfig.Instance.Thirst.Enabled)
         {
             api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
         }
 
-        _waterInteractionHandler = new WaterInteractionHandler(api, LoadedConfig);
+        _waterInteractionHandler = new WaterInteractionHandler(api);
 
         if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibpatch"))
         {
@@ -153,23 +155,20 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         _serverApi = api;
         base.StartServerSide(api);
-        string configJson = JsonConvert.SerializeObject(LoadedConfig, Formatting.Indented);
-        byte[] configBytes = System.Text.Encoding.UTF8.GetBytes(configJson);
-        string base64Config = Convert.ToBase64String(configBytes);
-        api.World.Config.SetString("HydrateOrDiedrateConfig", base64Config);
+
         serverChannel = api.Network.RegisterChannel("hydrateordiedrate")
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<WellSpringBlockPacket>()
             .SetMessageHandler<WellSpringBlockPacket>(WellSpringBlockPacketReceived);
         AquiferManager = new AquiferManager(api);
         _waterInteractionHandler.Initialize(serverChannel);
-        rainHarvesterManager = new RainHarvesterManager(_serverApi, LoadedConfig);
+        rainHarvesterManager = new RainHarvesterManager(_serverApi);
         api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
         api.Event.PlayerRespawn += OnPlayerRespawn;
         api.Event.PlayerDisconnect += _waterInteractionHandler.OnPlayerDisconnect;
         api.Event.RegisterGameTickListener(CheckPlayerInteraction, 100);
 
-        ThirstCommands.Register(api, LoadedConfig);
+        ThirstCommands.Register(api);
         AquiferCommands.Register(api);
     }
 
@@ -184,30 +183,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .RegisterMessageType<WellSpringBlockPacket>()
             .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived);
 
-        string base64Config = api.World.Config.GetString("HydrateOrDiedrateConfig", "");
-        if (!string.IsNullOrWhiteSpace(base64Config))
-        {
-            try
-            {
-                byte[] configBytes = Convert.FromBase64String(base64Config);
-                string configJson = System.Text.Encoding.UTF8.GetString(configBytes);
-                LoadedConfig = JsonConvert.DeserializeObject<Config.Config>(configJson);
-            }
-            catch (Exception ex)
-            {
-                api.Logger.Error("Failed to deserialize HydrateOrDiedrate config: " + ex);
-                LoadedConfig = new Config.Config();
-            }
-        }
-        else
-        {
-            api.Logger.Warning("HydrateOrDiedrate config not found in world config; using defaults.");
-            LoadedConfig = new Config.Config();
-        }
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
 
-        if (LoadedConfig.EnableThirstMechanics)
+        if (ModConfig.Instance.Thirst.Enabled)
         {
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
         }
@@ -273,18 +252,18 @@ public class HydrateOrDiedrateModSystem : ModSystem
         var bodyTemperatureHotBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
         if (bodyTemperatureHotBehavior == null)
         {
-            bodyTemperatureHotBehavior = new EntityBehaviorBodyTemperatureHot(entity, LoadedConfig);
+            bodyTemperatureHotBehavior = new EntityBehaviorBodyTemperatureHot(entity);
             entity.AddBehavior(bodyTemperatureHotBehavior);
         }
 
         var liquidEncumbranceBehavior = entity.GetBehavior<EntityBehaviorLiquidEncumbrance>();
         if (liquidEncumbranceBehavior == null)
         {
-            liquidEncumbranceBehavior = new EntityBehaviorLiquidEncumbrance(entity, LoadedConfig);
+            liquidEncumbranceBehavior = new EntityBehaviorLiquidEncumbrance(entity);
             entity.AddBehavior(liquidEncumbranceBehavior);
         }
 
-        if (LoadedConfig.EnableThirstMechanics)
+        if (ModConfig.Instance.Thirst.Enabled)
         {
             var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior == null)
@@ -300,7 +279,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             bool dromedaryActive = entity.WatchedAttributes.GetBool("dromedaryActive", false);
             if (!dromedaryActive)
             {
-                float defaultMaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
+                float defaultMaxThirst = ModConfig.Instance.Thirst.MaxThirst;
                 thirstBehavior.CurrentThirst = thirstBehavior.CurrentThirst / thirstBehavior.MaxThirst * defaultMaxThirst;
                 thirstBehavior.MaxThirst = defaultMaxThirst;
             }
@@ -308,22 +287,15 @@ public class HydrateOrDiedrateModSystem : ModSystem
     }
     private void OnPlayerRespawn(IServerPlayer byPlayer)
     {
-        var entity = byPlayer.Entity;
-        if (entity == null) return;
+        if (byPlayer.Entity is null || !ModConfig.Instance.Thirst.Enabled) return;
 
-        if (LoadedConfig.EnableThirstMechanics)
-        {
-            var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
-            thirstBehavior.OnRespawn();
-        }
+        var thirstBehavior = byPlayer.Entity.GetBehavior<EntityBehaviorThirst>();
+        thirstBehavior.OnRespawn();
     }
 
     private void AddBehaviorToBlock(Block block, ICoreAPI api)
     {
-        if (block.BlockEntityBehaviors == null)
-        {
-            block.BlockEntityBehaviors = new BlockEntityBehaviorType[0];
-        }
+        block.BlockEntityBehaviors ??= [];
 
         if (block.BlockEntityBehaviors.All(b => b.Name != "RainHarvester"))
         {
@@ -333,7 +305,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 Name = "RainHarvester",
                 properties = null
             });
-            block.BlockEntityBehaviors = behaviorsList.ToArray();
+            block.BlockEntityBehaviors = [.. behaviorsList];
         }
     }
     private void WellSpringBlockPacketReceived(IServerPlayer sender, WellSpringBlockPacket packet)
@@ -345,6 +317,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     }
     public override void Dispose()
     {
+        ConfigManager.UnloadModConfig();
         harmony.UnpatchAll("com.chronolegionnaire.hydrateordiedrate");
         base.Dispose();
     }

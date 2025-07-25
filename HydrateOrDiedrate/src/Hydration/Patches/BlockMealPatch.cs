@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using HarmonyLib;
+using HydrateOrDiedrate.Config;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
@@ -12,10 +13,7 @@ namespace HydrateOrDiedrate.patches
     {
         private static bool alreadyCalled = false;
 
-        private static bool ShouldSkipPatch()
-        {
-            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
-        }
+        private static bool ShouldSkipPatch() => !ModConfig.Instance.Thirst.Enabled;
 
         [HarmonyPatch("tryFinishEatMeal")]
         [HarmonyPrefix]
@@ -44,7 +42,7 @@ namespace HydrateOrDiedrate.patches
 
                 float servingsBeforeConsume = (slot.Itemstack.Collectible as BlockMeal).GetQuantityServings(byEntity.World, slot.Itemstack);
                 float baseMultiplier = 0.05f;
-                float effectiveMultiplier = baseMultiplier * HydrateOrDiedrateModSystem.LoadedConfig.HydrationLossDelayMultiplierNormalized;
+                float effectiveMultiplier = baseMultiplier * ModConfig.Instance.Thirst.HydrationLossDelayMultiplierNormalized;
                 float maxDelay = 600f; 
                 __state = new PatchState
                 {

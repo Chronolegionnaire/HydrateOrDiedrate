@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using HydrateOrDiedrate.Config;
 using Newtonsoft.Json.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -10,21 +11,13 @@ public class WaterPatches
 {
     public void PrepareWaterSatietyPatches(ICoreAPI api)
     {
-        float waterSatiety = HydrateOrDiedrateModSystem.LoadedConfig.WaterSatiety;
-        float saltWaterSatiety = HydrateOrDiedrateModSystem.LoadedConfig.SaltWaterSatiety;
-        float boilingWaterSatiety = HydrateOrDiedrateModSystem.LoadedConfig.BoilingWaterSatiety;
-        float rainWaterSatiety = HydrateOrDiedrateModSystem.LoadedConfig.RainWaterSatiety;
-        float distilledWaterSatiety = HydrateOrDiedrateModSystem.LoadedConfig.DistilledWaterSatiety;
-        float boiledWaterSatiety = HydrateOrDiedrateModSystem.LoadedConfig.BoiledWaterSatiety;
-        float boiledRainWaterSatiety = HydrateOrDiedrateModSystem.LoadedConfig.BoiledRainWaterSatiety;
-
-        ApplySatietyPatch(api, "game:itemtypes/liquid/waterportion.json", waterSatiety);
-        ApplySatietyPatch(api, "game:itemtypes/liquid/saltwaterportion.json", saltWaterSatiety);
-        ApplySatietyPatch(api, "game:itemtypes/liquid/boilingwaterportion.json", boilingWaterSatiety);
-        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", rainWaterSatiety);
-        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", distilledWaterSatiety);
-        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", boiledWaterSatiety);
-        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", boiledRainWaterSatiety);
+        ApplySatietyPatch(api, "game:itemtypes/liquid/waterportion.json", ModConfig.Instance.Satiety.WaterSatiety);
+        ApplySatietyPatch(api, "game:itemtypes/liquid/saltwaterportion.json", ModConfig.Instance.Satiety.SaltWaterSatiety);
+        ApplySatietyPatch(api, "game:itemtypes/liquid/boilingwaterportion.json", ModConfig.Instance.Satiety.BoilingWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", ModConfig.Instance.Satiety.RainWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", ModConfig.Instance.Satiety.DistilledWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", ModConfig.Instance.Satiety.BoiledWaterSatiety);
+        ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", ModConfig.Instance.Satiety.BoiledRainWaterSatiety);
     }
 
     private void ApplySatietyPatch(ICoreAPI api, string jsonFilePath, float satietyValue)
@@ -67,15 +60,16 @@ public class WaterPatches
     {
         var wellWaterSatietyValues = new Dictionary<string, float>
         {
-            { "fresh", HydrateOrDiedrateModSystem.LoadedConfig.WellWaterFreshSatiety },
-            { "salt", HydrateOrDiedrateModSystem.LoadedConfig.WellWaterSaltSatiety },
-            { "muddy", HydrateOrDiedrateModSystem.LoadedConfig.WellWaterMuddySatiety },
-            { "tainted", HydrateOrDiedrateModSystem.LoadedConfig.WellWaterTaintedSatiety },
-            { "poisoned", HydrateOrDiedrateModSystem.LoadedConfig.WellWaterPoisonedSatiety },
-            { "muddysalt", HydrateOrDiedrateModSystem.LoadedConfig.WellWaterMuddySaltSatiety },
-            { "taintedsalt", HydrateOrDiedrateModSystem.LoadedConfig.WellWaterTaintedSaltSatiety },
-            { "poisonedsalt", HydrateOrDiedrateModSystem.LoadedConfig.WellWaterPoisonedSaltSatiety }
+            { "fresh", ModConfig.Instance.Satiety.WellWaterFreshSatiety },
+            { "salt", ModConfig.Instance.Satiety.WellWaterSaltSatiety },
+            { "muddy", ModConfig.Instance.Satiety.WellWaterMuddySatiety },
+            { "tainted", ModConfig.Instance.Satiety.WellWaterTaintedSatiety },
+            { "poisoned", ModConfig.Instance.Satiety.WellWaterPoisonedSatiety },
+            { "muddysalt",  ModConfig.Instance.Satiety.WellWaterMuddySaltSatiety },
+            { "taintedsalt", ModConfig.Instance.Satiety.WellWaterTaintedSaltSatiety },
+            { "poisonedsalt", ModConfig.Instance.Satiety.WellWaterPoisonedSaltSatiety }
         };
+
         foreach (var kvp in wellWaterSatietyValues)
         {
             ApplyWellWaterSatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/wellwaterportion.json", kvp.Key, kvp.Value);
@@ -118,27 +112,27 @@ public class WaterPatches
         patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwaterfoodcat-{waterType}"), patchFoodCategory, ref applied, ref notFound, ref errorCount);
     }
     public void PrepareWaterPerishPatches(ICoreAPI api)
-{
-    if (!HydrateOrDiedrateModSystem.LoadedConfig.WaterPerish)
     {
-        RemoveWaterPerishPatches(api);
-        return;
-    }
+        if (!ModConfig.Instance.PerishRates.Enabled)
+        {
+            RemoveWaterPerishPatches(api);
+            return;
+        }
 
-    float rainWaterFreshFreshHours = HydrateOrDiedrateModSystem.LoadedConfig.RainWaterFreshHours;
-    float rainWaterFreshTransitionHours = HydrateOrDiedrateModSystem.LoadedConfig.RainWaterTransitionHours;
-    float boiledWaterFreshFreshHours = HydrateOrDiedrateModSystem.LoadedConfig.BoiledWaterFreshHours;
-    float boiledWaterFreshTransitionHours = HydrateOrDiedrateModSystem.LoadedConfig.BoiledWaterFreshHours;
-    float boiledRainWaterFreshFreshHours = HydrateOrDiedrateModSystem.LoadedConfig.BoiledRainWaterFreshHours;
-    float boiledRainWaterFreshTransitionHours = HydrateOrDiedrateModSystem.LoadedConfig.BoiledRainWaterTransitionHours;
-    float distilledWaterFreshFreshHours = HydrateOrDiedrateModSystem.LoadedConfig.DistilledWaterFreshHours;
-    float distilledWaterFreshTransitionHours = HydrateOrDiedrateModSystem.LoadedConfig.DistilledWaterTransitionHours;
-    
-    ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", rainWaterFreshFreshHours, rainWaterFreshTransitionHours);
-    ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", distilledWaterFreshFreshHours, distilledWaterFreshTransitionHours);
-    ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", boiledWaterFreshFreshHours, boiledWaterFreshTransitionHours);
-    ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", boiledRainWaterFreshFreshHours, boiledRainWaterFreshTransitionHours);
-}
+        float rainWaterFreshFreshHours = ModConfig.Instance.PerishRates.RainWaterFreshHours;
+        float rainWaterFreshTransitionHours = ModConfig.Instance.PerishRates.RainWaterTransitionHours;
+        float boiledWaterFreshFreshHours = ModConfig.Instance.PerishRates.BoiledWaterFreshHours;
+        float boiledWaterFreshTransitionHours = ModConfig.Instance.PerishRates.BoiledWaterFreshHours;
+        float boiledRainWaterFreshFreshHours = ModConfig.Instance.PerishRates.BoiledRainWaterFreshHours;
+        float boiledRainWaterFreshTransitionHours = ModConfig.Instance.PerishRates.BoiledRainWaterTransitionHours;
+        float distilledWaterFreshFreshHours = ModConfig.Instance.PerishRates.DistilledWaterFreshHours;
+        float distilledWaterFreshTransitionHours = ModConfig.Instance.PerishRates.DistilledWaterTransitionHours;
+        
+        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", rainWaterFreshFreshHours, rainWaterFreshTransitionHours);
+        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", distilledWaterFreshFreshHours, distilledWaterFreshTransitionHours);
+        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", boiledWaterFreshFreshHours, boiledWaterFreshTransitionHours);
+        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", boiledRainWaterFreshFreshHours, boiledRainWaterFreshTransitionHours);
+    }
 
     private void RemoveWaterPerishPatches(ICoreAPI api)
     {
@@ -168,7 +162,7 @@ public class WaterPatches
 
     public void PrepareWellWaterPerishPatches(ICoreAPI api)
     {
-        if (!HydrateOrDiedrateModSystem.LoadedConfig.WaterPerish)
+        if (!ModConfig.Instance.PerishRates.Enabled)
         {
             RemoveWellWaterPerishPatches(api);
             return;
@@ -178,45 +172,62 @@ public class WaterPatches
         {
             {
                 "fresh",
-                (HydrateOrDiedrateModSystem.LoadedConfig.WellWaterFreshFreshHours,
-                    HydrateOrDiedrateModSystem.LoadedConfig.WellWaterFreshTransitionHours)
+                (
+                    ModConfig.Instance.PerishRates.WellWaterFreshFreshHours,
+                    ModConfig.Instance.PerishRates.WellWaterFreshTransitionHours
+                )
             },
             {
                 "salt",
-                (HydrateOrDiedrateModSystem.LoadedConfig.WellWaterSaltFreshHours,
-                    HydrateOrDiedrateModSystem.LoadedConfig.WellWaterSaltTransitionHours)
+                (
+                    ModConfig.Instance.PerishRates.WellWaterSaltFreshHours,
+                    ModConfig.Instance.PerishRates.WellWaterSaltTransitionHours
+                )
             },
             {
                 "muddy",
-                (HydrateOrDiedrateModSystem.LoadedConfig.WellWaterMuddyFreshHours,
-                    HydrateOrDiedrateModSystem.LoadedConfig.WellWaterMuddyTransitionHours)
+                (
+                    ModConfig.Instance.PerishRates.WellWaterMuddyFreshHours,
+                    ModConfig.Instance.PerishRates.WellWaterMuddyTransitionHours
+                )
             },
             {
                 "tainted",
-                (HydrateOrDiedrateModSystem.LoadedConfig.WellWaterTaintedFreshHours,
-                    HydrateOrDiedrateModSystem.LoadedConfig.WellWaterTaintedTransitionHours)
+                (
+                    ModConfig.Instance.PerishRates.WellWaterTaintedFreshHours,
+                    ModConfig.Instance.PerishRates.WellWaterTaintedTransitionHours
+                )
             },
             {
                 "poisoned",
-                (HydrateOrDiedrateModSystem.LoadedConfig.WellWaterPoisonedFreshHours,
-                    HydrateOrDiedrateModSystem.LoadedConfig.WellWaterPoisonedTransitionHours)
+                (
+                    ModConfig.Instance.PerishRates.WellWaterPoisonedFreshHours,
+                    ModConfig.Instance.PerishRates.WellWaterPoisonedTransitionHours
+                )
             },
             {
                 "muddysalt",
-                (HydrateOrDiedrateModSystem.LoadedConfig.WellWaterMuddySaltFreshHours,
-                    HydrateOrDiedrateModSystem.LoadedConfig.WellWaterMuddySaltTransitionHours)
+                (
+                    ModConfig.Instance.PerishRates.WellWaterMuddySaltFreshHours,
+                    ModConfig.Instance.PerishRates.WellWaterMuddySaltTransitionHours
+                )
             },
             {
                 "taintedsalt",
-                (HydrateOrDiedrateModSystem.LoadedConfig.WellWaterTaintedSaltFreshHours,
-                    HydrateOrDiedrateModSystem.LoadedConfig.WellWaterTaintedSaltTransitionHours)
+                (
+                    ModConfig.Instance.PerishRates.WellWaterTaintedSaltFreshHours,
+                    ModConfig.Instance.PerishRates.WellWaterTaintedSaltTransitionHours
+                )
             },
             {
                 "poisonedsalt",
-                (HydrateOrDiedrateModSystem.LoadedConfig.WellWaterPoisonedSaltFreshHours,
-                    HydrateOrDiedrateModSystem.LoadedConfig.WellWaterPoisonedSaltTransitionHours)
+                (
+                    ModConfig.Instance.PerishRates.WellWaterPoisonedSaltFreshHours,
+                    ModConfig.Instance.PerishRates.WellWaterPoisonedSaltTransitionHours
+                )
             }
         };
+
         foreach (var kvp in wellWaterPerishRateValues)
         {
             ApplyWellWaterPerishRatePatch(api, "hydrateordiedrate:itemtypes/liquid/wellwaterportion.json", kvp.Key,

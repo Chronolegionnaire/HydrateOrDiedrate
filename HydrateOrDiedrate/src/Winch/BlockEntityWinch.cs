@@ -1,10 +1,12 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.ConfigOld;
+using HydrateOrDiedrate.src.Config.SubConfigs;
+using HydrateOrDiedrate.wellwater;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.wellwater;
-using Newtonsoft.Json;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -21,7 +23,7 @@ namespace HydrateOrDiedrate.winch
         private ICoreAPI api;
         private BlockWinch ownBlock;
         public float MeshAngle;
-        private Config.Config config;
+
         private ILoadedSound ambientSound;
         internal InventoryWinch inventory;
         public float inputTurnTime;
@@ -292,8 +294,8 @@ namespace HydrateOrDiedrate.winch
         }
         private bool StepMovement()
         {
-            float lowerSpeed = HydrateOrDiedrateModSystem.LoadedConfig.WinchLowerSpeed;
-            float raiseSpeed = HydrateOrDiedrateModSystem.LoadedConfig.WinchRaiseSpeed;
+            float lowerSpeed = ModConfig.Instance.GroundWater.WinchLowerSpeed;
+            float raiseSpeed = ModConfig.Instance.GroundWater.WinchRaiseSpeed;
             
             if (isRaising)
             {
@@ -895,7 +897,7 @@ namespace HydrateOrDiedrate.winch
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             base.GetBlockInfo(forPlayer, dsc);
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.WinchOutputInfo)
+            if (!ModConfig.Instance.GroundWater.WinchOutputInfo)
             {
                 return;
             }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
+using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
@@ -24,7 +25,7 @@ public class HudElementThirstBar : HudElement
 
     public void OnGameTick(float dt)
     {
-        if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || 
+        if (!ModConfig.Instance.Thirst.Enabled ||
             capi.World.Player.WorldData.CurrentGameMode == EnumGameMode.Spectator)
         {
             return;
@@ -125,7 +126,7 @@ public class HudElementThirstBar : HudElement
     }
     public override void OnRenderGUI(float deltaTime)
     {
-        if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics) return;
+        if (!ModConfig.Instance.Thirst.Enabled) return;
         if (capi.World.Player.WorldData.CurrentGameMode == EnumGameMode.Spectator) return;
 
         base.OnRenderGUI(deltaTime);

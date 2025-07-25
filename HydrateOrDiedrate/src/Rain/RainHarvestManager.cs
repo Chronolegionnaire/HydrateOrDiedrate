@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Common;
@@ -42,40 +43,24 @@ namespace HydrateOrDiedrate
     public class RainHarvesterManager
     {
         private ICoreServerAPI serverAPI;
-        private Config.Config _config;
         private Dictionary<BlockPos, RainHarvesterData> activeHarvesters;
         private Dictionary<ChunkPos, Dictionary<BlockPos, RainHarvesterData>> inactiveHarvestersByChunk;
         private long tickListenerId;
         private int globalTickCounter = 1;
         private bool enableParticleTicking;
 
-        public RainHarvesterManager(ICoreServerAPI api, Config.Config config)
+        public RainHarvesterManager(ICoreServerAPI api)
         {
             serverAPI = api;
-            _config = config;
-            activeHarvesters = new Dictionary<BlockPos, RainHarvesterData>();
-            inactiveHarvestersByChunk = new Dictionary<ChunkPos, Dictionary<BlockPos, RainHarvesterData>>();
+            activeHarvesters = [];
+            inactiveHarvestersByChunk = [];
 
-            enableParticleTicking = config.EnableParticleTicking;
+            enableParticleTicking = ModConfig.Instance.Rain.EnableRainGathering;
 
-            if (config.EnableRainGathering)
+            if (enableParticleTicking)
             {
                 tickListenerId = api.Event.RegisterGameTickListener(ScheduleTickProcessing, 2000);
                 api.Event.RegisterGameTickListener(OnInactiveHarvesterCheck, 10000);
-            }
-        }
-
-        public void Reset(Config.Config newConfig)
-        {
-            _config = newConfig;
-            enableParticleTicking = _config.EnableParticleTicking;
-
-            serverAPI.Event.UnregisterGameTickListener(tickListenerId);
-
-            if (_config.EnableRainGathering)
-            {
-                tickListenerId = serverAPI.Event.RegisterGameTickListener(ScheduleTickProcessing, 2000);
-                serverAPI.Event.RegisterGameTickListener(OnInactiveHarvesterCheck, 10000);
             }
         }
 
@@ -91,7 +76,7 @@ namespace HydrateOrDiedrate
                 ChunkPos chunkKey = ChunkPos.FromBlockPos(position);
                 if (!inactiveHarvestersByChunk.TryGetValue(chunkKey, out var chunkDict))
                 {
-                    chunkDict = new Dictionary<BlockPos, RainHarvesterData>();
+                    chunkDict = [];
                     inactiveHarvestersByChunk[chunkKey] = chunkDict;
                 }
                 chunkDict[position] = data;

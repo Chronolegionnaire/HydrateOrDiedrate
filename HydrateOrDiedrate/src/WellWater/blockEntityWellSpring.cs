@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
+using System;
 using System.Linq;
 using System.Text;
 using Vintagestory.API.Common;
@@ -44,11 +45,11 @@ namespace HydrateOrDiedrate.wellwater
                 int validatedLevels = CheckColumnForMaterial(sapi.World.BlockAccessor, Pos, cachedRingMaterial);
                 partialValidatedHeight = validatedLevels;
 
-                if (cachedRingMaterial == "brick" && validatedLevels >= HydrateOrDiedrateModSystem.LoadedConfig.WellwaterDepthMaxClay)
+                if (cachedRingMaterial == "brick" && validatedLevels >= ModConfig.Instance.GroundWater.WellwaterDepthMaxClay)
                 {
                     canPlaceToConfiguredLevel = true;
                 }
-                else if (cachedRingMaterial == "stonebrick" && validatedLevels >= HydrateOrDiedrateModSystem.LoadedConfig.WellwaterDepthMaxStone)
+                else if (cachedRingMaterial == "stonebrick" && validatedLevels >= ModConfig.Instance.GroundWater.WellwaterDepthMaxStone)
                 {
                     canPlaceToConfiguredLevel = true;
                 }
@@ -68,7 +69,7 @@ namespace HydrateOrDiedrate.wellwater
 
         private void OnTick(float dt)
         {
-            double multiplier = HydrateOrDiedrateModSystem.LoadedConfig.WellSpringOutputMultiplier;
+            double multiplier = ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
             var calendar = sapi.World.Calendar;
             double currentInGameTime = calendar.TotalDays;
             if (lastInGameTime < 0)
@@ -146,8 +147,8 @@ namespace HydrateOrDiedrate.wellwater
             partialValidatedHeight = validatedLevels;
             MarkDirty(true);
             canPlaceToConfiguredLevel = false;
-            if (cachedRingMaterial == "brick" && validatedLevels >= HydrateOrDiedrateModSystem.LoadedConfig.WellwaterDepthMaxClay) canPlaceToConfiguredLevel = true;
-            else if (cachedRingMaterial == "stonebrick" && validatedLevels >= HydrateOrDiedrateModSystem.LoadedConfig.WellwaterDepthMaxStone) canPlaceToConfiguredLevel = true;
+            if (cachedRingMaterial == "brick" && validatedLevels >= ModConfig.Instance.GroundWater.WellwaterDepthMaxClay) canPlaceToConfiguredLevel = true;
+            else if (cachedRingMaterial == "stonebrick" && validatedLevels >= ModConfig.Instance.GroundWater.WellwaterDepthMaxStone) canPlaceToConfiguredLevel = true;
             if (oldRingMaterial != cachedRingMaterial || oldCanPlace != canPlaceToConfiguredLevel) MarkDirty(true);
         }
 
@@ -292,17 +293,17 @@ namespace HydrateOrDiedrate.wellwater
         }
         private int DetermineMaxDepthBasedOnCached(string ringMat, int validatedLevels)
         {
-            int baseDepth = HydrateOrDiedrateModSystem.LoadedConfig.WellwaterDepthMaxBase;
+            int baseDepth = ModConfig.Instance.GroundWater.WellwaterDepthMaxBase;
             if (validatedLevels <= 0 || ringMat == "none") return baseDepth;
             if (ringMat == "brick")
             {
-                int clayMax = HydrateOrDiedrateModSystem.LoadedConfig.WellwaterDepthMaxClay;
+                int clayMax = ModConfig.Instance.GroundWater.WellwaterDepthMaxClay;
                 int partialDepth = Math.Min(validatedLevels, clayMax);
                 return Math.Max(baseDepth, partialDepth);
             }
             else if (ringMat == "stonebrick")
             {
-                int stoneMax = HydrateOrDiedrateModSystem.LoadedConfig.WellwaterDepthMaxStone;
+                int stoneMax = ModConfig.Instance.GroundWater.WellwaterDepthMaxStone;
                 int partialDepth = Math.Min(validatedLevels, stoneMax);
                 return Math.Max(baseDepth, partialDepth);
             }
@@ -338,11 +339,11 @@ namespace HydrateOrDiedrate.wellwater
             int maxCheck;
             if (ringMaterial == "brick")
             {
-                maxCheck = HydrateOrDiedrateModSystem.LoadedConfig.WellwaterDepthMaxClay;
+                maxCheck = ModConfig.Instance.GroundWater.WellwaterDepthMaxClay;
             }
             else if (ringMaterial == "stonebrick")
             {
-                maxCheck = HydrateOrDiedrateModSystem.LoadedConfig.WellwaterDepthMaxStone;
+                maxCheck = ModConfig.Instance.GroundWater.WellwaterDepthMaxStone;
             }
             else
             {
