@@ -1,6 +1,12 @@
 ﻿using HydrateOrDiedrate.Config.SubConfigs;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Config;
 
@@ -67,4 +73,40 @@ public class ModConfig
     /// </summary>
     [DefaultValue(false)]
     public bool SprintToDrink { get; set; } = false;
+
+    [JsonExtensionData]
+    public Dictionary<string, JToken> LegacyData { get; set; }
+
+    public bool MapLegacyData()
+    {
+        if(LegacyData is null) return false;
+        
+        var legacyData = new Dictionary<string, JToken>(LegacyData, StringComparer.OrdinalIgnoreCase);
+        var subConfigs = typeof(ModConfig)
+            .GetProperties()
+            .Where(prop => prop.PropertyType.IsClass)
+            .Select(prop => prop.GetValue(this));
+
+        foreach(var subConfig in subConfigs)
+        {
+            foreach(var property in subConfig.GetType().GetProperties())
+            {
+                if(legacyData.TryGetValue(property.Name, out var token))
+                {
+                    try
+                    {
+                        property.SetValue(subConfig, token.ToObject(property.PropertyType));
+                    }
+                    catch
+                    {
+                        //Ignore unknown legacy data
+                    }
+                }
+            }
+        }
+
+        LegacyData = null;
+        return true;
+    }
+
 }

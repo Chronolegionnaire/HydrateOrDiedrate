@@ -24,6 +24,7 @@ public static class ConfigManager
         try
         {
             ModConfig.Instance = api.LoadModConfig<ModConfig>(ModConfig.ConfigPath);
+            ModConfig.Instance?.MapLegacyData();
             ModConfig.Instance ??= new ModConfig();
             SaveModConfig(api, ModConfig.Instance);
         }
