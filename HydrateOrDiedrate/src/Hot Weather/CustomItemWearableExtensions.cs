@@ -52,7 +52,7 @@ namespace HydrateOrDiedrate.Hot_Weather
             {
                 JsonObject itemAttributes = slot.Itemstack.ItemAttributes;
 
-                float maxCooling = itemAttributes?[CoolingManager.CoolingAttributeKey]?.AsFloat(0f) ?? 0f;
+                float maxCooling = itemAttributes?[Attributes.Cooling]?.AsFloat(0f) ?? 0f;
                 float maxWarmth = itemAttributes?["warmth"]?.AsFloat(0f) ?? 0f;
 
                 bool shouldAssignCondition = !(IsZeroNaNOrNull(maxCooling) && IsZeroNaNOrNull(maxWarmth));

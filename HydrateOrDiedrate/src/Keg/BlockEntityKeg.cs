@@ -1,5 +1,4 @@
 ﻿using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.ConfigOld;
 using System;
 using System.Collections.Generic;
 using System.Text;

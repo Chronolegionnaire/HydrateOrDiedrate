@@ -18,9 +18,4 @@ public static class HydrationCalculator
         }
         return totalHydration;
     }
-
-    private static bool IsLiquidPortion(ItemStack itemStack)
-    {
-        return itemStack?.Collectible?.GetType()?.Name == "ItemLiquidPortion";
-    }
 }

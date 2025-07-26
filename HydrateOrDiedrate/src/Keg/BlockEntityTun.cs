@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.ConfigOld;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
