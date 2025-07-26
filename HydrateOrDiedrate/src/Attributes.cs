@@ -9,5 +9,5 @@ public static class Attributes
     public const string Healing = "health";
     public const string Cooling = "cooling";
     public const string Hydration = "hydration";
-    public const string HydrationByType = "hydrationByType"; //TODO do we really need this one?
+    public const string HydrationByType = "hydrationByType";
 }

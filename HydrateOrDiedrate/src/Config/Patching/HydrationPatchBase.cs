@@ -5,10 +5,10 @@ namespace HydrateOrDiedrate.Config.Patching;
 
 public abstract class HydrationPatchBase : PatchBase
 {
-    [JsonProperty("Hydration")]
+    [JsonProperty(Attributes.Hydration)]
     public override float Value { get; set; }
 
 
-    [JsonProperty("HydrationByType")]
+    [JsonProperty(Attributes.HydrationByType)]
     public override Dictionary<string, float> ValueByType { get; set; }
 }

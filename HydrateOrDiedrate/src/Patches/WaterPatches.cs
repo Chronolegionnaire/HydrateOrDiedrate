@@ -7,9 +7,9 @@ using Vintagestory.ServerMods.NoObf;
 
 namespace HydrateOrDiedrate;
 
-public class WaterPatches
+public static class WaterPatches
 {
-    public void PrepareWaterSatietyPatches(ICoreAPI api)
+    public static void PrepareWaterSatietyPatches(ICoreAPI api)
     {
         ApplySatietyPatch(api, "game:itemtypes/liquid/waterportion.json", ModConfig.Instance.Satiety.WaterSatiety);
         ApplySatietyPatch(api, "game:itemtypes/liquid/saltwaterportion.json", ModConfig.Instance.Satiety.SaltWaterSatiety);
@@ -20,18 +20,18 @@ public class WaterPatches
         ApplySatietyPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", ModConfig.Instance.Satiety.BoiledRainWaterSatiety);
     }
 
-    private void ApplySatietyPatch(ICoreAPI api, string jsonFilePath, float satietyValue)
+    private static void ApplySatietyPatch(ICoreAPI api, string jsonFilePath, float satietyValue)
     {
-        JsonPatch ensureNutritionProps = new JsonPatch
+        var ensureNutritionProps = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre",
-            Value = new JsonObject(JToken.FromObject(new { })),
+            Value = new JsonObject(new JObject()),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
 
-        JsonPatch patchSatiety = new JsonPatch
+        var patchSatiety = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre/satiety",
@@ -40,7 +40,7 @@ public class WaterPatches
             Side = EnumAppSide.Server
         };
 
-        JsonPatch patchFoodCategory = new JsonPatch
+        var patchFoodCategory = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = "/attributes/waterTightContainerProps/nutritionPropsPerLitre/foodcategory",
@@ -56,7 +56,7 @@ public class WaterPatches
         patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamicfoodcategorypatch"), patchFoodCategory, ref applied, ref notFound, ref errorCount);
     }
 
-    public void PrepareWellWaterSatietyPatches(ICoreAPI api)
+    public static void PrepareWellWaterSatietyPatches(ICoreAPI api)
     {
         var wellWaterSatietyValues = new Dictionary<string, float>
         {
@@ -76,20 +76,20 @@ public class WaterPatches
         }
     }
 
-    private void ApplyWellWaterSatietyPatch(ICoreAPI api, string jsonFilePath, string waterType, float satietyValue)
+    private static void ApplyWellWaterSatietyPatch(ICoreAPI api, string jsonFilePath, string waterType, float satietyValue)
     {
         int applied = 0, notFound = 0, errorCount = 0;
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        JsonPatch ensureNutritionProps = new JsonPatch
+        var ensureNutritionProps = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = $"/attributesByType/*-{waterType}/waterTightContainerProps/nutritionPropsPerLitre",
-            Value = new JsonObject(JToken.FromObject(new { })),
+            Value = new JsonObject(new JObject()),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
 
-        JsonPatch patchSatiety = new JsonPatch
+        var patchSatiety = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = $"/attributesByType/*-{waterType}/waterTightContainerProps/nutritionPropsPerLitre/satiety",
@@ -98,7 +98,7 @@ public class WaterPatches
             Side = EnumAppSide.Server
         };
 
-        JsonPatch patchFoodCategory = new JsonPatch
+        var patchFoodCategory = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = $"/attributesByType/*-{waterType}/waterTightContainerProps/nutritionPropsPerLitre/foodcategory",
@@ -111,7 +111,7 @@ public class WaterPatches
         patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwatersatiety-{waterType}"), patchSatiety, ref applied, ref notFound, ref errorCount);
         patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwaterfoodcat-{waterType}"), patchFoodCategory, ref applied, ref notFound, ref errorCount);
     }
-    public void PrepareWaterPerishPatches(ICoreAPI api)
+    public static void PrepareWaterPerishPatches(ICoreAPI api)
     {
         if (!ModConfig.Instance.PerishRates.Enabled)
         {
@@ -127,40 +127,39 @@ public class WaterPatches
         float boiledRainWaterFreshTransitionHours = ModConfig.Instance.PerishRates.BoiledRainWaterTransitionHours;
         float distilledWaterFreshFreshHours = ModConfig.Instance.PerishRates.DistilledWaterFreshHours;
         float distilledWaterFreshTransitionHours = ModConfig.Instance.PerishRates.DistilledWaterTransitionHours;
-        
+
         ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", rainWaterFreshFreshHours, rainWaterFreshTransitionHours);
         ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", distilledWaterFreshFreshHours, distilledWaterFreshTransitionHours);
         ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", boiledWaterFreshFreshHours, boiledWaterFreshTransitionHours);
         ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", boiledRainWaterFreshFreshHours, boiledRainWaterFreshTransitionHours);
     }
 
-    private void RemoveWaterPerishPatches(ICoreAPI api)
+    private static void RemoveWaterPerishPatches(ICoreAPI api)
     {
-        string[] jsonFiles = new string[]
-        {
+        string[] jsonFiles =
+        [
             "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json",
             "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json",
             "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json",
             "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json"
-        };
+        ];
 
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
         foreach (var jsonFilePath in jsonFiles)
         {
             int applied = 0, notFound = 0, errorCount = 0;
-            JsonPatch removePatch = new JsonPatch
+            var removePatch = new JsonPatch
             {
                 Op = EnumJsonPatchOp.Remove,
                 Path = "/transitionableProps",
                 File = new AssetLocation(jsonFilePath),
                 Side = EnumAppSide.Server
             };
-            patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:removeperishpatch"), removePatch,
-                ref applied, ref notFound, ref errorCount);
+            patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:removeperishpatch"), removePatch, ref applied, ref notFound, ref errorCount);
         }
     }
 
-    public void PrepareWellWaterPerishPatches(ICoreAPI api)
+    public static void PrepareWellWaterPerishPatches(ICoreAPI api)
     {
         if (!ModConfig.Instance.PerishRates.Enabled)
         {
@@ -230,16 +229,15 @@ public class WaterPatches
 
         foreach (var kvp in wellWaterPerishRateValues)
         {
-            ApplyWellWaterPerishRatePatch(api, "hydrateordiedrate:itemtypes/liquid/wellwaterportion.json", kvp.Key,
-                kvp.Value.fresh, kvp.Value.transition);
+            ApplyWellWaterPerishRatePatch(api, "hydrateordiedrate:itemtypes/liquid/wellwaterportion.json", kvp.Key, kvp.Value.fresh, kvp.Value.transition);
         }
     }
 
-    private void RemoveWellWaterPerishPatches(ICoreAPI api)
+    private static void RemoveWellWaterPerishPatches(ICoreAPI api)
     {
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
         int applied = 0, notFound = 0, errorCount = 0;
-        JsonPatch removePatch = new JsonPatch
+        var removePatch = new JsonPatch
         {
             Op = EnumJsonPatchOp.Remove,
             Path = "/transitionablePropsByType",
@@ -247,26 +245,25 @@ public class WaterPatches
             Side = EnumAppSide.Server
         };
 
-        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:removewellwaterperishpatch"), removePatch,
-            ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:removewellwaterperishpatch"), removePatch, ref applied, ref notFound, ref errorCount);
     }
 
-    private void ApplyPerishPatch(ICoreAPI api, string jsonFilePath, float freshHours, float transitionHours)
+    private static void ApplyPerishPatch(ICoreAPI api, string jsonFilePath, float freshHours, float transitionHours)
     {
-        JsonPatch patchFreshHours = new JsonPatch
+        var patchFreshHours = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = "/transitionableProps/0/freshHours",
-            Value = new JsonObject(JToken.FromObject(new { avg = freshHours })),
+            Value = new JsonObject(JToken.FromObject(new JObject{ ["avg"] = freshHours })),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
     
-        JsonPatch patchTransitionHours = new JsonPatch
+        var patchTransitionHours = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = "/transitionableProps/0/transitionHours",
-            Value = new JsonObject(JToken.FromObject(new { avg = transitionHours })),
+            Value = new JsonObject(JToken.FromObject(new JObject{ ["avg"] = transitionHours })),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
@@ -277,30 +274,28 @@ public class WaterPatches
         patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:dynamictransitionhourspatch"), patchTransitionHours, ref applied, ref notFound, ref errorCount);
     }
 
-    private void ApplyWellWaterPerishRatePatch(ICoreAPI api, string jsonFilePath, string waterType, float freshHours,
-        float transitionHours)
+    private static void ApplyWellWaterPerishRatePatch(ICoreAPI api, string jsonFilePath, string waterType, float freshHours, float transitionHours)
     {
         int applied = 0, notFound = 0, errorCount = 0;
         ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        JsonPatch patchFreshHours = new JsonPatch
+        var patchFreshHours = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = $"/transitionablePropsByType/*-{waterType}/0/freshHours",
-            Value = new JsonObject(JToken.FromObject(new { avg = freshHours })),
+            Value = new JsonObject(JToken.FromObject(new JObject { ["avg"] = freshHours })),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
-        JsonPatch patchTransitionHours = new JsonPatch
+
+        var patchTransitionHours = new JsonPatch
         {
             Op = EnumJsonPatchOp.AddMerge,
             Path = $"/transitionablePropsByType/*-{waterType}/0/transitionHours",
-            Value = new JsonObject(JToken.FromObject(new { avg = transitionHours })),
+            Value = new JsonObject(JToken.FromObject(new JObject { ["avg"] = transitionHours })),
             File = new AssetLocation(jsonFilePath),
             Side = EnumAppSide.Server
         };
-        patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwaterfreshperishrate-{waterType}"),
-            patchFreshHours, ref applied, ref notFound, ref errorCount);
-        patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwatertransitionperishrate-{waterType}"),
-            patchTransitionHours, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwaterfreshperishrate-{waterType}"), patchFreshHours, ref applied, ref notFound, ref errorCount);
+        patchLoader.ApplyPatch(0, new AssetLocation($"hydrateordiedrate:wellwatertransitionperishrate-{waterType}"), patchTransitionHours, ref applied, ref notFound, ref errorCount);
     }
 }

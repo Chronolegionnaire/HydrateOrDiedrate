@@ -47,8 +47,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.StartPre(api);
         ConfigManager.EnsureModConfigLoaded(api);
-        
-        if(harmony is null)
+
+        if (!Harmony.HasAnyPatches(HarmonyID))
         {
             harmony = new Harmony(HarmonyID);
             harmony.PatchAll();
@@ -58,17 +58,19 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void AssetsLoaded(ICoreAPI api)
     {
         base.AssetsLoaded(api);
-        var waterPatches = new WaterPatches();
-        waterPatches.PrepareWaterSatietyPatches(api);
-        waterPatches.PrepareWellWaterSatietyPatches(api);
-        waterPatches.PrepareWaterPerishPatches(api);
-        waterPatches.PrepareWellWaterPerishPatches(api);
+
+        if(api.Side == EnumAppSide.Client) return; //This data is decided by the server and synced over to client automatically
+        
+        WaterPatches.PrepareWaterSatietyPatches(api);
+        WaterPatches.PrepareWellWaterSatietyPatches(api);
+        WaterPatches.PrepareWaterPerishPatches(api);
+        WaterPatches.PrepareWellWaterPerishPatches(api);
     }
 
     public override void AssetsFinalize(ICoreAPI api)
     {
         base.AssetsFinalize(api);
-        if(api.Side == EnumAppSide.Client) return; //This data is decided by ther server and synced over to client automatically
+        if(api.Side == EnumAppSide.Client) return; //This data is decided by the server and synced over to client automatically
 
         PatchCollection<CoolingPatch>.GetMerged(api, "HoD.AddCooling.json", CoolingPatch.GenerateDefaultPatchCollection()).ApplyPatches(api.World.Items);
 
