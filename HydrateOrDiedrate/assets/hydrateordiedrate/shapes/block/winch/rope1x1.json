@@ -9,7 +9,7 @@
 		"rope": [32,32]
 	},
 	"textures": {
-		"rope": "game:entity/erel/pristine/rope"
+		"rope": "game:entity/lore/erel/pristine/rope"
 	},
 	"elements": [
 		{
