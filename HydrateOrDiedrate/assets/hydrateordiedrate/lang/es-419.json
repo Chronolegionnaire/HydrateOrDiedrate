@@ -1,7 +1,6 @@
 ﻿{
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Habilitar la mecánica de Hidratación",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Habilitar calor extremo",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Habilitar daños por agua hirviendo",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Habilitar penalización por carga de líquidos",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Hidratación máxima",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Daño por sed",

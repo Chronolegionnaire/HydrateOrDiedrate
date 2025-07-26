@@ -1,5 +1,8 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Vintagestory.API.Common;
 
@@ -24,7 +27,7 @@ public static class ConfigManager
         try
         {
             ModConfig.Instance = api.LoadModConfig<ModConfig>(ModConfig.ConfigPath);
-            ModConfig.Instance?.MapLegacyData();
+            MapLegacyData(ModConfig.Instance);
             ModConfig.Instance ??= new ModConfig();
             SaveModConfig(api, ModConfig.Instance);
         }
@@ -60,4 +63,54 @@ public static class ConfigManager
     }
 
     internal static void UnloadModConfig() => ModConfig.Instance = null;
+
+    private static void MapLegacyData(ModConfig instance)
+    {
+        if(instance?.LegacyData is null) return;
+        
+        var legacyData = new Dictionary<string, JToken>(instance.LegacyData, StringComparer.OrdinalIgnoreCase);
+        var subConfigs = typeof(ModConfig)
+            .GetProperties()
+            .Where(prop => prop.PropertyType.IsClass)
+            .Select(prop => prop.GetValue(instance));
+
+        //Auto fields
+        foreach(var subConfig in subConfigs)
+        {
+            foreach(var property in subConfig.GetType().GetProperties())
+            {
+                if(legacyData.TryGetValue(property.Name, out var token))
+                {
+                    try
+                    {
+                        property.SetValue(subConfig, token.ToObject(property.PropertyType));
+                    }
+                    catch
+                    {
+                        //Ignore unknown legacy data
+                    }
+                }
+            }
+        }
+
+        //Manual fields
+        if(TryGetBool(legacyData, "EnableBoilingWaterDamage", out var value) && !value) instance.Thirst.BoilingWaterDamage = 0;
+        if(TryGetBool(legacyData, "EnableThirstMechanics", out value)) instance.Thirst.Enabled = value;
+        if(TryGetBool(legacyData, "WaterPerish", out value)) instance.PerishRates.Enabled = value;
+        if(TryGetBool(legacyData, "EnableLiquidEncumbrance", out value)) instance.LiquidEncumbrance.Enabled = value;
+
+        instance.LegacyData = null;
+    }
+
+    private static bool TryGetBool(Dictionary<string, JToken> legacyData, string key, out bool result)
+    {
+        if(legacyData.TryGetValue(key, out var boolToken) && boolToken.Type == JTokenType.Boolean)
+        {
+            result = boolToken.ToObject<bool>();
+            return true;
+        }
+
+        result = false;
+        return false;
+    }
 }

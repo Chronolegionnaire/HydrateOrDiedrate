@@ -1,7 +1,6 @@
 ﻿{
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Durstmechanik aktivieren",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Starke Hitze aktivieren",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Schaden durch kochendes Wasser aktivieren",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Flüssigkeitsbelastung aktivieren",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Maximaler Durst",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Durstschaden",

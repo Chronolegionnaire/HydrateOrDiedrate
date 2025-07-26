@@ -13,7 +13,7 @@ public class LiquidEncumbranceConfig
     public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// How many litres of water a player can carry before they become encumbered.
+    /// Litres of liquid you can carry in a single slotbefore incurring penalties
     /// </summary>
     [Range(0d, double.PositiveInfinity)]
     [DefaultValue(4.0d)]

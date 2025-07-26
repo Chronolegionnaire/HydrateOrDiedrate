@@ -15,7 +15,7 @@ public class ConfigLibCompatibility
     private const string settingThirstDamage = "hydrateordiedrate:Config.Setting.ThirstDamage";
     private const string settingThirstDecayRate = "hydrateordiedrate:Config.Setting.ThirstDecayRate";
     private const string settingThirstDecayRateMax = "hydrateordiedrate:Config.Setting.ThirstDecayRateMax";
-    private const string settingHydrationLossDelayMultiplierNormalized = "hydrateordiedrate:Config.Setting.HydrationLossDelayMultiplier";
+    private const string settingHydrationLossDelayMultiplierNormalized = "hydrateordiedrate:Config.Setting.HydrationLossDelayMultiplierNormalized";
     private const string settingWaterSatiety = "hydrateordiedrate:Config.Setting.WaterSatiety";
     private const string settingSaltWaterSatiety = "hydrateordiedrate:Config.Setting.SaltWaterSatiety";
     private const string settingBoilingWaterSatiety = "hydrateordiedrate:Config.Setting.BoilingWaterSatiety";
@@ -25,10 +25,6 @@ public class ConfigLibCompatibility
     private const string settingDistilledWaterSatiety = "hydrateordiedrate:Config.Setting.DistilledWaterSatiety";
     private const string settingSprintThirstMultiplier = "hydrateordiedrate:Config.Setting.SprintThirstMultiplier";
     private const string settingBoilingWaterDamage = "hydrateordiedrate:Config.Setting.BoilingWaterDamage";
-
-
-    [Obsolete("This can just be configure with BoilingWaterDamage")] //TODO: Remove this
-    private const string settingEnableBoilingWaterDamage = "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage";
 
     // Movement Speed Penalty Settings
     private const string settingMaxMovementSpeedPenalty = "hydrateordiedrate:Config.Setting.MaxMovementSpeedPenalty";

@@ -1,7 +1,6 @@
 {
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Activer les mécaniques de soif",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Activer la chaleur intense",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Activer les dégâts de l'eau bouillante",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Activer l'encombrement de liquide",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Soif maximale",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Dégâts causés par la soif",
