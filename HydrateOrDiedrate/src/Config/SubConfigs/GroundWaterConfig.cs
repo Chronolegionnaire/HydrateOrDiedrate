@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace HydrateOrDiedrate.src.Config.SubConfigs;
+namespace HydrateOrDiedrate.Config.SubConfigs;
 
 public class GroundWaterConfig //TODO: this could potentially be split even further into WellConfig and AquiferConfig.
 {

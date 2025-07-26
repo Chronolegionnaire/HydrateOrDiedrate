@@ -1,14 +1,9 @@
-﻿using HydrateOrDiedrate.Config;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 using System;
-using System.Buffers.Text;
 using System.Text;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Server;
 
-namespace HydrateOrDiedrate.src.Config;
+namespace HydrateOrDiedrate.Config;
 
 public static class ConfigManager
 {

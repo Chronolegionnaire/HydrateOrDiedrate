@@ -10,7 +10,7 @@ using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.patches;
-using HydrateOrDiedrate.src.Config;
+using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.wellwater;
 using HydrateOrDiedrate.winch;
 using HydrateOrDiedrate.XSkill;
@@ -35,7 +35,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
     public static AquiferManager AquiferManager { get; private set; }
-    private ConfigLibCompatibility _configLibCompatibility;
+
     private XLibSkills xLibSkills;
 
     private RainHarvesterManager rainHarvesterManager;
@@ -191,7 +191,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
         }
 
-        _configLibCompatibility = new ConfigLibCompatibility(api);
+        if(api.ModLoader.IsModEnabled("configlib")) ConfigLibCompatibility.Init(api);
     }
     public RainHarvesterManager GetRainHarvesterManager()
     {

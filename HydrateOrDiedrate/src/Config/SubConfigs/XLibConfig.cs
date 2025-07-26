@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.ComponentModel;
 
-namespace HydrateOrDiedrate.src.Config.SubConfigs;
+namespace HydrateOrDiedrate.Config.SubConfigs;
 
 //TODO: Why not just use the built in XLib config system? this would allow for more flexibility and easier integration.
 public class XLibConfig

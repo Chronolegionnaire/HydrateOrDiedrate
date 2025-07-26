@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace HydrateOrDiedrate.src.Config.SubConfigs;
+namespace HydrateOrDiedrate.Config.SubConfigs;
 
 public class ContainersConfig
 {

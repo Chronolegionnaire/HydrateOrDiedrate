@@ -1,7 +1,7 @@
 ﻿using ProtoBuf;
 using System.ComponentModel;
 
-namespace HydrateOrDiedrate.src.Config.SubConfigs;
+namespace HydrateOrDiedrate.Config.SubConfigs;
 
 public class PerishRatesConfig
 {

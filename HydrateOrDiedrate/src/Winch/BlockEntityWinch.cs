@@ -1,8 +1,5 @@
 ﻿using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.ConfigOld;
-using HydrateOrDiedrate.src.Config.SubConfigs;
 using HydrateOrDiedrate.wellwater;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
