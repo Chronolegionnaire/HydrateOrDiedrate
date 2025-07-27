@@ -1,21 +1,20 @@
-MIT License
+Copyright (c) 2025 Chrono
 
-Copyright (c) 2025 Chronolegionnaire
+Permission is hereby granted to any person or organization ("User") to use this software (the "Software") for personal or internal educational purposes only, subject to the following conditions:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+No Redistribution
+The Software, in whole or in part, may not be redistributed, published, sublicensed, or otherwise transferred to any third party, in any form, without the express prior written permission of the copyright holder.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+No Modification Without Permission
+The Software may not be modified, reverse engineered, or adapted in any way for distribution or deployment purposes without explicit written consent from the copyright holder.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Educational Use Allowed
+Portions of the Software may be used as examples in educational materials, tutorials, or for individual study. Any such use must include proper attribution to the original author and must not be used in commercial, redistributable, or derivative works without permission.
+
+No Warranty
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE.
+
+Termination
+Any breach of this license immediately terminates your rights under it.
+
+For permissions beyond the scope of this license, please contact Chrono.
