@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using HydrateOrDiedrate.Config;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
@@ -11,7 +12,7 @@ public static class DrunkPerceptionEffectOnBeforeGameRenderPatch
     {
         var capiField = AccessTools.Field(typeof(DrunkPerceptionEffect), "capi");
         var capi = (ICoreClientAPI)capiField.GetValue(__instance);
-        if (HydrateOrDiedrateModSystem.LoadedConfig.DisableDrunkSway)
+        if (ModConfig.Instance.DisableDrunkSway)
         {
             var targetIntensityField = AccessTools.Field(typeof(DrunkPerceptionEffect), "targetIntensity");
             targetIntensityField.SetValue(__instance, 0);
@@ -30,7 +31,7 @@ public static class DrunkPerceptionEffectApplyToFpHandPatch
 {
     public static bool Prefix(Matrixf modelMat, DrunkPerceptionEffect __instance)
     {
-        if (HydrateOrDiedrateModSystem.LoadedConfig.DisableDrunkSway)
+        if (ModConfig.Instance.DisableDrunkSway)
         {
             return false;
         }
@@ -43,7 +44,7 @@ public static class DrunkPerceptionEffectApplyToTpPlayerPatch
 {
     public static bool Prefix(EntityPlayer entityPlr, float[] modelMatrix, DrunkPerceptionEffect __instance, float? playerIntensity = null)
     {
-        if (HydrateOrDiedrateModSystem.LoadedConfig.DisableDrunkSway)
+        if (ModConfig.Instance.DisableDrunkSway)
         {
             return false;
         }
@@ -56,7 +57,7 @@ public static class DrunkPerceptionEffectNowActivePatch
 {
     public static bool Prefix(float intensity, DrunkPerceptionEffect __instance)
     {
-        if (HydrateOrDiedrateModSystem.LoadedConfig.DisableDrunkSway)
+        if (ModConfig.Instance.DisableDrunkSway)
         {
             var capiField = AccessTools.Field(typeof(DrunkPerceptionEffect), "capi");
             var capi = (ICoreClientAPI)capiField.GetValue(__instance);

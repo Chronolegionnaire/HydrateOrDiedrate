@@ -1,6 +1,7 @@
-﻿using System;
+﻿using HarmonyLib;
+using HydrateOrDiedrate.Config;
+using System;
 using System.Threading.Tasks;
-using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
@@ -15,15 +16,7 @@ namespace HydrateOrDiedrate.patches
     {
         static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, IServerPlayer splr, ItemSlot itemslot, BlockPos pos)
         {
-            if (world.Api.Side != EnumAppSide.Server || HydrateOrDiedrateModSystem.AquiferManager == null)
-            {
-                return;
-            }
-
-            if (HydrateOrDiedrateModSystem.LoadedConfig != null && HydrateOrDiedrateModSystem.LoadedConfig.AquiferDataOnProspectingNodeMode)
-            {
-                return;
-            }
+            if (world.Api.Side != EnumAppSide.Server || HydrateOrDiedrateModSystem.AquiferManager == null || ModConfig.Instance.GroundWater.AquiferDataOnProspectingNodeMode) return;
 
             string flagKey = "PrintProbeResultsFlag";
             if (splr.Entity?.WatchedAttributes.GetBool(flagKey, false) == true)
@@ -52,7 +45,7 @@ namespace HydrateOrDiedrate.patches
                     ? Lang.Get("hydrateordiedrate:aquifer-none")
                     : GetAquiferDescription(currentAquiferData.IsSalty, currentRating, worldHeight, posY);
 
-                int radius = HydrateOrDiedrateModSystem.LoadedConfig.ProspectingRadius;
+                int radius = ModConfig.Instance.GroundWater.ProspectingRadius;
                 int bestRating = currentRating;
                 ChunkPos3D bestChunk = chunkCoord;
                 for (int dx = -radius; dx <= radius; dx++)
@@ -144,9 +137,7 @@ namespace HydrateOrDiedrate.patches
     {
         static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, Entity byEntity, ItemSlot itemslot, BlockSelection blockSel, int radius)
         {
-            if (world.Api.Side != EnumAppSide.Server ||
-                HydrateOrDiedrateModSystem.LoadedConfig == null ||
-                !HydrateOrDiedrateModSystem.LoadedConfig.AquiferDataOnProspectingNodeMode)
+            if (world.Api.Side != EnumAppSide.Server || !ModConfig.Instance.GroundWater.AquiferDataOnProspectingNodeMode)
             {
                 return;
             }
@@ -183,7 +174,7 @@ namespace HydrateOrDiedrate.patches
                     ? Lang.Get("hydrateordiedrate:aquifer-none")
                     : GetAquiferDescription(currentAquiferData.IsSalty, currentRating, worldHeight, posY);
 
-                int configRadius = HydrateOrDiedrateModSystem.LoadedConfig.ProspectingRadius;
+                int configRadius = ModConfig.Instance.GroundWater.ProspectingRadius;
                 int bestRating = currentRating;
                 ChunkPos3D bestChunk = chunkCoord;
                 for (int dx = -configRadius; dx <= configRadius; dx++)

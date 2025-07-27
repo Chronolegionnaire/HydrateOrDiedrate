@@ -1,5 +1,6 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
+using HydrateOrDiedrate.Config;
+using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
@@ -9,10 +10,7 @@ namespace HydrateOrDiedrate.patches
     [HarmonyPatch(typeof(BlockLiquidContainerBase), "tryEatStop")]
     public class TryEatStopBlockLiquidContainerBasePatch
     {
-        private static bool ShouldSkipPatch()
-        {
-            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
-        }
+        private static bool ShouldSkipPatch() => !ModConfig.Instance.Thirst.Enabled;
 
         private static bool alreadyCalled = false;
 
@@ -59,7 +57,7 @@ namespace HydrateOrDiedrate.patches
                     float litresToDrink = Math.Min(drinkCapLitres, currentLitres);
                     float calculatedHydration = (hydrationValue * litresToDrink) / drinkCapLitres;
                     float intoxicationValue = nutriProps.Intoxication;
-                    var config = HydrateOrDiedrateModSystem.LoadedConfig;
+                    var config = ModConfig.Instance.Thirst;
                     float baseMultiplier = 0.05f;
                     float effectiveMultiplier = baseMultiplier * config.HydrationLossDelayMultiplierNormalized;
                     float maxDelay = 600f; 

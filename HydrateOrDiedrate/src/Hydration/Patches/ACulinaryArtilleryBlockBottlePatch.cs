@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using HydrateOrDiedrate.Config;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 
@@ -12,10 +13,8 @@ namespace HydrateOrDiedrate.patches
     {
         private static bool alreadyCalled = false;
 
-        private static bool ShouldSkipPatch()
-        {
-            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
-        }
+        //TODO: really these patches shouldn't even be applied if the thirst mechanics are disabled (we should use PatchCategories for this optimally)
+        private static bool ShouldSkipPatch() => !ModConfig.Instance.Thirst.Enabled;
 
         static bool Prepare()
         {
@@ -74,7 +73,7 @@ namespace HydrateOrDiedrate.patches
                     float capturedHydrationAmount = hydrationValue * litresMult;
 
                     float intoxicationValue = nutriProps.Intoxication;
-                    var config = HydrateOrDiedrateModSystem.LoadedConfig;
+                    var config = ModConfig.Instance.Thirst;
                     float baseMultiplier = 0.05f;
                     float effectiveMultiplier = baseMultiplier * config.HydrationLossDelayMultiplierNormalized;
                     

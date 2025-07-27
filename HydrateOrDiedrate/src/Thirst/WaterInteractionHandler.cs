@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.wellwater;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -13,7 +14,7 @@ namespace HydrateOrDiedrate
     public class WaterInteractionHandler
     {
         private ICoreAPI _api;
-        private Config.Config _config;
+
         private IServerNetworkChannel serverChannel;
         private static readonly HashSet<string> allowedBlockCodes = new HashSet<string>
         {
@@ -35,10 +36,9 @@ namespace HydrateOrDiedrate
         private static SimpleParticleProperties _waterParticles;
         private static SimpleParticleProperties _whiteParticles;
 
-        public WaterInteractionHandler(ICoreAPI api, Config.Config config)
+        public WaterInteractionHandler(ICoreAPI api)
         {
             _api = api;
-            _config = config;
 
             _waterParticles = CreateParticleProperties(
                 ColorUtil.WhiteArgb,
@@ -123,7 +123,7 @@ namespace HydrateOrDiedrate
                     playerDrinkData[player.PlayerUID] = drinkData;
                 }
 
-                bool drinkingKey = _config.SprintToDrink ? player.Entity.Controls.Sprint : player.Entity.Controls.Sneak;
+                bool drinkingKey = ModConfig.Instance.SprintToDrink ? player.Entity.Controls.Sprint : player.Entity.Controls.Sneak;
                 if (drinkingKey && player.Entity.Controls.RightMouseDown)
                 {
                     var blockSel = RayCastForFluidBlocks(player);
@@ -268,10 +268,7 @@ namespace HydrateOrDiedrate
                     player.Entity.ReceiveDamage(damageSource, damageAmount);
                 }
 
-                if (isBoiling && _config.EnableBoilingWaterDamage)
-                {
-                    ApplyHeatDamage(player);
-                }
+                if (isBoiling) ApplyHeatDamage(player, ModConfig.Instance.Thirst.BoilingWaterDamage);
 
                 var block = _api.World.BlockAccessor.GetBlock(blockSel.Position);
                 if (block.Code.Path.StartsWith("wellwater"))
@@ -284,7 +281,6 @@ namespace HydrateOrDiedrate
                         var blockEntity = _api.World.BlockAccessor.GetBlockEntity(naturalSourcePos);
                         if (blockEntity is BlockEntityWellWaterData wellWaterData)
                         {
-                            int beforeVolume = wellWaterData.Volume;
                             wellWaterData.Volume -= 1;
                             int afterVolume = wellWaterData.Volume;
                             if (afterVolume <= 0)
@@ -322,13 +318,15 @@ namespace HydrateOrDiedrate
             }
         }
 
-        private void ApplyHeatDamage(IServerPlayer player)
+        private static void ApplyHeatDamage(IServerPlayer player, float boilingWaterDamage)
         {
+            if(boilingWaterDamage == 0) return;
+            
             player.Entity.ReceiveDamage(new DamageSource
             {
                 Source = EnumDamageSource.Internal,
                 Type = EnumDamageType.Heat
-            }, _config.BoilingWaterDamage);
+            }, boilingWaterDamage);
         }
 
         private BlockSelection RayCastForFluidBlocks(IServerPlayer player)

@@ -1,5 +1,6 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
+using HydrateOrDiedrate.Config;
+using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -17,7 +18,7 @@ namespace HydrateOrDiedrate.patches
         static void Postfix(ref PropickReading __result, IWorldAccessor world, BlockPos pos, BlockPos __state)
         {
             if (world.Side != EnumAppSide.Server) return;
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.ShowAquiferProspectingDataOnMap) return;
+            if (!ModConfig.Instance.GroundWater.ShowAquiferProspectingDataOnMap) return;
             if (HydrateOrDiedrateModSystem.AquiferManager == null) return;
             
             BlockPos originalPos = __state;

@@ -2,7 +2,6 @@
   "_comentarios": "Traducido por C4BR3R4 || Versión del Mod: 1.9.0 || Fecha de modificación: 20250226 || Registro: http://c4br3r4.es/index.php?topic=1302.0 ",
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Activar la Mecánica de Hidratación",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Activar el Calor Intenso",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Activar Daños de Agua Hirviendo",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Activar el Lastre de Trasporte de Agua",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Hidratación Máxima",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Daño por tener Sed",

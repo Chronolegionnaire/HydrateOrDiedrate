@@ -1,4 +1,5 @@
-﻿using Vintagestory.API.Client;
+﻿using HydrateOrDiedrate.Config;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
@@ -24,16 +25,16 @@ namespace HydrateOrDiedrate.Keg
 
         private void LoadConfigValues()
         {
-            tunCapacityLitres = HydrateOrDiedrateModSystem.LoadedConfig.TunCapacityLitres;
-            tunDropWithLiquid = HydrateOrDiedrateModSystem.LoadedConfig.TunDropWithLiquid;
+            tunCapacityLitres = ModConfig.Instance.Containers.TunCapacityLitres;
+            tunDropWithLiquid = ModConfig.Instance.Containers.TunDropWithLiquid;
         }
 
         private void RegisterConfigUpdateListener(ICoreAPI api)
         {
             updateListenerId = api.Event.RegisterGameTickListener(dt =>
             {
-                float newTunCapacity = HydrateOrDiedrateModSystem.LoadedConfig.TunCapacityLitres;
-                bool newTunDropWithLiquid = HydrateOrDiedrateModSystem.LoadedConfig.TunDropWithLiquid;
+                float newTunCapacity = ModConfig.Instance.Containers.TunCapacityLitres;
+                bool newTunDropWithLiquid = ModConfig.Instance.Containers.TunDropWithLiquid;
                 if (newTunCapacity != tunCapacityLitres || newTunDropWithLiquid != tunDropWithLiquid)
                 {
                     LoadConfigValues();

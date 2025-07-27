@@ -20,7 +20,7 @@
 	"textures": {
 		"spindle":  { "base": "game:block/wood/debarked/{wood}" },
 		"plank": { "base": "game:block/wood/planks/{wood}1" },
-		"rope": { "base": "game:entity/erel/pristine/rope" }
+		"rope": { "base": "game:entity/lore/erel/pristine/rope" }
 	},
 	"attributes": {
 		"mapColorCode": "settlement"

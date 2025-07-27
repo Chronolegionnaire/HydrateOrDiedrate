@@ -1,7 +1,6 @@
 {
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Включить механику жажды",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Включение сильной жары",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Включить повреждение кипятком",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Включить затруднение при переноски жидкостей",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Максимальная жажда",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Урон от жажды",

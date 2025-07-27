@@ -1,58 +1,28 @@
-﻿using Vintagestory.API.Common;
+﻿using HydrateOrDiedrate.Config;
+using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.encumbrance
 {
-    public class EntityBehaviorLiquidEncumbrance : Vintagestory.API.Common.Entities.EntityBehavior
+    public class EntityBehaviorLiquidEncumbrance(Entity entity) : EntityBehavior(entity)
     {
-        private Config.Config _config;
-        private int _tickCounter;
-        private float _currentPenaltyAmount;
-        private bool _isPenaltyApplied;
-        private ICoreServerAPI _serverApi;
-        
-        public EntityBehaviorLiquidEncumbrance(Entity entity) : base(entity)
-        {
-            _serverApi = entity.Api as ICoreServerAPI;
-            _config = HydrateOrDiedrateModSystem.LoadedConfig ?? new Config.Config();
-            _tickCounter = 0;
-            _currentPenaltyAmount = 0f;
-            _isPenaltyApplied = false;
-        }
+        private int _tickCounter = 0;
+        private float _currentPenaltyAmount = 0f;
+        private bool _isPenaltyApplied = false;
 
-
-        public EntityBehaviorLiquidEncumbrance(Entity entity, Config.Config config) : base(entity)
-        {
-            
-            _config = config;
-            _tickCounter = 0;
-            _currentPenaltyAmount = 0f;
-            _isPenaltyApplied = false;
-        }
-        public void Reset(Config.Config newConfig)
-        {
-            _config = newConfig;
-        }
         public override void OnGameTick(float deltaTime)
         {
-            if (!entity.Alive) return;
-
-            var player = entity as EntityPlayer;
-            if (player == null) return;
+            if (!entity.Alive || entity is not EntityPlayer player) return;
 
             var currentGameMode = player.Player?.WorldData?.CurrentGameMode;
-            if (currentGameMode == EnumGameMode.Creative)
+            if (currentGameMode == EnumGameMode.Creative || !ModConfig.Instance.LiquidEncumbrance.Enabled)
             {
                 RemoveMovementSpeedPenalty();
                 return;
             }
-            if (!_config.EnableLiquidEncumbrance)
-            {
-                RemoveMovementSpeedPenalty();
-                return;
-            }
+
             if (currentGameMode == EnumGameMode.Survival)
             {
                 _tickCounter++;
@@ -63,7 +33,6 @@ namespace HydrateOrDiedrate.encumbrance
                 }
             }
         }
-
 
         private void CheckInventoryForEncumbrance()
         {
@@ -86,13 +55,14 @@ namespace HydrateOrDiedrate.encumbrance
             {
                 isEncumbered = CheckInventorySlots(hotbarInventory);
             }
+
             var mouseSlot = inventoryManager.MouseItemSlot;
             if (!isEncumbered && mouseSlot != null && mouseSlot.Itemstack != null)
             {
                 if (mouseSlot.Itemstack.Block is BlockLiquidContainerBase)
                 {
                     float totalLitres = GetTotalLitresInStack(mouseSlot.Itemstack);
-                    if (totalLitres > _config.EncumbranceLimit)
+                    if (totalLitres > ModConfig.Instance.LiquidEncumbrance.EncumbranceLimit)
                     {
                         isEncumbered = true;
                     }
@@ -101,7 +71,7 @@ namespace HydrateOrDiedrate.encumbrance
 
             if (isEncumbered)
             {
-                ApplyMovementSpeedPenalty(_config.LiquidEncumbranceMovementSpeedDebuff);
+                ApplyMovementSpeedPenalty(ModConfig.Instance.LiquidEncumbrance.EncumbranceMovementSpeedDebuff);
             }
             else
             {
@@ -123,7 +93,7 @@ namespace HydrateOrDiedrate.encumbrance
                 {
                     float totalLitresInStack = GetTotalLitresInStack(slot.Itemstack);
 
-                    if (totalLitresInStack > _config.EncumbranceLimit)
+                    if (totalLitresInStack > ModConfig.Instance.LiquidEncumbrance.EncumbranceLimit)
                     {
                         return true;
                     }
@@ -135,9 +105,8 @@ namespace HydrateOrDiedrate.encumbrance
 
         private float GetTotalLitresInStack(ItemStack itemStack)
         {
-            BlockLiquidContainerBase block = itemStack.Block as BlockLiquidContainerBase;
-            if (block == null) return 0f;
-            
+            if (itemStack.Block is not BlockLiquidContainerBase block) return 0f;
+
             float litresPerContainer = block.GetCurrentLitres(itemStack);
             
             int stackSize = itemStack.StackSize;
@@ -172,11 +141,15 @@ namespace HydrateOrDiedrate.encumbrance
         public override void OnEntityDeath(DamageSource damageSourceForDeath)
         {
             base.OnEntityDeath(damageSourceForDeath);
-            _serverApi?.Event.EnqueueMainThreadTask(() => 
+
+            if(entity.Api is not ICoreServerAPI serverApi) return;
+            
+            //TODO: This code doesn't seem logical, figure out why it was added and refactor it.
+            serverApi.Event.EnqueueMainThreadTask(() => 
             {
                 if (!entity.HasBehavior<EntityBehaviorLiquidEncumbrance>())
                 {
-                    entity.AddBehavior(new EntityBehaviorLiquidEncumbrance(entity, HydrateOrDiedrateModSystem.LoadedConfig));
+                    entity.AddBehavior(new EntityBehaviorLiquidEncumbrance(entity));
                 }
             }, "AddLiquidEncumbranceBehavior");
         }

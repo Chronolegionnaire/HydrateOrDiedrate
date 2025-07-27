@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
+using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Server;
@@ -7,54 +8,56 @@ namespace HydrateOrDiedrate.Commands
 {
     public static class ThirstCommands
     {
-        public static void Register(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig)
+        public static void Register(ICoreServerAPI api)
         {
-            if (!loadedConfig.EnableThirstMechanics) return;
+            var config = ModConfig.Instance.Thirst;
+            if (!config.Enabled) return;
 
+            //TODO: these should really use the player parser instead of an optional word
             api.ChatCommands
                 .Create("setthirst")
                 .WithDescription(Lang.Get("hydrateordiedrate:cmd.setthirst.desc"))
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.OptionalWord("playerName"), api.ChatCommands.Parsers.Float("thirstValue"))
-                .HandleWith((args) => OnSetThirstCommand(api, loadedConfig, args));
+                .HandleWith((args) => OnSetThirstCommand(api, args));
 
             api.ChatCommands
                 .Create("setnutriDef")
                 .WithDescription(Lang.Get("hydrateordiedrate:cmd.setnutridef.desc"))
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.OptionalWord("playerName"), api.ChatCommands.Parsers.Float("nutriDeficitValue"))
-                .HandleWith((args) => OnSetNutriDefCommand(api, loadedConfig, args));
+                .HandleWith((args) => OnSetNutriDefCommand(api, args));
 
             api.ChatCommands
                 .Create("sethydlossdelay")
                 .WithDescription(Lang.Get("hydrateordiedrate:cmd.sethydlossdelay.desc"))
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.OptionalWord("playerName"), api.ChatCommands.Parsers.Int("hydLossDelayValue"))
-                .HandleWith((args) => OnSetHydLossDelayCommand(api, loadedConfig, args));
+                .HandleWith((args) => OnSetHydLossDelayCommand(api, args));
 
             api.ChatCommands
                 .Create("getthirst")
                 .WithDescription(Lang.Get("hydrateordiedrate:cmd.getthirst.desc"))
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.OptionalWord("playerName"))
-                .HandleWith((args) => OnGetThirstCommand(api, loadedConfig, args));
+                .HandleWith((args) => OnGetThirstCommand(api, args));
 
             api.ChatCommands
                 .Create("getnutriDef")
                 .WithDescription(Lang.Get("hydrateordiedrate:cmd.getnutridef.desc"))
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.OptionalWord("playerName"))
-                .HandleWith((args) => OnGetNutriDefCommand(api, loadedConfig, args));
+                .HandleWith((args) => OnGetNutriDefCommand(api, args));
 
             api.ChatCommands
                 .Create("gethydlossdelay")
                 .WithDescription(Lang.Get("hydrateordiedrate:cmd.gethydlossdelay.desc"))
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.OptionalWord("playerName"))
-                .HandleWith((args) => OnGetHydLossDelayCommand(api, loadedConfig, args));
+                .HandleWith((args) => OnGetHydLossDelayCommand(api, args));
         }
 
-        private static TextCommandResult OnSetThirstCommand(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnSetThirstCommand(ICoreServerAPI api, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
             float thirstValue = (float)args[1];
@@ -83,7 +86,7 @@ namespace HydrateOrDiedrate.Commands
             return TextCommandResult.Success(Lang.Get("hydrateordiedrate:cmd.thirstset", thirstValue, targetPlayer.PlayerName));
         }
 
-        private static TextCommandResult OnSetNutriDefCommand(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnSetNutriDefCommand(ICoreServerAPI api, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
             float nutriDeficitValue = (float)args[1];
@@ -112,7 +115,7 @@ namespace HydrateOrDiedrate.Commands
             return TextCommandResult.Success(Lang.Get("hydrateordiedrate:cmd.nutridefset", nutriDeficitValue, targetPlayer.PlayerName));
         }
 
-        private static TextCommandResult OnSetHydLossDelayCommand(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnSetHydLossDelayCommand(ICoreServerAPI api, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
             int hydLossDelayValue = (int)args[1];
@@ -141,7 +144,7 @@ namespace HydrateOrDiedrate.Commands
             return TextCommandResult.Success(Lang.Get("hydrateordiedrate:cmd.hydlossdelayset", hydLossDelayValue, targetPlayer.PlayerName));
         }
 
-        private static TextCommandResult OnGetThirstCommand(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnGetThirstCommand(ICoreServerAPI api, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
 
@@ -169,7 +172,7 @@ namespace HydrateOrDiedrate.Commands
             return TextCommandResult.Success(Lang.Get("hydrateordiedrate:cmd.getthirst", thirstValue, targetPlayer.PlayerName));
         }
 
-        private static TextCommandResult OnGetNutriDefCommand(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnGetNutriDefCommand(ICoreServerAPI api, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
 
@@ -197,7 +200,7 @@ namespace HydrateOrDiedrate.Commands
             return TextCommandResult.Success(Lang.Get("hydrateordiedrate:cmd.getnutridef", nutriDeficitValue, targetPlayer.PlayerName));
         }
 
-        private static TextCommandResult OnGetHydLossDelayCommand(ICoreServerAPI api, HydrateOrDiedrate.Config.Config loadedConfig, TextCommandCallingArgs args)
+        private static TextCommandResult OnGetHydLossDelayCommand(ICoreServerAPI api, TextCommandCallingArgs args)
         {
             string playerName = args[0] as string;
 

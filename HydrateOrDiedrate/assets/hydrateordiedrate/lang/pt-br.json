@@ -1,7 +1,6 @@
 ﻿{
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Ativar Mecânica de Sede",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Ativar Calor Extremo",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Ativar Dano por Água Fervente",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Ativar Incômodo por Líquidos",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Sede Máxima",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Dano por Sede",

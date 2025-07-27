@@ -1,7 +1,6 @@
 ﻿{
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Enable Thirst Mechanics",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Enable Harsh Heat",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Enable Boiling Water Damage",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Enable Liquid Encumbrance",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Maximum Thirst",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Thirst Damage",
@@ -107,6 +106,8 @@
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltFreshHours": "Well Water (Poisoned Salt) Fresh Hours",
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltTransitionHours": "Well Water (Poisoned Salt) Transition Hours",
   "hydrateordiedrate:Config.Setting.WaterPerish": "Set to false to remove water transition entirely so new water types will never perish into regular water",
+  "hydrateordiedrate:Config.Setting.settingAquiferRatingCeilingAboveSeaLevel": "Max aquifer rating above sea level",
+  "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale": "Aquifer depth multiplier scale",
   "hydrateordiedrate:Config.Setting.WinchLowerSpeed": "Winch Lower Speed",
   "hydrateordiedrate:Config.Setting.WinchRaiseSpeed": "Winch Raise Speed",
   "hydrateordiedrate:Config.Setting.KegDropWithLiquid": "Keg retains liquid when broken",

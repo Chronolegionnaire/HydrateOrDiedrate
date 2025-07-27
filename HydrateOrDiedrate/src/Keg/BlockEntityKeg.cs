@@ -1,7 +1,7 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using HydrateOrDiedrate.Config;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -17,8 +17,8 @@ namespace HydrateOrDiedrate.Keg
         private BlockKeg ownBlock;
         public float MeshAngle;
         private const int UpdateIntervalMs = 1000;
-        private float spoilRateTapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateTapped;
-        private float spoilRateUntapped = HydrateOrDiedrateModSystem.LoadedConfig.SpoilRateUntapped;
+        private float spoilRateTapped = ModConfig.Instance.Containers.SpoilRateTapped;
+        private float spoilRateUntapped = ModConfig.Instance.Containers.SpoilRateUntapped;
         public override string InventoryClassName => "keg";
 
         public override void Initialize(ICoreAPI api)

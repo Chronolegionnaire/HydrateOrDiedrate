@@ -1,6 +1,7 @@
-﻿using System;
+﻿using HarmonyLib;
+using HydrateOrDiedrate.Config;
+using System;
 using System.Text;
-using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
@@ -10,10 +11,7 @@ namespace HydrateOrDiedrate.patches
     [HarmonyPatch(typeof(BlockCookedContainer), "GetHeldItemInfo")]
     public static class BlockCookedContainerGetHeldItemInfoPatch
     {
-        private static bool ShouldSkipPatch()
-        {
-            return !HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics;
-        }
+        private static bool ShouldSkipPatch() => !ModConfig.Instance.Thirst.Enabled;
 
         [HarmonyPostfix]
         public static void Postfix(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)

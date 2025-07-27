@@ -1,4 +1,5 @@
-﻿using HydrateOrDiedrate.Hot_Weather;
+﻿using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.Hot_Weather;
 using Vintagestory.API.Common;
 using XLib.XLeveling;
 
@@ -28,7 +29,7 @@ namespace HydrateOrDiedrate.XSkill
                 return;
             }
 
-            if (HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics)
+            if (ModConfig.Instance.Thirst.Enabled)
             {
                 int[] dromedaryValues = new int[] { 0 };
                 Ability dromedaryAbility = new Ability("dromedary", "hydrateordiedrate:ability-dromedary",
@@ -46,7 +47,7 @@ namespace HydrateOrDiedrate.XSkill
 
         private void OnDromedary(PlayerAbility playerAbility, int oldTier)
         {
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics)
+            if (!ModConfig.Instance.Thirst.Enabled) //TODO this method is only registered when this statement is false, so does this even matter?
             {
                 playerAbility.SetTier(0);
                 return;
@@ -60,7 +61,7 @@ namespace HydrateOrDiedrate.XSkill
             if (behavior == null) return;
             if (playerAbility.Tier < 1)
             {
-                float defaultMaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
+                float defaultMaxThirst = ModConfig.Instance.Thirst.MaxThirst;
                 behavior.CurrentThirst = behavior.CurrentThirst / behavior.MaxThirst * defaultMaxThirst;
                 behavior.MaxThirst = defaultMaxThirst;
                 entity.WatchedAttributes.SetBool("dromedaryActive", false);
@@ -71,9 +72,9 @@ namespace HydrateOrDiedrate.XSkill
                 entity.WatchedAttributes.SetBool("dromedaryActive", true);
             }
 
-            float baseMultiplier = HydrateOrDiedrateModSystem.LoadedConfig.DromedaryMultiplierPerLevel;
+            float baseMultiplier = ModConfig.Instance.XLib.DromedaryMultiplierPerLevel;
             float multiplier = 1 + baseMultiplier + (baseMultiplier * (playerAbility.Tier - 1));
-            float newMaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst * multiplier;
+            float newMaxThirst = ModConfig.Instance.Thirst.MaxThirst * multiplier;
             behavior.CurrentThirst = behavior.CurrentThirst / behavior.MaxThirst * newMaxThirst;
             behavior.MaxThirst = newMaxThirst;
         }
@@ -100,13 +101,12 @@ namespace HydrateOrDiedrate.XSkill
             {
                 return;
             }
-            if (playerAbility.Tier > HydrateOrDiedrateModSystem.LoadedConfig.EquatidianCoolingMultipliers.Length)
+            if (playerAbility.Tier > ModConfig.Instance.XLib.EquatidianCoolingMultipliers.Length)
             {
                 return;
             }
 
-            float coolingMultiplier =
-                HydrateOrDiedrateModSystem.LoadedConfig.EquatidianCoolingMultipliers[playerAbility.Tier - 1];
+            float coolingMultiplier = ModConfig.Instance.XLib.EquatidianCoolingMultipliers[playerAbility.Tier - 1];
             behavior.CoolingMultiplier = coolingMultiplier;
             behavior.UpdateCoolingFactor();
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
+using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
@@ -29,14 +30,14 @@ namespace HydrateOrDiedrate
         public float MaxThirst
         {
             get => entity.WatchedAttributes.TryGetFloat("maxThirst") ?? 
-                   (float.IsNaN(HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst) ? 0f : HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst);
+                   (float.IsNaN(ModConfig.Instance.Thirst.MaxThirst) ? 0f : ModConfig.Instance.Thirst.MaxThirst); //TODO: Config should not be validated here! this should be done when config is loaded or modified
             set => entity.WatchedAttributes.SetFloat("maxThirst", float.IsNaN(value) ? 0f : Math.Max(value, 0));
         }
 
         public float ThirstRate
         {
             get => entity.WatchedAttributes.GetFloat("thirstRate", 
-                   float.IsNaN(HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate) ? 0f : HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate);
+                   float.IsNaN(ModConfig.Instance.Thirst.ThirstDecayRate) ? 0f : ModConfig.Instance.Thirst.ThirstDecayRate);
             set => entity.WatchedAttributes.SetFloat("thirstRate", float.IsNaN(value) ? 0f : Math.Max(value, 0));
         }
 
@@ -47,7 +48,7 @@ namespace HydrateOrDiedrate
             set
             {
                 float safeValue = float.IsNaN(value) ? 0f : value;
-                safeValue = GameMath.Clamp(safeValue, 0, HydrateOrDiedrateModSystem.LoadedConfig.MaxMovementSpeedPenalty);
+                safeValue = GameMath.Clamp(safeValue, 0, ModConfig.Instance.Thirst.MaxMovementSpeedPenalty);
                 if (_movementPenalty != safeValue)
                 {
                     _movementPenalty = safeValue;
@@ -73,9 +74,9 @@ namespace HydrateOrDiedrate
             entity.WatchedAttributes.RegisterModifiedListener("currentThirst", OnCurrentThirstModified);
             if (!entity.WatchedAttributes.HasAttribute("maxThirst"))
             {
-                MaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
+                MaxThirst = ModConfig.Instance.Thirst.MaxThirst;
             }
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || !entity.WatchedAttributes.HasAttribute("currentThirst"))
+            if (!ModConfig.Instance.Thirst.Enabled || !entity.WatchedAttributes.HasAttribute("currentThirst"))
             {
                 CurrentThirst = MaxThirst;
             }
@@ -91,18 +92,18 @@ namespace HydrateOrDiedrate
             
             if (currentThirst <= 0)
             {
-                MovementPenalty = HydrateOrDiedrateModSystem.LoadedConfig.MaxMovementSpeedPenalty;
+                MovementPenalty = ModConfig.Instance.Thirst.MaxMovementSpeedPenalty;
             }
-            else if (currentThirst < HydrateOrDiedrateModSystem.LoadedConfig.MovementSpeedPenaltyThreshold)
+            else if (currentThirst < ModConfig.Instance.Thirst.MovementSpeedPenaltyThreshold)
             {
-                float threshold = HydrateOrDiedrateModSystem.LoadedConfig.MovementSpeedPenaltyThreshold;
+                float threshold = ModConfig.Instance.Thirst.MovementSpeedPenaltyThreshold;
                 if (threshold <= 0)
                 {
-                    MovementPenalty = HydrateOrDiedrateModSystem.LoadedConfig.MaxMovementSpeedPenalty;
+                    MovementPenalty = ModConfig.Instance.Thirst.MaxMovementSpeedPenalty; //TODO: This doesn't make sense, shouldn't this be 0 instead?
                 }
                 else
                 {
-                    MovementPenalty = HydrateOrDiedrateModSystem.LoadedConfig.MaxMovementSpeedPenalty * (1 - (currentThirst / threshold));
+                    MovementPenalty = ModConfig.Instance.Thirst.MaxMovementSpeedPenalty * (1 - (currentThirst / threshold));
                 }
             }
             else
@@ -111,14 +112,9 @@ namespace HydrateOrDiedrate
             }
         }
 
-        public void Reset(Config.Config newConfig)
-        {
-            MaxThirst = HydrateOrDiedrateModSystem.LoadedConfig.MaxThirst;
-        }
-
         public override void OnGameTick(float deltaTime)
         {
-            if (!HydrateOrDiedrateModSystem.LoadedConfig.EnableThirstMechanics || !entity.Alive || entity is not EntityPlayer playerEntity) return;
+            if (!ModConfig.Instance.Thirst.Enabled || !entity.Alive || entity is not EntityPlayer playerEntity) return;
 
             if (playerEntity.Player?.WorldData?.CurrentGameMode is EnumGameMode.Creative or EnumGameMode.Spectator or EnumGameMode.Guest) return;
             if (float.IsNaN(deltaTime) || deltaTime < 0) 
@@ -145,7 +141,7 @@ namespace HydrateOrDiedrate
                 thirstDamageDelta += deltaTime;
                 if (thirstDamageDelta > 10)
                 {
-                    ApplyDamage();
+                    ApplyThirstDamage(ModConfig.Instance.Thirst.ThirstDamage);
                     thirstDamageDelta -= 10f;
                 }
             }
@@ -178,7 +174,8 @@ namespace HydrateOrDiedrate
 
         private void HandleAccumulatedThirstDecay(float deltaTime)
         {
-            float thirstDecayRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
+            var config = ModConfig.Instance.Thirst;
+            float thirstDecayRate = config.ThirstDecayRate;
             if (float.IsNaN(thirstDecayRate))
             {
                 thirstDecayRate = 0f;
@@ -213,7 +210,7 @@ namespace HydrateOrDiedrate
                 {
                     if (controls.Sprint)
                     {
-                        float sprintMultiplier = HydrateOrDiedrateModSystem.LoadedConfig.SprintThirstMultiplier;
+                        float sprintMultiplier = config.SprintThirstMultiplier;
                         if (float.IsNaN(sprintMultiplier))
                         {
                             sprintMultiplier = 1f;
@@ -227,20 +224,20 @@ namespace HydrateOrDiedrate
                 }
             }
 
-            if (HydrateOrDiedrateModSystem.LoadedConfig.HarshHeat)
+            if (ModConfig.Instance.HeatAndCooling.HarshHeat)
             {
                 var climate = entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues);
                 if (climate != null && !float.IsNaN(climate.Temperature))
                 {
-                    if (climate.Temperature > HydrateOrDiedrateModSystem.LoadedConfig.TemperatureThreshold)
+                    if (climate.Temperature > ModConfig.Instance.HeatAndCooling.TemperatureThreshold)
                     {
-                        float temperatureDifference = climate.Temperature - HydrateOrDiedrateModSystem.LoadedConfig.TemperatureThreshold;
+                        float temperatureDifference = climate.Temperature - ModConfig.Instance.HeatAndCooling.TemperatureThreshold;
                         if (float.IsNaN(temperatureDifference))
                         {
                             temperatureDifference = 0f;
                         }
 
-                        float expArgument = HydrateOrDiedrateModSystem.LoadedConfig.HarshHeatExponentialGainMultiplier * temperatureDifference;
+                        float expArgument = ModConfig.Instance.HeatAndCooling.HarshHeatExponentialGainMultiplier * temperatureDifference;
                         if (float.IsNaN(expArgument))
                         {
                             expArgument = 0f;
@@ -250,7 +247,7 @@ namespace HydrateOrDiedrate
                         {
                             expValue = double.MaxValue;
                         }
-                        float temperatureFactor = HydrateOrDiedrateModSystem.LoadedConfig.ThirstIncreasePerDegreeMultiplier * (float)expValue;
+                        float temperatureFactor = ModConfig.Instance.HeatAndCooling.ThirstIncreasePerDegreeMultiplier * (float)expValue;
                         if (float.IsNaN(temperatureFactor) || float.IsInfinity(temperatureFactor))
                         {
                             temperatureFactor = 0f;
@@ -281,20 +278,20 @@ namespace HydrateOrDiedrate
                             coolingEffect = 0f;
                         }
 
-                        thirstDecayRate -= Math.Min(coolingEffect, thirstDecayRate - HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate);
+                        thirstDecayRate -= Math.Min(coolingEffect, thirstDecayRate - config.ThirstDecayRate);
                     }
                 }
             }
 
-            float maxThirstDecay = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate * HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRateMax;
+            float maxThirstDecay = config.ThirstDecayRate * config.ThirstDecayRateMax;
             if (float.IsNaN(maxThirstDecay))
             {
-                maxThirstDecay = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
+                maxThirstDecay = config.ThirstDecayRate;
             }
             thirstDecayRate = Math.Min(thirstDecayRate, maxThirstDecay);
             if (float.IsNaN(thirstDecayRate))
             {
-                thirstDecayRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
+                thirstDecayRate = config.ThirstDecayRate;
             }
 
             if (currentSpeedOfTime > DefaultSpeedOfTime || currentCalendarSpeedMul > DefaultCalendarSpeedMul)
@@ -302,7 +299,7 @@ namespace HydrateOrDiedrate
                 thirstDecayRate *= multiplierPerGameSec;
                 if (float.IsNaN(thirstDecayRate))
                 {
-                    thirstDecayRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
+                    thirstDecayRate = config.ThirstDecayRate;
                 }
             }
 
@@ -312,7 +309,7 @@ namespace HydrateOrDiedrate
                 thirstDecayRate /= 4f;
                 if (float.IsNaN(thirstDecayRate))
                 {
-                    thirstDecayRate = HydrateOrDiedrateModSystem.LoadedConfig.ThirstDecayRate;
+                    thirstDecayRate = config.ThirstDecayRate;
                 }
             }
             float deltaThirst = -thirstDecayRate * deltaTime * 0.1f;
@@ -326,17 +323,18 @@ namespace HydrateOrDiedrate
 
         public void OnRespawn()
         {
-            CurrentThirst = 0.5f * MaxThirst;
+            CurrentThirst = 0.5f * MaxThirst; //TODO: should be configureable
             HungerReductionAmount = 0;
         }
 
-        private void ApplyDamage()
+        private void ApplyThirstDamage(float thirstDamage)
         {
+            if(thirstDamage <= 0) return;
             entity.ReceiveDamage(new DamageSource
             {
                 Source = EnumDamageSource.Internal,
                 Type = EnumDamageType.Injury
-            }, HydrateOrDiedrateModSystem.LoadedConfig.ThirstDamage);
+            }, thirstDamage);
         }
 
         private void UpdateWalkSpeed() => entity.Stats.Set("walkspeed", "thirstPenalty", -MovementPenalty, true);
