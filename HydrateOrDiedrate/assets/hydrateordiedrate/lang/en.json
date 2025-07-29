@@ -263,8 +263,6 @@
   "hydrateordiedrate-sat": "{0} sat",
   "hydrateordiedrate-hp": "{0} hp",
   "hydrateordiedrate-hyd": "{0} hyd",
-  "blockentitykeg-empty": "Empty",
-  "blockentitykeg-contents": "Contents: {0}x{1}",
   "itemkegtap-requireshammer": "Requires a hammer in the off hand",
   "characterextradialogs-hydration": "Hydration",
   "characterextradialogs-thirstrate": "Thirst Rate",

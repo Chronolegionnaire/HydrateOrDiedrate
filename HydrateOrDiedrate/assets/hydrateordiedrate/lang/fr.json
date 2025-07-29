@@ -261,8 +261,6 @@
   "hydrateordiedrate-sat": "{0} sat.",
   "hydrateordiedrate-hp": "{0} P.V.",
   "hydrateordiedrate-hyd": "{0} hyd.",
-  "blockentitykeg-empty": "Vide",
-  "blockentitykeg-contents": "Contient : {0} x {1}",
   "itemkegtap-requireshammer": "Nécessite un marteau dans la main secondaire",
   "characterextradialogs-hydration": "Hydratation",
   "characterextradialogs-thirstrate": "Taux de soif",
