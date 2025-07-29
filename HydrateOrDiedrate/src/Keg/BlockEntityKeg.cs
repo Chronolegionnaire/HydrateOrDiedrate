@@ -21,16 +21,21 @@ public class BlockEntityKeg : BlockEntityLiquidContainer
         base.Initialize(api);
 
         inventory.OnGetSuitability = GetSuitability;
-        UpdateKegMultiplier();
+        UpdateBlockRelatedStats();
     }
     
-    private void UpdateKegMultiplier()
+    private void UpdateBlockRelatedStats()
     {
         if (inventory is null) return;
 
+        var isTapped = Block.Code.Path == "kegtapped";
+        
+        //Note: sadly TakeLocked is not fully respected by liquid container code so we still need to overwrite some other methods
+        inventory.TakeLocked = !isTapped;
+
         inventory.TransitionableSpeedMulByType ??= [];
 
-        inventory.TransitionableSpeedMulByType[EnumTransitionType.Perish] = (Block.Code.Path == "kegtapped") 
+        inventory.TransitionableSpeedMulByType[EnumTransitionType.Perish] = isTapped
             ? ModConfig.Instance.Containers.SpoilRateTapped
             : ModConfig.Instance.Containers.SpoilRateUntapped;
     }
@@ -38,7 +43,7 @@ public class BlockEntityKeg : BlockEntityLiquidContainer
     public override void OnExchanged(Block block)
     {
         base.OnExchanged(block);
-        UpdateKegMultiplier();
+        UpdateBlockRelatedStats();
     }
 
     public BlockEntityKeg()
@@ -46,7 +51,7 @@ public class BlockEntityKeg : BlockEntityLiquidContainer
         inventory = new InventoryGeneric(1, null, null, null)
         {
             BaseWeight = 1.0f,
-            OnGetSuitability = GetSuitability
+            OnGetSuitability = GetSuitability,
         };
     }
 

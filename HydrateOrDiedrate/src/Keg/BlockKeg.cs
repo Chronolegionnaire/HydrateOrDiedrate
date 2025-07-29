@@ -1,6 +1,7 @@
 ﻿using HydrateOrDiedrate.Config;
 using System;
 using System.Collections.Generic;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
@@ -10,20 +11,21 @@ using Vintagestory.GameContent;
 namespace HydrateOrDiedrate.Keg;
 
 //TODO: The 2 keg blocks really should be variants of each other to better link them together (just don't feel like touching the remapper right now)
+//TODO: Maybe remove the block interaction help that suggests we can take liquids if the block is not tapped
 public class BlockKeg : BlockLiquidContainerBase
 {
     public const float snapAngle = 0.3926991f;
+    public const float requiredActionTime = (100f / 50f) - 0.1f;
     public override float CapacityLitres => ModConfig.Instance.Containers.KegCapacityLitres;
     
     public override bool AllowHeldLiquidTransfer => false;
     public override bool CanDrinkFrom => false; 
     
-    private float resistance = 100f;
+
     
-    //TODO: this field is used very poorly and will have weird effects if 2 players are both interacting with different blocks (since all Keg Blocks share this class instance)
+    //TODO: Rework this... currently implementation can respond weirdly when multiple people try to do the interaction at the same time
     private float playNextSound = 0.7f;
-    private bool choppingComplete = false;
-    
+
     //Note: CanDrinkFrom does not fully prevent you from drinking, unsure why but this is why we are overiding the Eat methods 
     protected override void tryEatBegin(ItemSlot slot, EntityAgent byEntity, ref EnumHandHandling handling, string eatSound = "eat", int eatSoundRepeats = 1) => handling = EnumHandHandling.PreventDefaultAction;
     
@@ -36,138 +38,120 @@ public class BlockKeg : BlockLiquidContainerBase
 
     public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
     {
-        ItemSlot activeHotbarSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
-        ItemSlot offHandSlot = byPlayer.Entity.LeftHandItemSlot;
-
-        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityKeg blockEntityKeg)
+        if (byPlayer.InventoryManager.ActiveTool == EnumTool.Axe)
         {
-            ItemStack heldItem = activeHotbarSlot?.Itemstack;
-            ItemStack offHandItem = offHandSlot?.Itemstack;
+            playNextSound = 0.7f;
 
-            if (heldItem?.Collectible?.Tool == EnumTool.Axe)
+            KegAnimations.StartAxeAnimation(byPlayer.Entity.AnimManager);
+            KegAnimations.PlayChoppingSound(world, byPlayer, blockSel);
+            return true;
+        }
+        
+        if(Code.Path != "kegtapped")
+        {
+            ItemStack heldItem = byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack;
+            if (heldItem?.Collectible is ItemKegTap && byPlayer.InventoryManager.OffhandTool == EnumTool.Hammer)
             {
-                choppingComplete = false;
                 playNextSound = 0.7f;
-
-                StartAxeAnimation(byPlayer);
-                PlayChoppingSound(world, byPlayer, blockSel);
+                KegAnimations.StartTappingAnimation(byPlayer.Entity.AnimManager);
+                KegAnimations.PlayTappingSound(world, byPlayer, blockSel);
                 return true;
             }
 
-            if (heldItem?.Collectible is ItemKegTap && offHandItem?.Collectible?.Code?.Path?.Contains("hammer") == true)
+            //Side path for when the block is not tapped and we are interacting with an item that can accept liquids
+            if(heldItem?.Collectible is ILiquidSink liquidSink)
             {
-                choppingComplete = false;
-                playNextSound = 0.7f;
-                Block currentBlock = world.BlockAccessor.GetBlock(blockSel.Position);
-                if (currentBlock.Code.Path != "kegtapped")
-                {
-                    StartTappingAnimation(byPlayer);
-                    PlayTappingSound(world, byPlayer, blockSel);
-                    return true;
-                }
+                //Return since since we can't take any more (which means it might try taking liquid if liquidSink can accept liquids and is not full)
+                if(IsFull(blockSel.Position)) return false;
+
+                //Return if LiquidSink can also provides liquid but it currently does not hold any, to prevent it from taking instead
+                if(liquidSink is ILiquidSource && liquidSink.GetCurrentLitres(heldItem) == 0) return false;
             }
-
-            return HandleLiquidInteraction(world, byPlayer, blockSel, blockEntityKeg, heldItem);
         }
-
+        
         return base.OnBlockInteractStart(world, byPlayer, blockSel);
     }
 
     public override bool OnBlockInteractStep(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
-    { 
-        //TODO why these overrides? because of chopping?
-        if (choppingComplete) return false;
-
-        BlockEntityKeg kegEntity = world.BlockAccessor.GetBlockEntity(blockSel.Position) as BlockEntityKeg;
-        ItemStack heldItem = byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack;
-        if (heldItem?.Collectible?.Tool == EnumTool.Axe)
+    {
+        if (byPlayer.InventoryManager.ActiveTool == EnumTool.Axe)
         {
             if (secondsUsed >= playNextSound)
             {
-                PlayChoppingSound(world, byPlayer, blockSel);
+                KegAnimations.PlayChoppingSound(world, byPlayer, blockSel);
                 playNextSound += 0.65f;
             }
 
-            if (secondsUsed >= (resistance / 50) - 0.1f)
-            {
-                world.RegisterCallback((dt) =>
-                {
-                    StopAxeAnimation(byPlayer);
-                    world.BlockAccessor.ExchangeBlock(0, blockSel.Position);
-                    world.BlockAccessor.RemoveBlockEntity(blockSel.Position);
-                    DropKegItems(world, blockSel.Position, this.Code.Path == "kegtapped");
-                    choppingComplete = true;
-                }, 500);
-
-                return false;
-            }
-
-            return true;
+            return secondsUsed < requiredActionTime;
         }
-        else if (heldItem?.Collectible is ItemKegTap && byPlayer.Entity.LeftHandItemSlot.Itemstack?.Collectible?.Code?.Path?.Contains("hammer") == true)
+
+        if (Code.Path != "kegtapped" && byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack?.Collectible is ItemKegTap && byPlayer.InventoryManager.OffhandTool == EnumTool.Hammer)
         {
             if (secondsUsed >= playNextSound)
             {
-                PlayTappingSound(world, byPlayer, blockSel);
+                KegAnimations.PlayTappingSound(world, byPlayer, blockSel);
                 playNextSound += 0.65f;
             }
 
-            if (secondsUsed >= (resistance / 50) - 0.1f)
+            return secondsUsed < requiredActionTime;
+        }
+
+        return base.OnBlockInteractStep(secondsUsed, world, byPlayer, blockSel);
+    }
+
+    public override void OnBlockInteractStop(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
+    {
+        //Finish chopping action
+        if(byPlayer.InventoryManager.ActiveTool == EnumTool.Axe)
+        {
+            if(secondsUsed >= requiredActionTime)
             {
-                world.RegisterCallback((dt) =>
-                {
-                    StopTappingAnimation(byPlayer);
-                    Block tappedKegBlock = world.GetBlock(new AssetLocation("hydrateordiedrate:kegtapped"));
-                    ITreeAttribute tree = new TreeAttribute();
-                    kegEntity.ToTreeAttributes(tree);
-                    world.BlockAccessor.ExchangeBlock(tappedKegBlock.BlockId, blockSel.Position);
-
-                    BlockEntity newBlockEntity = world.BlockAccessor.GetBlockEntity(blockSel.Position);
-                    if (newBlockEntity is BlockEntityKeg newBlockEntityKeg)
-                    {
-                        newBlockEntityKeg.FromTreeAttributes(tree, world);
-                        newBlockEntityKeg.MarkDirty(true);
-                    }
-                    ItemSlot activeHotbarSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
-                    if (activeHotbarSlot.Itemstack?.Collectible is ItemKegTap)
-                    {
-                        activeHotbarSlot.TakeOut(1);
-                        activeHotbarSlot.MarkDirty();
-                    }
-
-                    choppingComplete = true;
-                }, 500);
-                return false;
+                world.BlockAccessor.SetBlock(0, blockSel.Position);
+                DropKegItems(world, blockSel.Position);
             }
 
+            KegAnimations.StopAxeAnimation(byPlayer.Entity.AnimManager);
+            return;
+        }
+
+        //finish tapping animation
+        if (Code.Path != "kegtapped" && byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack?.Collectible is ItemKegTap && byPlayer.InventoryManager.OffhandTool == EnumTool.Hammer)
+        {
+            if(secondsUsed >= requiredActionTime)
+            {
+                Block tappedKegBlock = world.GetBlock(new AssetLocation("hydrateordiedrate", "kegtapped"));
+
+                //Exchange block so that BlockEntity does not get removed
+                world.BlockAccessor.ExchangeBlock(tappedKegBlock.BlockId, blockSel.Position);
+
+                ItemSlot activeHotbarSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
+                if (activeHotbarSlot.Itemstack?.Collectible is ItemKegTap)
+                {
+                    activeHotbarSlot.TakeOut(1);
+                    activeHotbarSlot.MarkDirty();
+                }
+
+            }
+
+            KegAnimations.StopTappingAnimation(byPlayer.Entity.AnimManager);
+            return;
+        }
+        
+        base.OnBlockInteractStop(secondsUsed, world, byPlayer, blockSel);
+    }
+
+    public override bool OnBlockInteractCancel(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, EnumItemUseCancelReason cancelReason)
+    {
+        if(base.OnBlockInteractCancel(secondsUsed,world, byPlayer, blockSel, cancelReason))
+        {
+            KegAnimations.StopAllAnimations(byPlayer.Entity.AnimManager);
             return true;
         }
 
         return false;
     }
 
-    public override void OnBlockInteractStop(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
-    {
-        if (!choppingComplete)
-        {
-            StopAxeAnimation(byPlayer);
-            StopTappingAnimation(byPlayer);
-        }
-    }
-
-    public override bool OnBlockInteractCancel(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, EnumItemUseCancelReason cancelReason)
-    {
-        if (!choppingComplete)
-        {
-            StopAxeAnimation(byPlayer);
-            StopTappingAnimation(byPlayer);
-        }
-
-        return true;
-    }
-
-    //TODO why not in the GetDrops method?
-    private void DropKegItems(IWorldAccessor world, BlockPos position, bool isTappedKeg)
+    private void DropKegItems(IWorldAccessor world, BlockPos position)
     {
         var random = world.Rand;
         for (int i = 0; i < 2; i++)
@@ -177,62 +161,11 @@ public class BlockKeg : BlockLiquidContainerBase
                 world.SpawnItemEntity(new ItemStack(world.GetItem(new AssetLocation("game","hoop-iron"))), position.ToVec3d());
             }
         }
-        if (isTappedKeg && random.NextDouble() < ModConfig.Instance.Containers.KegTapDropChance)
+
+        if (Code.Path == "kegtapped" && random.NextDouble() < ModConfig.Instance.Containers.KegTapDropChance)
         {
             world.SpawnItemEntity(new ItemStack(world.GetItem(new AssetLocation("hydrateordiedrate", "kegtap"))), position.ToVec3d());
         }
-    }
-
-    private bool HandleLiquidInteraction(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, BlockEntityKeg blockEntityKeg, ItemStack heldItem)
-    {
-        if (heldItem is null || heldItem.Collectible is null) return false;
-
-        if (heldItem.Collectible is ILiquidInterface liquidItem)
-        {
-            Block kegBlock = world.BlockAccessor.GetBlock(blockSel.Position);
-            bool isTappedKeg = kegBlock.Code.Path == "kegtapped";
-
-            if (liquidItem is ILiquidSource)
-            {
-                ItemStack liquidInHand = liquidItem.GetContent(heldItem);
-                ItemStack contentInKeg = blockEntityKeg.GetContent();
-                WaterTightContainableProps contentProps = GetContainableProps(contentInKeg);
-                
-                float currentLitres = contentInKeg != null && contentProps != null
-                    ? (float)contentInKeg.StackSize / contentProps.ItemsPerLitre
-                    : 0;
-
-                bool isEmpty = currentLitres <= 0;
-                if (liquidInHand != null && (contentInKeg == null ||
-                                             liquidInHand.Collectible.Equals(liquidInHand, contentInKeg,
-                                                 GlobalConstants.IgnoredStackAttributes)))
-                {
-                    return base.OnBlockInteractStart(world, byPlayer, blockSel);
-                }
-            }
-
-            if (liquidItem is ILiquidSink)
-            {
-                ItemStack contentInKeg = blockEntityKeg.GetContent();
-                WaterTightContainableProps contentProps = GetContainableProps(contentInKeg);
-                float currentLitres = contentInKeg != null && contentProps != null
-                    ? (float)contentInKeg.StackSize / contentProps.ItemsPerLitre
-                    : 0;
-                
-                if (currentLitres > 0)
-                {
-                    if (!isTappedKeg)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return base.OnBlockInteractStart(world, byPlayer, blockSel);
-                    }
-                }
-            }
-        }
-        return base.OnBlockInteractStart(world, byPlayer, blockSel);
     }
 
     public override bool DoPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ItemStack byItemStack)
@@ -248,132 +181,6 @@ public class BlockKeg : BlockLiquidContainerBase
         }
 
         return flag;
-    }
-
-    private void StartAxeAnimation(IPlayer byPlayer)
-    {
-        var entityAnimManager = byPlayer.Entity.AnimManager;
-
-        if (!entityAnimManager.IsAnimationActive("axechop"))
-        {
-            entityAnimManager?.StartAnimation(new AnimationMetaData()
-            {
-                Animation = "axeready",
-                Code = "axeready"
-            });
-
-            entityAnimManager?.StartAnimation(new AnimationMetaData()
-            {
-                Animation = "axechop",
-                Code = "axechop",
-                BlendMode = EnumAnimationBlendMode.AddAverage,
-                AnimationSpeed = 1.65f,
-                HoldEyePosAfterEasein = 0.3f,
-                EaseInSpeed = 500f,
-                EaseOutSpeed = 500f,
-                Weight = 25f,
-                ElementWeight = new Dictionary<string, float>
-                {
-                    { "UpperArmr", 20.0f },
-                    { "LowerArmr", 20.0f },
-                    { "UpperArml", 20.0f },
-                    { "LowerArml", 20.0f },
-                    { "UpperTorso", 20.0f },
-                    { "ItemAnchor", 20.0f }
-                },
-                ElementBlendMode = new Dictionary<string, EnumAnimationBlendMode>
-                {
-                    { "UpperArmr", EnumAnimationBlendMode.Add },
-                    { "LowerArmr", EnumAnimationBlendMode.Add },
-                    { "UpperArml", EnumAnimationBlendMode.Add },
-                    { "LowerArml", EnumAnimationBlendMode.Add },
-                    { "UpperTorso", EnumAnimationBlendMode.Add },
-                    { "ItemAnchor", EnumAnimationBlendMode.Add }
-                }
-            });
-        }
-    }
-
-    private void StopAxeAnimation(IPlayer byPlayer)
-    {
-        var entityAnimManager = byPlayer.Entity.AnimManager;
-
-        if (entityAnimManager?.IsAnimationActive("axechop") == true)
-        {
-            entityAnimManager?.StopAnimation("axechop");
-            entityAnimManager?.ResetAnimation("axechop");
-            StopAllPlayerAnimations(byPlayer);
-        }
-
-        entityAnimManager?.StartAnimation(new AnimationMetaData()
-        {
-            Animation = "idle1",
-            Code = "idle",
-            BlendMode = EnumAnimationBlendMode.Add,
-        });
-    }
-
-    private void PlayChoppingSound(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
-    {
-        world.PlaySoundAt(new AssetLocation("game:sounds/block/chop2"), blockSel.Position.X, blockSel.Position.Y, blockSel.Position.Z, byPlayer, true, 32f, 1f);
-    }
-
-    private void StartTappingAnimation(IPlayer byPlayer)
-    {
-        var entityAnimManager = byPlayer.Entity.AnimManager;
-        StopTappingAnimation(byPlayer);
-
-        if (!entityAnimManager.IsAnimationActive("chiselready"))
-        {
-            entityAnimManager?.StartAnimation(new AnimationMetaData()
-            {
-                Animation = "chiselready",
-                Code = "chiselready"
-            });
-        }
-    }
-
-    private void StopTappingAnimation(IPlayer byPlayer)
-    {
-        var entityAnimManager = byPlayer.Entity.AnimManager;
-        if (entityAnimManager?.IsAnimationActive("chiselready") == true)
-        {
-            entityAnimManager?.StopAnimation("chiselready");
-            entityAnimManager?.ResetAnimation("chiselready");
-            StopAllPlayerAnimations(byPlayer);
-        }
-
-        entityAnimManager?.StartAnimation(new AnimationMetaData()
-        {
-            Animation = "idle1",
-            Code = "idle",
-            BlendMode = EnumAnimationBlendMode.Add,
-        });
-    }
-
-    private void PlayTappingSound(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
-    {
-        world.PlaySoundAt(new AssetLocation("game", "sounds/block/barrel"), blockSel.Position.X, blockSel.Position.Y, blockSel.Position.Z, byPlayer, true, 32f, 1f);
-    }
-
-    private void StopAllPlayerAnimations(IPlayer byPlayer)
-    {
-        var entityAnimManager = byPlayer.Entity.AnimManager;
-
-        if (entityAnimManager != null && entityAnimManager.ActiveAnimationsByAnimCode != null)
-        {
-            foreach (var animCode in entityAnimManager.ActiveAnimationsByAnimCode.Keys)
-            {
-                entityAnimManager.StopAnimation(animCode);
-            }
-        }
-
-        entityAnimManager?.StartAnimation(new AnimationMetaData()
-        {
-            Animation = "idle1",
-            Code = "idle",
-            BlendMode = EnumAnimationBlendMode.Add,
-        });
     }
 
     public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1)
