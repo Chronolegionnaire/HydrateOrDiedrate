@@ -1,122 +1,71 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Config;
 using System.Collections.Generic;
 using System.Text;
-using HydrateOrDiedrate.Config;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
+using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.Keg
+namespace HydrateOrDiedrate.Keg;
+
+public class BlockEntityTun : BlockEntityLiquidContainer
 {
-    public class BlockEntityTun : BlockEntityLiquidContainer
+    public override string InventoryClassName => "tun";
+
+    public BlockEntityTun()
     {
-        private ICoreAPI api;
-        private BlockTun ownBlock;
-        public float MeshAngle;
-        private const int UpdateIntervalMs = 1000;
-        private float tunSpoilRateMultiplier = ModConfig.Instance.Containers.TunSpoilRateMultiplier;
-        public override string InventoryClassName => "tun";
+        inventory = new InventoryGeneric(1, null, null, null)
+        {
+            BaseWeight = 1.0f,
+            OnGetSuitability = GetSuitability,
+            TransitionableSpeedMulByType = new Dictionary<EnumTransitionType, float>
+            {
+                [EnumTransitionType.Perish] = ModConfig.Instance.Containers.TunSpoilRateMultiplier
+            }
+        };
+    }
 
-        public override void Initialize(ICoreAPI api)
+    private float GetSuitability(ItemSlot sourceSlot, ItemSlot targetSlot, bool isMerge)
+    {
+        if (targetSlot == inventory[0] && inventory[0].StackSize > 0)
         {
-            base.Initialize(api);
-            this.api = api;
-            this.ownBlock = this.Block as BlockTun;
-            if (this.inventory is InventoryGeneric inv)
-            {
-                inv.OnGetSuitability = GetSuitability;
-                UpdateTunMultiplier();
-            }
-            RegisterGameTickListener(UpdateSpoilRate, UpdateIntervalMs);
+            ItemStack currentStack = inventory[0].Itemstack;
+            ItemStack testStack = sourceSlot.Itemstack;
+            if (currentStack.Collectible.Equals(currentStack, testStack, GlobalConstants.IgnoredStackAttributes))
+                return -1;
         }
-        private void UpdateTunMultiplier()
+
+        return (isMerge ? (inventory.BaseWeight + 3) : (inventory.BaseWeight + 1)) +
+               (sourceSlot.Inventory is InventoryBasePlayer ? 1 : 0);
+    }
+
+    public void DropContents(IPlayer byPlayer)
+    {
+        if (Api is not ICoreServerAPI coreServerAPI) return;
+
+        if (!Inventory.Empty)
         {
-            if (this.inventory is InventoryGeneric inv && this.Block != null)
+            StringBuilder stringBuilder = new($"{byPlayer?.PlayerName} broke container {Block.Code} at {Pos} dropped: ");
+            foreach (ItemSlot item in Inventory)
             {
-                if (inv.TransitionableSpeedMulByType == null)
+                if (item.Itemstack != null)
                 {
-                    inv.TransitionableSpeedMulByType = new Dictionary<EnumTransitionType, float>();
-                }
-                float tunMultiplier = tunSpoilRateMultiplier;
-                inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = tunMultiplier;
-            }
-        }
-        public BlockEntityTun()
-        {
-            this.inventory = new InventoryGeneric(1, null, null, null);
-            inventory.BaseWeight = 1.0f;
-            inventory.OnGetSuitability = GetSuitability;
-        }
-        private void UpdateSpoilRate(float dt)
-        {
-            if (this.inventory is InventoryGeneric inv)
-            {
-                if (inv.TransitionableSpeedMulByType == null)
-                {
-                    inv.TransitionableSpeedMulByType = new Dictionary<EnumTransitionType, float>();
-                }
-                else
-                {
-                    inv.TransitionableSpeedMulByType.Clear();
-                }
-                float tunMultiplier = tunSpoilRateMultiplier;
-                inv.TransitionableSpeedMulByType[EnumTransitionType.Perish] = tunMultiplier;
-            }
-        }
-        private float GetSuitability(ItemSlot sourceSlot, ItemSlot targetSlot, bool isMerge)
-        {
-            if (targetSlot == inventory[0])
-            {
-                if (inventory[0].StackSize > 0)
-                {
-                    ItemStack currentStack = inventory[0].Itemstack;
-                    ItemStack testStack = sourceSlot.Itemstack;
-                    if (currentStack.Collectible.Equals(currentStack, testStack, GlobalConstants.IgnoredStackAttributes))
-                        return -1;
+                    stringBuilder.Append(item.Itemstack.StackSize).Append("x ").Append(item.Itemstack.Collectible?.Code).Append(", ");
                 }
             }
 
-            return (isMerge ? (inventory.BaseWeight + 3) : (inventory.BaseWeight + 1)) +
-                   (sourceSlot.Inventory is InventoryBasePlayer ? 1 : 0);
+            coreServerAPI.Logger.Audit(stringBuilder.ToString());
         }
 
-        public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
-        {
-            base.FromTreeAttributes(tree, worldForResolving);
-            MeshAngle = tree.GetFloat("meshAngle", MeshAngle);
-        }
+        Inventory.DropAll(Pos.ToVec3d().Add(0.5, 0.5, 0.5));
+    }
 
-        public override void ToTreeAttributes(ITreeAttribute tree)
+    public override void OnBlockBroken(IPlayer byPlayer = null)
+    {
+        //Base method would drop contents which is not always intended, that is now handled by the block.
+        foreach (BlockEntityBehavior behavior in Behaviors)
         {
-            base.ToTreeAttributes(tree);
-            tree.SetFloat("meshAngle", MeshAngle);
-        }
-
-        public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
-        {
-            ItemSlot itemSlot = inventory[0];
-            if (itemSlot.Empty)
-                dsc.AppendLine(Lang.Get("hydrateordiedrate:blockentitykeg-empty"));
-            else
-                dsc.AppendLine(Lang.Get("hydrateordiedrate:blockentitykeg-contents", itemSlot.Itemstack.StackSize, itemSlot.Itemstack.GetName()));
-        }
-
-        public override void OnBlockBroken(IPlayer byPlayer = null)
-        {
-            if (inventory != null)
-            {
-                foreach (var slot in inventory)
-                {
-                    if (!slot.Empty)
-                    {
-                        api.World.SpawnItemEntity(slot.TakeOutWhole(), Pos.ToVec3d());
-                    }
-                }
-                inventory.Clear();
-            }
-
-            base.OnBlockBroken(byPlayer);
+            behavior.OnBlockBroken(byPlayer);
         }
     }
 }
