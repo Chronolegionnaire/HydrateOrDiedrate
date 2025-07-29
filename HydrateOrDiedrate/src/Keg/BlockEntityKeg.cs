@@ -20,7 +20,6 @@ public class BlockEntityKeg : BlockEntityLiquidContainer
     {
         base.Initialize(api);
 
-        inventory.OnGetSuitability = GetSuitability;
         UpdateBlockRelatedStats();
     }
     

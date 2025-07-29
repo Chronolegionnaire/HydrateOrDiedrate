@@ -1,10 +1,6 @@
 ﻿using HydrateOrDiedrate.Config;
 using System;
-using System.Collections.Generic;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
@@ -26,7 +22,7 @@ public class BlockKeg : BlockLiquidContainerBase
     //TODO: Rework this... currently implementation can respond weirdly when multiple people try to do the interaction at the same time
     private float playNextSound = 0.7f;
 
-    //Note: CanDrinkFrom does not fully prevent you from drinking, unsure why but this is why we are overiding the Eat methods 
+    //Note: CanDrinkFrom does not fully prevent you from drinking, unsure why but this is why we are overiding the Eat methods
     protected override void tryEatBegin(ItemSlot slot, EntityAgent byEntity, ref EnumHandHandling handling, string eatSound = "eat", int eatSoundRepeats = 1) => handling = EnumHandHandling.PreventDefaultAction;
     
     protected override bool tryEatStep(float secondsUsed, ItemSlot slot, EntityAgent byEntity, ItemStack spawnParticleStack = null) => false;
