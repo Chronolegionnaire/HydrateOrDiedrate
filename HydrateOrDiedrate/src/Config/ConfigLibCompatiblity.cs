@@ -79,7 +79,6 @@ public class ConfigLibCompatibility
     private const string settingWellwaterDepthMaxClay = "hydrateordiedrate:Config.Setting.WellwaterDepthMaxClay";
     private const string settingWellwaterDepthMaxStone = "hydrateordiedrate:Config.Setting.WellwaterDepthMaxStone";
     private const string settingAquiferRandomMultiplierChance = "hydrateordiedrate:Config.Setting.AquiferRandomMultiplierChance";
-    private const string settingAquiferStep = "hydrateordiedrate:Config.Setting.AquiferStep";
     private const string settingAquiferWaterBlockMultiplier = "hydrateordiedrate:Config.Setting.AquiferWaterBlockMultiplier";
     private const string settingAquiferSaltWaterMultiplier = "hydrateordiedrate:Config.Setting.AquiferSaltWaterMultiplier";
     private const string settingAquiferBoilingWaterMultiplier = "hydrateordiedrate:Config.Setting.AquiferBoilingWaterMultiplier";
@@ -129,6 +128,7 @@ public class ConfigLibCompatibility
 
     private const string settingAquiferRatingCeilingAboveSeaLevel = "hydrateordiedrate:Config.Setting.settingAquiferRatingCeilingAboveSeaLevel";
     private const string settingAquiferDepthMultiplierScale = "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale";
+    private const string settingAquiferMinimumWaterBlockThreshold = "hydrateordiedrate:Config.Setting.settingAquiferMinimumWaterBlockThreshold";
     
     private const string settingWaterPerish = "hydrateordiedrate:Config.Setting.WaterPerish";
     private const string settingAquiferDataOnProspectingNodeMode = "hydrateordiedrate:Config.Setting.AquiferDataOnProspectingNodeMode";
@@ -458,13 +458,7 @@ public class ConfigLibCompatibility
         int wellwaterDepthMaxStone = groundWaterConfig.WellwaterDepthMaxStone;
         ImGui.DragInt(Lang.Get(settingWellwaterDepthMaxStone) + $"##wellwaterDepthMaxStone-{id}", ref wellwaterDepthMaxStone, 1, 1, 20);
         groundWaterConfig.WellwaterDepthMaxStone = wellwaterDepthMaxStone;
-
         
-        // Step
-        int aquiferStep = groundWaterConfig.AquiferStep;
-        ImGui.DragInt(Lang.Get(settingAquiferStep) + $"##aquiferStep-{id}", ref aquiferStep, 1, 1, 32);
-        groundWaterConfig.AquiferStep = aquiferStep;
-
         // WaterBlockMultiplier
         float aquiferWaterBlockMultiplier = (float)groundWaterConfig.AquiferWaterBlockMultiplier;
         ImGui.DragFloat(Lang.Get(settingAquiferWaterBlockMultiplier) + $"##aquiferWaterBlockMultiplier-{id}", ref aquiferWaterBlockMultiplier, 0.1f, 0.1f, 10.0f);
@@ -642,6 +636,10 @@ public class ConfigLibCompatibility
         float aquiferDepthMultiplierScale = groundWaterConfig.AquiferDepthMultiplierScale;
         ImGui.DragFloat(Lang.Get(settingAquiferDepthMultiplierScale) + $"##aquiferDepthMultiplierScale-{id}", ref aquiferDepthMultiplierScale, 0.01f, 0.5f, 5.0f);
         groundWaterConfig.AquiferDepthMultiplierScale = aquiferDepthMultiplierScale;
+        
+        int aquiferMinimumWaterBlockThreshold = groundWaterConfig.AquiferMinimumWaterBlockThreshold;
+        ImGui.DragInt(Lang.Get(settingAquiferMinimumWaterBlockThreshold) + $"##aquiferMinimumWaterBlockThreshold-{id}", ref aquiferMinimumWaterBlockThreshold, 1, 0, 100);
+        groundWaterConfig.AquiferMinimumWaterBlockThreshold = aquiferMinimumWaterBlockThreshold;
         
         bool waterPerish = perishRateConfig.Enabled;
         ImGui.Checkbox(Lang.Get(settingWaterPerish) + $"##waterPerish-{id}", ref waterPerish);

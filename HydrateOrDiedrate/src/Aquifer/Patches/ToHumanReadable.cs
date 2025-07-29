@@ -40,8 +40,8 @@ namespace HydrateOrDiedrate.patches
             int rating = (int)aquiferEntry.PartsPerThousand;
             string descriptor = rating switch
             {
-                <= 0 => Lang.Get("hydrateordiedrate:noaquiferdetected"),
-                <= 10 => Lang.Get("hydrateordiedrate:verypoor"),
+                <= 10 => Lang.Get("hydrateordiedrate:noaquiferdetected"),
+                <= 15 => Lang.Get("hydrateordiedrate:verypoor"),
                 <= 20 => Lang.Get("hydrateordiedrate:poor"),
                 <= 40 => Lang.Get("hydrateordiedrate:light"),
                 <= 60 => Lang.Get("hydrateordiedrate:moderate"),

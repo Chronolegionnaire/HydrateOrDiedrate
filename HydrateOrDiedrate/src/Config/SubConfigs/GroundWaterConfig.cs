@@ -20,10 +20,10 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     [DefaultValue(5)]
     public int WellwaterDepthMaxBase { get; set; } = 5;
 
-    [Category("Well")]
     /// <summary>
-    /// Max water retention depth (in blocks) for wells with clay shafts
+    /// Max water retention depth (in blocks) for wells with normal shafts
     /// </summary>
+    [Category("Well")]
     [DefaultValue(7)]
     public int WellwaterDepthMaxClay { get; set; } = 7;
 
@@ -61,23 +61,15 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     /// Chance for a random output multiplier when generating an aquifer
     /// </summary>
     [Category("Aquifer")]
-    [DefaultValue(0.02d)]
-    public double AquiferRandomMultiplierChance { get; set; } = 0.02;
-
-    /// <summary>
-    /// Number of chunks to check around an aquifer chunk to smooth rating
-    /// Higher will result in aquifers that span more chunks and may have preformance repercussions
-    /// </summary>
-    [Category("Aquifer")]
-    [DefaultValue(4)]
-    public int AquiferStep { get; set; } = 4;
+    [DefaultValue(0.015d)]
+    public double AquiferRandomMultiplierChance { get; set; } = 0.015;
 
     /// <summary>
     /// Water‑block multiplier for determining aquifer rating. Larger numbers will make aquifers stronger near regular water
     /// </summary>
     [Category("Aquifer")]
-    [DefaultValue(4.0d)]
-    public double AquiferWaterBlockMultiplier { get; set; } = 4.0;
+    [DefaultValue(10.0d)]
+    public double AquiferWaterBlockMultiplier { get; set; } = 10.0;
 
     /// <summary>
     /// Salt‑water multiplier for determining aquifer rating
@@ -85,8 +77,8 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     /// (Will also make aquifers that are further from oceans saltier)
     /// </summary>
     [Category("Aquifer")]
-    [DefaultValue(4.0d)]
-    public double AquiferSaltWaterMultiplier { get; set; } = 4.0;
+    [DefaultValue(10.0d)]
+    public double AquiferSaltWaterMultiplier { get; set; } = 10.0;
 
     /// <summary>
     /// Boiling water multiplier for determining aquifer rating
@@ -109,6 +101,13 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     [Category("Aquifer")]
     [DefaultValue(1.0d)]
     public float AquiferDepthMultiplierScale { get; set; } = 1.0f;
+    
+    /// <summary>
+    /// Minimum number of water blocks in a chunk to qualify for an aquifer (unless a random aquifer generates)
+    /// </summary>
+    [Category("Aquifer")]
+    [DefaultValue(5)]
+    public int AquiferMinimumWaterBlockThreshold { get; set; } = 5;
 
     /// <summary>
     /// Block radius when prospecting within which aquifers are detected
