@@ -4,10 +4,11 @@
     "name": "Hydrate Or Diedrate",
     "authors": [
       "Chronolegionnaire",
-      "Nightingale33"
+      "Nightingale33",
+        "TheInsanityGod"  
     ],
     "description": "Adds a thirst and hot weather mechanic to the game.",
-    "version": "2.2.0",
+    "version": "2.2.1-TEST3",
     "dependencies": {
         "game": "*"
     }
