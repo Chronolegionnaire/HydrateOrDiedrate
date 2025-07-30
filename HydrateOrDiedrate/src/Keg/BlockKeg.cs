@@ -10,7 +10,6 @@ namespace HydrateOrDiedrate.Keg;
 //TODO: Maybe remove the block interaction help that suggests we can take liquids if the block is not tapped
 public class BlockKeg : BlockLiquidContainerBase
 {
-    public const float snapAngle = 0.3926991f;
     public const float requiredActionTime = (100f / 50f) - 0.1f;
     public override float CapacityLitres => ModConfig.Instance.Containers.KegCapacityLitres;
     
@@ -171,7 +170,7 @@ public class BlockKeg : BlockLiquidContainerBase
         if (flag && world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityKeg blockEntityKeg)
         {
             float playerYaw = byPlayer.Entity.Pos.Yaw;
-            float snappedYaw = (float)(Math.Round(playerYaw / snapAngle) * snapAngle);
+            float snappedYaw = (float)(Math.Round(playerYaw / Constants.SnapAngle) * Constants.SnapAngle);
             blockEntityKeg.MeshAngle = snappedYaw;
             blockEntityKeg.MarkDirty(true, null);
         }

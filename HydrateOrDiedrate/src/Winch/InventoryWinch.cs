@@ -2,6 +2,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.winch
 {
@@ -9,83 +10,57 @@ namespace HydrateOrDiedrate.winch
     {
         private ItemSlot[] slots;
 
-        public ItemSlot[] Slots
+        public ItemSlot[] Slots => slots;
+
+        public InventoryWinch(string inventoryID, ICoreAPI api) : base(inventoryID, api)
         {
-            get { return this.slots; }
+            slots = GenEmptySlots(Count);
         }
-        public InventoryWinch(string inventoryID, ICoreAPI api)
-            : base(inventoryID, api)
+
+        public InventoryWinch(string className, string instanceID, ICoreAPI api) : base(className, instanceID, api)
         {
-            this.slots = base.GenEmptySlots(1);
+            slots = GenEmptySlots(Count);
         }
-        public InventoryWinch(string className, string instanceID, ICoreAPI api)
-            : base(className, instanceID, api)
-        {
-            this.slots = base.GenEmptySlots(1);
-        }
-        public override int Count
-        {
-            get { return 1; }
-        }
+
+        public override int Count => 1;
+
         public override ItemSlot this[int slotId]
         {
             get
             {
-                if (slotId < 0 || slotId >= this.Count)
-                {
-                    return null;
-                }
-                return this.slots[slotId];
+                if (slotId < 0 || slotId >= Count) return null;
+                
+                return slots[slotId];
             }
             set
             {
-                if (slotId < 0 || slotId >= this.Count)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(slotId));
-                }
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                this.slots[slotId] = value;
+                if (slotId < 0 || slotId >= Count) throw new ArgumentOutOfRangeException(nameof(slotId));
+
+                slots[slotId] = value ?? throw new ArgumentNullException(nameof(value));
             }
         }
 
-        public override void FromTreeAttributes(ITreeAttribute tree)
-        {
-            this.slots = this.SlotsFromTreeAttributes(tree, this.slots, null);
-        }
+        public override void FromTreeAttributes(ITreeAttribute tree) => slots = SlotsFromTreeAttributes(tree, slots, null);
 
-        public override void ToTreeAttributes(ITreeAttribute tree)
+        public override void ToTreeAttributes(ITreeAttribute tree) => SlotsToTreeAttributes(slots, tree);
+
+        protected override ItemSlot NewSlot(int i) => new(this)
         {
-            base.SlotsToTreeAttributes(this.slots, tree);
-        }
-        protected override ItemSlot NewSlot(int i)
-        {
-            return new ItemSlotWinch(this);
-        }
+            MaxSlotStackSize = 1
+        };
+
         public override float GetSuitability(ItemSlot sourceSlot, ItemSlot targetSlot, bool isMerge)
         {
-            if (targetSlot == this.slots[0] && sourceSlot.Itemstack != null)
+            if (targetSlot == slots[0] && sourceSlot.Itemstack?.Collectible is BlockBucket)
             {
-                string itemCode = sourceSlot.Itemstack.Collectible.Code.ToString();
-                if (itemCode == "game:woodbucket" || itemCode.StartsWith("vanvar:bucket-"))
-                {
-                    if (sourceSlot.Itemstack.StackSize > 1)
-                    {
-                        return 0f;
-                    }
-                    if (!sourceSlot.Itemstack.Attributes.HasAttribute("contents"))
-                    {
-                        return 4f;
-                    }
-                }
+                if (sourceSlot.Itemstack.StackSize > 1) return 0f;
+
+                if (!sourceSlot.Itemstack.Attributes.HasAttribute("contents")) return 4f;
             }
+
             return base.GetSuitability(sourceSlot, targetSlot, isMerge);
         }
-        public override ItemSlot GetAutoPushIntoSlot(BlockFacing atBlockFace, ItemSlot fromSlot)
-        {
-            return this.slots[0];
-        }
+
+        public override ItemSlot GetAutoPushIntoSlot(BlockFacing atBlockFace, ItemSlot fromSlot) => slots[0];
     }
 }

@@ -13,753 +13,655 @@ using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 using Vintagestory.GameContent.Mechanics;
 
-namespace HydrateOrDiedrate.winch
+namespace HydrateOrDiedrate.winch;
+
+public class BlockEntityWinch : BlockEntityOpenableContainer
 {
-    public class BlockEntityWinch : BlockEntityOpenableContainer
-    {
-        private ICoreAPI api;
-        private BlockWinch ownBlock;
-        public float MeshAngle;
+    public const string KnotMeshPath = "shapes/block/winch/knot.json";
+    public const string RopeMeshPath = "shapes/block/winch/rope1x1.json";
+    public const string WinchTopMeshPath = "shapes/block/winch/top.json";
+    public const string WinchBaseMeshPath = "shapes/block/winch/base.json";
 
-        private ILoadedSound ambientSound;
-        internal InventoryWinch inventory;
-        public float inputTurnTime;
-        public float prevInputTurnTime;
-        private GuiDialogBlockEntityWinch clientDialog;
-        private WinchTopRenderer renderer;
-        private bool automated;
-        private BEBehaviorMPConsumer mpc;
-        private float prevSpeed = float.NaN;
-        private Dictionary<string, long> playersTurning = new Dictionary<string, long>();
-        private int quantityPlayersTurning;
-        private bool beforeTurning;
-        private int nowOutputFace;
-        public float bucketDepth = 0.5f;
-        private float movementAccumTime = 0f;
-        private const float secondsPerBlock = 0.5f;
-        public bool isRaising;
-        private bool wasRaising = false;
-        private MeshData winchBaseMesh;
-        private MeshData winchTopMesh;
-        public bool IsRaising
-        {
-            get { return isRaising; }
-        }
-        public bool CanMoveDown()
-        {
-            float nextDepth = bucketDepth + 0.1f;
-            BlockPos checkPos = Pos.DownCopy((int)Math.Ceiling(nextDepth));
+    public float MeshAngle;
 
-            if (checkPos.Y < 0) return false;
+    public float inputTurnTime;
+    public float prevInputTurnTime;
+    private GuiDialogBlockEntityWinch clientDialog;
+    private WinchTopRenderer renderer;
+    private bool automated;
+    private BEBehaviorMPConsumer mpc;
+    private Dictionary<string, long> playersTurning = [];
 
-            Block blockBelow = Api.World.BlockAccessor.GetBlock(checkPos);
+    private int quantityPlayersTurning;
+    private bool beforeTurning;
+    private int nowOutputFace;
+    public float bucketDepth = 0.5f;
 
-            if (blockBelow == this.Block) return true;
-
-            if (blockBelow.Replaceable < 6000 && !IsLiquidBlock(blockBelow)) return false;
-
-            return true;
-        }
-
-
-        public bool CanMoveUp()
-        {
-            return (bucketDepth > 0.5f);
-        }
-        public override string InventoryClassName => "winch";
-        public override InventoryBase Inventory => inventory;
-        public BlockEntityWinch()
-        {
-            this.inventory = new InventoryWinch(null, null);
-            this.inventory.SlotModified += OnSlotModified;
-        }
-
-        public override void Initialize(ICoreAPI api)
-        {
-            base.Initialize(api);
-            this.api = api;
-            this.ownBlock = this.Block as BlockWinch;
-            if (inventory == null)
-            {
-                inventory = new InventoryWinch($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", api);
-                inventory.SlotModified += OnSlotModified;
-            }
-            else
-            {
-                inventory.LateInitialize($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", api);
-            }
-            RegisterGameTickListener(Every100ms, 100);
-            RegisterGameTickListener(Every500ms, 500);
-            RegisterGameTickListener(OnEverySecond, 1000);
-            
-            if (api.Side == EnumAppSide.Client)
-            {
-                winchBaseMesh = GenMesh("base");
-                winchTopMesh  = GenMesh("top");
-                renderer = new WinchTopRenderer(api as ICoreClientAPI, Pos, winchTopMesh, Direction);
-                renderer.mechPowerPart = mpc;
-
-                if (automated)
-                {
-                    renderer.ShouldRender = true;
-                    renderer.ShouldRotateAutomated = true;
-                }
+    private MeshData winchBaseMesh;
+    private MeshData winchTopMesh;
     
-                ICoreClientAPI capi = api as ICoreClientAPI;
-                capi.Event.RegisterRenderer(renderer, EnumRenderStage.Opaque, "winch");
-            }
-        }
-        public override void CreateBehaviors(Block block, IWorldAccessor worldForResolve)
-        {
-            base.CreateBehaviors(block, worldForResolve);
-            mpc = GetBehavior<BEBehaviorMPConsumer>();
-            if (mpc != null)
-            {
-                mpc.OnConnected = () =>
-                {
-                    automated = true;
-                    quantityPlayersTurning = 0;
-                    if (renderer != null)
-                    {
-                        renderer.ShouldRender = true;
-                        renderer.ShouldRotateAutomated = true;
-                    }
-                };
-                mpc.OnDisconnected = () =>
-                {
-                    automated = false;
-                    if (renderer != null)
-                    {
-                        renderer.ShouldRender = false;
-                        renderer.ShouldRotateAutomated = false;
-                    }
-                };
-            }
-        }
-        private MeshData GenMesh(string subPart)
-        {
-            if (Api is ICoreClientAPI capi)
-            {
-                Block block = Api.World.BlockAccessor.GetBlock(Pos);
-                if (block == null || block.BlockId == 0) return null;
+    public bool isRaising;
+    public bool IsRaising => isRaising;
 
-                string shapePath = "hydrateordiedrate:shapes/block/winch/" + subPart + ".json";
-                Shape shape = Shape.TryGet(Api, shapePath);
-                if (shape == null) return null;
+    public bool CanMoveDown()
+    {
+        float nextDepth = bucketDepth + 0.1f;
+        BlockPos checkPos = Pos.DownCopy((int)Math.Ceiling(nextDepth));
 
-                MeshData mesh;
-                capi.Tesselator.TesselateShape(block, shape, out mesh);
-                return mesh;
-            }
-            return null;
+        if (checkPos.Y < 0) return false;
+
+        Block blockBelow = Api.World.BlockAccessor.GetBlock(checkPos);
+
+        if (blockBelow == Block) return true;
+
+        if (blockBelow.Replaceable < 6000 && !IsLiquidBlock(blockBelow)) return false;
+
+        return true;
+    }
+
+
+    public bool CanMoveUp() => bucketDepth > 0.5f;
+
+    public override string InventoryClassName => "winch";
+    public override InventoryBase Inventory => inventory;
+    private readonly InventoryWinch inventory;
+
+    public BlockEntityWinch()
+    {
+        inventory = new InventoryWinch(null, null);
+        inventory.SlotModified += OnSlotModified;
+    }
+
+    public override void Initialize(ICoreAPI api)
+    {
+        base.Initialize(api);
+
+        //TODO: base class already late initializes with a different Id... we should get rid of this but it will probably break existing winch inventories
+        inventory.LateInitialize($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", api);
+
+        RegisterGameTickListener(Every100ms, 100);
+        RegisterGameTickListener(Every500ms, 500);
+        RegisterGameTickListener(OnEverySecond, 1000);
+
+        if (api is not ICoreClientAPI capi) return;
+
+        winchBaseMesh = GetMesh(WinchBaseMeshPath);
+        winchTopMesh = GetMesh(WinchTopMeshPath);
+
+        renderer = new WinchTopRenderer(capi, Pos, winchTopMesh, Block.Variant["side"])
+        {
+            mechPowerPart = mpc
+        };
+
+        if (automated)
+        {
+            renderer.ShouldRender = true;
+            renderer.ShouldRotateAutomated = true;
         }
+
+        capi.Event.RegisterRenderer(renderer, EnumRenderStage.Opaque, "winch");
+    }
+
+    private void OnConnected()
+    {
+        automated = true;
+        quantityPlayersTurning = 0;
         
-        private MeshData GenRopeMesh()
-        {
-            if (Api is ICoreClientAPI capi)
-            {
-                Block block = Api.World.BlockAccessor.GetBlock(Pos);
-                string shapePath = "hydrateordiedrate:shapes/block/winch/rope1x1.json";
-                Shape shape = Shape.TryGet(Api, shapePath);
-                if (shape == null) return null;
+        if (renderer is null) return;
+        renderer.ShouldRender = true;
+        renderer.ShouldRotateAutomated = true;
+    }
 
-                MeshData mesh;
-                capi.Tesselator.TesselateShape(block, shape, out mesh);
-                return mesh;
-            }
-            return null;
-        }
+    private void OnDisconnected()
+    {
+        automated = false;
+        if (renderer is null) return;
         
-        private MeshData GenKnotMesh()
+        renderer.ShouldRender = false;
+        renderer.ShouldRotateAutomated = false;
+    }
+
+    public override void CreateBehaviors(Block block, IWorldAccessor worldForResolve)
+    {
+        base.CreateBehaviors(block, worldForResolve);
+        mpc = GetBehavior<BEBehaviorMPConsumer>();
+        if (mpc == null) return;
+
+        mpc.OnConnected = OnConnected;
+        mpc.OnDisconnected = OnDisconnected;
+    }
+
+    private MeshData GetMesh(string path)
+    {
+        if (Api is not ICoreClientAPI capi) return null;
+
+        Shape shape = Shape.TryGet(Api, new AssetLocation("hydrateordiedrate", path));
+        if (shape is null) return null;
+
+        capi.Tesselator.TesselateShape(Block, shape, out MeshData mesh);
+        return mesh;
+    }
+
+    private void Every100ms(float dt)
+    {
+        if (Api.Side == EnumAppSide.Server && quantityPlayersTurning > 0)
         {
-            if (Api is ICoreClientAPI capi)
+            bool anySneaking = playersTurning.Keys.Any(uid =>
+                Api.World.PlayerByUid(uid)?.Entity?.Controls?.Sneak == true
+            );
+            isRaising = anySneaking;
+
+            if (StepMovement())
             {
-                Block block = Api.World.BlockAccessor.GetBlock(Pos);
-                string shapePath = "hydrateordiedrate:shapes/block/winch/knot.json";
-                Shape shape = Shape.TryGet(Api, shapePath);
-                if (shape == null) return null;
-
-                MeshData mesh;
-                capi.Tesselator.TesselateShape(block, shape, out mesh);
-                return mesh;
-            }
-            return null;
-        }
-
-        private void Every100ms(float dt)
-        {
-            float turnSpeed = GetCurrentTurnSpeed();
-
-            if (Api.Side == EnumAppSide.Server && quantityPlayersTurning > 0)
-            {
-                bool anySneaking = playersTurning.Keys.Any(uid =>
-                    Api.World.PlayerByUid(uid)?.Entity?.Controls?.Sneak == true
-                );
-                bool oldRaising = isRaising;
-                isRaising = anySneaking;
-
-                if (isRaising != oldRaising)
-                {
-                    movementAccumTime = 0f;
-                    wasRaising = isRaising;
-                }
-
-                movementAccumTime += dt;
-
-                if (StepMovement())
-                {
-                    MarkDirty();
-                }
-                else
-                {
-                    playersTurning.Clear();
-                    quantityPlayersTurning = 0;
-                    updateTurningState();
-                }
-            }
-
-            if (automated && mpc != null && mpc.Network != null)
-            {
-                EnumRotDirection turnDir = mpc.Network.TurnDir;
-                bool oldRaising = isRaising;
-                isRaising = (turnDir == EnumRotDirection.Counterclockwise);
-                if (isRaising != oldRaising)
-                {
-                    movementAccumTime = 0f;
-                    wasRaising = isRaising;
-                }
-
-                movementAccumTime += dt;
-
-                if (StepMovement())
-                {
-                    MarkDirty();
-                }
-            }
-
-            if (Api.Side == EnumAppSide.Client && automated && ambientSound != null && mpc != null)
-            {
-                if (mpc.TrueSpeed > 0f)
-                {
-                    if (!ambientSound.IsPlaying) ambientSound.Start();
-                }
-                else
-                {
-                    ambientSound.Stop();
-                }
-            }
-
-            updateTurningState();
-        }
-
-
-        private void Every500ms(float dt)
-        {
-            if (Api.Side == EnumAppSide.Server && (GetCurrentTurnSpeed() > 0f || prevInputTurnTime != inputTurnTime))
-            {
-                ItemStack itemstack = inventory?[0]?.Itemstack;
-                if (itemstack?.Collectible?.IsLiquid() != null)
-                {
-                    MarkDirty(false);
-                }
-            }
-            prevInputTurnTime = inputTurnTime;
-            foreach (var kvp in playersTurning.ToArray())
-            {
-                if (Api.World.ElapsedMilliseconds - kvp.Value > 1000)
-                {
-                    playersTurning.Remove(kvp.Key);
-                }
-            }
-        }
-        private void OnEverySecond(float dt)
-        {
-            float speed = GetCurrentTurnSpeed();
-            if (this.Api.World.Rand.NextDouble() < (speed / 4f))
-            {
-                this.Api.World.PlaySoundAt(
-                    new AssetLocation("game:sounds/block/woodcreak"),
-                    this.Pos.X + 0.5,
-                    this.Pos.Y + 0.5,
-                    this.Pos.Z + 0.5,
-                    null,
-                    0.85f + speed,
-                    32f,
-                    1f
-                );
-            }
-        }
-        private bool StepMovement()
-        {
-            float lowerSpeed = ModConfig.Instance.GroundWater.WinchLowerSpeed;
-            float raiseSpeed = ModConfig.Instance.GroundWater.WinchRaiseSpeed;
-            
-            if (isRaising)
-            {
-                if (!CanMoveUp()) return false;
-                bucketDepth -= raiseSpeed;
+                MarkDirty();
             }
             else
             {
-                float nextDepth = bucketDepth + lowerSpeed;
-
-                if (!CanMoveDown()) return false;
-
-                bucketDepth = nextDepth;
+                playersTurning.Clear();
+                quantityPlayersTurning = 0;
+                updateTurningState();
             }
+        }
 
-            bucketDepth = GameMath.Clamp(bucketDepth, 0.5f, float.MaxValue);
+        if (automated && mpc != null && mpc.Network != null)
+        {
+            EnumRotDirection turnDir = mpc.Network.TurnDir;
+            isRaising = (turnDir == EnumRotDirection.Counterclockwise);
 
-            BlockPos belowPos = Pos.DownCopy((int)Math.Ceiling(bucketDepth));
-            Block blockBelow = Api.World.BlockAccessor.GetBlock(belowPos);
-            bool notRaising = !isRaising;
-            bool isLiquid = IsLiquidBlock(blockBelow);
-            bool bucketEmpty = BucketIsEmpty();
-            if (notRaising && isLiquid && bucketEmpty)
+            if (StepMovement())
             {
-                FillBucketAtPos(belowPos);
+                MarkDirty();
+            }
+        }
+
+        updateTurningState();
+    }
+
+
+    private void Every500ms(float dt)
+    {
+        if (Api.Side == EnumAppSide.Server && (GetCurrentTurnSpeed() > 0f || prevInputTurnTime != inputTurnTime))
+        {
+            ItemStack itemstack = inventory?[0]?.Itemstack;
+            if (itemstack?.Collectible?.IsLiquid() != null)
+            {
+                MarkDirty(false);
+            }
+        }
+        prevInputTurnTime = inputTurnTime;
+        foreach (var kvp in playersTurning.ToArray())
+        {
+            if (Api.World.ElapsedMilliseconds - kvp.Value > 1000)
+            {
+                playersTurning.Remove(kvp.Key);
+            }
+        }
+    }
+
+    private void OnEverySecond(float dt)
+    {
+        float speed = GetCurrentTurnSpeed();
+        if (Api.World.Rand.NextDouble() < (speed / 4f))
+        {
+            Api.World.PlaySoundAt(
+                new AssetLocation("game","sounds/block/woodcreak"),
+                Pos.X + 0.5,
+                Pos.Y + 0.5,
+                Pos.Z + 0.5,
+                null,
+                0.85f + speed,
+                32f,
+                1f
+            );
+        }
+    }
+    private bool StepMovement()
+    {
+        if (isRaising)
+        {
+            if (!CanMoveUp()) return false;
+            bucketDepth -= ModConfig.Instance.GroundWater.WinchRaiseSpeed;
+        }
+        else
+        {
+            float nextDepth = bucketDepth + ModConfig.Instance.GroundWater.WinchLowerSpeed;
+
+            if (!CanMoveDown()) return false;
+
+            bucketDepth = nextDepth;
+        }
+
+        bucketDepth = GameMath.Clamp(bucketDepth, 0.5f, float.MaxValue);
+
+        BlockPos belowPos = Pos.DownCopy((int)Math.Ceiling(bucketDepth));
+        Block blockBelow = Api.World.BlockAccessor.GetBlock(belowPos);
+        bool notRaising = !isRaising;
+        bool isLiquid = IsLiquidBlock(blockBelow);
+        bool bucketEmpty = BucketIsEmpty();
+        if (notRaising && isLiquid && bucketEmpty)
+        {
+            FillBucketAtPos(belowPos);
+        }
+
+        inventory.TakeLocked = (bucketDepth > 1f);
+        MarkDirty(true);
+
+        return true;
+    }
+
+
+    private void FillBucketAtPos(BlockPos pos)
+    {
+        if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container) return;
+        
+        if (!BucketIsEmpty()) return;
+        int bucketCapacity = (int) container.CapacityLitres;
+        var (waterType, extracted) = ExtractWaterAtPos(pos, bucketCapacity);
+        if (extracted <= 0) return;
+        ItemStack filledBucket = InputSlot.Itemstack.Clone();
+        int totalWaterItems = extracted * 100; //TODO maybe use the actual props to calculate just in case someone changes those
+        
+        AssetLocation waterAsset = waterType switch
+        {
+            "saltwater" => new AssetLocation("game", "saltwaterportion"),
+            "water" => new AssetLocation("game", "waterportion"),
+            _ => new AssetLocation("hydrateordiedrate", $"wellwaterportion-{waterType}"),
+        };
+        
+        ItemStack waterStack = new(Api.World.GetItem(waterAsset), totalWaterItems);
+        
+        filledBucket.Attributes["contents"] = new TreeAttribute
+        {
+            ["0"] = new ItemstackAttribute(waterStack)
+        };
+        InputSlot.Itemstack = filledBucket;
+        InputSlot.MarkDirty();
+    }
+
+    private (string, int) ExtractWaterAtPos(BlockPos pos, int litersNeeded)
+    {
+        Block block = Api.World.BlockAccessor.GetBlock(pos);
+        string codePath = block?.Code?.Path?.ToLowerInvariant() ?? "";
+
+        if (codePath.StartsWith("water") || codePath.StartsWith("saltwater") || codePath.StartsWith("boilingwater"))
+        {
+            return (codePath.Contains("salt") ? "saltwater" : "water", litersNeeded);
+        }
+
+        if (codePath.Contains("wellwater"))
+        {
+            BlockEntity be = Api.World.BlockAccessor.GetBlockEntity(pos);
+            if (be is not BlockEntityWellWaterData)
+            {
+                BlockPos naturalPos = FindNaturalSourceInLiquidChain(Api.World.BlockAccessor, pos);
+                if (naturalPos != null)
+                {
+                    be = Api.World.BlockAccessor.GetBlockEntity(naturalPos);
+                }
             }
 
-            inventory.TakeLocked = (bucketDepth > 1f);
-            MarkDirty(true);
+            if (be is BlockEntityWellWaterData wellData)
+            {
+                int available = wellData.Volume;
+                if (available > 0)
+                {
+                    int extract = Math.Min(available, litersNeeded);
+                    wellData.Volume -= extract;
+                    wellData.MarkDirty(true);
 
+                    string waterType = "fresh";
+                    if (codePath.Contains("muddysalt"))
+                        waterType = "muddysalt";
+                    else if (codePath.Contains("taintedsalt"))
+                        waterType = "taintedsalt";
+                    else if (codePath.Contains("poisonedsalt"))
+                        waterType = "poisonedsalt";
+                    else if (codePath.Contains("muddy"))
+                        waterType = "muddy";
+                    else if (codePath.Contains("tainted"))
+                        waterType = "tainted";
+                    else if (codePath.Contains("poisoned"))
+                        waterType = "poisoned";
+                    else if (codePath.Contains("salt"))
+                        waterType = "salt";
+
+                    return (waterType, extract);
+                }
+            }
+        }
+
+        return ("fresh", 0);
+    }
+
+    public BlockPos FindNaturalSourceInLiquidChain(IBlockAccessor blockAccessor, BlockPos pos, HashSet<BlockPos> visited = null)
+    {
+        visited ??= [];
+        if (visited.Contains(pos)) return null;
+        visited.Add(pos);
+
+        Block currentBlock = blockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
+        if (currentBlock != null && currentBlock.Variant["createdBy"] == "natural")
+        {
+            return pos;
+        }
+
+        foreach (BlockFacing facing in BlockFacing.ALLFACES)
+        {
+            BlockPos neighborPos = pos.AddCopy(facing);
+            Block neighborBlock = blockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
+            if (neighborBlock != null && neighborBlock.Code?.Domain == "game")
+            {
+                continue;
+            }
+
+            if (neighborBlock != null && neighborBlock.IsLiquid())
+            {
+                var naturalSourcePos = FindNaturalSourceInLiquidChain(blockAccessor, neighborPos, visited);
+                if (naturalSourcePos != null)
+                {
+                    return naturalSourcePos;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private bool BucketIsEmpty()
+    {
+        if (InputSlot.Empty) return false;
+
+        if (!InputSlot.Itemstack.Attributes.HasAttribute("contents")) return true;
+
+        ITreeAttribute contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
+        if (contents == null)
+        {
             return true;
         }
 
-
-        private void FillBucketAtPos(BlockPos pos)
+        var contentStack = contents.GetItemstack("0");
+        return contentStack == null;
+    }
+    private bool IsLiquidBlock(Block block)
+    {
+        if (block == null) return false;
+        string codePath = block.Code?.Path?.ToLowerInvariant() ?? "";
+        return codePath.StartsWith("water")
+            || codePath.Contains("saltwater")
+            || codePath.Contains("boilingwater")
+            || codePath.Contains("wellwater");
+    }
+    private float GetCurrentTurnSpeed()
+    {
+        if (quantityPlayersTurning > 0) return 1f;
+        if (automated && mpc?.Network != null) return mpc.TrueSpeed;
+        return 0f;
+    }
+    public void SetPlayerTurning(IPlayer player, bool playerTurning)
+    {
+        if (!automated)
         {
-            if (InputSlot.Empty) return;
-            BlockLiquidContainerBase container = InputSlot.Itemstack.Collectible as BlockLiquidContainerBase;
-            if (container == null) return;
-            if (!BucketIsEmpty()) return;
-            int bucketCapacity = (int) container.CapacityLitres;
-            var (waterType, extracted) = ExtractWaterAtPos(pos, bucketCapacity);
-            if (extracted <= 0) return;
-            ItemStack filledBucket = InputSlot.Itemstack.Clone();
-            TreeAttribute contents = new TreeAttribute();
-            int totalWaterItems = extracted * 100;
-
-            AssetLocation waterAsset;
-            if (waterType == "saltwater")
+            if (playerTurning) playersTurning[player.PlayerUID] = Api.World.ElapsedMilliseconds;
+            else playersTurning.Remove(player.PlayerUID);
+            quantityPlayersTurning = playersTurning.Count;
+            bool anySneaking = playersTurning.Keys.Any(uid =>
+                Api.World.PlayerByUid(uid)?.Entity?.Controls?.Sneak == true
+            );
+            bool oldRaising = isRaising;
+            isRaising = anySneaking;
+            if (isRaising != oldRaising)
             {
-                waterAsset = new AssetLocation("game:saltwaterportion");
+                MarkDirty();
             }
-            else if (waterType == "water")
-            {
-                waterAsset = new AssetLocation("game:waterportion");
-            }
-            else
-            {
-                waterAsset = new AssetLocation($"hydrateordiedrate:wellwaterportion-{waterType}");
-            }
-
-            ItemStack waterStack = new ItemStack(Api.World.GetItem(waterAsset), totalWaterItems);
-            contents["0"] = new ItemstackAttribute(waterStack);
-            filledBucket.Attributes["contents"] = contents;
-            InputSlot.Itemstack = filledBucket;
-            InputSlot.MarkDirty();
         }
+        updateTurningState();
+    }
 
-        private (string, int) ExtractWaterAtPos(BlockPos pos, int litersNeeded)
+    private void updateTurningState()
+    {
+        if (Api?.World == null) return;
+        
+        bool nowTurning = (quantityPlayersTurning > 0) || (automated && mpc?.TrueSpeed > 0f);
+        if (nowTurning != beforeTurning)
         {
-            Block block = Api.World.BlockAccessor.GetBlock(pos);
-            string codePath = block?.Code?.Path?.ToLowerInvariant() ?? "";
-
-            if (codePath.StartsWith("water") || codePath.StartsWith("saltwater") || codePath.StartsWith("boilingwater"))
+            if (renderer != null)
             {
-                return (codePath.Contains("salt") ? "saltwater" : "water", litersNeeded);
+                renderer.ShouldRotateManual = (quantityPlayersTurning > 0);
             }
+            Api.World.BlockAccessor.MarkBlockDirty(Pos, OnRetesselated);
 
-            if (codePath.Contains("wellwater"))
+            if (Api.Side == EnumAppSide.Server)
             {
-                BlockEntity be = Api.World.BlockAccessor.GetBlockEntity(pos);
-                if (!(be is HydrateOrDiedrate.wellwater.BlockEntityWellWaterData))
-                {
-                    BlockPos naturalPos = FindNaturalSourceInLiquidChain(Api.World.BlockAccessor, pos);
-                    if (naturalPos != null)
-                    {
-                        be = Api.World.BlockAccessor.GetBlockEntity(naturalPos);
-                    }
-                }
-
-                if (be is HydrateOrDiedrate.wellwater.BlockEntityWellWaterData wellData)
-                {
-                    int available = wellData.Volume;
-                    if (available > 0)
-                    {
-                        int extract = Math.Min(available, litersNeeded);
-                        wellData.Volume -= extract;
-                        wellData.MarkDirty(true);
-
-                        string waterType = "fresh";
-                        if (codePath.Contains("muddysalt"))
-                            waterType = "muddysalt";
-                        else if (codePath.Contains("taintedsalt"))
-                            waterType = "taintedsalt";
-                        else if (codePath.Contains("poisonedsalt"))
-                            waterType = "poisonedsalt";
-                        else if (codePath.Contains("muddy"))
-                            waterType = "muddy";
-                        else if (codePath.Contains("tainted"))
-                            waterType = "tainted";
-                        else if (codePath.Contains("poisoned"))
-                            waterType = "poisoned";
-                        else if (codePath.Contains("salt"))
-                            waterType = "salt";
-
-                        return (waterType, extract);
-                    }
-                }
+                MarkDirty(false);
             }
-
-            return ("fresh", 0);
         }
+        beforeTurning = nowTurning;
+    }
 
-        public BlockPos FindNaturalSourceInLiquidChain(IBlockAccessor blockAccessor, BlockPos pos,
-            HashSet<BlockPos> visited = null)
+    private void OnRetesselated()
+    {
+        if (renderer == null) return;
+        renderer.ShouldRender = (quantityPlayersTurning > 0 || automated);
+    }
+    public bool CanTurn()
+    {
+        if (InputSlot.Itemstack == null) return false;
+        return true;
+    }
+    private void OnSlotModified(int slotid)
+    {
+        if (Api is ICoreClientAPI && clientDialog != null)
         {
-            if (visited == null) visited = new HashSet<BlockPos>();
-            if (visited.Contains(pos)) return null;
-            visited.Add(pos);
-
-            Block currentBlock = blockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
-            if (currentBlock != null && currentBlock.Variant["createdBy"] == "natural")
-            {
-                return pos;
-            }
-
-            foreach (BlockFacing facing in BlockFacing.ALLFACES)
-            {
-                BlockPos neighborPos = pos.AddCopy(facing);
-                Block neighborBlock = blockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
-                if (neighborBlock != null && neighborBlock.Code?.Domain == "game")
-                {
-                    continue;
-                }
-
-                if (neighborBlock != null && neighborBlock.IsLiquid())
-                {
-                    var naturalSourcePos = FindNaturalSourceInLiquidChain(blockAccessor, neighborPos, visited);
-                    if (naturalSourcePos != null)
-                    {
-                        return naturalSourcePos;
-                    }
-                }
-            }
-
-            return null;
+            clientDialog.Update();
         }
-        private bool BucketIsEmpty()
+        if (slotid == 0 && InputSlot.Empty)
         {
-            if (InputSlot.Empty)
-            {
-                return false;
-            }
-
-            if (!InputSlot.Itemstack.Attributes.HasAttribute("contents"))
-            {
-                return true;
-            }
-
-            ITreeAttribute contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
-            if (contents == null)
-            {
-                return true;
-            }
-
-            var contentStack = contents.GetItemstack("0");
-            return contentStack == null;
+            bucketDepth = 0.5f;
         }
-        private bool IsLiquidBlock(Block block)
+        MarkDirty(true);
+    }
+
+    public override bool OnPlayerRightClick(IPlayer byPlayer, BlockSelection blockSel)
+    {
+        if (blockSel is not null && blockSel.SelectionBoxIndex == 0 && Api is ICoreClientAPI capi)
         {
-            if (block == null) return false;
-            string codePath = block.Code?.Path?.ToLowerInvariant() ?? "";
-            return codePath.StartsWith("water")
-                || codePath.Contains("saltwater")
-                || codePath.Contains("boilingwater")
-                || codePath.Contains("wellwater");
-        }
-        private float GetCurrentTurnSpeed()
-        {
-            if (quantityPlayersTurning > 0) return 1f;
-            if (automated && mpc?.Network != null) return mpc.TrueSpeed;
-            return 0f;
-        }
-        public void SetPlayerTurning(IPlayer player, bool playerTurning)
-        {
-            if (!automated)
+            toggleInventoryDialogClient(byPlayer, () =>
             {
-                if (playerTurning) playersTurning[player.PlayerUID] = Api.World.ElapsedMilliseconds;
-                else playersTurning.Remove(player.PlayerUID);
-                quantityPlayersTurning = playersTurning.Count;
-                bool anySneaking = playersTurning.Keys.Any(uid =>
-                    Api.World.PlayerByUid(uid)?.Entity?.Controls?.Sneak == true
+                //clientDialog = new GuiDialogBlockEntityInventory(
+                //        DialogTitle,
+                //        Inventory,
+                //        Pos,
+                //        1,
+                //        capi
+                //    );
+                clientDialog = new GuiDialogBlockEntityWinch(
+                    DialogTitle,
+                    Inventory,
+                    Pos,
+                    capi
                 );
-                bool oldRaising = isRaising;
-                isRaising = anySneaking;
-                if (isRaising != oldRaising)
-                {
-                    movementAccumTime = 0f;
-                    wasRaising = isRaising; 
-                    MarkDirty();
-                }
-            }
-            updateTurningState();
-        }
-
-        private void updateTurningState()
-        {
-            if (Api?.World == null) return;
-            
-            bool nowTurning = (quantityPlayersTurning > 0) || (automated && mpc?.TrueSpeed > 0f);
-            if (nowTurning != beforeTurning)
-            {
-                if (renderer != null)
-                {
-                    renderer.ShouldRotateManual = (quantityPlayersTurning > 0);
-                }
-                Api.World.BlockAccessor.MarkBlockDirty(Pos, OnRetesselated);
-                
-                if (nowTurning)
-                {
-                    ambientSound?.Start();
-                }
-                else
-                {
-                    ambientSound?.Stop();
-                }
-
-                if (Api.Side == EnumAppSide.Server)
-                {
-                    MarkDirty(false);
-                }
-            }
-            beforeTurning = nowTurning;
-        }
-
-        private void OnRetesselated()
-        {
-            if (renderer == null) return;
-            renderer.ShouldRender = (quantityPlayersTurning > 0 || automated);
-        }
-        public bool CanTurn()
-        {
-            if (InputSlot.Itemstack == null) return false;
-            return true;
-        }
-        private void OnSlotModified(int slotid)
-        {
-            if (Api is ICoreClientAPI && clientDialog != null)
-            {
                 clientDialog.Update();
-            }
-            if (slotid == 0 && InputSlot.Empty)
-            {
-                bucketDepth = 0.5f;
-            }
-            MarkDirty(true);
+                return clientDialog;
+            });
         }
 
-        public override bool OnPlayerRightClick(IPlayer byPlayer, BlockSelection blockSel)
+        return false;
+    }
+
+    public ItemSlot InputSlot => inventory[0];
+
+    public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
+    {
+        if (Block == null) return false;
+        if (winchBaseMesh == null || winchTopMesh == null) return false;
+
+        MeshData baseMeshCloned = winchBaseMesh.Clone();
+        MeshData topMeshCloned = winchTopMesh.Clone();
+
+        float yRotation = 0f;
+        switch (Block.Variant["side"])
         {
-            if (blockSel == null) return false;
-            if (blockSel.SelectionBoxIndex == 0)
-            {
-                if (Api.Side == EnumAppSide.Client)
-                {
-                    toggleInventoryDialogClient(byPlayer, () =>
-                    {
-                        clientDialog = new GuiDialogBlockEntityWinch(
-                            this.DialogTitle,
-                            this.Inventory,
-                            this.Pos,
-                            this.Api as ICoreClientAPI
-                        );
-                        clientDialog.Update();
-                        return clientDialog;
-                    });
-                }
-            }
-            return false;
+            case "east": yRotation = GameMath.PIHALF; break;
+            case "south": yRotation = GameMath.PI; break;
+            case "west": yRotation = GameMath.PI + GameMath.PIHALF; break;
         }
-        public ItemSlot InputSlot => inventory[0];
 
-        public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tesselator)
+        baseMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
+        mesher.AddMeshData(baseMeshCloned);
+
+        if (quantityPlayersTurning == 0 && !automated && topMeshCloned != null)
         {
-            if (Block == null) return false;
-            if (winchBaseMesh == null || winchTopMesh == null) return false;
+            topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
+            topMeshCloned.Translate(0f, 0.5f, 0f);
 
-            MeshData baseMeshCloned = winchBaseMesh.Clone();
-            MeshData topMeshCloned = winchTopMesh.Clone();
-
-            float yRotation = 0f;
-            switch (Direction)
+            switch (Block.Variant["side"])
             {
-                case "east": yRotation = GameMath.PIHALF; break;
-                case "south": yRotation = GameMath.PI; break;
-                case "west": yRotation = GameMath.PI + GameMath.PIHALF; break;
-            }
-
-            baseMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
-            mesher.AddMeshData(baseMeshCloned);
-
-            if (quantityPlayersTurning == 0 && !automated && topMeshCloned != null)
-            {
-                topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
-                topMeshCloned.Translate(0f, 0.5f, 0f);
-
-                if (Direction == "east")
-                {
+                case "east":
                     topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, 0f, -renderer.AngleRad);
-                }
-                else if (Direction == "west")
-                {
+                    break;
+
+                case "west":
                     topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, 0f, renderer.AngleRad);
-                }
-                else if (Direction == "south")
-                {
+                    break;
+
+                case "south":
                     topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), -renderer.AngleRad, 0f, 0f);
+                    break;
+
+                default:
+                    topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), renderer.AngleRad, 0f, 0f);
+                    break;
+            }
+
+            mesher.AddMeshData(topMeshCloned);
+        }
+
+        if (!InputSlot.Empty)
+        {
+            MeshData ropeSegmentMesh = GetMesh(RopeMeshPath);
+            if (ropeSegmentMesh != null)
+            {
+                float ropeSegmentHeight = 1.0f;
+                float initialOffset = 0.75f;
+                float overlapFactor = 0.125f;
+                float segmentSpacing = ropeSegmentHeight * overlapFactor;
+
+                float effectiveRopeLength = bucketDepth;
+
+                int segmentCount = (int)Math.Floor(effectiveRopeLength / segmentSpacing);
+                if (effectiveRopeLength % segmentSpacing > 0)
+                {
+                    segmentCount++;
+                }
+                segmentCount = Math.Max(segmentCount - 2, 2);
+
+                for (int i = 0; i < segmentCount; i++)
+                {
+                    MeshData segmentMesh = ropeSegmentMesh.Clone();
+                    float yPosition = -bucketDepth + initialOffset + i * segmentSpacing;
+                    segmentMesh.Translate(0f, yPosition, 0f);
+                    mesher.AddMeshData(segmentMesh);
+
+                    if (i == 0)
+                    {
+                        MeshData knotMesh = GetMesh(KnotMeshPath);
+                        if (knotMesh != null)
+                        {
+                            float knotYOffset = 0.1f;
+                            float knotScaleFactor = 1.3f;
+                            Vec3f scaleOrigin = new Vec3f(0.5f, 0.5f, 0.5f);
+                            knotMesh.Scale(scaleOrigin, knotScaleFactor, knotScaleFactor, knotScaleFactor);
+                            knotMesh.Translate(0f, yPosition + knotYOffset, 0f);
+
+                            mesher.AddMeshData(knotMesh);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!automated && quantityPlayersTurning == 0 && !InputSlot.Empty)
+        {
+            try
+            {
+                MeshData bucketMesh;
+                if (InputSlot.Itemstack.Class == EnumItemClass.Block)
+                {
+                    if (InputSlot.Itemstack.Block == null) return true;
+                    tessThreadTesselator.TesselateBlock(InputSlot.Itemstack.Block, out bucketMesh);
                 }
                 else
                 {
-                    topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), renderer.AngleRad, 0f, 0f);
+                    if (InputSlot.Itemstack.Item == null) return true;
+                    tessThreadTesselator.TesselateItem(InputSlot.Itemstack.Item, out bucketMesh);
                 }
 
-                mesher.AddMeshData(topMeshCloned);
-            }
-
-            if (!InputSlot.Empty)
-            {
-                MeshData ropeSegmentMesh = GenRopeMesh();
-                if (ropeSegmentMesh != null)
+                if (bucketMesh != null && bucketMesh.VerticesCount > 0)
                 {
-                    float ropeSegmentHeight = 1.0f;
-                    float initialOffset = 0.75f;
-                    float overlapFactor = 0.125f;
-                    float segmentSpacing = ropeSegmentHeight * overlapFactor;
-
-                    float effectiveRopeLength = bucketDepth;
-
-                    int segmentCount = (int)Math.Floor(effectiveRopeLength / segmentSpacing);
-                    if (effectiveRopeLength % segmentSpacing > 0)
+                    float bucketYRotation = Block.Variant["side"] switch
                     {
-                        segmentCount++;
-                    }
-                    segmentCount = Math.Max(segmentCount - 2, 2);
+                        "east" => GameMath.PIHALF,
+                        "south" => GameMath.PI,
+                        "west" => GameMath.PI + GameMath.PIHALF,
+                        _ => 0
+                    };
 
-                    for (int i = 0; i < segmentCount; i++)
+                    bucketMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation, 0f);
+                    bucketMesh.Translate(0f, -bucketDepth, 0f);
+                    mesher.AddMeshData(bucketMesh);
+                    string containerCodePath = InputSlot.Itemstack?.Collectible?.Code?.Path ?? ""; //TODO
+                    if (containerCodePath.StartsWith("woodbucket") ||
+                        containerCodePath.StartsWith("temporalbucket"))
                     {
-                        MeshData segmentMesh = ropeSegmentMesh.Clone();
-                        float yPosition = -bucketDepth + initialOffset + i * segmentSpacing;
-                        segmentMesh.Translate(0f, yPosition, 0f);
-                        mesher.AddMeshData(segmentMesh);
-
-                        if (i == 0)
+                        if (InputSlot.Itemstack.Attributes?.HasAttribute("contents") == true)
                         {
-                            MeshData knotMesh = GenKnotMesh();
-                            if (knotMesh != null)
+                            var contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
+                            if (contents != null)
                             {
-                                float knotYOffset = 0.1f;
-                                float knotScaleFactor = 1.3f;
-                                Vec3f scaleOrigin = new Vec3f(0.5f, 0.5f, 0.5f);
-                                knotMesh.Scale(scaleOrigin, knotScaleFactor, knotScaleFactor, knotScaleFactor);
-                                knotMesh.Translate(0f, yPosition + knotYOffset, 0f);
-
-                                mesher.AddMeshData(knotMesh);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!automated && quantityPlayersTurning == 0 && !InputSlot.Empty)
-            {
-                try
-                {
-                    MeshData bucketMesh;
-                    if (InputSlot.Itemstack.Class == EnumItemClass.Block)
-                    {
-                        if (InputSlot.Itemstack.Block == null) return true;
-                        tesselator.TesselateBlock(InputSlot.Itemstack.Block, out bucketMesh);
-                    }
-                    else
-                    {
-                        if (InputSlot.Itemstack.Item == null) return true;
-                        tesselator.TesselateItem(InputSlot.Itemstack.Item, out bucketMesh);
-                    }
-
-                    if (bucketMesh != null && bucketMesh.VerticesCount > 0)
-                    {
-                        float bucketYRotation = 0f;
-                        switch (Direction)
-                        {
-                            case "east": bucketYRotation = GameMath.PIHALF; break;
-                            case "south": bucketYRotation = GameMath.PI; break;
-                            case "west": bucketYRotation = GameMath.PI + GameMath.PIHALF; break;
-                        }
-
-                        bucketMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation, 0f);
-                        bucketMesh.Translate(0f, -bucketDepth, 0f);
-                        mesher.AddMeshData(bucketMesh);
-                        string containerCodePath = InputSlot.Itemstack?.Collectible?.Code?.Path ?? "";
-                        if (containerCodePath.StartsWith("woodbucket") ||
-                            containerCodePath.StartsWith("temporalbucket"))
-                        {
-                            if (InputSlot.Itemstack.Attributes?.HasAttribute("contents") == true)
-                            {
-                                var contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
-                                if (contents != null)
+                                var contentStack = contents.GetItemstack("0");
+                                if (contentStack != null && contentStack.Collectible == null)
                                 {
-                                    var contentStack = contents.GetItemstack("0");
-                                    if (contentStack != null && contentStack.Collectible == null)
-                                    {
-                                        contentStack.ResolveBlockOrItem(Api.World);
-                                    }
+                                    contentStack.ResolveBlockOrItem(Api.World);
+                                }
 
-                                    if (contentStack?.Collectible != null)
+                                if (contentStack?.Collectible != null)
+                                {
+                                    var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
+                                    if (props != null)
                                     {
-                                        var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
-                                        if (props != null)
+                                        Shape contentShape = null;
+                                        string shapePath = "game:shapes/block/wood/bucket/liquidcontents";
+                                        if (props.IsOpaque)
                                         {
-                                            Shape contentShape = null;
-                                            string shapePath = "game:shapes/block/wood/bucket/liquidcontents";
-                                            if (props.IsOpaque)
-                                            {
-                                                shapePath = "game:shapes/block/wood/bucket/contents";
-                                            }
+                                            shapePath = "game:shapes/block/wood/bucket/contents";
+                                        }
 
-                                            contentShape = Shape.TryGet(Api, shapePath + ".json");
-                                            if (contentShape != null)
-                                            {
-                                                ContainerTextureSource textureSource = new ContainerTextureSource(
-                                                    Api as ICoreClientAPI,
-                                                    contentStack,
-                                                    props.Texture
-                                                );
-                                                MeshData contentMesh;
-                                                tesselator.TesselateShape(GetType().Name, contentShape, out contentMesh,
-                                                    textureSource);
+                                        contentShape = Shape.TryGet(Api, shapePath + ".json");
+                                        if (contentShape != null)
+                                        {
+                                            ContainerTextureSource textureSource = new ContainerTextureSource(
+                                                Api as ICoreClientAPI,
+                                                contentStack,
+                                                props.Texture
+                                            );
+                                            
+                                            tessThreadTesselator.TesselateShape(GetType().Name, contentShape, out MeshData contentMesh, textureSource);
 
-                                                if (contentMesh != null)
-                                                {
-                                                    float maxLiquidHeight = 0.435f;
-                                                    BlockLiquidContainerBase container =
-                                                        InputSlot.Itemstack.Collectible as BlockLiquidContainerBase;
-                                                    int bucketCapacity = container != null
-                                                        ? (int)container.CapacityLitres
-                                                        : 10;
-                                                    float liquidPercentage =
-                                                        (float)contentStack.StackSize /
-                                                        (props.ItemsPerLitre * bucketCapacity);
-                                                    float liquidHeight = liquidPercentage * maxLiquidHeight;
-                                                    float liquidOffset = 0f;
-                                                    contentMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation,
-                                                        0f);
-                                                    contentMesh.Translate(0f,
-                                                        -bucketDepth + liquidHeight + liquidOffset, 0f);
-                                                    mesher.AddMeshData(contentMesh);
-                                                }
+                                            if (contentMesh != null)
+                                            {
+                                                float maxLiquidHeight = 0.435f;
+                                                int bucketCapacity = InputSlot.Itemstack.Collectible is BlockLiquidContainerBase container
+                                                    ? (int)container.CapacityLitres
+                                                    : 10;
+                                                
+                                                float liquidPercentage =
+                                                    (float)contentStack.StackSize /
+                                                    (props.ItemsPerLitre * bucketCapacity);
+                                                float liquidHeight = liquidPercentage * maxLiquidHeight;
+                                                float liquidOffset = 0f;
+                                                contentMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation, 0f);
+                                                contentMesh.Translate(0f, -bucketDepth + liquidHeight + liquidOffset, 0f);
+                                                mesher.AddMeshData(contentMesh);
                                             }
                                         }
                                     }
@@ -768,189 +670,161 @@ namespace HydrateOrDiedrate.winch
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    Api.Logger.Error("Error rendering bucket contents: {0}", e);
-                }
             }
-
-            return true;
-        }
-
-        public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
-        {
-            base.FromTreeAttributes(tree, worldForResolving);
-            MeshAngle = tree.GetFloat("meshAngle", MeshAngle);
-            ITreeAttribute invTree = tree.GetTreeAttribute("inventory");
-            if (invTree != null)
+            catch (Exception e)
             {
-                inventory.FromTreeAttributes(invTree);
-                if (this.Api != null)
-                {
-                    inventory.AfterBlocksLoaded(this.Api.World);
-                }
-            }
-            inputTurnTime = tree.GetFloat("inputTurnTime", 0f);
-            nowOutputFace = tree.GetInt("nowOutputFace", 0);
-            bucketDepth = tree.GetFloat("bucketDepth", 0.5f);
-            isRaising = tree.GetBool("isRaising", false);
-            movementAccumTime = 0f;
-            inventory.TakeLocked = (bucketDepth > 1f);
-            inventory.PutLocked = false;
-            if (worldForResolving.Side == EnumAppSide.Client)
-            {
-                clientDialog?.Update();
+                Api.Logger.Error("Error rendering bucket contents: {0}", e);
             }
         }
 
-        public override void ToTreeAttributes(ITreeAttribute tree)
-        {
-            base.ToTreeAttributes(tree);
-            tree.SetFloat("meshAngle", MeshAngle);
-            if (inventory != null)
-            {
-                TreeAttribute invTree = new TreeAttribute();
-                inventory.ToTreeAttributes(invTree);
-                tree["inventory"] = invTree;
-            }
-            tree.SetFloat("inputTurnTime", inputTurnTime);
-            tree.SetInt("nowOutputFace", nowOutputFace);
-            tree.SetFloat("bucketDepth", bucketDepth);
-            tree.SetBool("isRaising", isRaising);
-            List<int> clientIds = new List<int>();
-            foreach (var kvp in playersTurning)
-            {
-                IPlayer plr = Api.World.PlayerByUid(kvp.Key);
-                if (plr != null)
-                {
-                    clientIds.Add(plr.ClientId);
-                }
-            }
-            tree["clientIdsTurning"] = new IntArrayAttribute(clientIds.ToArray());
-        }
+        return true;
+    }
 
-        public override void OnBlockRemoved()
+    public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
+    {
+        base.FromTreeAttributes(tree, worldForResolving);
+        MeshAngle = tree.GetFloat("meshAngle", MeshAngle);
+        ITreeAttribute invTree = tree.GetTreeAttribute("inventory");
+        if (invTree != null)
         {
-            base.OnBlockRemoved();
-            ambientSound?.Stop();
-            ambientSound?.Dispose();
-            clientDialog?.TryClose();
-            renderer?.Dispose();
-            renderer = null;
-        }
-        public override void OnBlockBroken(IPlayer byPlayer = null)
-        {
-            if (this.Api.World is IServerWorldAccessor)
+            inventory.FromTreeAttributes(invTree);
+            if (Api != null)
             {
-                Vec3d dropPos = this.Pos.ToVec3d().Add(0.5, -this.bucketDepth, 0.5);
-                this.Inventory.DropAll(dropPos);
+                inventory.AfterBlocksLoaded(Api.World);
             }
-            base.OnBlockBroken(byPlayer);
         }
+        inputTurnTime = tree.GetFloat("inputTurnTime", 0f);
+        nowOutputFace = tree.GetInt("nowOutputFace", 0);
+        bucketDepth = tree.GetFloat("bucketDepth", 0.5f);
+        isRaising = tree.GetBool("isRaising", false);
 
-        public override void OnBlockUnloaded()
+        inventory.TakeLocked = (bucketDepth > 1f);
+        inventory.PutLocked = false;
+        if (worldForResolving.Side == EnumAppSide.Client)
         {
-            base.OnBlockUnloaded();
-            renderer?.Dispose();
-            if (ambientSound != null)
-            {
-                ambientSound.Stop();
-                ambientSound.Dispose();
-            }
+            clientDialog?.Update();
         }
-        ~BlockEntityWinch()
-        {
-            if (ambientSound != null) ambientSound.Dispose();
-        }
-        public string Direction
-        {
-            get { return Block?.LastCodePart(0) ?? "north"; }
-        }
-        public virtual string DialogTitle
-        {
-            get { return Lang.Get("hydrateordiedrate:Winch"); }
-        }
-        private long GetTotalShaftWaterVolume(BlockPos springPos)
-        {
-            long total = 0;
-            var pos = Pos.DownCopy();
-            while (pos.Y >= 0 && !pos.Equals(springPos))
-            {
-                var be = Api.World.BlockAccessor.GetBlockEntity(pos);
-                if (be is HydrateOrDiedrate.wellwater.BlockEntityWellWaterData waterData)
-                {
-                    total += waterData.Volume;
-                }
-                var block = Api.World.BlockAccessor.GetBlock(pos);
-                var path = block.Code.Path.ToLowerInvariant();
-                if (path.StartsWith("game:soil") || path.StartsWith("game:stone")) break;
+    }
 
-                pos = pos.DownCopy();
+    public override void ToTreeAttributes(ITreeAttribute tree)
+    {
+        base.ToTreeAttributes(tree);
+        tree.SetFloat("meshAngle", MeshAngle);
+        tree.SetFloat("inputTurnTime", inputTurnTime);
+        tree.SetInt("nowOutputFace", nowOutputFace);
+        tree.SetFloat("bucketDepth", bucketDepth);
+        tree.SetBool("isRaising", isRaising);
+
+        TreeAttribute invTree = new();
+        inventory.ToTreeAttributes(invTree);
+        tree["inventory"] = invTree;
+
+        List<int> clientIds = new(playersTurning.Count);
+        foreach (var kvp in playersTurning)
+        {
+            IPlayer plr = Api.World.PlayerByUid(kvp.Key);
+            if (plr is not null)
+            {
+                clientIds.Add(plr.ClientId);
             }
-            return total;
         }
+        tree["clientIdsTurning"] = new IntArrayAttribute(clientIds.ToArray());
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+
+        if(clientDialog is not null)
+        {
+            if(clientDialog.IsOpened()) clientDialog.TryClose();
+            clientDialog.Dispose();
+        }
+        
+        renderer?.Dispose();
+        renderer = null;
+    }
+
+    public override void OnBlockBroken(IPlayer byPlayer = null)
+    {
+        if (Api.Side == EnumAppSide.Server)
+        {
+            Inventory.DropAll(Pos.ToVec3d().Add(0.5, -bucketDepth, 0.5));
+        }
+        base.OnBlockBroken(byPlayer);
+    }
+    
+    public virtual string DialogTitle => Lang.Get("hydrateordiedrate:Winch");
+
+    private long GetTotalShaftWaterVolume(BlockPos springPos)
+    {
+        long total = 0;
+        var pos = Pos.DownCopy();
+        while (pos.Y >= 0 && pos.Y != springPos.Y)
+        {
+            if (Api.World.BlockAccessor.GetBlockEntity(pos) is BlockEntityWellWaterData waterData)
+            {
+                total += waterData.Volume;
+            }
+
+            pos.Y--;
+        }
+        return total;
+    }
+
+    
+    public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
+    {
+        base.GetBlockInfo(forPlayer, dsc);
+        if (!ModConfig.Instance.GroundWater.WinchOutputInfo) return;
 
         
-        public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
+        BlockEntityWellSpring foundSpring = null;
+        const int maxSearchDepth = 256;
+        int searchLevels = 0;
+
+        BlockPos searchPos = Pos.DownCopy();
+        while (searchPos.Y >= 0 && searchLevels < maxSearchDepth)
         {
-            base.GetBlockInfo(forPlayer, dsc);
-            if (!ModConfig.Instance.GroundWater.WinchOutputInfo)
+            if (Api.World.BlockAccessor.GetBlockEntity(searchPos) is BlockEntityWellSpring spring)
             {
-                return;
+                foundSpring = spring;
+                break;
             }
-
-            BlockPos searchPos = Pos.DownCopy();
-            BlockEntityWellSpring foundSpring = null;
-
-            int maxSearchDepth = 256;
-            int searchLevels = 0;
-
-            while (searchPos.Y >= 0 && searchLevels < maxSearchDepth)
-            {
-                BlockEntity be = Api.World.BlockAccessor.GetBlockEntity(searchPos);
-                if (be is BlockEntityWellSpring spring)
-                {
-                    foundSpring = spring;
-                    break;
-                }
-                Block block = Api.World.BlockAccessor.GetBlock(searchPos);
-                if (block != null && block.Code != null)
-                {
-                    string codePath = block.Code.Path.ToLowerInvariant();
-                    if (codePath.StartsWith("game:soil") || codePath.StartsWith("game:stone"))
-                    {
-                        break;
-                    }
-                }
-                searchPos = searchPos.DownCopy();
-                searchLevels++;
-            }
-            if (foundSpring != null)
-            {
-                dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.springDetected"));
-                dsc.AppendLine("  " + Lang.Get(
-                    "hydrateordiedrate:winch.waterType",
-                    foundSpring.GetWaterType()
-                ));
-                dsc.AppendLine("  " + Lang.Get(
-                    "hydrateordiedrate:winch.outputRate",
-                    foundSpring.GetCurrentOutputRate().ToString("F1")
-                ));
-                int retentionVol = foundSpring.GetRetentionDepth() * 70;
-                dsc.AppendLine("  " + Lang.Get(
-                    "hydrateordiedrate:winch.retentionVolume",
-                    retentionVol
-                ));
-                long totalVol = GetTotalShaftWaterVolume(foundSpring.Pos);
-                dsc.AppendLine("  " + Lang.Get(
-                    "hydrateordiedrate:winch.totalShaftVolume",
-                    totalVol
-                ));
-            }
-            else
-            {
-                dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.noSpring"));
-            }
+            
+            searchPos.Y--;
+            searchLevels++;
         }
+
+        if (foundSpring is null)
+        {
+            dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.noSpring"));
+            return;
+        }
+        
+        dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.springDetected"));
+        dsc.Append("  ");
+        dsc.AppendLine(Lang.Get(
+            "hydrateordiedrate:winch.waterType",
+            foundSpring.GetWaterType()
+        ));
+
+        dsc.Append("  ");
+        dsc.AppendLine(Lang.Get(
+            "hydrateordiedrate:winch.outputRate",
+            foundSpring.GetCurrentOutputRate()
+        ));
+
+        dsc.Append("  ");
+        dsc.AppendLine(Lang.Get(
+            "hydrateordiedrate:winch.retentionVolume",
+            foundSpring.GetRetentionDepth() * 70
+        ));
+
+        dsc.Append("  ");
+        dsc.AppendLine(Lang.Get(
+            "hydrateordiedrate:winch.totalShaftVolume",
+            GetTotalShaftWaterVolume(foundSpring.Pos)
+        ));
     }
 }
