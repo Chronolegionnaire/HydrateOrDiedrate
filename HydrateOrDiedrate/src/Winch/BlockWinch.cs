@@ -8,6 +8,7 @@ using Vintagestory.GameContent.Mechanics;
 
 namespace HydrateOrDiedrate.winch;
 
+//TODO: realistically speaking wouldn't it start going up again if you keep turning the handle? rope would then coil the other way around. Would also make the mechanical connection part easier
 public class BlockWinch : BlockMPBase
 {
     public override bool DoPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ItemStack byItemStack)

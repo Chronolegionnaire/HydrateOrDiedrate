@@ -452,7 +452,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     {
         if (Api is ICoreClientAPI && clientDialog != null)
         {
-            clientDialog.Update();
+            //clientDialog.Update();
         }
         if (slotid == 0 && InputSlot.Empty)
         {
@@ -467,21 +467,15 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         {
             toggleInventoryDialogClient(byPlayer, () =>
             {
-                //clientDialog = new GuiDialogBlockEntityInventory(
-                //        DialogTitle,
-                //        Inventory,
-                //        Pos,
-                //        1,
-                //        capi
-                //    );
-                clientDialog = new GuiDialogBlockEntityWinch(
+                
+                return new GuiDialogBlockEntityWinch(
                     DialogTitle,
                     Inventory,
                     Pos,
                     capi
                 );
-                clientDialog.Update();
-                return clientDialog;
+                //clientDialog.Update();
+                //return clientDialog;
             });
         }
 
@@ -702,7 +696,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         inventory.PutLocked = false;
         if (worldForResolving.Side == EnumAppSide.Client)
         {
-            clientDialog?.Update();
+            //clientDialog?.Update();
         }
     }
 
