@@ -172,34 +172,20 @@ namespace HydrateOrDiedrate.winch
                 {
                     float mechAngle = mechPowerPart.AngleRad;
                     float turnDirSign = (mechPowerPart.Network.TurnDir == EnumRotDirection.Counterclockwise) ? 1f : -1f;
-                    switch (Direction)
+                    
+                    AngleRad = Direction switch
                     {
-                        case "east":
-                            this.AngleRad = -mechAngle * turnDirSign;
-                            break;
-                        case "west":
-                            this.AngleRad = mechAngle * turnDirSign;
-                            break;
-                        case "south":
-                            this.AngleRad = mechAngle;
-                            break;
-                        default:
-                            this.AngleRad = -mechAngle;
-                            break;
-                    }
+                        "east" => -mechAngle * turnDirSign,
+                        "west" => mechAngle * turnDirSign,
+                        "south" => mechAngle,
+                        _ => -mechAngle,
+                    };
                 }
 
 
-                if (ShouldRotateManual)
+                if (ShouldRotateManual && beWinch.CanMove())
                 {
-                    if ((beWinch.IsRaising && !beWinch.CanMoveUp()) ||
-                        (!beWinch.IsRaising && !beWinch.CanMoveDown()))
-                    {
-                    }
-                    else
-                    {
-                        AngleRad += deltaTime * 200f * GameMath.DEG2RAD * (beWinch.isRaising ? -1f : 1f);
-                    }
+                    AngleRad += deltaTime * 200f * GameMath.DEG2RAD * (beWinch.isRaising ? -1f : 1f);
                 }
             }
 
