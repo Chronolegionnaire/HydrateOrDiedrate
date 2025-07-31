@@ -129,12 +129,12 @@ namespace HydrateOrDiedrate.patches
             string aquiferType = isSalty ? Lang.Get("hydrateordiedrate:aquifer-salt") : Lang.Get("hydrateordiedrate:aquifer-fresh");
             return rating switch
             {
-                <= 0 => Lang.Get("hydrateordiedrate:aquifer-none-detected"),
-                <= 10 => Lang.Get("hydrateordiedrate:aquifer-very-poor", aquiferType),
+                <= 10 => Lang.Get("hydrateordiedrate:aquifer-none-detected"),
+                <= 15 => Lang.Get("hydrateordiedrate:aquifer-very-poor", aquiferType),
                 <= 20 => Lang.Get("hydrateordiedrate:aquifer-poor", aquiferType),
                 <= 40 => Lang.Get("hydrateordiedrate:aquifer-light", aquiferType),
                 <= 60 => Lang.Get("hydrateordiedrate:aquifer-moderate", aquiferType),
-                _ => Lang.Get("hydrateordiedrate:aquifer-heavy", aquiferType)
+                _     => Lang.Get("hydrateordiedrate:aquifer-heavy", aquiferType)
             };
         }
 

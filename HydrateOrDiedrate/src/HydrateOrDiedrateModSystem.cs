@@ -19,6 +19,7 @@ using Vintagestory.GameContent;
 using System.Diagnostics;
 using HydrateOrDiedrate.Config.Patching;
 using HydrateOrDiedrate.Config.Patching.PatchTypes;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Util;
 
 namespace HydrateOrDiedrate;
@@ -169,12 +170,19 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
-
         if (ModConfig.Instance.Thirst.Enabled)
         {
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
+            api.Event.OnEntitySpawn += (spawnedEntity) =>
+            {
+                if (spawnedEntity is EntityPlayer playerEntity &&
+                    playerEntity.PlayerUID == api.World.Player?.PlayerUID &&
+                    playerEntity.GetBehavior<EntityBehaviorThirst>() == null)
+                {
+                    playerEntity.AddBehavior(new EntityBehaviorThirst(playerEntity));
+                }
+            };
         }
-
         if(api.ModLoader.IsModEnabled("configlib")) ConfigLibCompatibility.Init(api);
     }
     public RainHarvesterManager GetRainHarvesterManager()

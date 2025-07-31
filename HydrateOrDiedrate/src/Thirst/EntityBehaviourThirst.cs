@@ -115,13 +115,14 @@ namespace HydrateOrDiedrate
         public override void OnGameTick(float deltaTime)
         {
             if (!ModConfig.Instance.Thirst.Enabled || !entity.Alive || entity is not EntityPlayer playerEntity) return;
-
-            if (playerEntity.Player?.WorldData?.CurrentGameMode is EnumGameMode.Creative or EnumGameMode.Spectator or EnumGameMode.Guest) return;
-            if (float.IsNaN(deltaTime) || deltaTime < 0) 
-            {
-                deltaTime = 0f;
-            }
             
+            UpdateWalkSpeed();
+            
+            if (entity.World.Side != EnumAppSide.Server) return;
+
+            if (playerEntity.Player?.WorldData?.CurrentGameMode is EnumGameMode.Creative or EnumGameMode.Spectator or EnumGameMode.Guest)
+                return;
+
             hydrationTickDelta += deltaTime;
             if (hydrationTickDelta >= 1f)
             {
