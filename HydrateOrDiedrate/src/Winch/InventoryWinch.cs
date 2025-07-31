@@ -61,6 +61,9 @@ namespace HydrateOrDiedrate.winch
             return base.GetSuitability(sourceSlot, targetSlot, isMerge);
         }
 
+        //TODO: maybe come up with some better more complex constraints
+        public override bool CanContain(ItemSlot sinkSlot, ItemSlot sourceSlot) => sourceSlot.Itemstack?.Collectible is BlockLiquidContainerTopOpened && base.CanContain(sinkSlot, sourceSlot);
+
         public override ItemSlot GetAutoPushIntoSlot(BlockFacing atBlockFace, ItemSlot fromSlot) => slots[0];
     }
 }

@@ -71,6 +71,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     public BlockEntityWinch()
     {
         inventory = new InventoryWinch(null, null);
+        
         inventory.SlotModified += OnSlotModified;
     }
 
@@ -92,14 +93,13 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         winchBaseMesh = GetMesh(WinchBaseMeshPath);
         winchTopMesh = GetMesh(WinchTopMeshPath);
 
-        renderer = new WinchTopRenderer(capi, Pos, winchTopMesh, Block.Variant["side"])
+        renderer = new WinchTopRenderer(capi, this, winchTopMesh, Block.Variant["side"])
         {
             mechPowerPart = mpc
         };
 
         if (automated)
         {
-            renderer.ShouldRender = true;
             renderer.ShouldRotateAutomated = true;
         }
 
@@ -112,7 +112,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         quantityPlayersTurning = 0;
         
         if (renderer is null) return;
-        renderer.ShouldRender = true;
         renderer.ShouldRotateAutomated = true;
     }
 
@@ -121,7 +120,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         automated = false;
         if (renderer is null) return;
         
-        renderer.ShouldRender = false;
         renderer.ShouldRotateAutomated = false;
     }
 
@@ -338,16 +336,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         return contents is null || contents.GetItemstack("0") is null;
     }
 
-    private bool IsLiquidBlock(Block block) //TODO
-    {
-        if (block == null) return false;
-        string codePath = block.Code?.Path?.ToLowerInvariant() ?? "";
-        return codePath.StartsWith("water")
-            || codePath.Contains("saltwater")
-            || codePath.Contains("boilingwater")
-            || codePath.Contains("wellwater");
-    }
-
     public void SetPlayerTurning(IPlayer player, bool playerTurning)
     {
         if (!automated)
@@ -378,17 +366,11 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         {
             if (renderer is not null) renderer.ShouldRotateManual = quantityPlayersTurning > 0;
 
-            Api.World.BlockAccessor.MarkBlockDirty(Pos, OnRetesselated);
+            Api.World.BlockAccessor.MarkBlockDirty(Pos); //TODO check
 
             if (Api.Side == EnumAppSide.Server) MarkDirty();
         }
         beforeTurning = nowTurning;
-    }
-
-    private void OnRetesselated()
-    {
-        if (renderer == null) return;
-        renderer.ShouldRender = renderer.ShouldRotateManual || automated;
     }
 
     public bool CanTurn() => InputSlot.Itemstack is not null;
@@ -424,184 +406,58 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         if (Block is null || winchBaseMesh is null || winchTopMesh is null) return false;
 
         MeshData baseMeshCloned = winchBaseMesh.Clone();
-        MeshData topMeshCloned = winchTopMesh.Clone();
-
-        float yRotation = 0f;
-        switch (Block.Variant["side"])
+        
+        var yRotation = Block.Variant["side"] switch
         {
-            case "east": yRotation = GameMath.PIHALF; break;
-            case "south": yRotation = GameMath.PI; break;
-            case "west": yRotation = GameMath.PI + GameMath.PIHALF; break;
-        }
-
+            "east" => GameMath.PIHALF,
+            "south" => GameMath.PI,
+            "west" => GameMath.PI + GameMath.PIHALF,
+            _ => 0f
+        };
         baseMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
         mesher.AddMeshData(baseMeshCloned);
 
-        if (quantityPlayersTurning == 0 && !automated && topMeshCloned is not null)
+        if (InputSlot.Empty) return true;
+
+        MeshData ropeSegmentMesh = GetMesh(RopeMeshPath);
+        if (ropeSegmentMesh is not null)
         {
-            topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
-            topMeshCloned.Translate(0f, 0.5f, 0f);
-
-            switch (Block.Variant["side"])
+            const float ropeSegmentHeight = 1.0f;
+            const float initialOffset = 0.75f;
+            const float overlapFactor = 0.125f;
+            const float segmentSpacing = ropeSegmentHeight * overlapFactor;
+        
+            float effectiveRopeLength = bucketDepth;
+        
+            int segmentCount = (int)Math.Floor(effectiveRopeLength / segmentSpacing);
+            if (effectiveRopeLength % segmentSpacing > 0)
             {
-                case "east":
-                    topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, 0f, -renderer.AngleRad);
-                    break;
-
-                case "west":
-                    topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, 0f, renderer.AngleRad);
-                    break;
-
-                case "south":
-                    topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), -renderer.AngleRad, 0f, 0f);
-                    break;
-
-                default:
-                    topMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), renderer.AngleRad, 0f, 0f);
-                    break;
+                segmentCount++;
             }
-
-            mesher.AddMeshData(topMeshCloned);
-        }
-
-        if (!InputSlot.Empty)
-        {
-            MeshData ropeSegmentMesh = GetMesh(RopeMeshPath);
-            if (ropeSegmentMesh != null)
+            segmentCount = Math.Max(segmentCount - 2, 2);
+        
+            for (int i = 0; i < segmentCount; i++)
             {
-                const float ropeSegmentHeight = 1.0f;
-                const float initialOffset = 0.75f;
-                const float overlapFactor = 0.125f;
-                const float segmentSpacing = ropeSegmentHeight * overlapFactor;
-
-                float effectiveRopeLength = bucketDepth;
-
-                int segmentCount = (int)Math.Floor(effectiveRopeLength / segmentSpacing);
-                if (effectiveRopeLength % segmentSpacing > 0)
+                MeshData segmentMesh = ropeSegmentMesh.Clone();
+                float yPosition = -bucketDepth + initialOffset + i * segmentSpacing;
+                segmentMesh.Translate(0f, yPosition, 0f);
+                mesher.AddMeshData(segmentMesh);
+        
+                if (i == 0)
                 {
-                    segmentCount++;
-                }
-                segmentCount = Math.Max(segmentCount - 2, 2);
-
-                for (int i = 0; i < segmentCount; i++)
-                {
-                    MeshData segmentMesh = ropeSegmentMesh.Clone();
-                    float yPosition = -bucketDepth + initialOffset + i * segmentSpacing;
-                    segmentMesh.Translate(0f, yPosition, 0f);
-                    mesher.AddMeshData(segmentMesh);
-
-                    if (i == 0)
+                    MeshData knotMesh = GetMesh(KnotMeshPath);
+                    if (knotMesh != null)
                     {
-                        MeshData knotMesh = GetMesh(KnotMeshPath);
-                        if (knotMesh != null)
-                        {
-                            float knotYOffset = 0.1f;
-                            float knotScaleFactor = 1.3f;
-                            Vec3f scaleOrigin = new Vec3f(0.5f, 0.5f, 0.5f);
-                            knotMesh.Scale(scaleOrigin, knotScaleFactor, knotScaleFactor, knotScaleFactor);
-                            knotMesh.Translate(0f, yPosition + knotYOffset, 0f);
-
-                            mesher.AddMeshData(knotMesh);
-                        }
+                        const float knotYOffset = 0.1f;
+                        const float knotScaleFactor = 1.3f;
+                        
+                        var scaleOrigin = new Vec3f(0.5f, 0.5f, 0.5f);
+                        knotMesh.Scale(scaleOrigin, knotScaleFactor, knotScaleFactor, knotScaleFactor);
+                        knotMesh.Translate(0f, yPosition + knotYOffset, 0f);
+        
+                        mesher.AddMeshData(knotMesh);
                     }
                 }
-            }
-        }
-
-        if (!automated && quantityPlayersTurning == 0 && !InputSlot.Empty)
-        {
-            try
-            {
-                MeshData bucketMesh;
-                if (InputSlot.Itemstack.Class == EnumItemClass.Block)
-                {
-                    if (InputSlot.Itemstack.Block == null) return true;
-                    tessThreadTesselator.TesselateBlock(InputSlot.Itemstack.Block, out bucketMesh);
-                }
-                else
-                {
-                    if (InputSlot.Itemstack.Item == null) return true;
-                    tessThreadTesselator.TesselateItem(InputSlot.Itemstack.Item, out bucketMesh);
-                }
-
-                if (bucketMesh != null && bucketMesh.VerticesCount > 0)
-                {
-                    float bucketYRotation = Block.Variant["side"] switch
-                    {
-                        "east" => GameMath.PIHALF,
-                        "south" => GameMath.PI,
-                        "west" => GameMath.PI + GameMath.PIHALF,
-                        _ => 0
-                    };
-
-                    bucketMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation, 0f);
-                    bucketMesh.Translate(0f, -bucketDepth, 0f);
-                    mesher.AddMeshData(bucketMesh);
-                    string containerCodePath = InputSlot.Itemstack?.Collectible?.Code?.Path ?? ""; //TODO
-                    if (containerCodePath.StartsWith("woodbucket") ||
-                        containerCodePath.StartsWith("temporalbucket"))
-                    {
-                        if (InputSlot.Itemstack.Attributes?.HasAttribute("contents") == true)
-                        {
-                            var contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
-                            if (contents != null)
-                            {
-                                var contentStack = contents.GetItemstack("0");
-                                if (contentStack != null && contentStack.Collectible == null)
-                                {
-                                    contentStack.ResolveBlockOrItem(Api.World);
-                                }
-
-                                if (contentStack?.Collectible != null)
-                                {
-                                    var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
-                                    if (props != null)
-                                    {
-                                        Shape contentShape = null;
-                                        string shapePath = "game:shapes/block/wood/bucket/liquidcontents";
-                                        if (props.IsOpaque)
-                                        {
-                                            shapePath = "game:shapes/block/wood/bucket/contents";
-                                        }
-
-                                        contentShape = Shape.TryGet(Api, shapePath + ".json");
-                                        if (contentShape != null)
-                                        {
-                                            ContainerTextureSource textureSource = new ContainerTextureSource(
-                                                Api as ICoreClientAPI,
-                                                contentStack,
-                                                props.Texture
-                                            );
-                                            
-                                            tessThreadTesselator.TesselateShape(GetType().Name, contentShape, out MeshData contentMesh, textureSource);
-
-                                            if (contentMesh != null)
-                                            {
-                                                float maxLiquidHeight = 0.435f;
-                                                int bucketCapacity = InputSlot.Itemstack.Collectible is BlockLiquidContainerBase container
-                                                    ? (int)container.CapacityLitres
-                                                    : 10;
-                                                
-                                                float liquidPercentage =
-                                                    (float)contentStack.StackSize /
-                                                    (props.ItemsPerLitre * bucketCapacity);
-                                                float liquidHeight = liquidPercentage * maxLiquidHeight;
-                                                float liquidOffset = 0f;
-                                                contentMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, bucketYRotation, 0f);
-                                                contentMesh.Translate(0f, -bucketDepth + liquidHeight + liquidOffset, 0f);
-                                                mesher.AddMeshData(contentMesh);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Api.Logger.Error("Error rendering bucket contents: {0}", e);
             }
         }
 
