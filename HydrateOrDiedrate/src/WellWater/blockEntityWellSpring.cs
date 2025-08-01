@@ -283,7 +283,7 @@ namespace HydrateOrDiedrate.wellwater
             }
         }
 
-        private bool IsBlockingBlock(Block block) => block?.Code is not null && Block.Id != 0 && !block.Code.Path.Contains("wellwater");
+        private bool IsBlockingBlock(Block block) => block?.Code is not null && block.Code.Path != "air"  && !block.Code.Path.Contains("wellwater");
         
         private int DetermineMaxDepthBasedOnCached(string ringMat, int validatedLevels)
         {

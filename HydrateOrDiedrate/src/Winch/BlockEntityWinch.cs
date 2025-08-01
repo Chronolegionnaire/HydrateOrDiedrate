@@ -1,5 +1,6 @@
 ﻿using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.wellwater;
+using HydrateOrDiedrate.Winch;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,21 +26,22 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     public float MeshAngle;
 
     private WinchTopRenderer renderer;
-    private bool automated;
+    public bool ConnectedToMechanicalNetwork {  get; private set; }
     private BEBehaviorMPConsumer mpc;
-    private Dictionary<string, long> playersTurning = [];
 
-    private int quantityPlayersTurning;
+    public IPlayer RotationPlayer { get; private set; }
+
     private bool beforeTurning;
     private int nowOutputFace;
-    public float bucketDepth = 0.5f;
+
+    public const float minBucketDepth = 0.5f;
+    public float bucketDepth = minBucketDepth;
 
     private MeshData winchBaseMesh;
     private MeshData winchTopMesh;
     
     //TODO for clarity this should probably be a directional enum
-    public bool isRaising;
-    public bool IsRaising => isRaising;
+    public bool IsRaising { get; private set; }
 
     public bool CanMoveDown()
     {
@@ -53,16 +55,16 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     }
 
 
-    public bool CanMoveUp() => bucketDepth > 0.5f;
+    public bool CanMoveUp() => bucketDepth > minBucketDepth;
 
-    public bool CanMove() => IsRaising ? CanMoveUp() : CanMoveDown();
+    public EWinchRotationMode RotationMode => ConnectedToMechanicalNetwork ? EWinchRotationMode.MechanicalNetwork : EWinchRotationMode.Player;
 
-    public float GetCurrentTurnSpeed()
+    public float GetCurrentTurnSpeed() => RotationMode switch
     {
-        if (quantityPlayersTurning > 0) return 1f;
-        if (automated && mpc?.Network is not null) return mpc.TrueSpeed;
-        return 0f;
-    }
+        EWinchRotationMode.MechanicalNetwork => mpc.TrueSpeed,
+        EWinchRotationMode.Player => RotationPlayer is not null ? 1f : 0f,
+        _ => 0f
+    };
 
     public override string InventoryClassName => "winch";
     public override InventoryBase Inventory => inventory;
@@ -84,8 +86,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
         if (api is not ICoreClientAPI capi)
         {
-            RegisterGameTickListener(Server_Every100ms, 100);
-            RegisterGameTickListener(Server_Every500ms, 500);
             RegisterGameTickListener(ChanceForSoundEffect, 1000);
             return;
         }
@@ -98,40 +98,21 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
             mechPowerPart = mpc
         };
 
-        if (automated)
-        {
-            renderer.ShouldRotateAutomated = true;
-        }
-
         capi.Event.RegisterRenderer(renderer, EnumRenderStage.Opaque, "winch");
-    }
-
-    private void OnConnected()
-    {
-        automated = true;
-        quantityPlayersTurning = 0;
-        
-        if (renderer is null) return;
-        renderer.ShouldRotateAutomated = true;
-    }
-
-    private void OnDisconnected()
-    {
-        automated = false;
-        if (renderer is null) return;
-        
-        renderer.ShouldRotateAutomated = false;
     }
 
     public override void CreateBehaviors(Block block, IWorldAccessor worldForResolve)
     {
         base.CreateBehaviors(block, worldForResolve);
+        
         mpc = GetBehavior<BEBehaviorMPConsumer>();
         if (mpc == null) return;
-
+        
         mpc.OnConnected = OnConnected;
         mpc.OnDisconnected = OnDisconnected;
     }
+    private void OnConnected() => ConnectedToMechanicalNetwork = true;
+    private void OnDisconnected() => ConnectedToMechanicalNetwork = false;
 
     private MeshData GetMesh(string path)
     {
@@ -144,49 +125,12 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         return mesh;
     }
 
-    private void UpdateIsRaising()
+    public void UpdateIsRaising() => IsRaising = RotationMode switch
     {
-        if (automated && mpc?.Network is not null)
-        {
-            isRaising = mpc.Network.TurnDir == EnumRotDirection.Counterclockwise;
-        }
-        else if(quantityPlayersTurning > 0)
-        {
-            isRaising = playersTurning.Keys.Any(uid => Api.World.PlayerByUid(uid)?.Entity?.Controls?.Sneak == true);
-        }
-    }
-
-    private void Server_Every100ms(float dt)
-    {
-        if (GetCurrentTurnSpeed() > minTurnpeed)
-        {
-            UpdateIsRaising();
-
-            if (StepMovement())
-            {
-                MarkDirty();
-            }
-            else
-            {
-                playersTurning.Clear();
-                quantityPlayersTurning = 0;
-            }
-        }
-
-        UpdateTurningState();
-    }
-
-
-    private void Server_Every500ms(float dt)
-    {
-        foreach (var kvp in playersTurning.ToArray())
-        {
-            if (Api.World.ElapsedMilliseconds - kvp.Value > 1000)
-            {
-                playersTurning.Remove(kvp.Key);
-            }
-        }
-    }
+        EWinchRotationMode.MechanicalNetwork => mpc.Network.TurnDir == EnumRotDirection.Counterclockwise,
+        EWinchRotationMode.Player => RotationPlayer?.Entity?.Controls.Sneak ?? false,
+        _ => false,
+    };
 
     private void ChanceForSoundEffect(float dt)
     {
@@ -206,39 +150,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         }
     }
 
-    private bool StepMovement()
-    {
-        if (isRaising)
-        {
-            if (!CanMoveUp()) return false;
-            bucketDepth -= ModConfig.Instance.GroundWater.WinchRaiseSpeed;
-        }
-        else
-        {
-            float nextDepth = bucketDepth + ModConfig.Instance.GroundWater.WinchLowerSpeed;
-
-            if (!CanMoveDown()) return false;
-
-            bucketDepth = nextDepth;
-        }
-
-        bucketDepth = GameMath.Clamp(bucketDepth, 0.5f, float.MaxValue);
-
-        BlockPos belowPos = Pos.DownCopy((int)Math.Ceiling(bucketDepth));
-        Block blockBelow = Api.World.BlockAccessor.GetBlock(belowPos, BlockLayersAccess.Fluid);
-
-        if (!isRaising && blockBelow.IsLiquid())
-        {
-            TryFillBucketAtPos(belowPos);
-        }
-
-        inventory.TakeLocked = bucketDepth > 1f;
-        MarkDirty(true);
-
-        return true;
-    }
-
-
     private void TryFillBucketAtPos(BlockPos pos)
     {
         if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container) return;
@@ -253,6 +164,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
             ["0"] = new ItemstackAttribute(stack)
         };
         InputSlot.MarkDirty();
+        MarkDirty();
     }
 
     //TODO all those different well water blocks should really be variants instead
@@ -336,22 +248,102 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         return contents is null || contents.GetItemstack("0") is null;
     }
 
+    public bool TryStartTurning(IPlayer player)
+    {
+        if(ConnectedToMechanicalNetwork || InputSlot.Empty || (RotationPlayer is not null)) return false;
+
+        RotationPlayer = player;
+        UpdateIsRaising();
+        
+        if (!CanMove())
+        {
+            RotationPlayer = null;
+            return false;
+        }
+        
+        MarkDirty();
+        return true;
+    }
+
+    public void StopTurning()
+    {
+        RotationPlayer = null;
+        MarkDirty();
+    }
+
+    public bool ContinueTurning(float secondsPassed)
+    {
+        UpdateIsRaising();
+        var speed = GetCurrentTurnSpeed();
+        if(speed < minTurnpeed) return false;
+
+        if (TryProgressMovement(secondsPassed))
+        {
+            MarkDirty();
+            return true;
+        }
+        return false;
+    }
+
+    private bool TryProgressMovement(float secondsPassed)
+    {
+        float motion = IsRaising ? -ModConfig.Instance.GroundWater.WinchRaiseSpeed : ModConfig.Instance.GroundWater.WinchLowerSpeed;
+        motion *= secondsPassed;
+
+        if(motion < 0)
+        {
+            if(bucketDepth != minBucketDepth) MarkDirty();
+
+            bucketDepth = Math.Max(minBucketDepth, bucketDepth + motion);
+            inventory.TakeLocked = bucketDepth > 1f; //TODO find a beter way to manage inventory lock
+            return bucketDepth != minBucketDepth;
+        }
+        
+        if(motion > 0)
+        {
+            var nextBucketDepth = bucketDepth + motion; //TODO dubble check what happens if the first block is blocked/invalid
+
+            for (int nextBlockpos = (int)bucketDepth + 1; nextBlockpos <= nextBucketDepth; nextBlockpos++)
+            {
+                if(!TryMoveToBucketDepth(nextBlockpos)) return false;
+            }
+
+            return TryMoveToBucketDepth(nextBucketDepth);
+        }
+
+        return false;
+    }
+
+    private bool TryMoveToBucketDepth(float targetBucketDepth)
+    {
+
+        BlockPos checkPos = Pos.DownCopy((int)Math.Ceiling(targetBucketDepth));
+        if (checkPos.Y < 0) return false;
+
+        Block targetBlock = Api.World.BlockAccessor.GetBlock(checkPos);
+
+        if (targetBlock.IsLiquid())
+        {
+            TryFillBucketAtPos(checkPos);
+            bucketDepth = targetBucketDepth;
+            inventory.TakeLocked = bucketDepth > 1f;
+            return true;
+        }
+        else if(targetBlock.Replaceable >= 6000)
+        {
+            bucketDepth = targetBucketDepth;
+            inventory.TakeLocked = bucketDepth > 1f;
+            return true;
+        }
+        else return false;
+    }
+
     public void SetPlayerTurning(IPlayer player, bool playerTurning)
     {
-        if (!automated)
+        if (!ConnectedToMechanicalNetwork && (RotationPlayer is null || RotationPlayer == player))
         {
-            if (playerTurning) playersTurning[player.PlayerUID] = Api.World.ElapsedMilliseconds;
-            else playersTurning.Remove(player.PlayerUID);
-            quantityPlayersTurning = playersTurning.Count;
-            bool anySneaking = playersTurning.Keys.Any(uid =>
-                Api.World.PlayerByUid(uid)?.Entity?.Controls?.Sneak == true
-            );
-            bool oldRaising = isRaising;
-            isRaising = anySneaking;
-            if (isRaising != oldRaising)
-            {
-                MarkDirty();
-            }
+            RotationPlayer = playerTurning ? player : null;
+            MarkDirty();
         }
 
         UpdateTurningState();
@@ -364,8 +356,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         bool nowTurning = GetCurrentTurnSpeed() > minTurnpeed;
         if (nowTurning != beforeTurning)
         {
-            if (renderer is not null) renderer.ShouldRotateManual = quantityPlayersTurning > 0;
-
             Api.World.BlockAccessor.MarkBlockDirty(Pos); //TODO check
 
             if (Api.Side == EnumAppSide.Server) MarkDirty();
@@ -373,13 +363,24 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         beforeTurning = nowTurning;
     }
 
-    public bool CanTurn() => InputSlot.Itemstack is not null;
+    private bool CanMove()
+    {
+        if(InputSlot.Empty) return false;
+        if(IsRaising) return bucketDepth > minBucketDepth;
+
+        BlockPos checkPos = Pos.DownCopy((int)bucketDepth + 1);
+        if (checkPos.Y < 0) return false;
+
+        Block targetBlock = Api.World.BlockAccessor.GetBlock(checkPos);
+
+        return targetBlock.Replaceable >= 6000 || targetBlock.IsLiquid();
+    }
 
     private void OnSlotModified(int slotid)
     {
         if (slotid == 0 && InputSlot.Empty)
         {
-            bucketDepth = 0.5f;
+            bucketDepth = minBucketDepth;
         }
         MarkDirty(true);
     }
@@ -469,20 +470,19 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         base.FromTreeAttributes(tree, worldForResolving);
         MeshAngle = tree.GetFloat("meshAngle", MeshAngle);
         ITreeAttribute invTree = tree.GetTreeAttribute("inventory");
-        if (invTree != null)
+        if (invTree is not null)
         {
             inventory.FromTreeAttributes(invTree);
-            if (Api != null)
-            {
-                inventory.AfterBlocksLoaded(Api.World);
-            }
+            if (Api is not null) inventory.AfterBlocksLoaded(Api.World);
         }
 
         nowOutputFace = tree.GetInt("nowOutputFace", 0);
-        bucketDepth = tree.GetFloat("bucketDepth", 0.5f);
-        isRaising = tree.GetBool("isRaising", false);
+        bucketDepth = tree.GetFloat("bucketDepth", minBucketDepth);
+        IsRaising = tree.GetBool("IsRaising", false);
+        
         inventory.TakeLocked = bucketDepth > 1f;
-        inventory.PutLocked = false;
+
+        RotationPlayer = Api?.World.PlayerByUid(tree.GetString("RotationPlayerId"));
     }
 
     public override void ToTreeAttributes(ITreeAttribute tree)
@@ -491,22 +491,12 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         tree.SetFloat("meshAngle", MeshAngle);
         tree.SetInt("nowOutputFace", nowOutputFace);
         tree.SetFloat("bucketDepth", bucketDepth);
-        tree.SetBool("isRaising", isRaising);
+        tree.SetBool("IsRaising", IsRaising);
+        if(RotationPlayer is not null) tree.SetString("RotationPlayerId", RotationPlayer.PlayerUID);
 
         TreeAttribute invTree = new();
         inventory.ToTreeAttributes(invTree);
         tree["inventory"] = invTree;
-
-        List<int> clientIds = new(playersTurning.Count);
-        foreach (var kvp in playersTurning)
-        {
-            IPlayer plr = Api.World.PlayerByUid(kvp.Key);
-            if (plr is not null)
-            {
-                clientIds.Add(plr.ClientId);
-            }
-        }
-        tree["clientIdsTurning"] = new IntArrayAttribute(clientIds.ToArray());
     }
 
     public override void Dispose()

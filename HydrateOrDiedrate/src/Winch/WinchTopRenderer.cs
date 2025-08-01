@@ -1,4 +1,6 @@
-﻿using Vintagestory.API.Client;
+﻿using HydrateOrDiedrate.Winch;
+using System;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -12,9 +14,6 @@ public class WinchTopRenderer : IRenderer
     private readonly ICoreClientAPI Capi;
     private readonly BlockEntityWinch Winch;
     private readonly BlockPos Pos;
-
-    internal bool ShouldRotateManual;
-    internal bool ShouldRotateAutomated;
     
     internal BEBehaviorMPConsumer mechPowerPart;
     
@@ -142,22 +141,24 @@ public class WinchTopRenderer : IRenderer
 
     private void UpdateAngleRad(float deltaTime)
     {
-        if (ShouldRotateAutomated && mechPowerPart is not null)
+        switch (Winch.RotationMode)
         {
-            float mechAngle = mechPowerPart.AngleRad;
-            float turnDirSign = (mechPowerPart.Network.TurnDir == EnumRotDirection.Counterclockwise) ? 1f : -1f;
-            
-            AngleRad = Direction switch
-            {
-                "east" => -mechAngle * turnDirSign,
-                "west" => mechAngle * turnDirSign,
-                "south" => mechAngle, //TODO: South and north don't need multiplier?
-                _ => -mechAngle,
-            };
-        }
-        else if (ShouldRotateManual && Winch.CanMove())
-        {
-            AngleRad += deltaTime * 200f * GameMath.DEG2RAD * (Winch.isRaising ? -1f : 1f);
+            case EWinchRotationMode.MechanicalNetwork:
+                float mechAngle = mechPowerPart.AngleRad; //TODO actually does this even matter?
+                float turnDirSign = (mechPowerPart.Network.TurnDir == EnumRotDirection.Counterclockwise) ? 1f : -1f;
+                
+                AngleRad = Direction switch
+                {
+                    "east" => -mechAngle * turnDirSign,
+                    "west" => mechAngle * turnDirSign,
+                    "south" => mechAngle, //TODO: South and north don't need multiplier?
+                    _ => -mechAngle,
+                };
+                break;
+
+            case EWinchRotationMode.Player:
+                if(Winch.RotationPlayer is not null) AngleRad += deltaTime * 200f * GameMath.DEG2RAD * (Winch.IsRaising ? -1f : 1f);
+                break;
         }
     }
 
@@ -203,9 +204,13 @@ public class WinchTopRenderer : IRenderer
             return;
         }
 
+        //TODO remove
+        //if ((Winch.IsRaising && Winch.bucketDepth < lastBucketDepth) || (!Winch.IsRaising && Winch.bucketDepth > lastBucketDepth))
+        //{
+        //    targetBucketDepth = Winch.bucketDepth;
+        //}
 
         targetBucketDepth = Winch.bucketDepth;
-
         UpdateBucketMesh(bucketStack);
 
         if (bucketMeshRef is null)
@@ -213,8 +218,8 @@ public class WinchTopRenderer : IRenderer
             CleanupBucketLiquidData();
             return;
         }
-        
-        lastBucketDepth = GameMath.Lerp(lastBucketDepth, targetBucketDepth, deltaTime * 50f);
+
+        lastBucketDepth = GameMath.Lerp(lastBucketDepth, targetBucketDepth, deltaTime * 10);
 
         if (bucketMeshRef is null) return;
 

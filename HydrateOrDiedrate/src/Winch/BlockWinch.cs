@@ -39,62 +39,60 @@ public class BlockWinch : BlockMPBase
     {
         if (!world.Claims.TryAccess(byPlayer, blockSel.Position, EnumBlockAccessFlags.Use)) return false;
 
-        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch && beWinch.CanTurn() && (blockSel.SelectionBoxIndex == 1))
-        {
-            beWinch.SetPlayerTurning(byPlayer, true);
-            return true;
-        }
+        if (blockSel.SelectionBoxIndex == 1 && world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch && beWinch.TryStartTurning(byPlayer)) return true;
 
         return base.OnBlockInteractStart(world, byPlayer, blockSel);
     }
 
     public override bool OnBlockInteractStep(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
     {
-        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch && (blockSel.SelectionBoxIndex == 1 || beWinch.Inventory.openedByPlayerGUIds.Contains(byPlayer.PlayerUID)))
+        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch && beWinch.RotationPlayer == byPlayer)
         {
-            beWinch.SetPlayerTurning(byPlayer, true);
-            return beWinch.CanTurn();
+            //TODO: keep track of time to make transition smoother with higher latency
+            return beWinch.ContinueTurning(0.1f);
         }
-        return false;
+
+        return base.OnBlockInteractStep(secondsUsed, world, byPlayer, blockSel);
     }
 
     public override void OnBlockInteractStop(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
     {
-        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch)
+        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch && byPlayer == beWinch.RotationPlayer)
         {
-            beWinch.SetPlayerTurning(byPlayer, false);
+            beWinch.StopTurning();
+            return;
         }
+
+        base.OnBlockInteractStop(secondsUsed, world, byPlayer, blockSel);
     }
 
     public override bool OnBlockInteractCancel(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, EnumItemUseCancelReason cancelReason)
     {
-        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch)
+        if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch && byPlayer == beWinch.RotationPlayer)
         {
-            beWinch.SetPlayerTurning(byPlayer, false);
+            beWinch.StopTurning();
+            return true;
         }
-        return true;
+
+        return base.OnBlockInteractCancel(secondsUsed, world, byPlayer, blockSel, cancelReason);
     }
 
-    public override WorldInteraction[] GetPlacedBlockInteractionHelp(IWorldAccessor world, BlockSelection selection, IPlayer forPlayer)
+    public override WorldInteraction[] GetPlacedBlockInteractionHelp(IWorldAccessor world, BlockSelection selection, IPlayer forPlayer) => selection.SelectionBoxIndex switch
     {
-        if (selection.SelectionBoxIndex == 0)
-        {
-            return [
-                new WorldInteraction
-                {
-                    ActionLangCode = "hydrateordiedrate:blockhelp-winch-addremoveitems",
-                    MouseButton = EnumMouseButton.Right
-                },
-                ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
-            ];
-        }
-
-        return [
+        0 => [
+            new WorldInteraction
+            {
+                ActionLangCode = "hydrateordiedrate:blockhelp-winch-addremoveitems",
+                MouseButton = EnumMouseButton.Right
+            },
+            ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
+        ],
+        _ => [
             new WorldInteraction
             {
                 ActionLangCode = "hydrateordiedrate:blockhelp-winch-lower",
                 MouseButton = EnumMouseButton.Right,
-                ShouldApply = (wi, bs, es) => world.BlockAccessor.GetBlockEntity(bs.Position) is BlockEntityWinch beWinch && beWinch.CanTurn()
+                ShouldApply = (wi, bs, es) => world.BlockAccessor.GetBlockEntity(bs.Position) is BlockEntityWinch beWinch && !beWinch.InputSlot.Empty
             },
             new WorldInteraction
             {
@@ -104,8 +102,8 @@ public class BlockWinch : BlockMPBase
                 ShouldApply = (wi, bs, es) => world.BlockAccessor.GetBlockEntity(bs.Position) is BlockEntityWinch beWinch && !beWinch.InputSlot.Empty
             },
             ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
-        ];
-    }
+        ]
+    };
 
 
     public override void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
