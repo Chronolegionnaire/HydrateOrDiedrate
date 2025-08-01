@@ -48,66 +48,35 @@ public class WinchTopRenderer : IRenderer
         }
     }
 
-    private void UpdateLiquidMesh(ItemStack bucketStack)
+    private void UpdateLiquidMesh(ItemStack bucketStack, out ItemStack contentStack)
     {
-        string containerCodePath = bucketStack?.Collectible?.Code?.Path ?? "";
-        if (!(containerCodePath.StartsWith("woodbucket") ||
-              containerCodePath.StartsWith("temporalbucket")))
+        string containerCodePath = bucketStack.Collectible.Code?.Path ?? string.Empty; //TODO
+        if (!containerCodePath.Contains("bucket"))
         {
-            if (liquidContentsMeshRef != null)
-            {
-                liquidContentsMeshRef.Dispose();
-                liquidContentsMeshRef = null;
-                lastContentStack = null;
-            }
-            return;
-        }
-        if (bucketStack?.Attributes?.HasAttribute("contents") != true)
-        {
-            if (liquidContentsMeshRef != null)
-            {
-                liquidContentsMeshRef.Dispose();
-                liquidContentsMeshRef = null;
-                lastContentStack = null;
-            }
+            contentStack = null;
+            CleanupBucketLiquidData();
             return;
         }
 
-        //TODO
-        var contents = bucketStack.Attributes.GetTreeAttribute("contents");
-        if (contents == null) return;
+        contentStack = bucketStack.Attributes
+            ?.GetTreeAttribute("contents")
+            ?.GetItemstack("0");
 
-        var contentStack = contents.GetItemstack("0");
-        if (contentStack == null) return;
-        if (contentStack.Collectible == null)
+        if (contentStack is null || (contentStack.Collectible is null && !contentStack.ResolveBlockOrItem(Capi.World)))
         {
-            contentStack.ResolveBlockOrItem(Capi.World);
-        }
-
-        if (lastContentStack != null &&
-            contentStack.Equals(Capi.World, lastContentStack, GlobalConstants.IgnoredStackAttributes))
-        {
+            CleanupBucketLiquidData();
             return;
         }
 
+        if (lastContentStack is not null && contentStack.Equals(Capi.World, lastContentStack, GlobalConstants.IgnoredStackAttributes)) return;
+        CleanupBucketLiquidData();
         lastContentStack = contentStack.Clone();
-        if (liquidContentsMeshRef != null)
-        {
-            liquidContentsMeshRef.Dispose();
-            liquidContentsMeshRef = null;
-        }
-
-        if (contentStack.Collectible == null) return;
 
         var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
-        if (props == null) return;
+        if (props is null) return;
 
-        string shapePath = props.IsOpaque
-            ? "game:shapes/block/wood/bucket/contents"
-            : "game:shapes/block/wood/bucket/liquidcontents";
-
-        Shape contentShape = Shape.TryGet(Capi, shapePath + ".json");
-        if (contentShape == null) return;
+        Shape contentShape = Shape.TryGet(Capi, new AssetLocation("game", props.IsOpaque ? "shapes/block/wood/bucket/contents.json" : "shapes/block/wood/bucket/liquidcontents.json"));
+        if (contentShape is null) return;
 
         var textureSource = new ContainerTextureSource(
             Capi,
@@ -115,10 +84,10 @@ public class WinchTopRenderer : IRenderer
             props.Texture
         );
 
-        Capi.Tesselator.TesselateShape(GetType().Name, contentShape, out MeshData contentMesh, textureSource);
-
+        Capi.Tesselator.TesselateShape(nameof(WinchTopRenderer), contentShape, out MeshData contentMesh, textureSource);
         if (contentMesh == null) return;
-        if (props.ClimateColorMap != null)
+
+        if (props.ClimateColorMap is not null)
         {
             int col = Capi.World.ApplyColorMapOnRgba(
                 props.ClimateColorMap,
@@ -136,12 +105,39 @@ public class WinchTopRenderer : IRenderer
                 contentMesh.Rgba[i] = (byte)(contentMesh.Rgba[i] * rgba[i % 4] / 255);
             }
         }
+
         for (int i = 0; i < contentMesh.FlagsCount; i++)
         {
             contentMesh.Flags[i] &= ~4096;
         }
 
         liquidContentsMeshRef = Capi.Render.UploadMultiTextureMesh(contentMesh);
+    }
+
+    private void UpdateBucketMesh(ItemStack bucketStack)
+    {
+        //TODO this should need to be checked when the itemslot changes
+        if (lastBucketStack is not null && bucketStack.Equals(Capi.World, lastBucketStack, GlobalConstants.IgnoredStackAttributes)) return;
+        
+        CleanupBucketData();
+        lastBucketStack = bucketStack.Clone();
+        lastBucketDepth = targetBucketDepth;
+
+        MeshData itemMesh;
+        switch (bucketStack.Class)
+        {
+            case EnumItemClass.Item:
+                Capi.Tesselator.TesselateItem(bucketStack.Item, out itemMesh);
+                break;
+
+            case EnumItemClass.Block:
+                Capi.Tesselator.TesselateBlock(bucketStack.Block, out itemMesh);
+                break;
+
+            default: return;
+        }
+
+        bucketMeshRef = Capi.Render.UploadMultiTextureMesh(itemMesh);
     }
 
     private void UpdateAngleRad(float deltaTime)
@@ -167,7 +163,7 @@ public class WinchTopRenderer : IRenderer
 
     public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
     {
-        if (meshref == null) return;
+        if (meshref is null) return;
 
         IRenderAPI rpi = Capi.Render;
         Vec3d camPos = Capi.World.Player.Entity.CameraPos;
@@ -199,113 +195,90 @@ public class WinchTopRenderer : IRenderer
         rpi.RenderMultiTextureMesh(meshref, "tex", 0);
         prog.Stop();
 
-        ItemStack bucketStack = Winch.InputSlot?.Itemstack;
-
+        ItemStack bucketStack = Winch.InputSlot.Itemstack;
         if (bucketStack?.Collectible is null)
         {
             CleanupBucketData();
+            CleanupBucketLiquidData();
             return;
         }
 
-        
+
         targetBucketDepth = Winch.bucketDepth;
 
-        if (lastBucketStack == null || !bucketStack.Equals(Capi.World, lastBucketStack, GlobalConstants.IgnoredStackAttributes))
+        UpdateBucketMesh(bucketStack);
+
+        if (bucketMeshRef is null)
         {
-            lastBucketStack = bucketStack.Clone();
-            lastBucketDepth = targetBucketDepth;
-
-            bucketMeshRef?.Dispose();
-            bucketMeshRef = null;
-
-            MeshData itemMesh;
-            if (bucketStack.Class == EnumItemClass.Item && bucketStack.Item != null)
-            {
-                Capi.Tesselator.TesselateItem(bucketStack.Item, out itemMesh);
-            }
-            else if (bucketStack.Class == EnumItemClass.Block && bucketStack.Block != null)
-            {
-                Capi.Tesselator.TesselateBlock(bucketStack.Block, out itemMesh);
-            }
-            else
-            {
-                return;
-            }
-
-            bucketMeshRef = Capi.Render.UploadMultiTextureMesh(itemMesh);
+            CleanupBucketLiquidData();
+            return;
         }
-        else
-        {
-            lastBucketDepth = GameMath.Lerp(lastBucketDepth, targetBucketDepth, deltaTime * 50f);
-        }
+        
+        lastBucketDepth = GameMath.Lerp(lastBucketDepth, targetBucketDepth, deltaTime * 50f);
 
-        UpdateLiquidMesh(bucketStack);
-        if (bucketMeshRef != null)
-        {
-            IStandardShaderProgram bucketProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
+        if (bucketMeshRef is null) return;
 
-            bucketProg.ModelMatrix = ModelMat
-                .Identity()
-                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
-                .Translate(0.5f, 0f, 0.5f)
-                .RotateY(yRotation)
-                .Translate(-0.5f, 0f, -0.5f)
-                .Values;
+        IStandardShaderProgram bucketProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
 
-            bucketProg.ViewMatrix = rpi.CameraMatrixOriginf;
-            bucketProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-            rpi.RenderMultiTextureMesh(bucketMeshRef, "tex", 0);
-            bucketProg.Stop();
-            if (liquidContentsMeshRef != null)
-            {
-                string containerCodePath = bucketStack?.Collectible?.Code?.Path ?? "";
-                if (containerCodePath.StartsWith("woodbucket") || containerCodePath.StartsWith("temporalbucket"))
-                {
-                    var contents = bucketStack.Attributes?.GetTreeAttribute("contents");
-                    if (contents != null)
-                    {
-                        var contentStack = contents.GetItemstack("0");
-                        if (contentStack?.Collectible != null)
-                        {
-                            var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
-                            if (props != null)
-                            {
-                                IStandardShaderProgram contentProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
+        bucketProg.ModelMatrix = ModelMat
+            .Identity()
+            .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
+            .Translate(0.5f, 0f, 0.5f)
+            .RotateY(yRotation)
+            .Translate(-0.5f, 0f, -0.5f)
+            .Values;
 
-                                float maxLiquidHeight = 0.435f;
-                                BlockLiquidContainerBase container = bucketStack.Collectible as BlockLiquidContainerBase;
-                                float containerCapacity = container != null ? container.CapacityLitres : 10f;
-                                float liquidPercentage = (float)contentStack.StackSize / (props.ItemsPerLitre * containerCapacity);
-                                float liquidHeight = liquidPercentage * maxLiquidHeight;
-                                float liquidOffset = 0f;
+        bucketProg.ViewMatrix = rpi.CameraMatrixOriginf;
+        bucketProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+        rpi.RenderMultiTextureMesh(bucketMeshRef, "tex", 0);
+        bucketProg.Stop();
 
-                                contentProg.ModelMatrix = ModelMat
-                                    .Identity()
-                                    .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth + liquidHeight + liquidOffset, Pos.Z - camPos.Z)
-                                    .Translate(0.5f, 0f, 0.5f)
-                                    .RotateY(yRotation)
-                                    .Translate(-0.5f, 0f, -0.5f)
-                                    .Values;
+        UpdateLiquidMesh(bucketStack, out var contentStack);
+        if (liquidContentsMeshRef is null) return;
 
-                                contentProg.ViewMatrix = rpi.CameraMatrixOriginf;
-                                contentProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-                                rpi.RenderMultiTextureMesh(liquidContentsMeshRef, "tex", 0);
-                                contentProg.Stop();
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
+        if (props is null) return;
+
+        IStandardShaderProgram contentProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
+        
+        //TODO this shouldn't need to be re-calculated all the time (hook into OnSlotModified instead)
+        float maxLiquidHeight = 0.435f;
+        float containerCapacity = bucketStack.Collectible is BlockLiquidContainerBase container ? container.CapacityLitres : 10f;
+        float liquidPercentage = (float)contentStack.StackSize / (props.ItemsPerLitre * containerCapacity);
+        float liquidHeight = liquidPercentage * maxLiquidHeight;
+        float liquidOffset = 0f;
+
+        contentProg.ModelMatrix = ModelMat
+            .Identity()
+            .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth + liquidHeight + liquidOffset, Pos.Z - camPos.Z)
+            .Translate(0.5f, 0f, 0.5f)
+            .RotateY(yRotation)
+            .Translate(-0.5f, 0f, -0.5f)
+            .Values;
+
+        contentProg.ViewMatrix = rpi.CameraMatrixOriginf;
+        contentProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+        rpi.RenderMultiTextureMesh(liquidContentsMeshRef, "tex", 0);
+        contentProg.Stop();
     }
 
     private void CleanupBucketData()
     {
-        bucketMeshRef?.Dispose();
-        liquidContentsMeshRef?.Dispose();
-        bucketMeshRef = null;
-        liquidContentsMeshRef = null;
+        if(bucketMeshRef is not null)
+        {
+            bucketMeshRef.Dispose();
+            bucketMeshRef = null;
+        }
         lastBucketStack = null;
+    }
+
+    private void CleanupBucketLiquidData()
+    {
+        if(liquidContentsMeshRef is not null)
+        {
+            liquidContentsMeshRef.Dispose();
+            liquidContentsMeshRef = null;
+        }
         lastContentStack = null;
     }
 
@@ -314,7 +287,12 @@ public class WinchTopRenderer : IRenderer
         Capi.Event.UnregisterRenderer(this, EnumRenderStage.Opaque);
         
         CleanupBucketData();
-        meshref?.Dispose();
-        meshref = null;
+        CleanupBucketLiquidData();
+
+        if(meshref is not null)
+        {
+            meshref.Dispose();
+            meshref = null;
+        }
     }
 }
