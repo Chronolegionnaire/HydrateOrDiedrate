@@ -119,34 +119,4 @@ public class BlockWinch : BlockMPBase
         "west" => face == BlockFacing.NORTH,
         _ => false,
     };
-
-    public override void OnEntityCollide(IWorldAccessor world, Entity entity, BlockPos pos, BlockFacing facing, Vec3d collideSpeed, bool isImpact)
-    {
-        base.OnEntityCollide(world, entity, pos, facing, collideSpeed, isImpact);
-
-        if (facing != BlockFacing.UP) return;
-
-        BEBehaviorMPConsumer mpc = GetBEBehavior<BEBehaviorMPConsumer>(pos);
-        if(mpc is null) return;
-
-        if (api is ICoreClientAPI capi)
-        {
-            var playerEntity = capi.World.Player.Entity;
-            if (playerEntity.EntityId == entity.EntityId)
-            {
-                var modification = GetYawModification(mpc);
-
-                if (capi.World.Player.CameraMode != EnumCameraMode.Overhead) capi.Input.MouseYaw += modification;
-                playerEntity.BodyYaw += modification;
-                playerEntity.WalkYaw += modification;
-                playerEntity.Pos.Yaw += modification;
-            }
-        }
-        else
-        {
-            entity.SidedPos.Yaw += GetYawModification(mpc);
-        }
-    }
-
-    private static float GetYawModification(BEBehaviorMPConsumer mpc) => GlobalConstants.PhysicsFrameTime * mpc.TrueSpeed * 2.5f * (mpc.isRotationReversed() ? -1 : 1);
 }

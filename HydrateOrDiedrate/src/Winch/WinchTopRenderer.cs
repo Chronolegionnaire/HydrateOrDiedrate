@@ -11,21 +11,29 @@ namespace HydrateOrDiedrate.winch;
 
 public class WinchTopRenderer : IRenderer
 {
+    public const string RopeKnotMeshPath = "shapes/block/winch/knot.json";
+    public const string RopeSegmentMeshPath = "shapes/block/winch/rope1x1.json";
+    public const string WinchTopMeshPath = "shapes/block/winch/top.json";
+
     private readonly ICoreClientAPI Capi;
     private readonly BlockEntityWinch Winch;
     private readonly BlockPos Pos;
     
     internal BEBehaviorMPConsumer mechPowerPart;
     
-    private MultiTextureMeshRef meshref;
+    private MultiTextureMeshRef WinchTopMeshRef;
+    private MultiTextureMeshRef RopeSegmentMeshRef;
+    private MultiTextureMeshRef RopeKnotMeshRef;
+
     private MultiTextureMeshRef bucketMeshRef;
     private MultiTextureMeshRef liquidContentsMeshRef;
 
     private ItemStack lastBucketStack;
     private ItemStack lastContentStack;
 
-    public Matrixf ModelMat = new Matrixf();
-    public float AngleRad;
+    private readonly Matrixf ModelMat = new();
+
+    private float AngleRad;
     private readonly string Direction;
     
     public double RenderOrder => 0.5;
@@ -34,16 +42,30 @@ public class WinchTopRenderer : IRenderer
     private float lastBucketDepth;
     private float targetBucketDepth;
 
-    public WinchTopRenderer(ICoreClientAPI coreClientAPI, BlockEntityWinch winch, MeshData topMesh, string direction)
+    public WinchTopRenderer(ICoreClientAPI coreClientAPI, BlockEntityWinch winch, string direction)
     {
         Capi = coreClientAPI;
         Winch = winch;
         Pos = winch.Pos;
         Direction = direction;
+        
+        LoadMeshes();
+    }
 
-        if (topMesh is not null)
+    private void LoadMeshes()
+    {
+        var mesh = Winch.GetMesh(WinchTopMeshPath);
+        if (mesh is null) WinchTopMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
+
+        mesh = Winch.GetMesh(RopeSegmentMeshPath);
+        if(mesh is not null) RopeSegmentMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
+
+        mesh = Winch.GetMesh(RopeKnotMeshPath);
+        if(mesh is not null)
         {
-            meshref = coreClientAPI.Render.UploadMultiTextureMesh(topMesh);
+            const float knotScaleFactor = 1.3f;
+            mesh.Scale(new Vec3f(0.5f, 0.5f, 0.5f), knotScaleFactor, knotScaleFactor, knotScaleFactor);
+            RopeKnotMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
         }
     }
 
@@ -164,7 +186,7 @@ public class WinchTopRenderer : IRenderer
 
     public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
     {
-        if (meshref is null) return;
+        if (WinchTopMeshRef is null) return;
 
         IRenderAPI rpi = Capi.Render;
         Vec3d camPos = Capi.World.Player.Entity.CameraPos;
@@ -193,7 +215,7 @@ public class WinchTopRenderer : IRenderer
 
         prog.ViewMatrix = rpi.CameraMatrixOriginf;
         prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-        rpi.RenderMultiTextureMesh(meshref, "tex", 0);
+        rpi.RenderMultiTextureMesh(WinchTopMeshRef, "tex", 0);
         prog.Stop();
 
         ItemStack bucketStack = Winch.InputSlot.Itemstack;
@@ -203,12 +225,6 @@ public class WinchTopRenderer : IRenderer
             CleanupBucketLiquidData();
             return;
         }
-
-        //TODO remove
-        //if ((Winch.IsRaising && Winch.bucketDepth < lastBucketDepth) || (!Winch.IsRaising && Winch.bucketDepth > lastBucketDepth))
-        //{
-        //    targetBucketDepth = Winch.bucketDepth;
-        //}
 
         targetBucketDepth = Winch.bucketDepth;
         UpdateBucketMesh(bucketStack);
@@ -237,6 +253,52 @@ public class WinchTopRenderer : IRenderer
         bucketProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
         rpi.RenderMultiTextureMesh(bucketMeshRef, "tex", 0);
         bucketProg.Stop();
+
+        if(RopeKnotMeshRef is not null)
+        {
+            IStandardShaderProgram ropeKnotProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
+            ropeKnotProg.ModelMatrix = ModelMat
+                .Identity()
+                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
+                .Translate(0.5f, 0.85f, 0.5f)
+                .RotateY(yRotation)
+                .Translate(-0.5f, 0f, -0.5f)
+                .Values;
+
+            ropeKnotProg.ViewMatrix = rpi.CameraMatrixOriginf;
+            ropeKnotProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+            rpi.RenderMultiTextureMesh(RopeKnotMeshRef, "tex", 0);
+            ropeKnotProg.Stop();
+        }
+
+        if(RopeSegmentMeshRef is not null)
+        {
+            const float ropeSegmentHeight = 0.125f; // segment visual height
+            const float startOffset = 0.025f; // where the rope begins at the winch
+            float segmentSpacing = ropeSegmentHeight;
+            
+            float effectiveLength = lastBucketDepth;
+            int segmentCount = Math.Max(0, (int)(effectiveLength / segmentSpacing));
+            
+            for (int i = 0; i < segmentCount; i++)
+            {
+                float yPos = startOffset - i * segmentSpacing;
+            
+                IStandardShaderProgram segProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
+                segProg.ModelMatrix = ModelMat
+                    .Identity()
+                    .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + yPos, Pos.Z - camPos.Z)
+                    .Translate(0.5f, 0.5f, 0.5f)
+                    .RotateY(yRotation)
+                    .Translate(-0.5f, 0f, -0.5f)
+                    .Values;
+            
+                segProg.ViewMatrix = rpi.CameraMatrixOriginf;
+                segProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+                rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
+                segProg.Stop();
+            }
+        }
 
         UpdateLiquidMesh(bucketStack, out var contentStack);
         if (liquidContentsMeshRef is null) return;
@@ -294,10 +356,10 @@ public class WinchTopRenderer : IRenderer
         CleanupBucketData();
         CleanupBucketLiquidData();
 
-        if(meshref is not null)
+        if(WinchTopMeshRef is not null)
         {
-            meshref.Dispose();
-            meshref = null;
+            WinchTopMeshRef.Dispose();
+            WinchTopMeshRef = null;
         }
     }
 }

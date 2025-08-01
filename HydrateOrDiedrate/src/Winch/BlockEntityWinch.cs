@@ -18,9 +18,6 @@ namespace HydrateOrDiedrate.winch;
 public class BlockEntityWinch : BlockEntityOpenableContainer
 {
     public const float minTurnpeed = 0.00001f;
-    public const string KnotMeshPath = "shapes/block/winch/knot.json";
-    public const string RopeMeshPath = "shapes/block/winch/rope1x1.json";
-    public const string WinchTopMeshPath = "shapes/block/winch/top.json";
     public const string WinchBaseMeshPath = "shapes/block/winch/base.json";
 
     public float MeshAngle;
@@ -91,9 +88,17 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         }
 
         winchBaseMesh = GetMesh(WinchBaseMeshPath);
-        winchTopMesh = GetMesh(WinchTopMeshPath);
+        
+        var yRotation = Block.Variant["side"] switch
+        {
+            "east" => GameMath.PIHALF,
+            "south" => GameMath.PI,
+            "west" => GameMath.PI + GameMath.PIHALF,
+            _ => 0f
+        };
+        winchBaseMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
 
-        renderer = new WinchTopRenderer(capi, this, winchTopMesh, Block.Variant["side"])
+        renderer = new WinchTopRenderer(capi, this, Block.Variant["side"])
         {
             mechPowerPart = mpc
         };
@@ -114,7 +119,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     private void OnConnected() => ConnectedToMechanicalNetwork = true;
     private void OnDisconnected() => ConnectedToMechanicalNetwork = false;
 
-    private MeshData GetMesh(string path)
+    internal MeshData GetMesh(string path)
     {
         if (Api is not ICoreClientAPI capi) return null;
 
@@ -404,63 +409,8 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
     public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
     {
-        if (Block is null || winchBaseMesh is null || winchTopMesh is null) return false;
 
-        MeshData baseMeshCloned = winchBaseMesh.Clone();
-        
-        var yRotation = Block.Variant["side"] switch
-        {
-            "east" => GameMath.PIHALF,
-            "south" => GameMath.PI,
-            "west" => GameMath.PI + GameMath.PIHALF,
-            _ => 0f
-        };
-        baseMeshCloned.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
-        mesher.AddMeshData(baseMeshCloned);
-
-        if (InputSlot.Empty) return true;
-
-        MeshData ropeSegmentMesh = GetMesh(RopeMeshPath);
-        if (ropeSegmentMesh is not null)
-        {
-            const float ropeSegmentHeight = 1.0f;
-            const float initialOffset = 0.75f;
-            const float overlapFactor = 0.125f;
-            const float segmentSpacing = ropeSegmentHeight * overlapFactor;
-        
-            float effectiveRopeLength = bucketDepth;
-        
-            int segmentCount = (int)Math.Floor(effectiveRopeLength / segmentSpacing);
-            if (effectiveRopeLength % segmentSpacing > 0)
-            {
-                segmentCount++;
-            }
-            segmentCount = Math.Max(segmentCount - 2, 2);
-        
-            for (int i = 0; i < segmentCount; i++)
-            {
-                MeshData segmentMesh = ropeSegmentMesh.Clone();
-                float yPosition = -bucketDepth + initialOffset + i * segmentSpacing;
-                segmentMesh.Translate(0f, yPosition, 0f);
-                mesher.AddMeshData(segmentMesh);
-        
-                if (i == 0)
-                {
-                    MeshData knotMesh = GetMesh(KnotMeshPath);
-                    if (knotMesh != null)
-                    {
-                        const float knotYOffset = 0.1f;
-                        const float knotScaleFactor = 1.3f;
-                        
-                        var scaleOrigin = new Vec3f(0.5f, 0.5f, 0.5f);
-                        knotMesh.Scale(scaleOrigin, knotScaleFactor, knotScaleFactor, knotScaleFactor);
-                        knotMesh.Translate(0f, yPosition + knotYOffset, 0f);
-        
-                        mesher.AddMeshData(knotMesh);
-                    }
-                }
-            }
-        }
+        mesher.AddMeshData(winchBaseMesh);
 
         return true;
     }
