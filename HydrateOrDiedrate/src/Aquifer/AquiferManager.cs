@@ -129,7 +129,16 @@ namespace HydrateOrDiedrate
 
             chunk.Unpack();
 
-            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
+            AquiferChunkData data = null;
+            try
+            {
+                data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
+            }
+            catch (Exception ex)
+            {
+                serverAPI.Logger.Warning($"AquiferManager: could not deserialize aquiferData for chunk {pos}: {ex}");
+                chunk.RemoveModdata("aquiferData");
+            }
             if (data == null || data.Version < CurrentAquiferDataVersion)
             {
                 AquiferData result = CalculateAquiferData(chunk, pos);
@@ -145,7 +154,17 @@ namespace HydrateOrDiedrate
         }
         private void ReSmoothChunk(ChunkPos3D pos, IWorldChunk chunk)
         {
-            var existing = chunk.GetModdata<AquiferChunkData>("aquiferData", null)?.Data;
+            AquiferData existing = null;
+            try
+            {
+                existing = chunk.GetModdata<AquiferChunkData>("aquiferData", null)?.Data;
+            }
+            catch (Exception ex)
+            {
+                serverAPI.Logger.Warning(
+                    $"AquiferManager: could not deserialize aquiferData while smoothing chunk {pos}: {ex}");
+                chunk.RemoveModdata("aquiferData");
+            }
             if (existing == null)
             {
                 ProcessChunk(pos, chunk);
@@ -191,7 +210,16 @@ namespace HydrateOrDiedrate
             if (mapChunk == null)
                 mapChunk = serverAPI.WorldManager.GetMapChunk(pos.X, pos.Z) as IMapChunk;
 
-            WaterCounts counts = mapChunk?.GetModdata<WaterCounts>(WaterCountsKey, null);
+            WaterCounts counts = null;
+            try
+            {
+                counts = mapChunk?.GetModdata<WaterCounts>(WaterCountsKey, null);
+            }
+            catch (Exception ex)
+            {
+                serverAPI.Logger.Warning($"AquiferManager: could not deserialize WaterCounts for chunk {pos}: {ex}");
+                mapChunk?.RemoveModdata(WaterCountsKey);
+            }
             int normalCount = counts?.NormalWaterBlockCount ?? 0;
             int saltCount = counts?.SaltWaterBlockCount ?? 0;
             int boilCount = counts?.BoilingWaterBlockCount ?? 0;
@@ -364,8 +392,17 @@ namespace HydrateOrDiedrate
         {
             IWorldChunk chunk = GetChunkAt(pos);
             if (chunk == null) return null;
-            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
-            return data?.Data;
+            try
+            {
+                var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null);
+                return data?.Data;
+            }
+            catch (Exception ex)
+            {
+                serverAPI.Logger.Warning($"AquiferManager: could not deserialize aquiferData for chunk {pos}: {ex}");
+                chunk.RemoveModdata("aquiferData");
+                return null;
+            }
         }
         public void ClearAquiferData(ChunkPos3D pos)
         {
@@ -381,7 +418,18 @@ namespace HydrateOrDiedrate
             if (rating < 0 || rating > 100) return false;
             IWorldChunk chunk = GetChunkAt(pos);
             if (chunk == null) return false;
-            var data = chunk.GetModdata<AquiferChunkData>("aquiferData", null) ?? new AquiferChunkData { Version = CurrentAquiferDataVersion };
+            AquiferChunkData data;
+            try
+            {
+                data = chunk.GetModdata<AquiferChunkData>("aquiferData", null) ?? new AquiferChunkData
+                    { Version = CurrentAquiferDataVersion };
+            }
+            catch (Exception ex)
+            {
+                serverAPI.Logger.Warning(
+                    $"AquiferManager: could not deserialize aquiferData while setting rating for chunk {pos}: {ex}");
+                data = new AquiferChunkData { Version = CurrentAquiferDataVersion };
+            }
             data.Data = new AquiferData { AquiferRating = rating, IsSalty = false };
             chunk.SetModdata("aquiferData", data);
             return true;
@@ -461,7 +509,7 @@ namespace HydrateOrDiedrate
         {
             [ProtoMember(1)]
             public AquiferData Data { get; set; }
-            [ProtoMember(2)]
+            [ProtoMember(3)]
             public int Version { get; set; }
         }
 
