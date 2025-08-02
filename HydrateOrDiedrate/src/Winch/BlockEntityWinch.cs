@@ -88,14 +88,26 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         mpc.OnConnected = OnConnected;
         mpc.OnDisconnected = OnDisconnected;
     }
+
+    private long? MPTickListenerId;
+
     private void OnConnected()
     {
         ConnectedToMechanicalNetwork = true;
         RotationPlayer = null;
+        if(Api.Side == EnumAppSide.Server && MPTickListenerId is null) MPTickListenerId = RegisterGameTickListener((float deltaTime) => ContinueTurning(deltaTime), 100);
         MarkDirty();
     }
 
-    private void OnDisconnected() => ConnectedToMechanicalNetwork = false;
+    private void OnDisconnected()
+    {
+        ConnectedToMechanicalNetwork = false;
+        if(MPTickListenerId is not null)
+        {
+            UnregisterGameTickListener(MPTickListenerId.Value);
+            MPTickListenerId = null;
+        }
+    }
 
     internal MeshData GetMesh(string path)
     {
@@ -258,7 +270,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         var speed = GetCurrentTurnSpeed();
         if(speed < minTurnpeed) return false;
 
-        if (TryProgressMovement(secondsPassed))
+        if (TryProgressMovement(secondsPassed, speed))
         {
             MarkDirty();
             return true;
@@ -266,10 +278,10 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         return false;
     }
 
-    private bool TryProgressMovement(float secondsPassed)
+    private bool TryProgressMovement(float secondsPassed, float speedMod)
     {
         float motion = IsRaising ? -ModConfig.Instance.GroundWater.WinchRaiseSpeed : ModConfig.Instance.GroundWater.WinchLowerSpeed;
-        motion *= secondsPassed;
+        motion = motion * secondsPassed * speedMod;
 
         if(motion < 0)
         {
