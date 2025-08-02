@@ -1,30 +1,12 @@
-﻿using System;
-using Vintagestory.API.Common;
+﻿using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Client;
-using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Config;
 using Vintagestory.GameContent.Mechanics;
 
 namespace HydrateOrDiedrate.winch;
 
 public class BlockWinch : BlockMPBase
 {
-    public override bool DoPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ItemStack byItemStack)
-    {
-        bool flag = base.DoPlaceBlock(world, byPlayer, blockSel, byItemStack);
-
-        if (flag && world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch blockEntityWinch)
-        {
-            float playerYaw = byPlayer.Entity.Pos.Yaw;
-            float snappedYaw = (float)(Math.Round(playerYaw / Constants.SnapAngle) * Constants.SnapAngle);
-            blockEntityWinch.MeshAngle = snappedYaw;
-            blockEntityWinch.MarkDirty(true, null);
-        }
-
-        return flag;
-    }
-
     public override bool TryPlaceBlock(IWorldAccessor world, IPlayer byPlayer, ItemStack itemstack, BlockSelection blockSel, ref string failureCode)
     {
         bool flag = base.TryPlaceBlock(world, byPlayer, itemstack, blockSel, ref failureCode);
@@ -48,7 +30,7 @@ public class BlockWinch : BlockMPBase
     {
         if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch && beWinch.RotationPlayer == byPlayer)
         {
-            //TODO: keep track of time to make transition smoother with higher latency
+            //TODO: maybe pass real delta time here (by tracking last turn time in blockEntity)
             return beWinch.ContinueTurning(0.1f);
         }
 

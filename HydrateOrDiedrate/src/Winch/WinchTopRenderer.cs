@@ -55,7 +55,7 @@ public class WinchTopRenderer : IRenderer
     private void LoadMeshes()
     {
         var mesh = Winch.GetMesh(WinchTopMeshPath);
-        if (mesh is null) WinchTopMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
+        if (mesh is not null) WinchTopMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
 
         mesh = Winch.GetMesh(RopeSegmentMeshPath);
         if(mesh is not null) RopeSegmentMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
@@ -67,6 +67,11 @@ public class WinchTopRenderer : IRenderer
             mesh.Scale(new Vec3f(0.5f, 0.5f, 0.5f), knotScaleFactor, knotScaleFactor, knotScaleFactor);
             RopeKnotMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
         }
+    }
+
+    public void ItemSlotChanged()
+    {
+
     }
 
     private void UpdateLiquidMesh(ItemStack bucketStack, out ItemStack contentStack)
