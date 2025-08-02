@@ -4,7 +4,6 @@ using HydrateOrDiedrate.Winch;
 using HydrateOrDiedrate.Winch.Inventory;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -19,6 +18,7 @@ namespace HydrateOrDiedrate.winch;
 public class BlockEntityWinch : BlockEntityOpenableContainer
 {
     public const float minTurnpeed = 0.00001f;
+    public const float minBucketDepth = 0.5f;
     public const string WinchBaseMeshPath = "shapes/block/winch/base.json";
 
     private WinchTopRenderer renderer;
@@ -27,12 +27,10 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
     public IPlayer RotationPlayer { get; private set; }
 
-    public const float minBucketDepth = 0.5f;
-    public float bucketDepth = minBucketDepth;
+    public float BucketDepth { get; private set; } = minBucketDepth;
 
     private MeshData winchBaseMesh;
     
-    //TODO for clarity this should probably be a directional enum
     public bool IsRaising { get; private set; }
 
     public EWinchRotationMode RotationMode => ConnectedToMechanicalNetwork ? EWinchRotationMode.MechanicalNetwork : EWinchRotationMode.Player;
@@ -58,9 +56,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     {
         base.Initialize(api);
 
-        //TODO: base class already late initializes with a different Id... we should get rid of this but it will probably break existing winch inventories
-        Inventory.LateInitialize($"winch-{Pos.X}/{Pos.Y}/{Pos.Z}", api);
-
         if (api is not ICoreClientAPI capi)
         {
             RegisterGameTickListener(ChanceForSoundEffect, 1000);
@@ -78,10 +73,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         };
         winchBaseMesh.Rotate(new Vec3f(0.5f, 0.5f, 0.5f), 0f, yRotation, 0f);
 
-        renderer = new WinchTopRenderer(capi, this, Block.Variant["side"])
-        {
-            mechPowerPart = mpc
-        };
+        renderer = new WinchTopRenderer(capi, this, Block.Variant["side"]);
 
         capi.Event.RegisterRenderer(renderer, EnumRenderStage.Opaque, "winch");
     }
@@ -283,17 +275,17 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
         if(motion < 0)
         {
-            if(bucketDepth != minBucketDepth) MarkDirty();
+            if(BucketDepth != minBucketDepth) MarkDirty();
 
-            bucketDepth = Math.Max(minBucketDepth, bucketDepth + motion);
-            return bucketDepth != minBucketDepth;
+            BucketDepth = Math.Max(minBucketDepth, BucketDepth + motion);
+            return BucketDepth != minBucketDepth;
         }
         
         if(motion > 0)
         {
-            var nextBucketDepth = bucketDepth + motion; //TODO dubble check what happens if the first block is blocked/invalid
+            var nextBucketDepth = BucketDepth + motion; //TODO dubble check what happens if the first block is blocked/invalid
 
-            for (int nextBlockpos = (int)bucketDepth + 1; nextBlockpos <= nextBucketDepth; nextBlockpos++)
+            for (int nextBlockpos = (int)BucketDepth + 1; nextBlockpos <= nextBucketDepth; nextBlockpos++)
             {
                 if(!TryMoveToBucketDepth(nextBlockpos)) return false;
             }
@@ -314,12 +306,12 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         if (targetBlock.IsLiquid())
         {
             TryFillBucketAtPos(checkPos);
-            bucketDepth = targetBucketDepth;
+            BucketDepth = targetBucketDepth;
             return true;
         }
         else if(targetBlock.Replaceable >= 6000)
         {
-            bucketDepth = targetBucketDepth;
+            BucketDepth = targetBucketDepth;
             return true;
         }
         else return false;
@@ -328,9 +320,9 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     private bool CanMove()
     {
         if(InputSlot.Empty) return false;
-        if(IsRaising) return bucketDepth > minBucketDepth;
+        if(IsRaising) return BucketDepth > minBucketDepth;
 
-        BlockPos checkPos = Pos.DownCopy((int)bucketDepth + 1);
+        BlockPos checkPos = Pos.DownCopy((int)BucketDepth + 1);
         if (checkPos.Y < 0) return false;
 
         Block targetBlock = Api.World.BlockAccessor.GetBlock(checkPos);
@@ -342,8 +334,8 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     {
         if (slotid == 0)
         {
-            if(InputSlot.Empty) bucketDepth = minBucketDepth;
-            renderer.ItemSlotChanged();
+            if(InputSlot.Empty) BucketDepth = minBucketDepth;
+            renderer?.ScheduleMeshUpdate();
         }
         MarkDirty();
     }
@@ -381,14 +373,14 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
             if (Api is not null) Inventory.AfterBlocksLoaded(Api.World);
         }
 
-        bucketDepth = tree.GetFloat("bucketDepth", minBucketDepth);
+        BucketDepth = tree.GetFloat("bucketDepth", minBucketDepth);
         RotationPlayer = Api?.World.PlayerByUid(tree.GetString("RotationPlayerId"));
     }
 
     public override void ToTreeAttributes(ITreeAttribute tree)
     {
         base.ToTreeAttributes(tree);
-        tree.SetFloat("bucketDepth", bucketDepth);
+        tree.SetFloat("bucketDepth", BucketDepth);
         if(RotationPlayer is not null) tree.SetString("RotationPlayerId", RotationPlayer.PlayerUID);
         UpdateIsRaising();
 
@@ -397,19 +389,11 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         tree["inventory"] = invTree;
     }
 
-    public override void Dispose()
-    {
-        base.Dispose();
-        
-        renderer?.Dispose();
-        renderer = null;
-    }
-
     public override void OnBlockBroken(IPlayer byPlayer = null)
     {
         if (Api.Side == EnumAppSide.Server)
         {
-            Inventory.DropAll(Pos.ToVec3d().Add(0.5, -bucketDepth, 0.5));
+            Inventory.DropAll(Pos.ToVec3d().Add(0.5, -BucketDepth, 0.5));
         }
         base.OnBlockBroken(byPlayer);
     }
@@ -485,5 +469,13 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
             "hydrateordiedrate:winch.totalShaftVolume",
             GetTotalShaftWaterVolume(foundSpring.Pos)
         ));
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        
+        renderer?.Dispose();
+        renderer = null;
     }
 }

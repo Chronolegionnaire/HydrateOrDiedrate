@@ -12,7 +12,7 @@ public class ItemSlotWinch : ItemSlot
         Winch = winch;
     }
 
-    public override bool CanTake() => Winch.bucketDepth < 1f && base.CanTake();
+    public override bool CanTake() => Winch.BucketDepth < 1f && base.CanTake();
 
-    public override bool CanTakeFrom(ItemSlot sourceSlot, EnumMergePriority priority = EnumMergePriority.AutoMerge) => (Winch.bucketDepth < 1f || Empty) && base.CanTakeFrom(sourceSlot, priority);
+    public override bool CanTakeFrom(ItemSlot sourceSlot, EnumMergePriority priority = EnumMergePriority.AutoMerge) => (Winch.BucketDepth < 1f || Empty) && base.CanTakeFrom(sourceSlot, priority);
 }

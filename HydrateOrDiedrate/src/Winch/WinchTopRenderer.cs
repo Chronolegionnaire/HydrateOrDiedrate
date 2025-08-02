@@ -17,42 +17,36 @@ public class WinchTopRenderer : IRenderer
 
     private readonly ICoreClientAPI Capi;
     private readonly BlockEntityWinch Winch;
-    private readonly BlockPos Pos;
+    private readonly BEBehaviorMPConsumer mpc;
     
-    internal BEBehaviorMPConsumer mechPowerPart;
-    
+    private readonly Matrixf ModelMat = new();
+    private readonly string Direction;
+
     private MultiTextureMeshRef WinchTopMeshRef;
     private MultiTextureMeshRef RopeSegmentMeshRef;
     private MultiTextureMeshRef RopeKnotMeshRef;
 
-    private MultiTextureMeshRef bucketMeshRef;
-    private MultiTextureMeshRef liquidContentsMeshRef;
-
-    private ItemStack lastBucketStack;
-    private ItemStack lastContentStack;
-
-    private readonly Matrixf ModelMat = new();
-
-    private float AngleRad;
-    private readonly string Direction;
+    private MultiTextureMeshRef containerMeshRef;
+    private ItemStack lastContainerStack;
     
     public double RenderOrder => 0.5;
     public int RenderRange => 24;
     
+    private float AngleRad;
     private float lastBucketDepth;
-    private float targetBucketDepth;
 
     public WinchTopRenderer(ICoreClientAPI coreClientAPI, BlockEntityWinch winch, string direction)
     {
         Capi = coreClientAPI;
         Winch = winch;
-        Pos = winch.Pos;
+        mpc = Winch.GetBehavior<BEBehaviorMPConsumer>();
         Direction = direction;
         
-        LoadMeshes();
+        coreClientAPI.Event.EnqueueMainThreadTask(LoadStaticMeshes, "mesh-mesh-gen");
+        ScheduleMeshUpdate();
     }
 
-    private void LoadMeshes()
+    private void LoadStaticMeshes()
     {
         var mesh = Winch.GetMesh(WinchTopMeshPath);
         if (mesh is not null) WinchTopMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
@@ -69,116 +63,43 @@ public class WinchTopRenderer : IRenderer
         }
     }
 
-    public void ItemSlotChanged()
+    private void UpdateMesh()
     {
-
-    }
-
-    private void UpdateLiquidMesh(ItemStack bucketStack, out ItemStack contentStack)
-    {
-        string containerCodePath = bucketStack.Collectible.Code?.Path ?? string.Empty; //TODO
-        if (!containerCodePath.Contains("bucket"))
+        var containerStack = Winch.InputSlot.Itemstack;
+        if(containerStack is null || containerStack.Collectible is not BlockLiquidContainerTopOpened container)
         {
-            contentStack = null;
-            CleanupBucketLiquidData();
+            CleanupContainerData();
             return;
         }
 
-        contentStack = bucketStack.Attributes
-            ?.GetTreeAttribute("contents")
-            ?.GetItemstack("0");
-
-        if (contentStack is null || (contentStack.Collectible is null && !contentStack.ResolveBlockOrItem(Capi.World)))
+        if(lastContainerStack is not null)
         {
-            CleanupBucketLiquidData();
-            return;
+            if(containerStack.Equals(Capi.World, lastContainerStack, GlobalConstants.IgnoredStackAttributes)) return;
+            CleanupContainerData();
         }
-
-        if (lastContentStack is not null && contentStack.Equals(Capi.World, lastContentStack, GlobalConstants.IgnoredStackAttributes)) return;
-        CleanupBucketLiquidData();
-        lastContentStack = contentStack.Clone();
-
-        var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
-        if (props is null) return;
-
-        Shape contentShape = Shape.TryGet(Capi, new AssetLocation("game", props.IsOpaque ? "shapes/block/wood/bucket/contents.json" : "shapes/block/wood/bucket/liquidcontents.json"));
-        if (contentShape is null) return;
-
-        var textureSource = new ContainerTextureSource(
-            Capi,
-            contentStack,
-            props.Texture
-        );
-
-        Capi.Tesselator.TesselateShape(nameof(WinchTopRenderer), contentShape, out MeshData contentMesh, textureSource);
-        if (contentMesh == null) return;
-
-        if (props.ClimateColorMap is not null)
-        {
-            int col = Capi.World.ApplyColorMapOnRgba(
-                props.ClimateColorMap,
-                null,
-                -1,
-                Pos.X,
-                Pos.Y,
-                Pos.Z,
-                false
-            );
-
-            byte[] rgba = ColorUtil.ToBGRABytes(col);
-            for (int i = 0; i < contentMesh.Rgba.Length; i++)
-            {
-                contentMesh.Rgba[i] = (byte)(contentMesh.Rgba[i] * rgba[i % 4] / 255);
-            }
-        }
-
-        for (int i = 0; i < contentMesh.FlagsCount; i++)
-        {
-            contentMesh.Flags[i] &= ~4096;
-        }
-
-        liquidContentsMeshRef = Capi.Render.UploadMultiTextureMesh(contentMesh);
-    }
-
-    private void UpdateBucketMesh(ItemStack bucketStack)
-    {
-        //TODO this should need to be checked when the itemslot changes
-        if (lastBucketStack is not null && bucketStack.Equals(Capi.World, lastBucketStack, GlobalConstants.IgnoredStackAttributes)) return;
         
-        CleanupBucketData();
-        lastBucketStack = bucketStack.Clone();
-        lastBucketDepth = targetBucketDepth;
-
-        MeshData itemMesh;
-        switch (bucketStack.Class)
-        {
-            case EnumItemClass.Item:
-                Capi.Tesselator.TesselateItem(bucketStack.Item, out itemMesh);
-                break;
-
-            case EnumItemClass.Block:
-                Capi.Tesselator.TesselateBlock(bucketStack.Block, out itemMesh);
-                break;
-
-            default: return;
-        }
-
-        bucketMeshRef = Capi.Render.UploadMultiTextureMesh(itemMesh);
+        lastContainerStack = containerStack.Clone();
+        var mesh = container.GenMesh(Capi, container.GetContent(lastContainerStack), null); //TODO: find out why passing the position (for climate based stuff) causes issues
+        if(mesh is null) return;
+        
+        containerMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
     }
+
+    public void ScheduleMeshUpdate() => Capi.Event.EnqueueMainThreadTask(UpdateMesh, "mesh-mesh-gen");
 
     private void UpdateAngleRad(float deltaTime)
     {
         switch (Winch.RotationMode)
         {
             case EWinchRotationMode.MechanicalNetwork:
-                float mechAngle = mechPowerPart.AngleRad; //TODO actually does this even matter?
-                float turnDirSign = (mechPowerPart.Network.TurnDir == EnumRotDirection.Counterclockwise) ? 1f : -1f;
+                float mechAngle = mpc.AngleRad; //TODO actually does this even matter?
+                float turnDirSign = (mpc.Network.TurnDir == EnumRotDirection.Counterclockwise) ? 1f : -1f;
                 
                 AngleRad = Direction switch
                 {
                     "east" => -mechAngle * turnDirSign,
                     "west" => mechAngle * turnDirSign,
-                    "south" => mechAngle, //TODO: South and north don't need multiplier?
+                    "south" => mechAngle,
                     _ => -mechAngle,
                 };
                 break;
@@ -192,7 +113,8 @@ public class WinchTopRenderer : IRenderer
     public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
     {
         if (WinchTopMeshRef is null) return;
-
+        var Pos = Winch.Pos;
+        
         IRenderAPI rpi = Capi.Render;
         Vec3d camPos = Capi.World.Player.Entity.CameraPos;
         rpi.GlDisableCullFace();
@@ -223,27 +145,9 @@ public class WinchTopRenderer : IRenderer
         rpi.RenderMultiTextureMesh(WinchTopMeshRef, "tex", 0);
         prog.Stop();
 
-        ItemStack bucketStack = Winch.InputSlot.Itemstack;
-        if (bucketStack?.Collectible is null)
-        {
-            CleanupBucketData();
-            CleanupBucketLiquidData();
-            return;
-        }
+        lastBucketDepth = GameMath.Lerp(lastBucketDepth, Winch.BucketDepth, deltaTime * 10);
 
-        targetBucketDepth = Winch.bucketDepth;
-        UpdateBucketMesh(bucketStack);
-
-        if (bucketMeshRef is null)
-        {
-            CleanupBucketLiquidData();
-            return;
-        }
-
-        lastBucketDepth = GameMath.Lerp(lastBucketDepth, targetBucketDepth, deltaTime * 10);
-
-        if (bucketMeshRef is null) return;
-
+        if (containerMeshRef is null) return;
         IStandardShaderProgram bucketProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
 
         bucketProg.ModelMatrix = ModelMat
@@ -256,7 +160,7 @@ public class WinchTopRenderer : IRenderer
 
         bucketProg.ViewMatrix = rpi.CameraMatrixOriginf;
         bucketProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-        rpi.RenderMultiTextureMesh(bucketMeshRef, "tex", 0);
+        rpi.RenderMultiTextureMesh(containerMeshRef, "tex", 0);
         bucketProg.Stop();
 
         if(RopeKnotMeshRef is not null)
@@ -278,8 +182,8 @@ public class WinchTopRenderer : IRenderer
 
         if(RopeSegmentMeshRef is not null)
         {
-            const float ropeSegmentHeight = 0.125f; // segment visual height
-            const float startOffset = 0.025f; // where the rope begins at the winch
+            const float ropeSegmentHeight = 0.125f;
+            const float startOffset = 0.025f;
             float segmentSpacing = ropeSegmentHeight;
             
             float effectiveLength = lastBucketDepth;
@@ -304,62 +208,23 @@ public class WinchTopRenderer : IRenderer
                 segProg.Stop();
             }
         }
-
-        UpdateLiquidMesh(bucketStack, out var contentStack);
-        if (liquidContentsMeshRef is null) return;
-
-        var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
-        if (props is null) return;
-
-        IStandardShaderProgram contentProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
-        
-        //TODO this shouldn't need to be re-calculated all the time (hook into OnSlotModified instead)
-        float maxLiquidHeight = 0.435f;
-        float containerCapacity = bucketStack.Collectible is BlockLiquidContainerBase container ? container.CapacityLitres : 10f;
-        float liquidPercentage = (float)contentStack.StackSize / (props.ItemsPerLitre * containerCapacity);
-        float liquidHeight = liquidPercentage * maxLiquidHeight;
-        float liquidOffset = 0f;
-
-        contentProg.ModelMatrix = ModelMat
-            .Identity()
-            .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth + liquidHeight + liquidOffset, Pos.Z - camPos.Z)
-            .Translate(0.5f, 0f, 0.5f)
-            .RotateY(yRotation)
-            .Translate(-0.5f, 0f, -0.5f)
-            .Values;
-
-        contentProg.ViewMatrix = rpi.CameraMatrixOriginf;
-        contentProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-        rpi.RenderMultiTextureMesh(liquidContentsMeshRef, "tex", 0);
-        contentProg.Stop();
     }
 
-    private void CleanupBucketData()
+    private void CleanupContainerData()
     {
-        if(bucketMeshRef is not null)
+        if(containerMeshRef is not null)
         {
-            bucketMeshRef.Dispose();
-            bucketMeshRef = null;
+            containerMeshRef.Dispose();
+            containerMeshRef = null;
         }
-        lastBucketStack = null;
-    }
-
-    private void CleanupBucketLiquidData()
-    {
-        if(liquidContentsMeshRef is not null)
-        {
-            liquidContentsMeshRef.Dispose();
-            liquidContentsMeshRef = null;
-        }
-        lastContentStack = null;
+        lastContainerStack = null;
     }
 
     public void Dispose()
     {
         Capi.Event.UnregisterRenderer(this, EnumRenderStage.Opaque);
         
-        CleanupBucketData();
-        CleanupBucketLiquidData();
+        CleanupContainerData();
 
         if(WinchTopMeshRef is not null)
         {
