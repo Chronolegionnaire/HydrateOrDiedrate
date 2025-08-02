@@ -135,9 +135,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
     private void TryFillBucketAtPos(BlockPos pos)
     {
-        if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container) return;
-        
-        if (!BucketIsEmpty()) return;
+        if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container || !BucketIsEmpty()) return;
         int bucketCapacity = (int) container.CapacityLitres;
         var stack = ExtractStackAtPos(pos, bucketCapacity);
         if(stack is null || stack.StackSize <= 0) return;
@@ -283,7 +281,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         
         if(motion > 0)
         {
-            var nextBucketDepth = BucketDepth + motion; //TODO dubble check what happens if the first block is blocked/invalid
+            var nextBucketDepth = BucketDepth + motion;
 
             for (int nextBlockpos = (int)BucketDepth + 1; nextBlockpos <= nextBucketDepth; nextBlockpos++)
             {

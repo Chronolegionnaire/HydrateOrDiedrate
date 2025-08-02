@@ -30,7 +30,7 @@ public class BlockWinch : BlockMPBase
     {
         if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch && beWinch.RotationPlayer == byPlayer)
         {
-            //TODO: maybe pass real delta time here (by tracking last turn time in blockEntity)
+            //TODO: maybe pass real delta time here (by tracking last turn time in blockEntity), to increase accuracy with higher latency
             return beWinch.ContinueTurning(0.1f);
         }
 

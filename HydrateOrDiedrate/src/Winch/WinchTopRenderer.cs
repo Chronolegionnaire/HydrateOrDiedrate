@@ -79,7 +79,7 @@ public class WinchTopRenderer : IRenderer
         }
         
         lastContainerStack = containerStack.Clone();
-        var mesh = container.GenMesh(Capi, container.GetContent(lastContainerStack), null); //TODO: find out why passing the position (for climate based stuff) causes issues
+        var mesh = container.GenMesh(Capi, container.GetContent(lastContainerStack), null);
         if(mesh is null) return;
         
         containerMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
@@ -92,7 +92,7 @@ public class WinchTopRenderer : IRenderer
         switch (Winch.RotationMode)
         {
             case EWinchRotationMode.MechanicalNetwork:
-                float mechAngle = mpc.AngleRad; //TODO actually does this even matter?
+                float mechAngle = mpc.AngleRad;
                 float turnDirSign = (mpc.Network.TurnDir == EnumRotDirection.Counterclockwise) ? 1f : -1f;
                 
                 AngleRad = Direction switch
