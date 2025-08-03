@@ -143,14 +143,16 @@ public class WinchTopRenderer : IRenderer
         prog.ViewMatrix = rpi.CameraMatrixOriginf;
         prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
         rpi.RenderMultiTextureMesh(WinchTopMeshRef, "tex", 0);
-        prog.Stop();
 
         lastBucketDepth = GameMath.Lerp(lastBucketDepth, Winch.BucketDepth, deltaTime * 10);
 
-        if (containerMeshRef is null) return;
-        IStandardShaderProgram bucketProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
+        if (containerMeshRef is null)
+        {
+            prog.Stop();
+            return;
+        }
 
-        bucketProg.ModelMatrix = ModelMat
+        prog.ModelMatrix = ModelMat
             .Identity()
             .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
             .Translate(0.5f, 0f, 0.5f)
@@ -158,15 +160,13 @@ public class WinchTopRenderer : IRenderer
             .Translate(-0.5f, 0f, -0.5f)
             .Values;
 
-        bucketProg.ViewMatrix = rpi.CameraMatrixOriginf;
-        bucketProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+        prog.ViewMatrix = rpi.CameraMatrixOriginf;
+        prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
         rpi.RenderMultiTextureMesh(containerMeshRef, "tex", 0);
-        bucketProg.Stop();
 
         if(RopeKnotMeshRef is not null)
         {
-            IStandardShaderProgram ropeKnotProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
-            ropeKnotProg.ModelMatrix = ModelMat
+            prog.ModelMatrix = ModelMat
                 .Identity()
                 .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
                 .Translate(0.5f, 0.85f, 0.5f)
@@ -174,10 +174,9 @@ public class WinchTopRenderer : IRenderer
                 .Translate(-0.5f, 0f, -0.5f)
                 .Values;
 
-            ropeKnotProg.ViewMatrix = rpi.CameraMatrixOriginf;
-            ropeKnotProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+            prog.ViewMatrix = rpi.CameraMatrixOriginf;
+            prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
             rpi.RenderMultiTextureMesh(RopeKnotMeshRef, "tex", 0);
-            ropeKnotProg.Stop();
         }
 
         if(RopeSegmentMeshRef is not null)
@@ -186,8 +185,7 @@ public class WinchTopRenderer : IRenderer
             const float knotLocalY = 0.85f;
             float stubY = -lastBucketDepth + knotLocalY;
 
-            IStandardShaderProgram stubProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
-            stubProg.ModelMatrix = ModelMat
+            prog.ModelMatrix = ModelMat
                 .Identity()
                 .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + stubY, Pos.Z - camPos.Z)
                 .Translate(0.5f, 0f, 0.5f)
@@ -195,10 +193,9 @@ public class WinchTopRenderer : IRenderer
                 .Translate(-0.5001f, -.1f, -0.5001f)
                 .Values;
 
-            stubProg.ViewMatrix       = rpi.CameraMatrixOriginf;
-            stubProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+            prog.ViewMatrix       = rpi.CameraMatrixOriginf;
+            prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
             rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
-            stubProg.Stop();
 
             const float ropeSegmentHeight = 0.125f;
             const float startOffset = -0.125f;
@@ -211,8 +208,7 @@ public class WinchTopRenderer : IRenderer
             {
                 float yPos = startOffset - i * segmentSpacing;
             
-                IStandardShaderProgram segProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
-                segProg.ModelMatrix = ModelMat
+                prog.ModelMatrix = ModelMat
                     .Identity()
                     .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + yPos, Pos.Z - camPos.Z)
                     .Translate(0.5f, 0.5f, 0.5f)
@@ -220,12 +216,13 @@ public class WinchTopRenderer : IRenderer
                     .Translate(-0.5f, 0f, -0.5f)
                     .Values;
             
-                segProg.ViewMatrix = rpi.CameraMatrixOriginf;
-                segProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+                prog.ViewMatrix = rpi.CameraMatrixOriginf;
+                prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
                 rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
-                segProg.Stop();
+
             }
         }
+        prog.Stop();
     }
 
     private void CleanupContainerData()
