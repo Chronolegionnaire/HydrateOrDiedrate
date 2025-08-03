@@ -206,6 +206,7 @@ public class WinchTopRenderer : IRenderer
             
             for (int i = 0; i < segmentCount - 2; i++)
             {
+                //TODO perhaphs instanced mesh rendering could make this more performant
                 float yPos = startOffset - i * segmentSpacing;
             
                 prog.ModelMatrix = ModelMat
