@@ -5,7 +5,12 @@
 	"entityBehaviors": [{ "name": "MPConsumer" }],
 	"behaviors": [
 		{"name": "Container"},
-		{"name": "HorizontalOrientable"}
+		{
+			"name": "HorizontalOrientable",
+			"properties": {
+				"dropBlockFace": "east"
+			}
+		}
 	],
 	"variantgroups": [
 		{ "code": "wood", "states": ["aged"], "loadFromProperties": "game:block/wood" },

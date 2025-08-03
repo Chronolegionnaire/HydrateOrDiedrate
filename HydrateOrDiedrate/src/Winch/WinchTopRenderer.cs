@@ -182,14 +182,32 @@ public class WinchTopRenderer : IRenderer
 
         if(RopeSegmentMeshRef is not null)
         {
+            //TODO think of a cleaner solution for segment not always aligning with knot
+            const float knotLocalY = 0.85f;
+            float stubY = -lastBucketDepth + knotLocalY;
+
+            IStandardShaderProgram stubProg = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
+            stubProg.ModelMatrix = ModelMat
+                .Identity()
+                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + stubY, Pos.Z - camPos.Z)
+                .Translate(0.5f, 0f, 0.5f)
+                .RotateY(yRotation)
+                .Translate(-0.5001f, -.1f, -0.5001f)
+                .Values;
+
+            stubProg.ViewMatrix       = rpi.CameraMatrixOriginf;
+            stubProg.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+            rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
+            stubProg.Stop();
+
             const float ropeSegmentHeight = 0.125f;
-            const float startOffset = 0.025f;
+            const float startOffset = -0.125f;
             float segmentSpacing = ropeSegmentHeight;
             
             float effectiveLength = lastBucketDepth;
             int segmentCount = Math.Max(0, (int)(effectiveLength / segmentSpacing));
             
-            for (int i = 0; i < segmentCount; i++)
+            for (int i = 0; i < segmentCount - 2; i++)
             {
                 float yPos = startOffset - i * segmentSpacing;
             
@@ -230,6 +248,18 @@ public class WinchTopRenderer : IRenderer
         {
             WinchTopMeshRef.Dispose();
             WinchTopMeshRef = null;
+        }
+
+        if(RopeKnotMeshRef is not null)
+        {
+            RopeKnotMeshRef.Dispose();
+            RopeKnotMeshRef = null;
+        }
+
+        if(RopeSegmentMeshRef is not null)
+        {
+            RopeSegmentMeshRef.Dispose();
+            RopeSegmentMeshRef = null;
         }
     }
 }
