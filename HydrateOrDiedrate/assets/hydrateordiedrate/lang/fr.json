@@ -273,7 +273,7 @@
   "winch.springDetected":      "Source détectée en dessous:",
   "winch.noSpring":            "Aucune source détectée sous le treuil.",
   "winch.waterType":           "Type d’eau: {0}",
-  "winch.outputRate":          "Débit: {0}L/jour",
+  "winch.outputRate":          "Débit: {0:F1}L/jour",
   "winch.retentionVolume":     "Volume max du puits: {0}litres",
   "winch.totalShaftVolume":    "Volume actuel du puits: {0}L"
 }

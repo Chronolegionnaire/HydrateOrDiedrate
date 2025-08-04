@@ -276,7 +276,7 @@
   "winch.springDetected": "Wellspring detected below:",
   "winch.noSpring": "No wellspring detected below winch.",
   "winch.waterType": "Water Type: {0}",
-  "winch.outputRate": "Output Rate: {0} L/day",
+  "winch.outputRate": "Output Rate: {0:F1} L/day",
   "winch.retentionVolume": "Max Well Volume: {0} liters",
   "winch.totalShaftVolume": "Current Well Volume: {0} L"
 }

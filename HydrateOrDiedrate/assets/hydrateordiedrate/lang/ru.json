@@ -273,7 +273,7 @@
   "winch.springDetected":      "Родник обнаружен ниже:",
   "winch.noSpring":            "Родник не обнаружен под лебёдкой.",
   "winch.waterType":           "Тип воды: {0}",
-  "winch.outputRate":          "Производительность: {0}л/день",
+  "winch.outputRate":          "Производительность: {0:F1}л/день",
   "winch.retentionVolume":     "Максимальный объем колодца: {0}литров",
   "winch.totalShaftVolume":    "Текущий объем колодца: {0}л"
 }

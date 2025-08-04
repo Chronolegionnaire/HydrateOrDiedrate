@@ -283,14 +283,8 @@ namespace HydrateOrDiedrate.wellwater
             }
         }
 
-        private bool IsBlockingBlock(Block block)
-        {
-            if (block == null) return false;
-            string path = block.Code?.Path ?? "";
-            if (path == "air") return false;
-            if (path.Contains("wellwater")) return false;
-            return true;
-        }
+        private bool IsBlockingBlock(Block block) => block?.Code is not null && block.Code.Path != "air"  && !block.Code.Path.Contains("wellwater");
+        
         private int DetermineMaxDepthBasedOnCached(string ringMat, int validatedLevels)
         {
             int baseDepth = ModConfig.Instance.GroundWater.WellwaterDepthMaxBase;
@@ -309,24 +303,24 @@ namespace HydrateOrDiedrate.wellwater
             }
             return baseDepth;
         }
+
         private string CheckBaseRingMaterial(IBlockAccessor blockAccessor, BlockPos pos)
         {
-            Block[] neighbors = new Block[]
-            {
+            //TODO do more efficient walk
+            Block[] neighbors =
+            [
                 blockAccessor.GetBlock(pos.NorthCopy()),
                 blockAccessor.GetBlock(pos.EastCopy()),
                 blockAccessor.GetBlock(pos.SouthCopy()),
                 blockAccessor.GetBlock(pos.WestCopy())
-            };
-            bool allBrick = neighbors.All(b =>
-                b?.Code?.Domain == "game" && b.Code.Path.StartsWith("brick")
-            );
+            ];
+
+            bool allBrick = Array.TrueForAll(neighbors, b => b?.Code?.Domain == "game" && b.Code.Path.StartsWith("brick"));
             if (allBrick) return "brick";
 
-            bool allStone = neighbors.All(b =>
-                b?.Code?.Domain == "game" && b.Code.Path.StartsWith("stonebrick")
-            );
+            bool allStone = Array.TrueForAll(neighbors, b => b?.Code?.Domain == "game" && b.Code.Path.StartsWith("stonebrick"));
             if (allStone) return "stonebrick";
+
             return "none";
         }
 
@@ -483,19 +477,11 @@ namespace HydrateOrDiedrate.wellwater
             }
             return (saltyFound, freshFound);
         }
-        public string GetWaterType()
-        {
-            return lastWaterType;
-        }
 
-        public double GetCurrentOutputRate()
-        {
-            return lastDailyLiters;
-        }
+        public string GetWaterType() => lastWaterType;
 
-        public int GetRetentionDepth()
-        {
-            return DetermineMaxDepthBasedOnCached(cachedRingMaterial, partialValidatedHeight);
-        }
+        public double GetCurrentOutputRate() => lastDailyLiters;
+
+        public int GetRetentionDepth() => DetermineMaxDepthBasedOnCached(cachedRingMaterial, partialValidatedHeight);
     }
 }
