@@ -69,7 +69,7 @@ namespace HydrateOrDiedrate.XSkill
             }
             else
             {
-                entity.WatchedAttributes.SetBool("dromedaryActive", true);
+                entity.WatchedAttributes.SetBool("dromedaryActive", true); // TODO
             }
 
             float baseMultiplier = ModConfig.Instance.XLib.DromedaryMultiplierPerLevel;

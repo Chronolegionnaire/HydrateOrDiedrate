@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.Hot_Weather;
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
@@ -218,6 +219,7 @@ namespace HydrateOrDiedrate.patches
 
             var entity = capi.World.Player.Entity;
             var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
+            var tempBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
 
             float currentThirst = thirstBehavior.CurrentThirst;
             float maxThirst = thirstBehavior.MaxThirst;
@@ -235,7 +237,7 @@ namespace HydrateOrDiedrate.patches
             
             cached.nutritionDeficitDynamicText?.SetNewText($"{hungerReductionAmount}", false, false, false);
             
-            float rawCoolingValue = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f);
+            float rawCoolingValue = tempBehavior.RawClothingCooling;
             
             cached.currentCoolingDynamicText?.SetNewText($"{rawCoolingValue:0.##}", false, false, false);
             

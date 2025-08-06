@@ -18,8 +18,8 @@ public partial class EntityBehaviorThirst
         get => ThirstTree.TryGetFloat("maxThirst") ?? ModConfig.Instance.Thirst.MaxThirst;
         set
         {
-            if(value == MaxThirst) return;
-            ThirstTree.SetFloat("maxThirst", value.GuardFinite(MaxThirst)); //TODO should we not do something with CurrentThirst here?
+            if(!float.IsFinite(value) || value == MaxThirst) return;
+            ThirstTree.SetFloat("maxThirst", value); //TODO should we not do something with CurrentThirst here?
             entity.WatchedAttributes.MarkPathDirty(thirstTreePath);
         }
     }
@@ -29,8 +29,11 @@ public partial class EntityBehaviorThirst
         get => ThirstTree.TryGetFloat("currentThirst") ?? MaxThirst;
         set
         {
-            if(value == CurrentThirst) return;
-            ThirstTree.SetFloat("currentThirst", GameMath.Clamp(value.GuardFinite(MaxThirst), 0, MaxThirst));
+            var maxThirst = MaxThirst;
+            var safeValue = GameMath.Clamp(value.GuardFinite(maxThirst), 0, maxThirst);
+            if (safeValue == CurrentThirst) return;
+
+            ThirstTree.SetFloat("currentThirst", safeValue);
             UpdateMovementPenalty();
             entity.WatchedAttributes.MarkPathDirty(thirstTreePath);
         }
@@ -41,8 +44,10 @@ public partial class EntityBehaviorThirst
         get => ThirstTree.TryGetFloat("thirstRate") ?? ModConfig.Instance.Thirst.ThirstDecayRate;
         set
         {
-            if(value == ThirstRate) return;
-            ThirstTree.SetFloat("thirstRate", value.GuardFinite());
+            var safeValue = value.GuardFinite();
+            if(safeValue == ThirstRate) return;
+
+            ThirstTree.SetFloat("thirstRate", safeValue);
             entity.WatchedAttributes.MarkPathDirty(thirstTreePath);
         }
     }
@@ -52,8 +57,10 @@ public partial class EntityBehaviorThirst
         get => ThirstTree.GetFloat("hungerReductionAmount");
         set
         {
-            if(value == HungerReductionAmount) return;
-            ThirstTree.SetFloat("hungerReductionAmount", Math.Max((float)Math.Ceiling(value.GuardFinite()), 0f));
+            var safeValue = Math.Max((float)Math.Ceiling(value.GuardFinite()), 0f);
+            if(safeValue == HungerReductionAmount) return;
+            
+            ThirstTree.SetFloat("hungerReductionAmount", safeValue);
             entity.WatchedAttributes.MarkPathDirty(thirstTreePath);
         }
     }
@@ -78,6 +85,7 @@ public partial class EntityBehaviorThirst
 
             float safeValue = GameMath.Clamp(value.GuardFinite(), 0, ModConfig.Instance.Thirst.MaxMovementSpeedPenalty);
             if (movementPenalty == safeValue) return;
+
             movementPenalty = safeValue;
             entity.Stats.Set("walkspeed", "thirstPenalty", -safeValue, false);
         }
@@ -85,6 +93,7 @@ public partial class EntityBehaviorThirst
 
     public void MapLegacyData()
     {
+        //TODO: TEST!
         var attr = entity.WatchedAttributes;
         if(attr.HasAttribute("maxThirst"))
         {

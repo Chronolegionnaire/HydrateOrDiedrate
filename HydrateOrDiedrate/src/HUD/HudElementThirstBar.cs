@@ -24,7 +24,7 @@ public class HudElementThirstBar : HudElement
         thirstBehavior = capi.World.Player.Entity.GetBehavior<EntityBehaviorThirst>();
         
         ComposeGuis();
-        capi.Event.RegisterGameTickListener(OnGameTick, 100); // 10 ticks per second
+        capi.Event.RegisterGameTickListener(OnGameTick, 100); //TODO: thirst is only updated every 10 seconds so is there a point in this being every 100ms?
     }
 
     public void OnGameTick(float dt)
