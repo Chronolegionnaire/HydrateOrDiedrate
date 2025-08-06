@@ -237,7 +237,7 @@ namespace HydrateOrDiedrate.patches
             
             cached.nutritionDeficitDynamicText?.SetNewText($"{hungerReductionAmount}", false, false, false);
             
-            float rawCoolingValue = tempBehavior.RawClothingCooling;
+            float rawCoolingValue = tempBehavior.Cooling;
             
             cached.currentCoolingDynamicText?.SetNewText($"{rawCoolingValue:0.##}", false, false, false);
             

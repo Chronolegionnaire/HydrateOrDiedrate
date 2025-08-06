@@ -3,112 +3,78 @@ using HydrateOrDiedrate.Hot_Weather;
 using Vintagestory.API.Common;
 using XLib.XLeveling;
 
-namespace HydrateOrDiedrate.XSkill
+namespace HydrateOrDiedrate.XSkill;
+
+public static class XLibSkills
 {
-    public class XLibSkills
+    internal static void Initialize(ICoreAPI api)
     {
-        private ICoreAPI _api;
+        XLeveling xleveling = api.ModLoader.GetModSystem<XLeveling>();
+        if (xleveling is null) return;
 
-        public void Initialize(ICoreAPI api)
+        Skill skill = xleveling.GetSkill("survival", false);
+        if (skill is null) return;
+
+        if (ModConfig.Instance.Thirst.Enabled)
         {
-            if (!api.ModLoader.IsModEnabled("xlib") && !api.ModLoader.IsModEnabled("xlibpatch"))
-            {
-                return;
-            }
-
-            _api = api;
-            XLeveling xleveling = api.ModLoader.GetModSystem<XLeveling>();
-            if (xleveling == null)
-            {
-                return;
-            }
-
-            Skill skill = xleveling.GetSkill("survival", false);
-            if (skill == null)
-            {
-                return;
-            }
-
-            if (ModConfig.Instance.Thirst.Enabled)
-            {
-                int[] dromedaryValues = new int[] { 0 };
-                Ability dromedaryAbility = new Ability("dromedary", "hydrateordiedrate:ability-dromedary",
-                    "hydrateordiedrate:abilitydesc-dromedary", 1, 3, dromedaryValues, false);
-                dromedaryAbility.OnPlayerAbilityTierChanged += OnDromedary;
-                skill.AddAbility(dromedaryAbility);
-            }
-
-            int[] equatidianValues = new int[] { 0 };
-            Ability equatidianAbility = new Ability("equatidian", "hydrateordiedrate:ability-equatidian",
-                "hydrateordiedrate:abilitydesc-equatidian", 1, 3, equatidianValues, false);
-            equatidianAbility.OnPlayerAbilityTierChanged += OnEquatidian;
-            skill.AddAbility(equatidianAbility);
+            int[] dromedaryValues = [0];
+            Ability dromedaryAbility = new Ability("dromedary", "hydrateordiedrate:ability-dromedary", "hydrateordiedrate:abilitydesc-dromedary", 1, 3, dromedaryValues, false);
+            dromedaryAbility.OnPlayerAbilityTierChanged += OnDromedary;
+            skill.AddAbility(dromedaryAbility);
         }
 
-        private void OnDromedary(PlayerAbility playerAbility, int oldTier)
+        //TODO these values should come from Xlevel config not ours
+        //TODO these values should be filled so we can use them in the ability description
+        int[] equatidianValues = [0];
+        Ability equatidianAbility = new Ability("equatidian", "hydrateordiedrate:ability-equatidian", "hydrateordiedrate:abilitydesc-equatidian", 1, 3, equatidianValues, false);
+        equatidianAbility.OnPlayerAbilityTierChanged += OnEquatidian;
+        skill.AddAbility(equatidianAbility);
+    }
+
+    private static void OnDromedary(PlayerAbility playerAbility, int oldTier)
+    {
+        var entity = playerAbility.PlayerSkill.PlayerSkillSet.Player?.Entity;
+        if(entity is null) return;
+        
+        var behavior = entity.GetBehavior<EntityBehaviorThirst>();
+        if (behavior == null) return;
+
+        if (playerAbility.Tier < 1)
         {
-            if (!ModConfig.Instance.Thirst.Enabled) //TODO this method is only registered when this statement is false, so does this even matter?
-            {
-                playerAbility.SetTier(0);
-                return;
-            }
-
-            IPlayer player = playerAbility.PlayerSkill.PlayerSkillSet.Player;
-            if (player == null) return;
-            EntityPlayer entity = player.Entity;
-            if (entity == null) return;
-            EntityBehaviorThirst behavior = entity.GetBehavior<EntityBehaviorThirst>();
-            if (behavior == null) return;
-            if (playerAbility.Tier < 1)
-            {
-                float defaultMaxThirst = ModConfig.Instance.Thirst.MaxThirst;
-                behavior.CurrentThirst = behavior.CurrentThirst / behavior.MaxThirst * defaultMaxThirst;
-                behavior.MaxThirst = defaultMaxThirst;
-                entity.WatchedAttributes.SetBool("dromedaryActive", false);
-                return;
-            }
-            else
-            {
-                entity.WatchedAttributes.SetBool("dromedaryActive", true); // TODO
-            }
-
-            float baseMultiplier = ModConfig.Instance.XLib.DromedaryMultiplierPerLevel;
-            float multiplier = 1 + baseMultiplier + (baseMultiplier * (playerAbility.Tier - 1));
-            float newMaxThirst = ModConfig.Instance.Thirst.MaxThirst * multiplier;
-            behavior.CurrentThirst = behavior.CurrentThirst / behavior.MaxThirst * newMaxThirst;
-            behavior.MaxThirst = newMaxThirst;
+            float defaultMaxThirst = ModConfig.Instance.Thirst.MaxThirst;
+            behavior.CurrentThirst = behavior.CurrentThirst / behavior.MaxThirst * defaultMaxThirst;
+            behavior.MaxThirst = defaultMaxThirst;
+            entity.WatchedAttributes.SetBool("dromedaryActive", false);
+            return;
         }
+        
+        entity.WatchedAttributes.SetBool("dromedaryActive", true); // TODO
 
-        private void OnEquatidian(PlayerAbility playerAbility, int oldTier)
+        float baseMultiplier = ModConfig.Instance.XLib.DromedaryMultiplierPerLevel;
+        float multiplier = 1 + baseMultiplier + (baseMultiplier * (playerAbility.Tier - 1));
+        float newMaxThirst = ModConfig.Instance.Thirst.MaxThirst * multiplier;
+        behavior.CurrentThirst = behavior.CurrentThirst / behavior.MaxThirst * newMaxThirst;
+        behavior.MaxThirst = newMaxThirst;
+    }
+
+    private static void OnEquatidian(PlayerAbility playerAbility, int oldTier)
+    {
+        EntityBehaviorBodyTemperatureHot behavior = playerAbility.PlayerSkill.PlayerSkillSet.Player?.Entity?.GetBehavior<EntityBehaviorBodyTemperatureHot>();
+        if (behavior is null) return;
+
+        var config = ModConfig.Instance.XLib.EquatidianCoolingMultipliers;
+        
+        if (playerAbility.Tier < 1)
         {
-            IPlayer player = playerAbility.PlayerSkill.PlayerSkillSet.Player;
-            if (player == null)
-            {
-                return;
-            }
-
-            EntityPlayer entity = player.Entity;
-            if (entity == null)
-            {
-                return;
-            }
-            EntityBehaviorBodyTemperatureHot behavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
-            if (behavior == null)
-            {
-                return;
-            }
-            if (playerAbility.Tier < 1)
-            {
-                return;
-            }
-            if (playerAbility.Tier > ModConfig.Instance.XLib.EquatidianCoolingMultipliers.Length)
-            {
-                return;
-            }
-
-            float coolingMultiplier = ModConfig.Instance.XLib.EquatidianCoolingMultipliers[playerAbility.Tier - 1];
-            behavior.CoolingMultiplier = coolingMultiplier;
-            behavior.UpdateCoolingFactor();
+            behavior.EquatidianAbilityCoolingMultiplier = 1f;
+        }
+        else if (playerAbility.Tier > config.Length)
+        {
+            behavior.EquatidianAbilityCoolingMultiplier = config.Length > 0 ? config[^1] : 1f;
+        }
+        else
+        {
+            behavior.EquatidianAbilityCoolingMultiplier = config[playerAbility.Tier - 1];
         }
     }
 }

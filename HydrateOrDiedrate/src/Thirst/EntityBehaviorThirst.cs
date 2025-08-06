@@ -1,5 +1,7 @@
 ﻿using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.Thirst;
 using System;
+using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
@@ -157,25 +159,12 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
             thirstDecayRate *= config.SprintThirstMultiplier;
         }
 
-        if (ModConfig.Instance.HeatAndCooling.HarshHeat)
+        foreach(var modifier in player.SidedProperties.Behaviors.OfType<IThirstRateModifier>())
         {
-            var temperature = entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues)?.Temperature.GuardFinite() ?? 0f;
-            if (temperature > ModConfig.Instance.HeatAndCooling.TemperatureThreshold)
-            {
-                float temperatureDifference = temperature - ModConfig.Instance.HeatAndCooling.TemperatureThreshold;
-                float expArgument = ModConfig.Instance.HeatAndCooling.HarshHeatExponentialGainMultiplier * temperatureDifference;
-
-                thirstDecayRate += Util.GuardFinite(ModConfig.Instance.HeatAndCooling.ThirstIncreasePerDegreeMultiplier * (float)Math.Exp(expArgument));
-
-                float coolingFactor = entity.WatchedAttributes.GetFloat("currentCoolingHot", 0f); //TODO Guard in source and also get this from the behavior!
-                float expCooling = (float)Math.Exp(-0.5f * temperatureDifference);
-
-                float coolingEffect = coolingFactor * (1f / (1f + expCooling.GuardFinite(1f)));
-
-                thirstDecayRate -= Math.Min(coolingEffect.GuardFinite(), thirstDecayRate - config.ThirstDecayRate);
-            }
+            var newThirstDecayRate = modifier.OnThirstRateCalculate(thirstDecayRate);
+            
+            if (float.IsFinite(newThirstDecayRate)) thirstDecayRate = newThirstDecayRate;
         }
- 
 
         thirstDecayRate = Math.Min(thirstDecayRate, config.ThirstDecayRate * config.ThirstDecayRateMax);
 

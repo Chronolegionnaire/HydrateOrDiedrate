@@ -40,8 +40,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private Harmony harmony;
     public static AquiferManager AquiferManager { get; private set; }
 
-    private XLibSkills xLibSkills;
-
     private RainHarvesterManager rainHarvesterManager;
     private DrinkHudOverlayRenderer hudOverlayRenderer;
 
@@ -142,8 +140,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibpatch"))
         {
-            xLibSkills = new XLibSkills();
-            xLibSkills.Initialize(api);
+            XLibSkills.Initialize(api);
         }
 
         api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RegisterRainHarvester));

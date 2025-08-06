@@ -1,4 +1,5 @@
 ﻿using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.Thirst;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,13 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Hot_Weather;
 
-public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBehavior(entity)
+public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBehavior(entity), IThirstRateModifier
 {
+    public override string PropertyName() => "bodytemperaturehot";
     private ITreeAttribute TempTree => entity.WatchedAttributes.GetTreeAttribute(tempTreePath);
     public const string tempTreePath = "bodyTemp";
+
+    public float EquatidianAbilityCoolingMultiplier { get; internal set; } = 1f;
 
     public float Cooling
     {
@@ -36,26 +40,35 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         attr.RemoveAttribute("adjustedCoolingHot");
     }
 
-    public float CoolingMultiplier { get; set; } = 1.0f;
-
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
         base.Initialize(properties, attributes);
         MapLegacyData();
     }
 
-    private float coolingCheckDelta;
-    public const float coolingCheckInterval = 10f;
-    public override void OnGameTick(float deltaTime)
+    public float OnThirstRateCalculate(float currentModifier)
     {
-        if (entity.Api.Side != EnumAppSide.Server || !entity.Alive || !ModConfig.Instance.HeatAndCooling.HarshHeat) return;
-
-        coolingCheckDelta += deltaTime;
-        if (coolingCheckDelta > coolingCheckInterval)
+        if (!ModConfig.Instance.HeatAndCooling.HarshHeat) return currentModifier;
+        UpdateCoolingFactor();
+        
+        var temperature = entity.World.BlockAccessor.GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues)?.Temperature.GuardFinite() ?? 0f;
+        if (temperature > ModConfig.Instance.HeatAndCooling.TemperatureThreshold)
         {
-            UpdateCoolingFactor();
-            coolingCheckDelta = 0f;
+            float temperatureDifference = temperature - ModConfig.Instance.HeatAndCooling.TemperatureThreshold;
+            float expArgument = ModConfig.Instance.HeatAndCooling.HarshHeatExponentialGainMultiplier * temperatureDifference;
+
+            currentModifier += Util.GuardFinite(ModConfig.Instance.HeatAndCooling.ThirstIncreasePerDegreeMultiplier * (float)Math.Exp(expArgument));
+
+            float coolingFactor = Cooling;
+
+            float expCooling = (float)Math.Exp(-0.5f * temperatureDifference);
+
+            float coolingEffect = coolingFactor * (1f / (1f + expCooling.GuardFinite(1f)));
+
+            currentModifier -= Math.Min(coolingEffect.GuardFinite(), currentModifier - ModConfig.Instance.Thirst.ThirstDecayRate);
         }
+
+        return currentModifier;
     }
 
     public void UpdateCoolingFactor()
@@ -108,9 +121,8 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
 
         double diurnalCooling = (0.5 - distanceTo4AM - distanceTo3PM) * config.DiurnalVariationAmplitude;
         finalCooling += (float)(sunlightCooling + diurnalCooling);
-        finalCooling *= CoolingMultiplier;
         
-        Cooling = Math.Max(0, finalCooling.GuardFinite());
+        Cooling = Math.Max(0, Util.GuardFinite(finalCooling * EquatidianAbilityCoolingMultiplier));
     }
 
     private bool inEnclosedRoom;
@@ -164,9 +176,9 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
     //TODO this reflection should be removed and just use an optional reference to the DLL
     private bool IsRoomRefrigerated(Room room)
     {
-        if (room == null) return false;
+        if (room is null) return false;
 
-        this.RoomRefridgePositionManagerInstance ??= Array.Find(AppDomain.CurrentDomain.GetAssemblies(), a => a.GetName().Name == "medievalexpansion")
+        RoomRefridgePositionManagerInstance ??= Array.Find(AppDomain.CurrentDomain.GetAssemblies(), a => a.GetName().Name == "medievalexpansion")
             ?.GetType("medievalexpansion.src.busineslogic.RoomRefridgePositionManager")
             ?.GetMethod("Instance", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
             ?.Invoke(null, null);
@@ -174,7 +186,7 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         if (RoomRefridgePositionManagerInstance is null) return false;
 
         var positionsProperty = RoomRefridgePositionManagerInstance.GetType().GetProperty("RoomRefridgerPosition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (positionsProperty == null) return false;
+        if (positionsProperty is null) return false;
 
         if (positionsProperty.GetValue(RoomRefridgePositionManagerInstance) is not IList<BlockPos> positions) return false;
 
@@ -187,6 +199,4 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         }
         return false;
     }
-
-    public override string PropertyName() => "bodytemperaturehot";
 }
