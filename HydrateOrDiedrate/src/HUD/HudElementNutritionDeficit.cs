@@ -102,11 +102,10 @@ namespace HydrateOrDiedrate.HUD
         public override void OnOwnPlayerDataReceived()
         {
             ComposeGuis();
-            var player = capi.World.Player.Entity as EntityPlayer;
-            if (player != null)
+            if (capi.World.Player.Entity is EntityPlayer player)
             {
                 ITreeAttribute hungerTree = player.WatchedAttributes.GetTreeAttribute("hunger");
-                if (hungerTree != null)
+                if (hungerTree is not null)
                 {
                     UpdateHungerReduction(player, hungerTree);
                 }

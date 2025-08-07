@@ -93,8 +93,9 @@ public partial class EntityBehaviorThirst
 
     public void MapLegacyData()
     {
-        //TODO: TEST!
         var attr = entity.WatchedAttributes;
+        attr.RemoveAttribute("dromedaryActive");
+        
         if(attr.HasAttribute("maxThirst"))
         {
             MaxThirst = attr.GetFloat("maxThirst");

@@ -168,7 +168,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         AquiferManager = new AquiferManager(api);
         _waterInteractionHandler.Initialize(serverChannel);
         rainHarvesterManager = new RainHarvesterManager(_serverApi);
-        api.Event.PlayerNowPlaying += OnPlayerNowPlaying;
         api.Event.PlayerDisconnect += _waterInteractionHandler.OnPlayerDisconnect;
         api.Event.RegisterGameTickListener(CheckPlayerInteraction, 100);
 
@@ -247,26 +246,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             if(player.ConnectionState != EnumClientState.Playing) continue;
             _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, player);
-        }
-    }
-    
-    private void OnPlayerNowPlaying(IServerPlayer byPlayer)
-    {
-        var entity = byPlayer.Entity;
-        if (entity == null) return;
-
-        if (ModConfig.Instance.Thirst.Enabled)
-        {
-            var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
-
-            //TODO this should go through XLib library and not be a watched attribute
-            bool dromedaryActive = entity.WatchedAttributes.GetBool("dromedaryActive", false);
-            if (!dromedaryActive)
-            {
-                float defaultMaxThirst = ModConfig.Instance.Thirst.MaxThirst;
-                thirstBehavior.CurrentThirst = thirstBehavior.CurrentThirst / thirstBehavior.MaxThirst * defaultMaxThirst;
-                thirstBehavior.MaxThirst = defaultMaxThirst;
-            }
         }
     }
 

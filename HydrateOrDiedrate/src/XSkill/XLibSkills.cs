@@ -23,6 +23,7 @@ public static class XLibSkills
             skill.AddAbility(dromedaryAbility);
         }
 
+        //TODO this should be behind equivelant IF statement no?
         //TODO these values should come from Xlevel config not ours
         //TODO these values should be filled so we can use them in the ability description
         int[] equatidianValues = [0];
@@ -31,6 +32,8 @@ public static class XLibSkills
         skill.AddAbility(equatidianAbility);
     }
 
+    //TODO ideally the behavior should have a recalculate method that is responsible for getting the XSkills modifier so that we can reset it properly after disabling the mod
+    //would also alow people to hook into that to do their modifications rather then stuff that breaks upon ability update
     private static void OnDromedary(PlayerAbility playerAbility, int oldTier)
     {
         var entity = playerAbility.PlayerSkill.PlayerSkillSet.Player?.Entity;
@@ -44,11 +47,8 @@ public static class XLibSkills
             float defaultMaxThirst = ModConfig.Instance.Thirst.MaxThirst;
             behavior.CurrentThirst = behavior.CurrentThirst / behavior.MaxThirst * defaultMaxThirst;
             behavior.MaxThirst = defaultMaxThirst;
-            entity.WatchedAttributes.SetBool("dromedaryActive", false);
             return;
         }
-        
-        entity.WatchedAttributes.SetBool("dromedaryActive", true); // TODO
 
         float baseMultiplier = ModConfig.Instance.XLib.DromedaryMultiplierPerLevel;
         float multiplier = 1 + baseMultiplier + (baseMultiplier * (playerAbility.Tier - 1));
