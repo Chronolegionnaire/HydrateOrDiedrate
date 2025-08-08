@@ -15,13 +15,16 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
 
     public float Cooling
     {
-        get => TempTree.GetFloat("cooling");
+        get => TempTree?.GetFloat("cooling") ?? 0f;
         set
         {
+            var tree = TempTree;
+            if(tree is null) return;
+
             var safeValue = GameMath.Clamp(value.GuardFinite(), 0, float.MaxValue);
             if(safeValue == Cooling) return;
 
-            TempTree.SetFloat("cooling", safeValue);
+            tree.SetFloat("cooling", safeValue);
             entity.WatchedAttributes.MarkPathDirty(tempTreePath);
         }
     }
