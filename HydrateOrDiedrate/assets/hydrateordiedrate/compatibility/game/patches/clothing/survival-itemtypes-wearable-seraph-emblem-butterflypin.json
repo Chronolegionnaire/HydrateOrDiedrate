@@ -1,7 +1,7 @@
 [
   {
     "op": "replace",
-    "path": "/attributesByType/*/warmth",
+    "path": "/attributes/warmth",
     "value": 0.01,
     "file": "game:itemtypes/wearable/seraph/emblem-butterflypin.json",
     "side": "Server"
