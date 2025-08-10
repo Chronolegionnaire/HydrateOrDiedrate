@@ -1,9 +1,9 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Aquifer;
+using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
-using static HydrateOrDiedrate.HydrateOrDiedrateModSystem;
 
 namespace HydrateOrDiedrate.Commands
 {
@@ -15,59 +15,38 @@ namespace HydrateOrDiedrate.Commands
                 .WithDescription(Lang.Get("hydrateordiedrate:setaquifer-description"))
                 .RequiresPrivilege("controlserver")
                 .WithArgs(api.ChatCommands.Parsers.Int("rating"))
-                .HandleWith((args) =>
+                .HandleWith(static (args) =>
                 {
+                    //TODO remove "hydrateordiedrate:aquifer-command-not-initialized"
                     int rating = (int)args[0];
                     rating = Math.Clamp(rating, 0, 100);
 
-                    if (HydrateOrDiedrateModSystem.AquiferManager == null)
-                    {
-                        return TextCommandResult.Error(Lang.Get("hydrateordiedrate:aquifer-command-not-initialized"));
-                    }
                     IPlayer player = args.Caller.Player;
-                    if (player == null)
-                    {
-                        return TextCommandResult.Error(Lang.Get("hydrateordiedrate:command-only-for-players"));
-                    }
+                    if (player == null) return TextCommandResult.Error(Lang.Get("hydrateordiedrate:command-only-for-players"));
 
-                    BlockPos pos = player.Entity.ServerPos.AsBlockPos;
-                    int chunkX = pos.X / GlobalConstants.ChunkSize;
-                    int chunkY = pos.Y / GlobalConstants.ChunkSize;
-                    int chunkZ = pos.Z / GlobalConstants.ChunkSize;
-                    var chunkPos = new ChunkPos3D(chunkX, chunkY, chunkZ);
-
-                    bool success = HydrateOrDiedrateModSystem.AquiferManager.SetAquiferRating(chunkPos, rating);
-                    if (!success)
+                    if (AquiferManager.SetAquiferRating(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.ServerPos.AsBlockPos, rating))
                     {
                         return TextCommandResult.Error(Lang.Get("hydrateordiedrate:setaquifer-failed"));
                     }
-                    return TextCommandResult.Success(Lang.Get("hydrateordiedrate:setaquifer-success", rating));
+                    return TextCommandResult.Success(Lang.Get("hydrateordiedrate:setaquifer-success", rating)); //TODO this does not represent the actual rating set, but the one requested
                 });
+
             api.ChatCommands.Create("getaquifer")
                 .WithDescription(Lang.Get("hydrateordiedrate:getaquifer-description"))
                 .RequiresPrivilege("controlserver")
                 .HandleWith(static args =>
                 {
                     IPlayer player = args.Caller.Player;
+                    if (player == null) return TextCommandResult.Error(Lang.Get("hydrateordiedrate:command-only-for-players"));
 
-                    if (HydrateOrDiedrateModSystem.AquiferManager == null)
-                    {
-                        return TextCommandResult.Error(Lang.Get("hydrateordiedrate:aquifer-command-not-initialized"));
-                    }
-
-                    BlockPos pos = player.Entity.ServerPos.AsBlockPos;
-                    int chunkX = pos.X / GlobalConstants.ChunkSize;
-                    int chunkY = pos.Y / GlobalConstants.ChunkSize;
-                    int chunkZ = pos.Z / GlobalConstants.ChunkSize;
-                    var chunkPos = new ChunkPos3D(chunkX, chunkY, chunkZ);
-                    Console.WriteLine("Command="+chunkPos.X+","+chunkPos.Y+","+chunkPos.Z);
-                    var aqData = HydrateOrDiedrateModSystem.AquiferManager.GetAquiferData(chunkPos);
+                    var world = HydrateOrDiedrateModSystem._serverApi.World;
+                    var aqData = AquiferManager.GetAquiferChunkData(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.ServerPos.AsBlockPos, world.Logger);
                     if (aqData == null)
                     {
                         return TextCommandResult.Error(Lang.Get("hydrateordiedrate:getaquifer-not-found"));
                     }
 
-                    return TextCommandResult.Success(Lang.Get("hydrateordiedrate:getaquifer-success", aqData.AquiferRating, aqData.IsSalty));
+                    return TextCommandResult.Success(Lang.Get("hydrateordiedrate:getaquifer-success", aqData.Data.AquiferRating, aqData.Data.IsSalty));
                 });
         }
     }

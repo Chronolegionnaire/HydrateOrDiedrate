@@ -31,14 +31,13 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public const string HarmonyID = "com.chronolegionnaire.hydrateordiedrate";
     public const string NetworkChannelID = "hydrateordiedrate";
 
-    private ICoreServerAPI _serverApi;
-    private ICoreClientAPI _clientApi;
+    internal static ICoreServerAPI _serverApi { get; private set; }
+    internal static ICoreClientAPI _clientApi { get; private set; }
 
     private HudElementThirstBar _thirstHud;
     private HudElementHungerReductionBar _hungerReductionHud;
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
-    public static AquiferManager AquiferManager { get; private set; }
 
     private RainHarvesterManager rainHarvesterManager;
     private DrinkHudOverlayRenderer hudOverlayRenderer;
@@ -155,6 +154,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             EntityBehaviorSDHungerPatch.Apply(api);
         }
+
+         Aquifer.AquiferManager.Initialize(api);
     }
     
     public override void StartServerSide(ICoreServerAPI api)
@@ -167,7 +168,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .RegisterMessageType<WellSpringBlockPacket>()
             .SetMessageHandler<WellSpringBlockPacket>(WellSpringBlockPacketReceived);
         
-        AquiferManager = new AquiferManager(api);
         _waterInteractionHandler.Initialize(serverChannel);
         rainHarvesterManager = new RainHarvesterManager(_serverApi);
         api.Event.PlayerDisconnect += _waterInteractionHandler.OnPlayerDisconnect;
@@ -204,7 +204,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private void OnDrinkProgressReceived(DrinkProgressPacket msg)
     {
-        if (hudOverlayRenderer == null) return;
+        if (hudOverlayRenderer is null) return;
         hudOverlayRenderer.ProcessDrinkProgress(msg.Progress, msg.IsDrinking, msg.IsDangerous);
     }
 
@@ -266,19 +266,27 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private void WellSpringBlockPacketReceived(IServerPlayer sender, WellSpringBlockPacket packet)
     {
-        if (_serverApi?.World == null) return;
+        if (_serverApi?.World is null) return;
         IBlockAccessor accessor = _serverApi.World.GetBlockAccessor(true, true, false);
         accessor.ExchangeBlock(packet.BlockId, packet.Position);
         accessor.SpawnBlockEntity("BlockEntityWellSpring", packet.Position, null);
     }
+
     public override void Dispose()
     {
         _thirstHud?.Dispose();
         _hungerReductionHud?.Dispose();
-        
+
         ConfigManager.UnloadModConfig();
         harmony?.UnpatchAll(HarmonyID);
-
+        UnloadStatics();
         base.Dispose();
+    }
+
+    private static void UnloadStatics()
+    {
+        _serverApi = null;
+        _clientApi = null;
+        Aquifer.AquiferManager.Unload();
     }
 }

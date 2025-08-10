@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HydrateOrDiedrate.Aquifer;
+using HydrateOrDiedrate.Aquifer.ModData;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Vintagestory.API.Client;
@@ -20,8 +22,8 @@ namespace HydrateOrDiedrate
         public override void StartClientSide(ICoreClientAPI api)
         {
             this.capi = api;
-            capi.ChatCommands
-                .Create("aquiferview")
+            var test = capi.ChatCommands
+                .Create("aquiferview") //TODO permisions
                 .WithDescription("Toggle aquifer view highlight on/off")
                 .HandleWith(OnCommandToggle);
         }
@@ -31,7 +33,7 @@ namespace HydrateOrDiedrate
             if (!isOn)
             {
                 isOn = true;
-                if (workerThread == null || !workerThread.IsAlive)
+                if (workerThread is null || !workerThread.IsAlive)
                 {
                     workerThread = new Thread(RunLoop)
                     {
@@ -60,7 +62,7 @@ namespace HydrateOrDiedrate
                 {
                     Thread.Sleep(250);
                     IClientPlayer player = capi.World.Player;
-                    if (player == null) continue;
+                    if (player is null) continue;
 
                     BlockPos playerPos = player.Entity.Pos.AsBlockPos;
                     int blockRadius = 100;
@@ -75,25 +77,18 @@ namespace HydrateOrDiedrate
                             {
                                 if (!isOn) break;
 
-                                BlockPos currentPos = new BlockPos(x, y, z);
+                                BlockPos currentPos = new(x, y, z);
                                 Block block = capi.World.BlockAccessor.GetBlock(currentPos);
-                                if (block == null || block.BlockId == 0 || !IsSoilGravelSandRock(block))
-                                    continue;
-                                if (!IsTopExposed(currentPos))
-                                    continue;
-                                ChunkPos3D chunkPos = new ChunkPos3D(
-                                    x / GlobalConstants.ChunkSize, 
-                                    y / GlobalConstants.ChunkSize, 
-                                    z / GlobalConstants.ChunkSize
-                                );
-                                var aquiferData = GetAquiferData(chunkPos);
 
-                                if (aquiferData == null)
-                                    continue;
+                                if (block is null || block.BlockId == 0 || !IsSoilGravelSandRock(block)) continue;
+                                
+                                if (!IsTopExposed(currentPos)) continue;
+
+                                var aquiferData = AquiferManager.GetAquiferChunkData(capi.World, currentPos, capi.World.Logger)?.Data;
+                                if (aquiferData is null) continue;
 
                                 int color = GetColorForRating(aquiferData.AquiferRating, aquiferData.IsSalty);
-                                if (color == 0)
-                                    continue;
+                                if (color == 0) continue;
 
                                 highlightPositions.Add(currentPos);
                                 highlightColors.Add(color);
@@ -136,12 +131,6 @@ namespace HydrateOrDiedrate
                 category.Contains("muddygravel") ||
                 category.Contains("rock")
             );
-        }
-
-
-        private AquiferManager.AquiferData GetAquiferData(ChunkPos3D chunkCoord)
-        {
-            return HydrateOrDiedrateModSystem.AquiferManager?.GetAquiferData(chunkCoord);
         }
 
         private int GetColorForRating(int rating, bool isSalty)
