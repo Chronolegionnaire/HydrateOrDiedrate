@@ -48,6 +48,7 @@ public class WinchTopRenderer : IRenderer
 
     private void LoadStaticMeshes()
     {
+        if(Disposed) return;
         var mesh = Winch.GetMesh(WinchTopMeshPath);
         if (mesh is not null) WinchTopMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
 
@@ -65,6 +66,7 @@ public class WinchTopRenderer : IRenderer
 
     private void UpdateMesh()
     {
+        if(Disposed) return;
         var containerStack = Winch.InputSlot.Itemstack;
         if(containerStack is null || containerStack.Collectible is not BlockLiquidContainerTopOpened container)
         {
@@ -236,8 +238,10 @@ public class WinchTopRenderer : IRenderer
         lastContainerStack = null;
     }
 
+    public bool Disposed { get; private set; }
     public void Dispose()
     {
+        Disposed = true;
         Capi.Event.UnregisterRenderer(this, EnumRenderStage.Opaque);
         
         CleanupContainerData();
