@@ -107,6 +107,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 EnsureRainHarvesterBehaviorPresent(block);
             }
         }
+
+        Aquifer.AquiferManager.Initialize(api);
     }
 
     public override void Start(ICoreAPI api)
@@ -154,8 +156,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             EntityBehaviorSDHungerPatch.Apply(api);
         }
-
-         Aquifer.AquiferManager.Initialize(api);
     }
     
     public override void StartServerSide(ICoreServerAPI api)

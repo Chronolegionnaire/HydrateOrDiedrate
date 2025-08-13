@@ -2,6 +2,7 @@
 using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Keg;
@@ -93,7 +94,7 @@ public class BlockKeg : BlockLiquidContainerBase
 
         return base.OnBlockInteractStep(secondsUsed, world, byPlayer, blockSel);
     }
-
+    
     public override void OnBlockInteractStop(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
     {
         //Finish chopping action

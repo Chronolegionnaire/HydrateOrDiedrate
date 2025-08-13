@@ -89,7 +89,8 @@ public static partial class AquiferManager
 
         chunkData.Data = new AquiferData
         {
-            AquiferRating = rating,
+            AquiferRatingRaw = chunkData.Data?.AquiferRatingRaw ?? rating,
+            AquiferRatingSmoothed = rating,
             IsSalty = false
         };
 

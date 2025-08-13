@@ -1,8 +1,6 @@
 ﻿using HarmonyLib;
 using HydrateOrDiedrate.Aquifer;
 using HydrateOrDiedrate.Config;
-using System;
-using System.Threading.Tasks;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;

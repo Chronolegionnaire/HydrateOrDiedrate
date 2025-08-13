@@ -2,7 +2,6 @@
 using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
 namespace HydrateOrDiedrate.Commands
@@ -24,7 +23,7 @@ namespace HydrateOrDiedrate.Commands
                     IPlayer player = args.Caller.Player;
                     if (player == null) return TextCommandResult.Error(Lang.Get("hydrateordiedrate:command-only-for-players"));
 
-                    if (AquiferManager.SetAquiferRating(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.ServerPos.AsBlockPos, rating))
+                    if (!AquiferManager.SetAquiferRating(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.ServerPos.AsBlockPos, rating))
                     {
                         return TextCommandResult.Error(Lang.Get("hydrateordiedrate:setaquifer-failed"));
                     }
