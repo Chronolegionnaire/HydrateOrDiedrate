@@ -1673,6 +1673,62 @@ public class ItemHydrationPatch : HydrationPatchBase
             },
             new()
             {
+                Code = "floralzonescentralaustralianregion:grain-*",
+                ValueByType = new()
+                {
+                    ["*"] = -30
+                }
+            },
+            new()
+            {
+                Code = "floralzonescentralaustralianregion:flour-*",
+                ValueByType = new()
+                {
+                    ["*"] = -30
+                }
+            },
+            new()
+            {
+                Code = "floralzonescentralaustralianregion:dough-*",
+                ValueByType = new()
+                {
+                    ["*"] = 5
+                }
+            },
+            new()
+            {
+                Code = "floralzonescentralaustralianregion:bread-*",
+                ValueByType = new()
+                {
+                    ["*"] = -5
+                }
+            },
+            new()
+            {
+                Code = "floralzonescentralaustralianregion:ciderportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 350
+                }
+            },
+            new()
+            {
+                Code = "floralzonescentralaustralianregion:juiceportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 800
+                }
+            },
+            new()
+            {
+                Code = "floralzonescentralaustralianregion:spiritportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 100
+                }
+            },
+            new()
+            {
                 Code = "floralzoneseastasiaticregion:vegetable-*",
                 ValueByType = new()
                 {
@@ -1757,6 +1813,142 @@ public class ItemHydrationPatch : HydrationPatchBase
                 ValueByType = new()
                 {
                     ["*"] = 5
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:vegetable-*",
+                ValueByType = new()
+                {
+                    ["*"] = 5
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:pickledvegetable-*",
+                ValueByType = new()
+                {
+                    ["*"] = 15
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:legume-*",
+                ValueByType = new()
+                {
+                    ["*"] = -2
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:grain-*",
+                ValueByType = new()
+                {
+                    ["*"] = -30
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:fruit-*",
+                ValueByType = new()
+                {
+                    ["*"] = 10
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:flour-*",
+                ValueByType = new()
+                {
+                    ["*"] = -30
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:dough-*",
+                ValueByType = new()
+                {
+                    ["*"] = -2
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:bread-*",
+                ValueByType = new()
+                {
+                    ["*"] = -5
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:ciderportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 350
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:juiceportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 800
+                }
+            },
+            new()
+            {
+                Code = "floralzonescosmopolitanregion:spiritportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 100
+                }
+            },
+            new()
+            {
+                Code = "floralzonesmediterraneanregion:vegetable-*",
+                ValueByType = new()
+                {
+                    ["*"] = 5
+                }
+            },
+            new()
+            {
+                Code = "floralzonesmediterraneanregion:fruit-*",
+                ValueByType = new()
+                {
+                    ["*"] = 10
+                }
+            },
+            new()
+            {
+                Code = "floralzonesmediterraneanregion:pickledvegetable-*",
+                ValueByType = new()
+                {
+                    ["*"] = 15
+                }
+            },
+            new()
+            {
+                Code = "floralzonesmediterraneanregion:ciderportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 350
+                }
+            },
+            new()
+            {
+                Code = "floralzonesmediterraneanregion:juiceportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 800
+                }
+            },
+            new()
+            {
+                Code = "floralzonesmediterraneanregion:spiritportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 100
                 }
             },
             new()
