@@ -19,8 +19,7 @@ public class BlockEntityWellSpring : BlockEntity
     private string cachedRingMaterial;
     private bool canPlaceToConfiguredLevel; //TODO not read?
     private int partialValidatedHeight;
-    private const double MaxDailyOutput = 70.0;
-    private const double MinimumDailyOutput = 0.0;
+    private const double AquiferRatingToLitersOutputRatio = 0.5;
     
     private string lastWaterType;
     private double lastDailyLiters;
@@ -87,7 +86,7 @@ public class BlockEntityWellSpring : BlockEntity
         var thisSpring = wellsprings.FirstOrDefault(ws => ws.Position.Equals(Pos));
         if (thisSpring is null) return;
 
-        double dailyLiters = Math.Max(MinimumDailyOutput, (remainingRating * MaxDailyOutput / 100.0)) * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
+        double dailyLiters = Math.Max(0, remainingRating * AquiferRatingToLitersOutputRatio) * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
         lastDailyLiters = dailyLiters;
         MarkDirty(true);
         double litersThisTick = dailyLiters * elapsedDays;

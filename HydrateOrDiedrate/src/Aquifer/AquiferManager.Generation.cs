@@ -1,7 +1,6 @@
 ﻿using HydrateOrDiedrate.Aquifer.ModData;
 using HydrateOrDiedrate.Config;
 using System;
-using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -13,8 +12,9 @@ public static partial class AquiferManager
 {
     private static void HandleChunkColumnLoaded(Vec2i chunkColumnCoord, IWorldChunk[] chunks)
     {
-        var mapChunk = HydrateOrDiedrateModSystem._serverApi.World.BlockAccessor.GetMapChunk(chunkColumnCoord);
-        var waterCounts = GetWaterCounts(mapChunk, HydrateOrDiedrateModSystem._serverApi.World.Logger);
+        var world = HydrateOrDiedrateModSystem._serverApi.World;
+        var mapChunk = world.BlockAccessor.GetMapChunk(chunkColumnCoord);
+        var waterCounts = GetWaterCounts(mapChunk, world.Logger);
 
         if(waterCounts is null)
         {
@@ -22,15 +22,20 @@ public static partial class AquiferManager
             mapChunk.SetModdata(WaterCountsModDataKey, waterCounts);
         }
         
+        bool needsSmoothing = false;
         for (int i = 0; i < chunks.Length; i++)
         {
             var data = chunks[i].GetModdata<AquiferChunkData>(AquiferModDataKey);
             if(data is null || data.Version < CurrentAquiferDataVersion)
             {
                 GenerateAquiferChunkDataColumn(chunkColumnCoord, chunks, waterCounts);
+                needsSmoothing = true;
                 break;
             }
+            else if(data.Data.AquiferRatingSmoothed is null) needsSmoothing = true;
         }
+
+        if(needsSmoothing) QueueForCrossChunkSmoothing(chunkColumnCoord);
     }
 
     private static void GenerateAquiferChunkDataColumn(Vec2i chunkColumnCoord, IWorldChunk[] chunks, WaterCounts waterCounts)
@@ -46,28 +51,12 @@ public static partial class AquiferManager
             };
         }
 
-        ApplyVerticalSmoothing(data);
+        SmoothChunkColumnData(data);
 
         for (var i = 0; i < chunks.Length; i++)
         {
             //Save the generated data to the chunk
-            chunks[i].SetModdata(AquiferModDataKey, data[i]);
-        }
-    }
-
-    private static void ApplyVerticalSmoothing(AquiferChunkData[] data)
-    {
-        // Keep a copy so smoothing uses original values, not progressively modified ones
-        int[] originalRatings = data.Select(d => d.Data.AquiferRating).ToArray();
-    
-        for (int y = 0; y < data.Length; y++)
-        {
-            int below = Math.Max(y - 1, 0);
-            int above = Math.Min(y + 1, data.Length - 1);
-    
-            // Weighted average: neighbors influence, but center weight is higher
-            //Note: this is intentionally assigned to the raw rating, not the smoothed one (smoothed one is for cross chunk column smoothing, that cannot be done immediatly)
-            data[y].Data.AquiferRatingRaw = (originalRatings[below] + originalRatings[above] + originalRatings[y] * 2) / 4;
+            chunks[i].LiveModData[AquiferModDataKey] = data[i];
         }
     }
 
@@ -123,12 +112,10 @@ public static partial class AquiferManager
         float rainfall = world.BlockAccessor.GetClimateAt(blockPos, EnumGetClimateMode.WorldGenValues)?.Rainfall.GuardFinite() ?? 0f;
 
         double baseMul = 0.75 + rainfall;
-        double nsWeighted = (wNormal + wSalt) * baseMul;
-        double bWeighted = wBoiling * baseMul;
+        double nsWeighted = (wNormal + wSalt + wBoiling) * baseMul;
 
         int nsRating = NormalizeAquiferRating(nsWeighted, worldHeight);
-        int bRating = NormalizeAquiferRating(bWeighted, worldHeight);
-        int rating = Math.Clamp(nsRating + bRating, 0, 100);
+        int rating = Math.Clamp(nsRating, 0, 100);
 
         if (randomChance)
         {

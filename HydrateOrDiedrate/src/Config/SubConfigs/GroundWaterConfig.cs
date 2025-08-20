@@ -110,6 +110,13 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     public int AquiferMinimumWaterBlockThreshold { get; set; } = 5;
 
     /// <summary>
+    /// WWether aquifer data should be smoothed across chunk columns
+    /// </summary>
+    [Category("Aquifer")]
+    [DefaultValue(true)]
+    public bool CrossChunkColumnSmoothing { get; set; } = true;
+
+    /// <summary>
     /// Block radius when prospecting within which aquifers are detected
     /// </summary>
     [Category("Prospecting")]
