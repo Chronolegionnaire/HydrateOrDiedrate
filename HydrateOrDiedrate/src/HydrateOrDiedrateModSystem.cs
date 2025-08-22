@@ -29,6 +29,7 @@ namespace HydrateOrDiedrate;
 public class HydrateOrDiedrateModSystem : ModSystem
 {
     public const string HarmonyID = "com.chronolegionnaire.hydrateordiedrate";
+    public const string HarmonyAdvancedID = HarmonyID + ".markdirtythreshold";
     public const string NetworkChannelID = "hydrateordiedrate";
 
     private ICoreServerAPI _serverApi;
@@ -38,6 +39,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private HudElementHungerReductionBar _hungerReductionHud;
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
+    private Harmony advancedHarmony;
     public static AquiferManager AquiferManager { get; private set; }
 
     private RainHarvesterManager rainHarvesterManager;
@@ -53,6 +55,21 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             harmony = new Harmony(HarmonyID);
             harmony.PatchAll();
+        }
+        
+        if (ModConfig.Instance.Advanced.IncreaseMarkDirtyThreshold && !Harmony.HasAnyPatches(HarmonyAdvancedID))
+        {
+            advancedHarmony = new Harmony(HarmonyAdvancedID);
+
+            var target = AccessTools.Method(
+                typeof(SyncedTreeAttribute),
+                "MarkPathDirty");
+
+            var transpiler = new HarmonyMethod(
+                typeof(SyncedTreeAttributePatch),
+                nameof(SyncedTreeAttributePatch.MarkPathDirtyTranspiler));
+
+            advancedHarmony.Patch(target, transpiler: transpiler);
         }
     }
 
@@ -139,7 +156,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _waterInteractionHandler = new WaterInteractionHandler(api);
 
         XLibSkills.Enabled = false;
-        if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibpatch"))
+        if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibrabite"))
         {
             XLibSkills.Initialize(api);
             XLibSkills.Enabled = true;
@@ -278,6 +295,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         
         ConfigManager.UnloadModConfig();
         harmony?.UnpatchAll(HarmonyID);
+        harmony?.UnpatchAll(HarmonyAdvancedID);
 
         base.Dispose();
     }
