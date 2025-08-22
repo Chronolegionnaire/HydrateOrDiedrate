@@ -29,7 +29,6 @@ namespace HydrateOrDiedrate;
 public class HydrateOrDiedrateModSystem : ModSystem
 {
     public const string HarmonyID = "com.chronolegionnaire.hydrateordiedrate";
-    public const string HarmonyAdvancedID = HarmonyID + ".markdirtythreshold";
     public const string NetworkChannelID = "hydrateordiedrate";
 
     private ICoreServerAPI _serverApi;
@@ -46,6 +45,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private DrinkHudOverlayRenderer hudOverlayRenderer;
 
     private long customHudListenerId;
+    
+    public const string PatchCategory_MarkDirtyThreshold = "HoD.MarkDirtyThreshold";
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
@@ -54,22 +55,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
         if (!Harmony.HasAnyPatches(HarmonyID))
         {
             harmony = new Harmony(HarmonyID);
-            harmony.PatchAll();
-        }
-        
-        if (ModConfig.Instance.Advanced.IncreaseMarkDirtyThreshold && !Harmony.HasAnyPatches(HarmonyAdvancedID))
-        {
-            advancedHarmony = new Harmony(HarmonyAdvancedID);
-
-            var target = AccessTools.Method(
-                typeof(SyncedTreeAttribute),
-                "MarkPathDirty");
-
-            var transpiler = new HarmonyMethod(
-                typeof(SyncedTreeAttributePatch),
-                nameof(SyncedTreeAttributePatch.MarkPathDirtyTranspiler));
-
-            advancedHarmony.Patch(target, transpiler: transpiler);
+            
+            harmony.PatchAllUncategorized();
+            if (ModConfig.Instance.Advanced.IncreaseMarkDirtyThreshold)
+            {
+                harmony.PatchCategory(PatchCategory_MarkDirtyThreshold);
+            }
         }
     }
 
@@ -292,10 +283,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         _thirstHud?.Dispose();
         _hungerReductionHud?.Dispose();
-        
+
         ConfigManager.UnloadModConfig();
         harmony?.UnpatchAll(HarmonyID);
-        harmony?.UnpatchAll(HarmonyAdvancedID);
 
         base.Dispose();
     }

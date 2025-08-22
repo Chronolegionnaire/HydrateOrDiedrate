@@ -15,11 +15,11 @@ public class AdvancedConfig
     [DefaultValue(false)]
     public bool IncreaseMarkDirtyThreshold { get; set; } = false;
     
-    /// <summary>The threshold value used by the Harmony patch. Higher numbers can adversely affect performance start at 40
-    /// and keep increasing until rubber banding stops. Try to have set to lowest possible number (vanilla default is 40)
+    /// <summary>The threshold value used by the Harmony patch. Higher numbers can adversely affect performance start at 10
+    /// and keep increasing until rubber banding stops. Try to have set to lowest possible number (vanilla default is 10)
     /// to where you no longer experience rubber banding.</summary>
     [Category("Advanced")]
-    [Range(40, 200)]
-    [DefaultValue(100)]
-    public int markdirtythreshold { get; set; } = 100;
+    [Range(10, 200)]
+    [DefaultValue(20)]
+    public int markdirtythreshold { get; set; } = 20;
 }
