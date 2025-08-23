@@ -1,13 +1,11 @@
 ﻿using HarmonyLib;
 using HydrateOrDiedrate.Aquifer;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection.Emit;
 using Vintagestory.Common;
 using Vintagestory.Server;
 
-namespace HydrateOrDiedrate.src.Patches;
+namespace HydrateOrDiedrate.Patches.Harmony;
 
 [HarmonyPatch]
 public static class AquiferSmoothingPatch
