@@ -12,7 +12,7 @@ namespace HydrateOrDiedrate.Aquifer;
 
 public static partial class AquiferManager
 {
-    public static readonly int CurrentAquiferDataVersion = 2;
+    public static readonly int CurrentAquiferDataVersion = 3;
     
     public const string WaterCountsModDataKey = "game:waterCounts";
     public const string AquiferModDataKey = "aquiferData";
