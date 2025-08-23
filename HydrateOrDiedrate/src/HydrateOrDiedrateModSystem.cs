@@ -38,7 +38,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private HudElementHungerReductionBar _hungerReductionHud;
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
-    private Harmony advancedHarmony;
     public static AquiferManager AquiferManager { get; private set; }
 
     private RainHarvesterManager rainHarvesterManager;

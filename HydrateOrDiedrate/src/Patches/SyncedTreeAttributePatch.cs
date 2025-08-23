@@ -9,26 +9,24 @@ using System.Linq;
 
 namespace HydrateOrDiedrate.patches
 {
-    [HarmonyPatch(typeof(SyncedTreeAttribute), "MarkPathDirty")]
+    [HarmonyPatch]
     [HarmonyPatchCategory(HydrateOrDiedrateModSystem.PatchCategory_MarkDirtyThreshold)]
     internal static class SyncedTreeAttributePatch
     {
         private static int Threshold => ModConfig.Instance.Advanced.markdirtythreshold;
 
+        [HarmonyPatch(typeof(SyncedTreeAttribute), "MarkPathDirty")]
+        [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> MarkPathDirtyTranspiler(
             IEnumerable<CodeInstruction> instructions,
             ILGenerator generator)
         {
             var instrList = instructions.ToList();
 
-            var fieldAttrPathsDirty = AccessTools.Field(typeof(SyncedTreeAttribute), "attributePathsDirty");
-            if (fieldAttrPathsDirty is null)
-                throw new MissingFieldException(typeof(SyncedTreeAttribute).FullName, "attributePathsDirty");
-
-            var hashSetCountGetter = AccessTools.PropertyGetter(typeof(HashSet<string>), "Count");
-            if (hashSetCountGetter is null)
-                throw new MissingMethodException(typeof(HashSet<string>).FullName, "get_Count");
-
+            var fieldAttrPathsDirty = AccessTools.Field(typeof(SyncedTreeAttribute), "attributePathsDirty") ?? throw new MissingFieldException(typeof(SyncedTreeAttribute).FullName, "attributePathsDirty");
+            
+            var hashSetCountGetter = AccessTools.PropertyGetter(typeof(HashSet<string>), "Count") ?? throw new MissingMethodException(typeof(HashSet<string>).FullName, "get_Count");
+            
             var matcher = new CodeMatcher(instrList, generator)
                 .MatchStartForward(
                     new CodeMatch(ci =>
