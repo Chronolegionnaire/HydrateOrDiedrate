@@ -68,8 +68,8 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     /// Water‑block multiplier for determining aquifer rating. Larger numbers will make aquifers stronger near regular water
     /// </summary>
     [Category("Aquifer")]
-    [DefaultValue(10.0d)]
-    public double AquiferWaterBlockMultiplier { get; set; } = 10.0;
+    [DefaultValue(4.0d)]
+    public double AquiferWaterBlockMultiplier { get; set; } = 4.0;
 
     /// <summary>
     /// Salt‑water multiplier for determining aquifer rating
@@ -77,16 +77,16 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     /// (Will also make aquifers that are further from oceans saltier)
     /// </summary>
     [Category("Aquifer")]
-    [DefaultValue(10.0d)]
-    public double AquiferSaltWaterMultiplier { get; set; } = 10.0;
+    [DefaultValue(4.0d)]
+    public double AquiferSaltWaterMultiplier { get; set; } = 4;
 
     /// <summary>
     /// Boiling water multiplier for determining aquifer rating
     /// Larger numbers will make aquifers stronger near boiling water
     /// </summary>
     [Category("Aquifer")]
-    [DefaultValue(100)]
-    public int AquiferBoilingWaterMultiplier { get; set; } = 100;
+    [DefaultValue(50)]
+    public int AquiferBoilingWaterMultiplier { get; set; } = 50;
 
     /// <summary>
     /// Maximum aquifer quality rating above sea level
@@ -108,6 +108,13 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     [Category("Aquifer")]
     [DefaultValue(5)]
     public int AquiferMinimumWaterBlockThreshold { get; set; } = 5;
+
+    /// <summary>
+    /// WWether aquifer data should be smoothed across chunk columns
+    /// </summary>
+    [Category("Aquifer")]
+    [DefaultValue(true)]
+    public bool CrossChunkColumnSmoothing { get; set; } = true;
 
     /// <summary>
     /// Block radius when prospecting within which aquifers are detected

@@ -17,4 +17,6 @@ public static class Util
     /// <param name="defaultValue">what to return if the value was Nan or Infinity</param>
     /// <returns>The value if not NaN or Infinity otherwise the defaultValue</returns>
     public static float GuardFinite(this float value, float defaultValue = 0f) => float.IsFinite(value) ? value : defaultValue;
+
+    public static bool IsChunkValid(this IWorldChunk chunk) => chunk is not null && !chunk.Disposed && chunk.Data is not null && chunk.Data.Length > 0;
 }

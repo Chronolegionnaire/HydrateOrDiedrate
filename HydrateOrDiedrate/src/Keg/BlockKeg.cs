@@ -93,7 +93,7 @@ public class BlockKeg : BlockLiquidContainerBase
 
         return base.OnBlockInteractStep(secondsUsed, world, byPlayer, blockSel);
     }
-
+    
     public override void OnBlockInteractStop(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
     {
         //Finish chopping action
