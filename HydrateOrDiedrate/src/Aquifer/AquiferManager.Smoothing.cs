@@ -1,9 +1,6 @@
 ﻿using HydrateOrDiedrate.Aquifer.ModData;
-using HydrateOrDiedrate.Config;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
@@ -56,6 +53,17 @@ public static partial class AquiferManager
         return true;
     }
 
+    public static void TrySmoothChunk(int chunkX, int chunkZ)
+    {
+        var provider = HydrateOrDiedrateModSystem._serverApi.World.BlockAccessor;
+
+        var size = SmoothingRadius * 2 + 1;
+        var chunkYCount = provider.MapSizeY / GlobalConstants.ChunkSize;
+        var chunkBuffer = new IWorldChunk[size, chunkYCount, size];
+
+        TrySmoothCrossChunkData(new Vec2i(chunkX, chunkZ), chunkYCount, chunkBuffer);
+    }
+
     internal static bool TrySmoothCrossChunkData(Vec2i vec2i, int chunkYCount, IWorldChunk[,,] chunkBuffer)
     {
         //TODO we could potentially also come up with a salt water smoothing method
@@ -89,12 +97,14 @@ public static partial class AquiferManager
         {
             var totalRating = 0.0;
             var totalWeight = 0.0;
+            var centerWeight = xLength * zLength;
 
             for (int x = 0; x < xLength; x++)
             {
                 for (int z = 0; z < zLength; z++)
                 {
                     var weight = 1;
+                    if(x == xCenter && zCenter == z) weight = centerWeight;
                     totalRating += aquiferData[x, y, z].Data.AquiferRatingRaw * weight;
                     totalWeight += weight;
                 }
@@ -106,49 +116,5 @@ public static partial class AquiferManager
         }
 
         return true;
-    }
-
-    private static readonly Queue<Vec2i> crossChunkSmoothingQueue = new();
-    private static Thread crossChunkSmoothingThread;
-    public static void QueueForCrossChunkSmoothing(Vec2i vec2i)
-    {
-        if(!ModConfig.Instance.GroundWater.CrossChunkColumnSmoothing) return;
-
-        crossChunkSmoothingQueue.Enqueue(vec2i);
-        if (crossChunkSmoothingThread is null || !crossChunkSmoothingThread.IsAlive)
-        {
-            crossChunkSmoothingThread = new Thread(CrossChunkSmoothingWorker)
-            {
-                IsBackground = true,
-                Name = "CrossChunkSmoothingWorker"
-            };
-            crossChunkSmoothingThread.Start();
-        }
-
-    }
-
-    private static void CrossChunkSmoothingWorker()
-    {
-        var provider = HydrateOrDiedrateModSystem._serverApi.World.BlockAccessor;
-
-        var size = SmoothingRadius * 2 + 1;
-        var chunkYCount = provider.MapSizeY / GlobalConstants.ChunkSize;
-        var chunkBuffer = new IWorldChunk[size, chunkYCount, size];
-        while (crossChunkSmoothingQueue.Count > 0)
-        {
-            if (crossChunkSmoothingQueue.TryDequeue(out var vec2i))
-            {
-                var map = provider.GetMapChunk(vec2i);
-                if(map is null) continue; // Don't keep trying if chunk was already unloaded
-
-                if (!TrySmoothCrossChunkData(vec2i, chunkYCount, chunkBuffer))
-                {
-                    crossChunkSmoothingQueue.Enqueue(vec2i);
-                }
-            }
-
-            //TODO maybe track requeued items so we can do a longer sleep if nothing is capable of being smoothed
-            Thread.Sleep(100); //TODO maybe adjust this
-        }
     }
 }

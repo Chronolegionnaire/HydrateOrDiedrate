@@ -21,21 +21,25 @@ public static partial class AquiferManager
             waterCounts = GenerateWaterCounts(chunks);
             mapChunk.SetModdata(WaterCountsModDataKey, waterCounts);
         }
-        
+        var smoothingEnabled = ModConfig.Instance.GroundWater.CrossChunkColumnSmoothing;
+
         bool needsSmoothing = false;
         for (int i = 0; i < chunks.Length; i++)
         {
-            var data = chunks[i].GetModdata<AquiferChunkData>(AquiferModDataKey);
+            var data = GetAquiferChunkData(chunks[i]);
             if(data is null || data.Version < CurrentAquiferDataVersion)
             {
                 GenerateAquiferChunkDataColumn(chunkColumnCoord, chunks, waterCounts);
-                needsSmoothing = true;
+                needsSmoothing = smoothingEnabled;
                 break;
             }
-            else if(data.Data.AquiferRatingSmoothed is null) needsSmoothing = true;
+            else if(data.Data.AquiferRatingSmoothed is null)
+            {
+                needsSmoothing = smoothingEnabled;
+            }
         }
 
-        if(needsSmoothing) QueueForCrossChunkSmoothing(chunkColumnCoord);
+        if(needsSmoothing) mapChunk.SetModdata(NeedsSmoothingModDataKey, true);
     }
 
     private static void GenerateAquiferChunkDataColumn(Vec2i chunkColumnCoord, IWorldChunk[] chunks, WaterCounts waterCounts)
@@ -65,13 +69,8 @@ public static partial class AquiferManager
         var config = ModConfig.Instance.GroundWater;
         var world = HydrateOrDiedrateModSystem._serverApi.World;
         
-        long seed = world.Seed;
-        int chunkSeed = GameMath.MurmurHash3(
-            chunkColumnCoord.X ^ (int)(seed >> 40),
-            chunkColumnCoord.Y ^ (int)(seed >> 20),
-            chunkCoordY ^ (int)(seed)
-        );
-        LCGRandom rand = new(chunkSeed);
+        LCGRandom rand = new(world.Seed);
+        rand.InitPositionSeed(chunkColumnCoord.X, chunkCoordY, chunkColumnCoord.Y);
         double chance = rand.NextDouble();
 
         int totalWaterCount = waterCounts.GetTotalWaterBlockCount();
@@ -86,7 +85,7 @@ public static partial class AquiferManager
             double normalizedDepth = (seaLevel - chunkCenterY) / (double)(seaLevel - 1);
             depthMul = 1 + normalizedDepth * config.AquiferDepthMultiplierScale;
         }
-
+        
         bool randomChance = chance < config.AquiferRandomMultiplierChance * depthMul;
 
         if (totalWaterCount < config.AquiferMinimumWaterBlockThreshold && !randomChance)

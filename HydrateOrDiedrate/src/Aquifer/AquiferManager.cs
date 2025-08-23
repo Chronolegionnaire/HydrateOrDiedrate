@@ -44,7 +44,6 @@ public static partial class AquiferManager
     internal static void Unload()
     {
         WaterKindById = null;
-        crossChunkSmoothingQueue.Clear();
     }
 
     public static void ClearAquiferData(IWorldAccessor world, FastVec3i pos) =>  world.BlockAccessor.GetChunk(pos.X, pos.Y, pos.Z)?.RemoveModdata(AquiferModDataKey);
@@ -71,7 +70,6 @@ public static partial class AquiferManager
     public static AquiferChunkData GetAquiferChunkData(IWorldAccessor world, BlockPos blockPos, ILogger logger = null)
         => GetAquiferChunkData(world.BlockAccessor.GetChunkAtBlockPos(blockPos), logger);
 
-    //TODO: we can probably cache this in the LiveModData to prevent deserialization every time
     public static AquiferChunkData GetAquiferChunkData(IWorldChunk chunk, ILogger logger = null)
     {
         if(chunk is null) return null;
