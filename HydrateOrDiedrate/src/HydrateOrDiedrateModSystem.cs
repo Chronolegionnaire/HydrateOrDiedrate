@@ -44,6 +44,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private DrinkHudOverlayRenderer hudOverlayRenderer;
 
     private long customHudListenerId;
+    
+    public const string PatchCategory_MarkDirtyThreshold = "HoD.MarkDirtyThreshold";
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
@@ -52,7 +54,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
         if (!Harmony.HasAnyPatches(HarmonyID))
         {
             harmony = new Harmony(HarmonyID);
-            harmony.PatchAll();
+            
+            harmony.PatchAllUncategorized();
+            if (ModConfig.Instance.Advanced.IncreaseMarkDirtyThreshold)
+            {
+                harmony.PatchCategory(PatchCategory_MarkDirtyThreshold);
+            }
         }
     }
 
@@ -139,7 +146,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _waterInteractionHandler = new WaterInteractionHandler(api);
 
         XLibSkills.Enabled = false;
-        if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibpatch"))
+        if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibrabite"))
         {
             XLibSkills.Initialize(api);
             XLibSkills.Enabled = true;
@@ -275,7 +282,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         _thirstHud?.Dispose();
         _hungerReductionHud?.Dispose();
-        
+
         ConfigManager.UnloadModConfig();
         harmony?.UnpatchAll(HarmonyID);
 
