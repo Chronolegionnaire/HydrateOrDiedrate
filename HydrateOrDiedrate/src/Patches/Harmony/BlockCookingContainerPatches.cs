@@ -1,12 +1,31 @@
 ﻿using HarmonyLib;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Patches.Harmony;
 
-[HarmonyPatch(typeof(BlockCookingContainer), "DoSmelt")]
-public static class BlockCookingContainerPatch
+[HarmonyPatch]
+public static class BlockCookingContainerPatches
 {
+
+    [HarmonyTargetMethods]
+    public static IEnumerable<MethodBase> TargetMethods()
+    {
+        var baseGameType = typeof(BlockCookingContainer);
+        var baseGameMethod = AccessTools.Method(nameof(BlockCookingContainer.DoSmelt));
+        yield return baseGameMethod;
+
+        //Find all method overrides
+        foreach(var inheritingClass in AccessTools.AllTypes().Where(baseGameType.IsAssignableFrom))
+        {
+            var method = AccessTools.GetDeclaredMethods(inheritingClass).Find(method => method.GetBaseDefinition() == baseGameMethod && method != baseGameMethod);
+            if(method is not null) yield return method;
+        }
+    }
+
     [HarmonyPrefix]
     [HarmonyPriority(Priority.VeryLow)]
     public static bool Prefix(IWorldAccessor world, ISlotProvider cookingSlotsProvider, ItemSlot inputSlot, BlockCookingContainer __instance)

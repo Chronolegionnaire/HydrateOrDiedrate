@@ -12,10 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="ACulinaryArtillery">
-      <HintPath>refDlls\ACulinaryArtillery.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="VintagestoryAPI">
       <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
       <Private>false</Private>
@@ -75,6 +71,10 @@
     <Reference Include="xlib">
       <HintPath>lib\dlls\xlib.dll</HintPath>
       <Private>false</Private>
+    </Reference>
+    <Reference Include="ACulinaryArtillery">
+      <HintPath>lib\ACulinaryArtillery.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="xskills">
       <HintPath>refDlls\xskills.dll</HintPath>

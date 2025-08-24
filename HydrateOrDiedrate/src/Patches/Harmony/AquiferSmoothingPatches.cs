@@ -8,7 +8,7 @@ using Vintagestory.Server;
 namespace HydrateOrDiedrate.Patches.Harmony;
 
 [HarmonyPatch]
-public static class AquiferSmoothingPatch
+public static class AquiferSmoothingPatches
 {
     [HarmonyPatch("Vintagestory.Server.ServerSystemSupplyChunks", "updateNeighboursLoadedFlags")]
     [HarmonyTranspiler]
@@ -54,7 +54,7 @@ public static class AquiferSmoothingPatch
             CodeInstruction.LoadLocal(2),
             CodeInstruction.LoadLocal(chunkXVar.LocalIndex),
             CodeInstruction.LoadLocal(chunkZVar.LocalIndex),
-            new (OpCodes.Call, AccessTools.Method(typeof(AquiferSmoothingPatch), nameof(OnNeighborChunksLoaded)))
+            new (OpCodes.Call, AccessTools.Method(typeof(AquiferSmoothingPatches), nameof(OnNeighborChunksLoaded)))
         );
 
         return matcher.InstructionEnumeration();

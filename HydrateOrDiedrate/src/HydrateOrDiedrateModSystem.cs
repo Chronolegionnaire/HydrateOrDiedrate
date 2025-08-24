@@ -59,6 +59,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
             {
                 harmony.PatchCategory(PatchCategory_MarkDirtyThreshold);
             }
+
+            if (api.ModLoader.IsModEnabled("aculinaryartillery"))
+            {
+                harmony.PatchCategory("aculinaryartillery");
+            }
         }
     }
 
