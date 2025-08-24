@@ -68,6 +68,10 @@
       <HintPath>lib\dlls\VImGui.NET.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="HardcoreWater">
+      <HintPath>lib\HardcoreWater.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="xlib">
       <HintPath>lib\dlls\xlib.dll</HintPath>
       <Private>false</Private>
