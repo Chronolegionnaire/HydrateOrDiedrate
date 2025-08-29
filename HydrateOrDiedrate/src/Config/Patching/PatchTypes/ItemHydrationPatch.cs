@@ -2379,7 +2379,16 @@ public class ItemHydrationPatch : HydrationPatchBase
                 {
                     ["*"] = 600
                 }
-            }
+            },
+            new()
+            {
+                Code = "saltandsands:bivalvemeat-*",
+                ValueByType = new()
+                {
+                    ["*"] = -5,
+                    ["saltandsands:bivalvemeat-freshwatermussel-*"] = 20
+                }
+            },
         ]
     };
 }

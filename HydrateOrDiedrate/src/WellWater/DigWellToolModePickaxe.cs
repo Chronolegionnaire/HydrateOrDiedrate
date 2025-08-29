@@ -121,7 +121,7 @@ namespace HydrateOrDiedrate.wellwater
         {
             try
             {
-                Type pickaxeBehaviorType = Type.GetType("XSkills.PickaxeBehaivor, xskills");
+                Type pickaxeBehaviorType = Type.GetType("XSkills.PickaxeBehavior, xskills");
                 if (pickaxeBehaviorType != null)
                 {
                     MethodInfo method = pickaxeBehaviorType.GetMethod("CreateToolModes", BindingFlags.Public | BindingFlags.Static);
@@ -134,7 +134,7 @@ namespace HydrateOrDiedrate.wellwater
             }
             catch (Exception e)
             {
-                api.Logger.Error("Error invoking XSkills.PickaxeBehaivor.CreateToolModes: " + e);
+                api.Logger.Error("Error invoking XSkills.PickaxeBehavior.CreateToolModes: " + e);
             }
             return null;
         }
