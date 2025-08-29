@@ -73,6 +73,7 @@ public class SatietyConfig
     /// The amount of satiety a player gets from drinking well water that is tainted.
     /// (this is normally a negative number, which results in nutrient deficiency)
     /// </summary>
+    [DefaultValue(-400d)]
     public float WellWaterTaintedSatiety { get; set; } = -400f;
 
     /// <summary>

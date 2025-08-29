@@ -31,7 +31,7 @@ public class ContainersConfig
     public float SpoilRateTapped { get; set; } = 0.65f;
 
     /// <summary>
-    /// Chance (0–1) of recovering the iron hoop when dismantling a keg 
+    /// Chance of recovering the iron hoop when dismantling a keg 
     /// </summary>
     [Category("Keg")]
     [DisplayFormat(DataFormatString = "P")]

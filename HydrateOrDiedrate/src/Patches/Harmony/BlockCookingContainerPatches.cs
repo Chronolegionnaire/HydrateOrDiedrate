@@ -15,7 +15,7 @@ public static class BlockCookingContainerPatches
     public static IEnumerable<MethodBase> TargetMethods()
     {
         var baseGameType = typeof(BlockCookingContainer);
-        var baseGameMethod = AccessTools.Method(nameof(BlockCookingContainer.DoSmelt));
+        var baseGameMethod = AccessTools.Method(baseGameType, nameof(BlockCookingContainer.DoSmelt));
         yield return baseGameMethod;
 
         //Find all method overrides
