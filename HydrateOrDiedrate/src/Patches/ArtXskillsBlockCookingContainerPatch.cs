@@ -12,7 +12,7 @@ namespace HydrateOrDiedrate.patches
     {
     static bool Prepare()
     {
-        return AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "ArtsXSkills");
+        return AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "ArtsXSkillsPatch");
     }
 
     static MethodBase TargetMethod()

@@ -12,7 +12,12 @@
         "sides": ["up"]
       }
     },
-    { "name": "HorizontalOrientable" },
+    {
+      "name": "HorizontalOrientable",
+      "properties": {
+        "dropBlockFace": "east"
+      }
+    },
     {
       "name": "Multiblock",
       "propertiesByType": {

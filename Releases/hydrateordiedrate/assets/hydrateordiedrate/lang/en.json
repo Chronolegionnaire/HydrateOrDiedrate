@@ -1,7 +1,6 @@
 ﻿{
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Enable Thirst Mechanics",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Enable Harsh Heat",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Enable Boiling Water Damage",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Enable Liquid Encumbrance",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Maximum Thirst",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Thirst Damage",
@@ -107,6 +106,9 @@
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltFreshHours": "Well Water (Poisoned Salt) Fresh Hours",
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltTransitionHours": "Well Water (Poisoned Salt) Transition Hours",
   "hydrateordiedrate:Config.Setting.WaterPerish": "Set to false to remove water transition entirely so new water types will never perish into regular water",
+  "hydrateordiedrate:Config.Setting.settingAquiferRatingCeilingAboveSeaLevel": "Max aquifer rating above sea level",
+  "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale": "Aquifer depth multiplier scale",
+  "hydrateordiedrate:Config.Setting.settingAquiferMinimumWaterBlockThreshold": "Aquifer minimum liquid block per chunk threshold",
   "hydrateordiedrate:Config.Setting.WinchLowerSpeed": "Winch Lower Speed",
   "hydrateordiedrate:Config.Setting.WinchRaiseSpeed": "Winch Raise Speed",
   "hydrateordiedrate:Config.Setting.KegDropWithLiquid": "Keg retains liquid when broken",
@@ -262,9 +264,6 @@
   "hydrateordiedrate-sat": "{0} sat",
   "hydrateordiedrate-hp": "{0} hp",
   "hydrateordiedrate-hyd": "{0} hyd",
-  "blockentitykeg-empty": "Empty",
-  "blockentitykeg-contents": "Contents: {0}x{1}",
-  "itemkegtap-requireshammer": "Requires a hammer in the off hand",
   "characterextradialogs-hydration": "Hydration",
   "characterextradialogs-thirstrate": "Thirst Rate",
   "characterextradialogs-nutritiondeficit": "Nutrition Deficit",
@@ -277,7 +276,7 @@
   "winch.springDetected": "Wellspring detected below:",
   "winch.noSpring": "No wellspring detected below winch.",
   "winch.waterType": "Water Type: {0}",
-  "winch.outputRate": "Output Rate: {0} L/day",
+  "winch.outputRate": "Output Rate: {0:F1} L/day",
   "winch.retentionVolume": "Max Well Volume: {0} liters",
   "winch.totalShaftVolume": "Current Well Volume: {0} L"
 }

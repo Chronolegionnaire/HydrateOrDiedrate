@@ -1,7 +1,6 @@
 {
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Включить механику жажды",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Включение сильной жары",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Включить повреждение кипятком",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Включить затруднение при переноски жидкостей",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Максимальная жажда",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Урон от жажды",
@@ -107,6 +106,9 @@
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltFreshHours": "Количество часов до затухания отравленной солёной колодезной воды",
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltTransitionHours": "Время перехода на отравленную солёную колодезную воду",
   "hydrateordiedrate:Config.Setting.WaterPerish": "Установите значение false, чтобы полностью убрать переход воды и новые виды воды никогда не превратятся в обычную воду",
+  "hydrateordiedrate:Config.Setting.settingAquiferRatingCeilingAboveSeaLevel": "Максимальная высота водоносного горизонта над уровнем моря",
+  "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale": "Шкала множителя глубины водоносного горизонта",
+  "hydrateordiedrate:Config.Setting.settingAquiferMinimumWaterBlockThreshold": "Пороговое значение минимального объёма жидкости на единицу площади водоносного горизонта",
   "hydrateordiedrate:Config.Setting.WinchLowerSpeed": "Скорость опускания лебёдки",
   "hydrateordiedrate:Config.Setting.WinchRaiseSpeed": "Скорость подъёма лебёдки",
   "hydrateordiedrate:Config.Setting.KegDropWithLiquid": "Бочонок сохраняет жидкость при разбивании",
@@ -262,9 +264,6 @@
   "hydrateordiedrate-sat": "{0} нас.",
   "hydrateordiedrate-hp": "{0} hp",
   "hydrateordiedrate-hyd": "{0} гидр.",
-  "blockentitykeg-empty": "Пустой",
-  "blockentitykeg-contents": "Содержимое: {0}x{1}",
-  "itemkegtap-requireshammer": "Требуется молот в свободной руке",
   "characterextradialogs-hydration": "Гидратация",
   "characterextradialogs-thirstrate": "Уровень жажды",
   "characterextradialogs-nutritiondeficit": "Дефицит питания",
@@ -277,7 +276,7 @@
   "winch.springDetected":      "Родник обнаружен ниже:",
   "winch.noSpring":            "Родник не обнаружен под лебёдкой.",
   "winch.waterType":           "Тип воды: {0}",
-  "winch.outputRate":          "Производительность: {0}л/день",
+  "winch.outputRate":          "Производительность: {0:F1}л/день",
   "winch.retentionVolume":     "Максимальный объем колодца: {0}литров",
   "winch.totalShaftVolume":    "Текущий объем колодца: {0}л"
 }

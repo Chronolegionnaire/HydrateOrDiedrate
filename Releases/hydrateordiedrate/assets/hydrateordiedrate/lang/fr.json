@@ -1,7 +1,6 @@
 {
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Activer les mécaniques de soif",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Activer la chaleur intense",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Activer les dégâts de l'eau bouillante",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Activer l'encombrement de liquide",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Soif maximale",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Dégâts causés par la soif",
@@ -262,9 +261,6 @@
   "hydrateordiedrate-sat": "{0} sat.",
   "hydrateordiedrate-hp": "{0} P.V.",
   "hydrateordiedrate-hyd": "{0} hyd.",
-  "blockentitykeg-empty": "Vide",
-  "blockentitykeg-contents": "Contient : {0} x {1}",
-  "itemkegtap-requireshammer": "Nécessite un marteau dans la main secondaire",
   "characterextradialogs-hydration": "Hydratation",
   "characterextradialogs-thirstrate": "Taux de soif",
   "characterextradialogs-nutritiondeficit": "Déficit nutritionnel",
@@ -277,7 +273,7 @@
   "winch.springDetected":      "Source détectée en dessous:",
   "winch.noSpring":            "Aucune source détectée sous le treuil.",
   "winch.waterType":           "Type d’eau: {0}",
-  "winch.outputRate":          "Débit: {0}L/jour",
+  "winch.outputRate":          "Débit: {0:F1}L/jour",
   "winch.retentionVolume":     "Volume max du puits: {0}litres",
   "winch.totalShaftVolume":    "Volume actuel du puits: {0}L"
 }

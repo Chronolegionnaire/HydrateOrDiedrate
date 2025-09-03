@@ -140,11 +140,12 @@ namespace HydrateOrDiedrate.patches
             if (byEntity is not EntityPlayer entityPlayer) return;
             if (world.PlayerByUid(entityPlayer.PlayerUID) is not IServerPlayer serverPlayer) return;
 
+            if (blockSel?.Position == null) return;
+            BlockPos pos = blockSel.Position;
             const string flagKey = "AquiferDataOnlyFlag";
             if (serverPlayer.Entity?.WatchedAttributes.GetBool(flagKey, false) == true) return;
 
             serverPlayer.Entity?.WatchedAttributes.SetBool(flagKey, true);
-            BlockPos pos = blockSel.Position;
 
             var currentAquiferData = AquiferManager.GetAquiferChunkData(world, pos, world.Logger)?.Data;
 
@@ -244,9 +245,11 @@ namespace HydrateOrDiedrate.patches
                 return Lang.Get("hydrateordiedrate:direction-here");
         }
 
-        private static void SendMessageToPlayer(IWorldAccessor world, IServerPlayer splr, string message) => world.Api.Event.EnqueueMainThreadTask(
-            () => splr.SendMessage(GlobalConstants.InfoLogChatGroup, message, EnumChatType.Notification, null),
-            "SendAquiferMessage"
-        );
+        private static void SendMessageToPlayer(IWorldAccessor world, IServerPlayer splr, string message)
+        {
+            world?.Api?.Event?.EnqueueMainThreadTask(
+                () => splr?.SendMessage(GlobalConstants.InfoLogChatGroup, message, EnumChatType.Notification, null),
+                "SendAquiferMessage");
+        }
     }
 }
