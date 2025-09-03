@@ -5,7 +5,12 @@
 	"entityBehaviors": [{ "name": "MPConsumer" }],
 	"behaviors": [
 		{"name": "Container"},
-		{"name": "HorizontalOrientable"}
+		{
+			"name": "HorizontalOrientable",
+			"properties": {
+				"dropBlockFace": "east"
+			}
+		}
 	],
 	"variantgroups": [
 		{ "code": "wood", "states": ["aged"], "loadFromProperties": "game:block/wood" },
@@ -20,7 +25,7 @@
 	"textures": {
 		"spindle":  { "base": "game:block/wood/debarked/{wood}" },
 		"plank": { "base": "game:block/wood/planks/{wood}1" },
-		"rope": { "base": "game:entity/erel/pristine/rope" }
+		"rope": { "base": "game:entity/lore/erel/pristine/rope" }
 	},
 	"attributes": {
 		"mapColorCode": "settlement"
@@ -83,10 +88,10 @@
 			{ "x1": 0, "y1": 0.375, "z1": 0.375, "x2": 1, "y2": 0.625, "z2": 0.625 }]
 	},
 	"tpHandTransform": {
-		"translation": { "x": -0.29, "y": -1.19, "z": -0.19 },
-		"rotation": { "x": 96, "y": -19, "z": -76 },
+		"translation": { "x": -0.25, "y": -1, "z": 0 },
+		"rotation": { "x": 16, "y": 13, "z": -70 },
 		"origin": { "x": 0.48, "y": 0.55, "z": 0.24 },
-		"scale": 0.8
+		"scale": 0.7
 	},
 	"groundTransform": {
 		"translation": { "x": 0, "y": 0, "z": 0 },

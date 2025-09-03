@@ -1,7 +1,6 @@
 ﻿{
   "hydrateordiedrate:Config.Setting.EnableThirstMechanics": "Povolit mechaniku žízně",
   "hydrateordiedrate:Config.Setting.HarshHeat": "Povolit velké horko",
-  "hydrateordiedrate:Config.Setting.EnableBoilingWaterDamage": "Povolit poškození vroucí vodou",
   "hydrateordiedrate:Config.Setting.EnableLiquidEncumbrance": "Povolit omezení tekutinou",
   "hydrateordiedrate:Config.Setting.MaxThirst": "Maximální žízeň",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Poškození žízní",

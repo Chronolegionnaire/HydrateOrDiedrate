@@ -45,33 +45,18 @@ namespace HydrateOrDiedrate.patches
             patchProcessor.Patch();
         }
 
-        private static void OnBlockBrokenWithPostfix(object __instance, IWorldAccessor world, Entity byEntity, ItemSlot itemslot, BlockSelection blockSel, bool __result)
+        private static void OnBlockBrokenWithPostfix(
+            object __instance, IWorldAccessor world, Entity byEntity, ItemSlot itemslot, BlockSelection blockSel,
+            bool __result)
         {
-            if (!__result)
-            {
-                return;
-            }
-            int toolMode = itemslot.Itemstack.Attributes.GetInt("toolMode", -1);
-            if (toolMode != 2)
-            {
-                return;
-            }
-            if (world.Api.Side != EnumAppSide.Server)
-            {
-                return;
-            }
-            IPlayer byPlayer = (byEntity as EntityPlayer)?.Player;
-            if (byPlayer == null)
-            {
-                return;
-            }
-            IServerPlayer serverPlayer = byPlayer as IServerPlayer;
-            if (serverPlayer == null)
-            {
-                return;
-            }
-            BlockPos pos = blockSel.Position;
-            
+            if (!__result) return;
+            if (world?.Api?.Side != EnumAppSide.Server) return;
+            var pos = blockSel?.Position;
+            if (pos == null) return;
+            var toolMode = itemslot?.Itemstack?.Attributes?.GetInt("toolMode", -1) ?? -1;
+            if (toolMode != 2) return;
+            var byPlayer = (byEntity as EntityPlayer)?.Player;
+            if (byPlayer is not IServerPlayer serverPlayer) return;
             var aquiferData = AquiferManager.GetAquiferChunkData(world, pos, world.Logger)?.Data;
             if (aquiferData == null)
             {
@@ -87,27 +72,22 @@ namespace HydrateOrDiedrate.patches
             string aquiferInfo = currentRating == 0
                 ? Lang.Get("hydrateordiedrate:aquifer-none")
                 : GetAquiferDescription(aquiferData.IsSalty, currentRating, world.BlockAccessor.MapSizeY, pos.Y);
-            
+
             int radius = ModConfig.Instance.GroundWater.ProspectingRadius;
             int bestRating = currentRating;
             FastVec3i bestChunk = new(chunkX, chunkY, chunkZ);
 
             for (int dx = -radius; dx <= radius; dx++)
+            for (int dy = -radius; dy <= radius; dy++)
+            for (int dz = -radius; dz <= radius; dz++)
             {
-                for (int dy = -radius; dy <= radius; dy++)
+                if (dx == 0 && dy == 0 && dz == 0) continue;
+                FastVec3i checkChunk = new(chunkX + dx, chunkY + dy, chunkZ + dz);
+                var checkAquiferData = AquiferManager.GetAquiferChunkData(world, checkChunk, world.Logger)?.Data;
+                if (checkAquiferData != null && checkAquiferData.AquiferRating > bestRating)
                 {
-                    for (int dz = -radius; dz <= radius; dz++)
-                    {
-                        if (dx == 0 && dy == 0 && dz == 0) continue;
-                        FastVec3i checkChunk = new(chunkX + dx, chunkY + dy, chunkZ + dz);
-
-                        var checkAquiferData = AquiferManager.GetAquiferChunkData(world, checkChunk, world.Logger)?.Data;
-                        if (checkAquiferData != null && checkAquiferData.AquiferRating > bestRating)
-                        {
-                            bestRating = checkAquiferData.AquiferRating;
-                            bestChunk = checkChunk;
-                        }
-                    }
+                    bestRating = checkAquiferData.AquiferRating;
+                    bestChunk = checkChunk;
                 }
             }
 

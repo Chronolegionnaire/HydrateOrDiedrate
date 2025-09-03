@@ -1,52 +1,52 @@
 [
   {
     "op": "add",
-    "path": "/attributesByType/claypot-cooked/textureMapping/rainwaterportion",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/rainwaterportion",
     "value": [
       "water",
       "group2"
     ],
-    "file": "game:blocktypes/clay/pot.json",
+    "file": "game:blocktypes/clay/fired/pot.json",
     "side": "Server"
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-cooked/textureMapping/boiledrainwaterportion",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/boiledrainwaterportion",
     "value": [
       "water",
       "group2"
     ],
-    "file": "game:blocktypes/clay/pot.json",
+    "file": "game:blocktypes/clay/fired/pot.json",
     "side": "Server"
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-cooked/textureMapping/distilledwaterportion",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/distilledwaterportion",
     "value": [
       "water",
       "group2"
     ],
-    "file": "game:blocktypes/clay/pot.json",
+    "file": "game:blocktypes/clay/fired/pot.json",
     "side": "Server"
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-cooked/textureMapping/boiledwaterportion",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/boiledwaterportion",
     "value": [
       "water",
       "group2"
     ],
-    "file": "game:blocktypes/clay/pot.json",
+    "file": "game:blocktypes/clay/fired/pot.json",
     "side": "Server"
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-cooked/textureMapping/wellwaterportion-fresh",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/wellwaterportion-fresh",
     "value": [
       "water",
       "group2"
     ],
-    "file": "game:blocktypes/clay/pot.json",
+    "file": "game:blocktypes/clay/fired/pot.json",
     "side": "Server"
   }
 ]
