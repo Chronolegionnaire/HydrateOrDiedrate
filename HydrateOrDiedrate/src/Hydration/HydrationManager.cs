@@ -6,7 +6,7 @@ namespace HydrateOrDiedrate;
 
 public static class HydrationManager
 {
-    private const string HydrationAttributeKey = "hydration";
+    public const string HydrationAttributeKey = "hydration";
 
     private static readonly Dictionary<AssetLocation, Vintagestory.API.Common.Func<ItemStack, float>> CustomHydrationEvaluators = [];
 
