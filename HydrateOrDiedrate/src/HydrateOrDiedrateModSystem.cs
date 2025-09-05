@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate.Commands;
 using HydrateOrDiedrate.Config;
@@ -21,6 +20,8 @@ using HydrateOrDiedrate.Config.Patching.PatchTypes;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Util;
 using System.Collections.Generic;
+using System.Reflection;
+using HydrateOrDiedrate.Recipes;
 using Vintagestory.API.Datastructures;
 using Newtonsoft.Json.Linq;
 
@@ -61,6 +62,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
+    // Really high execute order so HoD runs last to make sure any mod added recipes that get loaded in assets finalized are ready
+    public override double ExecuteOrder()
+    {
+        return 99998;
+    }
 
     public override void AssetsLoaded(ICoreAPI api)
     {
@@ -78,7 +84,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.AssetsFinalize(api);
         if(api.Side == EnumAppSide.Client) return; //This data is decided by the server and synced over to client automatically
-        
+        if (api.ModLoader.IsModEnabled("maketea") || api.ModLoader.IsModEnabled("maketeaforked"))  // Force make tea recipe load and then do recipe generation stuff
+        {
+            EnsureMakeTeaRecipesLoaded(api as ICoreServerAPI);
+        }
+        WaterVariantRecipeGenerator.Generate(api);
         EntityProperties playerEntity = api.World.GetEntityType(new AssetLocation("game", "player"));
         var HoDbehaviors = new List<JsonObject>(3);
 
@@ -295,5 +305,67 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _serverApi = null;
         _clientApi = null;
         Aquifer.AquiferManager.Unload();
+    }
+    // Force make tea to load its recipes in assets finalized like it should be doing in the first place
+    private static bool _makeTeaPreloaded;
+    private void EnsureMakeTeaRecipesLoaded(ICoreServerAPI sapi)
+    {
+        if (_makeTeaPreloaded || sapi == null) return;
+        var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        ModSystem mtSys = null;
+        foreach (var sys in sapi.ModLoader.Systems)
+        {
+            var t = sys?.GetType();
+            if (t == null) continue;
+            if (t.FullName == "MakeTea.MakeTeaModSystem")
+            {
+                mtSys = sys;
+                break;
+            }
+
+            if (t.Name.Equals("MakeTeaModSystem", StringComparison.OrdinalIgnoreCase) ||
+                t.FullName?.Contains(".MakeTea", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                var hasRegField = t.GetField("teapotRecipes", flags) != null;
+                var hasGetter = t.GetMethod("GetTeapotRecipes", flags) != null;
+                if (hasRegField || hasGetter)
+                {
+                    mtSys = sys;
+                    break;
+                }
+            }
+        }
+
+        if (mtSys == null)
+        {
+            _makeTeaPreloaded = true;
+            return;
+        }
+
+        var regField = mtSys.GetType().GetField("teapotRecipes", flags);
+        var regObj = regField?.GetValue(mtSys);
+        if (regObj == null)
+        {
+            _makeTeaPreloaded = true;
+            return;
+        }
+
+        var recipesProp = regObj.GetType().GetProperty("Recipes", flags);
+        var recipesList = recipesProp?.GetValue(regObj) as System.Collections.IList;
+        var countBefore = recipesList?.Count ?? -1;
+        if (recipesList == null || recipesList.Count == 0)
+        {
+            var loadMi = mtSys.GetType()
+                .GetMethod("LoadRecipes", flags, null, new[] { typeof(ICoreServerAPI) }, null);
+            if (loadMi == null)
+            {
+                _makeTeaPreloaded = true;
+                return;
+            }
+
+            loadMi.Invoke(mtSys, new object[] { sapi });
+        }
+
+        _makeTeaPreloaded = true;
     }
 }
