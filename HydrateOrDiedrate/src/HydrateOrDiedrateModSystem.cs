@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate.Commands;
 using HydrateOrDiedrate.Config;
@@ -21,6 +20,8 @@ using HydrateOrDiedrate.Config.Patching.PatchTypes;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Util;
 using System.Collections.Generic;
+using System.Reflection;
+using HydrateOrDiedrate.Recipes;
 using Vintagestory.API.Datastructures;
 using Newtonsoft.Json.Linq;
 
@@ -61,6 +62,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
+    // Really high execute order so HoD runs last to make sure any mod added recipes that get loaded in assets finalized are ready
+    public override double ExecuteOrder()
+    {
+        return 99998;
+    }
 
     public override void AssetsLoaded(ICoreAPI api)
     {
@@ -78,7 +84,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.AssetsFinalize(api);
         if(api.Side == EnumAppSide.Client) return; //This data is decided by the server and synced over to client automatically
-        
+        WaterVariantRecipeGenerator.Generate(api);
         EntityProperties playerEntity = api.World.GetEntityType(new AssetLocation("game", "player"));
         var HoDbehaviors = new List<JsonObject>(3);
 
