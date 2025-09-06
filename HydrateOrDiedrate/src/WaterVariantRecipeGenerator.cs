@@ -29,6 +29,13 @@ namespace HydrateOrDiedrate.Recipes
         {
             new AssetLocation("hydrateordiedrate", "wellwaterportion-salt"),
         };
+        private static readonly AssetLocation[] PoisonedCookingExtras =
+        {
+            new AssetLocation("hydrateordiedrate", "wellwaterportion-tainted"),
+            new AssetLocation("hydrateordiedrate", "wellwaterportion-poisoned"),
+        };
+        private static readonly string[] PoisonedCookingExtrasFull =
+            PoisonedCookingExtras.Select(al => al.ToString()).ToArray();
         private static readonly string FromPlainFull = PlainWater.ToString();
         private static readonly string FromSaltFull  = SaltWater.ToString();
         private static readonly string[] FreshAltsFull = FreshAlts.Select(al => al.ToString()).ToArray();
@@ -442,8 +449,10 @@ namespace HydrateOrDiedrate.Recipes
             {
                 var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { FromPlainFull };
                 foreach (var s in FreshAltsFull) set.Add(s);
+                foreach (var s in PoisonedCookingExtrasFull) set.Add(s);
                 return set.ToArray();
             }
+
 
             string[] BuildSaltUnion()
             {
