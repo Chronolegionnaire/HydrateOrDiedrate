@@ -48,5 +48,25 @@
     ],
     "file": "game:blocktypes/clay/fired/pot.json",
     "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/wellwaterportion-tainted",
+    "value": [
+      "water",
+      "group2"
+    ],
+    "file": "game:blocktypes/clay/fired/pot.json",
+    "side": "Server"
+  },
+  {
+    "op": "add",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/wellwaterportion-poisoned",
+    "value": [
+      "water",
+      "group2"
+    ],
+    "file": "game:blocktypes/clay/fired/pot.json",
+    "side": "Server"
   }
 ]
