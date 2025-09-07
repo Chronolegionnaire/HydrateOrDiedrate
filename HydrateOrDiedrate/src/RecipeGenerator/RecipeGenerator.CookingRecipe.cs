@@ -1,12 +1,7 @@
-﻿using HarmonyLib;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
-using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.RecipeGenerator;
@@ -18,7 +13,7 @@ public static partial class RecipeGenerator
         if(recipe is not CookingRecipe cookingRecipe || cookingRecipe.Ingredients is null) return;
 
         bool matchesFound = false;
-        foreach ((var fromCode, var toCodes) in ConversionMappings)
+        foreach ((var fromCode, var toCodes) in ConversionMappings.Union(DeadlyConversionMappings))
         for (int i = 0; i < cookingRecipe.Ingredients.Length; i++)
         {
             if(cookingRecipe.Ingredients[i] is not CookingRecipeIngredient ingredient) continue;

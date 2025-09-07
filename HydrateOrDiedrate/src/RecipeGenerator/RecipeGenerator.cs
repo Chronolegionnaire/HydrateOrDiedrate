@@ -6,6 +6,7 @@ using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using Vintagestory.Server;
 
 namespace HydrateOrDiedrate.RecipeGenerator;
 
@@ -14,6 +15,15 @@ public delegate void RecipeItemProcessor(IServerWorldAccessor world, RecipeListI
 public static partial class RecipeGenerator
 {
     public const string SourceForLogging = "HoD recipe generator";
+
+    internal static readonly Dictionary<AssetLocation, AssetLocation[]> DeadlyConversionMappings = new()
+    {
+        [new("game", "waterportion")] = [
+            new("hydrateordiedrate", "wellwaterportion-tainted"),
+            new("hydrateordiedrate", "wellwaterportion-poisoned")
+        ]
+    };
+
     internal static readonly Dictionary<AssetLocation, AssetLocation[]> ConversionMappings = new()
     {
         [new("game", "waterportion")] = [
@@ -58,16 +68,20 @@ public static partial class RecipeGenerator
         }
     }
 
-    private static List<RecipeListInfo> FindRecipeLists(ICoreAPI api)
+    private static IEnumerable<RecipeListInfo> FindRecipeLists(ICoreAPI api)
     {
         var result = new List<RecipeListInfo>();
+
+        FindAndAppendRecipeLists(api.World, result);
 
         foreach (var modSystem in api.ModLoader.Systems)
         {
             FindAndAppendRecipeLists(modSystem, result);
         }
 
-        return result;
+        // Deduplicate lists, preferring those whose target member can be set (i.e. not readonly)
+        return result.GroupBy(list => list.RecipeList)
+            .Select(duplicateLists => duplicateLists.OrderBy(info => info.TargetMember.CanSetValue()).First());
     }
 
     public static void GenerateVariants(ICoreServerAPI api, ILogger logger)
