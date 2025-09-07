@@ -20,8 +20,6 @@ using HydrateOrDiedrate.Config.Patching.PatchTypes;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Util;
 using System.Collections.Generic;
-using System.Reflection;
-using HydrateOrDiedrate.Recipes;
 using Vintagestory.API.Datastructures;
 using Newtonsoft.Json.Linq;
 
@@ -83,8 +81,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void AssetsFinalize(ICoreAPI api)
     {
         base.AssetsFinalize(api);
-        if(api.Side == EnumAppSide.Client) return; //This data is decided by the server and synced over to client automatically
-        WaterVariantRecipeGenerator.Generate(api);
+        if(api is not ICoreServerAPI serverApi) return; //This data is decided by the server and synced over to client automatically
+        RecipeGenerator.RecipeGenerator.GenerateVariants(serverApi, Mod.Logger);
         EntityProperties playerEntity = api.World.GetEntityType(new AssetLocation("game", "player"));
         var HoDbehaviors = new List<JsonObject>(3);
 
