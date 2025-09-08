@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using HarmonyLib;
 using HydrateOrDiedrate.Commands;
 using HydrateOrDiedrate.Config;
@@ -61,6 +60,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
+    // Really high execute order so HoD runs last to make sure any mod added recipes that get loaded in assets finalized are ready
+    public override double ExecuteOrder()
+    {
+        return 99998;
+    }
 
     public override void AssetsLoaded(ICoreAPI api)
     {
@@ -77,8 +81,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void AssetsFinalize(ICoreAPI api)
     {
         base.AssetsFinalize(api);
-        if(api.Side == EnumAppSide.Client) return; //This data is decided by the server and synced over to client automatically
-        
+        if(api is not ICoreServerAPI serverApi) return; //This data is decided by the server and synced over to client automatically
+        RecipeGenerator.RecipeGenerator.GenerateVariants(serverApi, Mod.Logger);
         EntityProperties playerEntity = api.World.GetEntityType(new AssetLocation("game", "player"));
         var HoDbehaviors = new List<JsonObject>(3);
 

@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <Reference Include="ACulinaryArtillery">
-      <HintPath>refDlls\ACulinaryArtillery.dll</HintPath>
+      <HintPath>lib\ACulinaryArtillery.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="VintagestoryAPI">
