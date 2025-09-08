@@ -13,7 +13,7 @@ namespace HydrateOrDiedrate.patches
     [HarmonyPatch(typeof(ItemProspectingPick), "PrintProbeResults")]
     public static class PrintProbeResultsPatch
     {
-        static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, IServerPlayer splr, ItemSlot itemslot, BlockPos pos)
+        public static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, IServerPlayer splr, ItemSlot itemslot, BlockPos pos)
         {
             if (world.Api.Side != EnumAppSide.Server || ModConfig.Instance.GroundWater.AquiferDataOnProspectingNodeMode) return;
 
@@ -39,10 +39,7 @@ namespace HydrateOrDiedrate.patches
             int chunkZ = pos.Z / GlobalConstants.ChunkSize;
             int currentRating = currentAquiferData.Data.AquiferRating;
 
-            string aquiferInfo = currentRating == 0
-                ? Lang.Get("hydrateordiedrate:aquifer-none")
-                : GetAquiferDescription(currentAquiferData.Data.IsSalty, currentRating, worldHeight, posY);
-
+            string aquiferInfo = currentAquiferData.Data.GetDescription();
 
             int radius = ModConfig.Instance.GroundWater.ProspectingRadius;
             int bestRating = currentRating;
@@ -76,20 +73,6 @@ namespace HydrateOrDiedrate.patches
             }
             
             SendMessageToPlayer(world, splr, aquiferInfo);
-        }
-
-        private static string GetAquiferDescription(bool isSalty, int rating, double worldHeight, double posY)
-        {
-            string aquiferType = isSalty ? Lang.Get("hydrateordiedrate:aquifer-salt") : Lang.Get("hydrateordiedrate:aquifer-fresh");
-            return rating switch
-            {
-                <= 10 => Lang.Get("hydrateordiedrate:aquifer-none-detected"),
-                <= 15 => Lang.Get("hydrateordiedrate:aquifer-very-poor", aquiferType),
-                <= 20 => Lang.Get("hydrateordiedrate:aquifer-poor", aquiferType),
-                <= 40 => Lang.Get("hydrateordiedrate:aquifer-light", aquiferType),
-                <= 60 => Lang.Get("hydrateordiedrate:aquifer-moderate", aquiferType),
-                _ => Lang.Get("hydrateordiedrate:aquifer-heavy", aquiferType)
-            };
         }
 
         private static string GetDirectionHint(int dx, int dy, int dz)
@@ -133,7 +116,7 @@ namespace HydrateOrDiedrate.patches
     [HarmonyPatch(typeof(ItemProspectingPick), "ProbeBlockNodeMode")]
     public static class ProbeBlockNodeMode_AquiferOnlyPatch
     {
-        static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, Entity byEntity, ItemSlot itemslot, BlockSelection blockSel, int radius)
+        public static void Postfix(ItemProspectingPick __instance, IWorldAccessor world, Entity byEntity, ItemSlot itemslot, BlockSelection blockSel, int radius)
         {
             if (world.Api.Side != EnumAppSide.Server || !ModConfig.Instance.GroundWater.AquiferDataOnProspectingNodeMode) return;
 
@@ -165,9 +148,7 @@ namespace HydrateOrDiedrate.patches
             int chunkZ = pos.Z / GlobalConstants.ChunkSize;
 
             int currentRating = currentAquiferData.AquiferRating;
-            string aquiferInfo = currentRating == 0
-                ? Lang.Get("hydrateordiedrate:aquifer-none")
-                : GetAquiferDescription(currentAquiferData.IsSalty, currentRating, worldHeight, posY);
+            string aquiferInfo = currentAquiferData.GetDescription();
 
             int configRadius = ModConfig.Instance.GroundWater.ProspectingRadius;
             int bestRating = currentRating;
@@ -201,20 +182,6 @@ namespace HydrateOrDiedrate.patches
             }
             
             SendMessageToPlayer(world, serverPlayer, aquiferInfo);
-        }
-
-        private static string GetAquiferDescription(bool isSalty, int rating, double worldHeight, double posY)
-        {
-            string aquiferType = isSalty ? Lang.Get("hydrateordiedrate:aquifer-salt") : Lang.Get("hydrateordiedrate:aquifer-fresh");
-            return rating switch
-            {
-                <= 0 => Lang.Get("hydrateordiedrate:aquifer-none-detected"),
-                <= 10 => Lang.Get("hydrateordiedrate:aquifer-very-poor", aquiferType),
-                <= 20 => Lang.Get("hydrateordiedrate:aquifer-poor", aquiferType),
-                <= 40 => Lang.Get("hydrateordiedrate:aquifer-light", aquiferType),
-                <= 60 => Lang.Get("hydrateordiedrate:aquifer-moderate", aquiferType),
-                _ => Lang.Get("hydrateordiedrate:aquifer-heavy", aquiferType)
-            };
         }
 
         private static string GetDirectionHint(int dx, int dy, int dz)
