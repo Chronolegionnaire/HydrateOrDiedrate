@@ -22,6 +22,7 @@ using Vintagestory.API.Util;
 using System.Collections.Generic;
 using Vintagestory.API.Datastructures;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace HydrateOrDiedrate;
 
@@ -60,29 +61,40 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
     }
-    // Really high execute order so HoD runs last to make sure any mod added recipes that get loaded in assets finalized are ready
-    public override double ExecuteOrder()
-    {
-        return 99998;
-    }
+    
+    //NOTE: any higher then this and Gourmand will crash because it loads stuff rather early
+    public override double ExecuteOrder() => 1.099;
 
     public override void AssetsLoaded(ICoreAPI api)
     {
         base.AssetsLoaded(api);
 
         if(api.Side == EnumAppSide.Client) return; //This data is decided by the server and synced over to client automatically
-        
+
+        //TODO needs further refactor but for now this will do
+        if (!ModConfig.Instance.PerishRates.Enabled)
+        {
+            foreach(var item in api.World.Items)
+            {
+                if(item.Code is null || item.Code.Domain != Mod.Info.ModID || !item.Code.Path.Contains("water")) continue;
+                if(item.TransitionableProps is null || !Array.Exists(item.TransitionableProps, static t => t.Type == EnumTransitionType.Perish)) continue;
+                item.TransitionableProps = [.. item.TransitionableProps.Where(t => t.Type != EnumTransitionType.Perish)];
+            }
+        }
+
         WaterPatches.PrepareWaterSatietyPatches(api);
         WaterPatches.PrepareWellWaterSatietyPatches(api);
         WaterPatches.PrepareWaterPerishPatches(api);
         WaterPatches.PrepareWellWaterPerishPatches(api);
+
+        if(api is not ICoreServerAPI serverApi) return; //This data is decided by the server and synced over to client automatically
+        RecipeGenerator.RecipeGenerator.GenerateVariants(serverApi, Mod.Logger); //NOTE: has to happen here and not in `AssetsFinalize` because otherwise Gourmand will crash
     }
 
     public override void AssetsFinalize(ICoreAPI api)
     {
         base.AssetsFinalize(api);
-        if(api is not ICoreServerAPI serverApi) return; //This data is decided by the server and synced over to client automatically
-        RecipeGenerator.RecipeGenerator.GenerateVariants(serverApi, Mod.Logger);
+        if(api.Side != EnumAppSide.Server) return; //This data is decided by the server and synced over to client automatically
         EntityProperties playerEntity = api.World.GetEntityType(new AssetLocation("game", "player"));
         var HoDbehaviors = new List<JsonObject>(3);
 

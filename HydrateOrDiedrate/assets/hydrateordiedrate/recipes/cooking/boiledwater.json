@@ -1,0 +1,34 @@
+{
+  "code": "hydrateordiedrate:boiledwater",
+  "perishableProps": {
+    "type": "None",
+    "freshHours": { "avg": 75 },
+    "transitionHours": { "avg": 18 },
+    "transitionRatio": 1,
+    "transitionedStack": {
+      "type": "item",
+      "code": "game:waterportion"
+    }
+  },
+  "shape": { "base": "game:block/food/meal/liquid" },
+  "ingredients": [
+    {
+      "code": "water1",
+      "validStacks": [
+        {
+          "type": "item",
+          "code": "game:waterportion",
+          "shapeElement": "bowl/liquid"
+        }
+      ],
+      "minQuantity": 1,
+      "maxQuantity": 1,
+      "portionSizeLitres": 1
+    }
+  ],
+  "cooksInto": {
+    "type": "Item",
+    "code": "hydrateordiedrate:boiledwaterportion",
+    "quantity": 100
+  }
+}
