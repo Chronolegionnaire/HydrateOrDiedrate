@@ -29,18 +29,24 @@ public class AquiferData
         TotalFactor = (int)Math.Floor(aquiferData.AquiferRating / (100.0 / 6))
     };
 
-    public override string ToString() => GetDescription();
+    public override string ToString() => GetDescription(AquiferRating, IsSalty);
+
+    public string GetProPickDescription() => GetProPickDescription(AquiferRating, IsSalty);
+
+    public static string GetProPickDescription(int aquiferRating, bool isSalty) => Lang.Get("hydrateordiedrate:aquifer-detected", GetDescription(aquiferRating, isSalty));
     
-    //TODO maybe split 'heavy aquifer' and 'detected' part
-    public string GetDescription() => AquiferRating switch
+    public static string GetDescription(int aquiferRating, bool isSalty) => Lang.Get("hydrateordiedrate:aquifer", aquiferRating < MinimumAquiferRatingForDetection ? GetStrengthDescription(aquiferRating) : $"{GetStrengthDescription(aquiferRating)} {GetTypeDescription(isSalty).ToLower()}");
+
+    public const int MinimumAquiferRatingForDetection = 10;
+    public static string GetStrengthDescription(int aquiferRating) => aquiferRating switch
     {
-        <= 10 => Lang.Get("hydrateordiedrate:aquifer-none"),
-        <= 15 => Lang.Get("hydrateordiedrate:aquifer-very-poor", GetTypeDescription()),
-        <= 20 => Lang.Get("hydrateordiedrate:aquifer-poor", GetTypeDescription()),
-        <= 40 => Lang.Get("hydrateordiedrate:aquifer-light", GetTypeDescription()),
-        <= 60 => Lang.Get("hydrateordiedrate:aquifer-moderate", GetTypeDescription()),
-        _ => Lang.Get("hydrateordiedrate:aquifer-heavy", GetTypeDescription())
+        <= MinimumAquiferRatingForDetection => Lang.Get("hydrateordiedrate:none"),
+        <= 15 => Lang.Get("hydrateordiedrate:verypoor"),
+        <= 20 => Lang.Get("hydrateordiedrate:poor"),
+        <= 40 => Lang.Get("hydrateordiedrate:light"),
+        <= 60 => Lang.Get("hydrateordiedrate:moderate"),
+        _ => Lang.Get("hydrateordiedrate:heavy")
     };
 
-    private string GetTypeDescription() => IsSalty ? Lang.Get("hydrateordiedrate:aquifer-salt") : Lang.Get("hydrateordiedrate:aquifer-fresh");
+    public static string GetTypeDescription(bool isSalty) => isSalty ? Lang.Get("hydrateordiedrate:saltwater") : Lang.Get("hydrateordiedrate:freshwater");
 }

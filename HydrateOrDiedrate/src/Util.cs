@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using HarmonyLib;
+using Newtonsoft.Json;
+using System;
+using System.Reflection.Emit;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 
@@ -19,4 +22,11 @@ public static class Util
     public static float GuardFinite(this float value, float defaultValue = 0f) => float.IsFinite(value) ? value : defaultValue;
 
     public static bool IsChunkValid(this IWorldChunk chunk) => chunk is not null && !chunk.Disposed && chunk.Data is not null && chunk.Data.Length > 0;
+
+    public static int GetStoredLocalIndex(this CodeInstruction instruction)
+    {
+        if(!instruction.IsStloc()) throw new ArgumentException("passed instruction is not for storing locals", nameof(instruction));
+        if(instruction.operand is LocalBuilder builder) return builder.LocalIndex;
+        return instruction.LocalIndex();
+    }
 }

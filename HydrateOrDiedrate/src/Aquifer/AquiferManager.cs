@@ -1,9 +1,11 @@
 ﻿using HydrateOrDiedrate.Aquifer.ModData;
+using HydrateOrDiedrate.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
@@ -131,6 +133,74 @@ public static partial class AquiferManager
 
         chunk.LiveModData[AquiferModDataKey] = chunkData;
         return true;
+    }
+
+    public static string GetAquiferDirectionHint(IWorldAccessor world, BlockPos blockPos) => GetAquiferDirectionHint(world, new FastVec3i(blockPos.X / GlobalConstants.ChunkSize, blockPos.Y / GlobalConstants.ChunkSize, blockPos.Z / GlobalConstants.ChunkSize));
+    public static string GetAquiferDirectionHint(IWorldAccessor world, FastVec3i chunkPos)
+    {
+        var centerData = GetAquiferChunkData(world, chunkPos);
+        int currentRating = centerData.Data.AquiferRating;
+
+        int radius = ModConfig.Instance.GroundWater.ProspectingRadius;
+        int bestRating = currentRating;
+        FastVec3i bestChunk = chunkPos.Clone();
+        for (int dx = -radius; dx <= radius; dx++)
+        {
+            for (int dy = -radius; dy <= radius; dy++)
+            {
+                for (int dz = -radius; dz <= radius; dz++)
+                {
+                    if (dx == 0 && dy == 0 && dz == 0) continue;
+
+                    AquiferData checkAquiferData = GetAquiferChunkData(world, new FastVec3i(chunkPos.X + dx, chunkPos.Y + dy, chunkPos.Z + dz), world.Logger)?.Data;
+                    if (checkAquiferData is null || checkAquiferData.AquiferRating <= bestRating) continue;
+
+                    bestRating = checkAquiferData.AquiferRating;
+                    bestChunk = new FastVec3i(chunkPos.X + dx, chunkPos.Y + dy, chunkPos.Z + dz);
+                }
+            }
+        }
+
+        if (bestRating > currentRating)
+        {
+            int dxDir = bestChunk.X - chunkPos.X;
+            int dyDir = bestChunk.Y - chunkPos.Y;
+            int dzDir = bestChunk.Z - chunkPos.Z;
+            string directionHint = GetDirectionHint(dxDir, dyDir, dzDir);
+            if(string.IsNullOrEmpty(directionHint)) return Lang.Get("hydrateordiedrate:aquifer-direction-here");
+            
+            return Lang.Get("hydrateordiedrate:aquifer-direction", directionHint.ToLower());
+        }
+        return string.Empty;
+    }
+
+    private static string GetDirectionHint(int dx, int dy, int dz)
+    {
+        string horizontal = string.Empty;
+        string verticalHor = string.Empty;
+
+        if (dz < 0) verticalHor = Lang.Get("game:facing-north");
+        else if (dz > 0) verticalHor = Lang.Get("game:facing-south");
+
+        if (dx > 0) horizontal = Lang.Get("game:facing-east");
+        else if (dx < 0) horizontal = Lang.Get("game:facing-west");
+
+        string horizontalPart;
+        if (!string.IsNullOrEmpty(verticalHor) && !string.IsNullOrEmpty(horizontal))
+        {
+            horizontalPart = $"{verticalHor}-{horizontal}";
+        }
+        else horizontalPart = !string.IsNullOrEmpty(verticalHor) ? verticalHor : horizontal;
+
+        string verticalDepth = string.Empty;
+        if (dy > 0) verticalDepth = Lang.Get("hydrateordiedrate:direction-above");
+        else if (dy < 0) verticalDepth = Lang.Get("hydrateordiedrate:direction-below");
+        
+        if (!string.IsNullOrEmpty(horizontalPart) && !string.IsNullOrEmpty(verticalDepth)) return $"{horizontalPart} {Lang.Get("hydrateordiedrate:direction-and")} {verticalDepth}";
+        else if (!string.IsNullOrEmpty(horizontalPart)) return horizontalPart;
+        else if (!string.IsNullOrEmpty(verticalDepth)) return verticalDepth;
+        
+        return string.Empty;
     }
 
     public static List<WellspringInfo> GetWellspringsInChunk(IWorldChunk chunk)
