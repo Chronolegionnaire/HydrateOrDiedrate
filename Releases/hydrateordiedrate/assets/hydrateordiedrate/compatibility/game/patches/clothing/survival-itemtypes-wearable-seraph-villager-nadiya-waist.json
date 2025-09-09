@@ -1,9 +1,0 @@
-[
-  {
-    "op": "replace",
-    "path": "/attributes/warmthByType/*",
-    "value": 0.01,
-    "file": "game:itemtypes/wearable/seraph/villager/nadiya/waist.json",
-    "side": "Server"
-  }
-]

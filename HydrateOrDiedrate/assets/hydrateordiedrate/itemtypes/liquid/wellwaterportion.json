@@ -121,6 +121,10 @@
           "satiety": -400,
           "foodcategory": "NoNutrition",
           "health": -5
+        },
+        "NutritionPropsPerLitreWhenInMeal": {
+          "foodcategory": "NoNutrition",
+          "health": -5
         }
       }
     },
@@ -144,6 +148,10 @@
         },
         "nutritionPropsPerLitre": {
           "satiety": 0,
+          "foodcategory": "NoNutrition",
+          "health": -20
+        },
+        "NutritionPropsPerLitreWhenInMeal": {
           "foodcategory": "NoNutrition",
           "health": -20
         }

@@ -113,11 +113,7 @@ public static class WaterPatches
     }
     public static void PrepareWaterPerishPatches(ICoreAPI api)
     {
-        if (!ModConfig.Instance.PerishRates.Enabled)
-        {
-            RemoveWaterPerishPatches(api);
-            return;
-        }
+        if (!ModConfig.Instance.PerishRates.Enabled) return;
 
         float rainWaterFreshFreshHours = ModConfig.Instance.PerishRates.RainWaterFreshHours;
         float rainWaterFreshTransitionHours = ModConfig.Instance.PerishRates.RainWaterTransitionHours;
@@ -131,41 +127,12 @@ public static class WaterPatches
         ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json", rainWaterFreshFreshHours, rainWaterFreshTransitionHours);
         ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json", distilledWaterFreshFreshHours, distilledWaterFreshTransitionHours);
         ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json", boiledWaterFreshFreshHours, boiledWaterFreshTransitionHours);
-        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json", boiledRainWaterFreshFreshHours, boiledRainWaterFreshTransitionHours);
-    }
-
-    private static void RemoveWaterPerishPatches(ICoreAPI api)
-    {
-        string[] jsonFiles =
-        [
-            "hydrateordiedrate:itemtypes/liquid/rainwaterportion.json",
-            "hydrateordiedrate:itemtypes/liquid/distilledwaterportion.json",
-            "hydrateordiedrate:itemtypes/liquid/boiledwaterportion.json",
-            "hydrateordiedrate:itemtypes/liquid/boiledrainwaterportion.json"
-        ];
-
-        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        foreach (var jsonFilePath in jsonFiles)
-        {
-            int applied = 0, notFound = 0, errorCount = 0;
-            var removePatch = new JsonPatch
-            {
-                Op = EnumJsonPatchOp.Remove,
-                Path = "/transitionableProps",
-                File = new AssetLocation(jsonFilePath),
-                Side = EnumAppSide.Server
-            };
-            patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:removeperishpatch"), removePatch, ref applied, ref notFound, ref errorCount);
-        }
+        ApplyPerishPatch(api, "hydrateordiedrate:itemtypes/liquid/boiledrainwater.json", boiledRainWaterFreshFreshHours, boiledRainWaterFreshTransitionHours);
     }
 
     public static void PrepareWellWaterPerishPatches(ICoreAPI api)
     {
-        if (!ModConfig.Instance.PerishRates.Enabled)
-        {
-            RemoveWellWaterPerishPatches(api);
-            return;
-        }
+        if (!ModConfig.Instance.PerishRates.Enabled) return;
 
         var wellWaterPerishRateValues = new Dictionary<string, (float fresh, float transition)>
         {
@@ -231,21 +198,6 @@ public static class WaterPatches
         {
             ApplyWellWaterPerishRatePatch(api, "hydrateordiedrate:itemtypes/liquid/wellwaterportion.json", kvp.Key, kvp.Value.fresh, kvp.Value.transition);
         }
-    }
-
-    private static void RemoveWellWaterPerishPatches(ICoreAPI api)
-    {
-        ModJsonPatchLoader patchLoader = api.ModLoader.GetModSystem<ModJsonPatchLoader>();
-        int applied = 0, notFound = 0, errorCount = 0;
-        var removePatch = new JsonPatch
-        {
-            Op = EnumJsonPatchOp.Remove,
-            Path = "/transitionablePropsByType",
-            File = new AssetLocation("hydrateordiedrate:itemtypes/liquid/wellwaterportion.json"),
-            Side = EnumAppSide.Server
-        };
-
-        patchLoader.ApplyPatch(0, new AssetLocation("hydrateordiedrate:removewellwaterperishpatch"), removePatch, ref applied, ref notFound, ref errorCount);
     }
 
     private static void ApplyPerishPatch(ICoreAPI api, string jsonFilePath, float freshHours, float transitionHours)

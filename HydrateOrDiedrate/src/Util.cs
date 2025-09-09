@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -29,4 +31,41 @@ public static class Util
         if(instruction.operand is LocalBuilder builder) return builder.LocalIndex;
         return instruction.LocalIndex();
     }
+
+    public static Type FindGenericInterfaceDefinition(this Type type, Type genericInterfaceType) =>
+        type.GetInterfaces()
+        .SingleOrDefault(interfaceType => interfaceType.IsGenericType && interfaceType.GetGenericTypeDefinition() == genericInterfaceType);
+
+    public static ReadOnlySpan<char> ExtractSegment(this ReadOnlySpan<char> str, char seperator, out ReadOnlySpan<char> remainder)
+    {
+        var index = str.IndexOf(seperator);
+        if(index == -1)
+        {
+            remainder = [];
+            return str;
+        }
+
+        remainder = str[(index + 1)..];
+        return str[..index];
+    }
+
+    public static void SetValue(this MemberInfo memberInfo, object value, object instance = null)
+    {
+        switch (memberInfo)
+        {
+            case PropertyInfo property:
+                property.SetValue(instance, value);
+                break;
+            case FieldInfo field:
+                field.SetValue(instance, value);
+                break;
+        }
+    }
+
+    public static bool CanSetValue(this MemberInfo memberInfo) => memberInfo switch
+    {
+        PropertyInfo property => property.CanWrite && property.GetIndexParameters().Length == 0,
+        FieldInfo => true,
+        _ => false,
+    };
 }
