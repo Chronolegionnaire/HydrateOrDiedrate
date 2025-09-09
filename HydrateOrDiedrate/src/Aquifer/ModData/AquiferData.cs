@@ -8,6 +8,8 @@ namespace HydrateOrDiedrate.Aquifer.ModData;
 [ProtoContract]
 public class AquiferData
 {
+    public const string OreReadingKey = "$aquifer$";
+
     /// <summary>
     /// The currently known aquifer rating depending on wether smoothing is enabled and has happend this will either return <see cref="AquiferRatingRaw"/> or <see cref="AquiferRatingSmoothed"/>
     /// </summary>

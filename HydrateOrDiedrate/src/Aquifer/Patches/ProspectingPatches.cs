@@ -30,7 +30,7 @@ public static class ProspectingPatches
         var aquiferData = AquiferManager.GetAquiferChunkData(world, __state, world.Logger);
         if (aquiferData == null || aquiferData.Data.AquiferRating < AquiferData.MinimumAquiferRatingForDetection) return;
         
-        __result.OreReadings["$aquifer$"] = aquiferData.Data;
+        __result.OreReadings[AquiferData.OreReadingKey] = aquiferData.Data;
     }
 
     [HarmonyPatch(typeof(PropickReading), "ToHumanReadable")]
@@ -68,7 +68,7 @@ public static class ProspectingPatches
 
     public static bool TryInsertAquiferReading(KeyValuePair<string, OreReading> reading, List<KeyValuePair<double, string>> readouts)
     {
-        if(reading.Key != "$aquifer$") return false;
+        if(reading.Key != AquiferData.OreReadingKey) return false;
         
         var data = reading.Value;
         readouts.Add(new KeyValuePair<double, string>(0, AquiferData.GetProPickDescription((int)data.PartsPerThousand, data.DepositCode == "salty")));
