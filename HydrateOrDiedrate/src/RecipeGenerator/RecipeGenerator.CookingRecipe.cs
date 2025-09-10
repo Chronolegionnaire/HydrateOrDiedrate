@@ -10,7 +10,7 @@ public static partial class RecipeGenerator
 {
     internal static void ProcessCookingRecipe(IServerWorldAccessor world, RecipeListInfo recipeListInfo, object recipe, List<object> newRecipes)
     {
-        if(recipe is not CookingRecipe cookingRecipe || cookingRecipe.Ingredients is null || (cookingRecipe.Code is not null && cookingRecipe.Code.StartsWith("hydrateordiedrate:"))) return;
+        if(recipe is not CookingRecipe cookingRecipe || cookingRecipe.Ingredients is null || (cookingRecipe.Code is not null && cookingRecipe.Code.StartsWith("boiledwater"))) return;
 
         bool matchesFound = false;
         foreach ((var fromCode, var toCodes) in ConversionMappings.Union(DeadlyConversionMappings))
