@@ -350,20 +350,9 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         MarkDirty();
     }
 
-    public override bool OnPlayerRightClick(IPlayer byPlayer, BlockSelection blockSel)
-    {
-        if (blockSel?.SelectionBoxIndex == 0 && Api is ICoreClientAPI capi)
-        {
-            toggleInventoryDialogClient(byPlayer, () => new GuiDialogBlockEntityWinch(
-                DialogTitle,
-                Inventory,
-                Pos,
-                capi
-            ));
-        }
+    public bool IsWinchItemAtTop() => BucketDepth < 1f || InputSlot.Empty;
 
-        return false;
-    }
+    public override bool OnPlayerRightClick(IPlayer byPlayer, BlockSelection blockSel) => false;
 
     public ItemSlot InputSlot => Inventory[0];
 

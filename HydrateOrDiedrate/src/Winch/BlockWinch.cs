@@ -21,7 +21,20 @@ public class BlockWinch : BlockMPBase
     {
         if (!world.Claims.TryAccess(byPlayer, blockSel.Position, EnumBlockAccessFlags.Use)) return false;
 
-        if (blockSel.SelectionBoxIndex == 1 && world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch && beWinch.TryStartTurning(byPlayer)) return true;
+        if(world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWinch beWinch)
+        {
+            switch(blockSel.SelectionBoxIndex)
+            {
+                case 0:
+                    var sourceSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
+                    if(sourceSlot is not null && (sourceSlot.Empty || beWinch.InputSlot.Empty) && sourceSlot.TryFlipWith(beWinch.InputSlot)) return true;
+                    break;
+
+                case 1:
+                    if(beWinch.TryStartTurning(byPlayer)) return true;
+                    break;
+            }
+        }
 
         return base.OnBlockInteractStart(world, byPlayer, blockSel);
     }
