@@ -17,7 +17,7 @@
       "validStacks": [
         {
           "type": "item",
-          "code": "hydrateordiedrate:rainwaterportion",
+          "code": "hydrateordiedrate:waterportion-fresh-rain-clean",
           "shapeElement": "bowl/liquid"
         }
       ],
@@ -28,7 +28,7 @@
   ],
   "cooksInto": {
     "type": "Item",
-    "code": "hydrateordiedrate:boiledrainwaterportion",
+    "code": "hydrateordiedrate:waterportion-boiled-rainwater-clean",
     "quantity": 100
   }
 }

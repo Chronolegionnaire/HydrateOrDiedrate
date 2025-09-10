@@ -75,7 +75,7 @@
       "whenFilled": {
         "stack": {
           "type": "item",
-          "code": "hydrateordiedrate:wellwaterportion-tainted"
+          "code": "hydrateordiedrate:waterportion-fresh-well-tainted"
         }
       }
     }

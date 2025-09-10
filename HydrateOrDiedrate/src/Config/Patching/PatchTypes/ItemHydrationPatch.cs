@@ -279,22 +279,22 @@ public class ItemHydrationPatch : HydrationPatchBase
             },
             new()
             {
-                Code = "hydrateordiedrate:boiledwaterportion",
+                Code = "hydrateordiedrate:waterportion-boiled-natural-clean",
                 Value = 600
             },
             new()
             {
-                Code = "hydrateordiedrate:boiledrainwaterportion",
+                Code = "hydrateordiedrate:waterportion-boiled-rainwater-clean",
                 Value = 800
             },
             new()
             {
-                Code = "hydrateordiedrate:distilledwaterportion",
+                Code = "hydrateordiedrate:waterportion-fresh-distilled-clean",
                 Value = 900
             },
             new()
             {
-                Code = "hydrateordiedrate:rainwaterportion",
+                Code = "hydrateordiedrate:waterportion-fresh-rain-clean",
                 Value = 750
             },
             new()
@@ -369,42 +369,42 @@ public class ItemHydrationPatch : HydrationPatchBase
             },
             new()
             {
-                Code = "hydrateordiedrate:wellwaterportion-fresh",
+                Code = "hydrateordiedrate:waterportion-fresh-well-clean",
                 Value = 750
             },
             new()
             {
-                Code = "hydrateordiedrate:wellwaterportion-salt",
+                Code = "hydrateordiedrate:waterportion-salt-well-clean",
                 Value = -600
             },
             new()
             {
-                Code = "hydrateordiedrate:wellwaterportion-muddy",
+                Code = "hydrateordiedrate:waterportion-fresh-well-muddy",
                 Value = 600
             },
             new()
             {
-                Code = "hydrateordiedrate:wellwaterportion-tainted",
+                Code = "hydrateordiedrate:waterportion-fresh-well-tainted",
                 Value = 750
             },
             new()
             {
-                Code = "hydrateordiedrate:wellwaterportion-poisoned",
+                Code = "hydrateordiedrate:waterportion-fresh-well-poisoned",
                 Value = 750
             },
             new()
             {
-                Code = "hydrateordiedrate:wellwaterportion-muddysalt",
+                Code = "hydrateordiedrate:waterportion-salt-well-muddy",
                 Value = -600
             },
             new()
             {
-                Code = "hydrateordiedrate:wellwaterportion-taintedsalt",
+                Code = "hydrateordiedrate:waterportion-salt-well-tainted",
                 Value = -600
             },
             new()
             {
-                Code = "hydrateordiedrate:wellwaterportion-poisonedsalt",
+                Code = "hydrateordiedrate:waterportion-salt-well-poisoned",
                 Value = -600
             },
             new()

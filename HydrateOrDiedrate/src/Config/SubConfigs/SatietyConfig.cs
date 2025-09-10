@@ -2,102 +2,76 @@
 
 namespace HydrateOrDiedrate.Config.SubConfigs;
 
+/// <summary>
+/// Config for modifiers on the satiety lost from drinking various types of water.
+/// NOTE: the modifiers are additive and the end result will not go above 0.
+/// </summary>
 public class SatietyConfig
 {
+
     /// <summary>
-    /// The amount of satiety a player gets from drinking normal water.
-    /// (this is normally a negative number, which results in nutrient deficiency)
+    /// Modifier on the satiety of fresh water
     /// </summary>
-    [DefaultValue(-100d)]
-    public float WaterSatiety { get; set; } = -100f;
+    [DefaultValue(0d)]
+    public float FreshWaterSatietyModifier { get; set; } = -100;
     
     /// <summary>
-    /// The amount of satiety a player gets from drinking salt water.
-    /// (this is normally a negative number, which results in nutrient deficiency)
+    /// Modifier on the satiety of salt water
     /// </summary>
-    [DefaultValue(-100d)]
-    public float SaltWaterSatiety { get; set; } = -100f;
+    [DefaultValue(-200d)]
+    public float SaltWaterSatietyModifier { get; set; } = -200;
 
     /// <summary>
-    /// The amount of satiety a player gets from drinking boiling water.
+    /// Modifier on the satiety of boiled water
     /// </summary>
-    [DefaultValue(0d)]
-    public float BoilingWaterSatiety { get; set; } = 0f;
+    [DefaultValue(50d)]
+    public float BoiledWaterSatietyModifier { get; set; } = 50;
 
     /// <summary>
-    /// The amount of satiety a player gets from drinking rain water.
-    /// (this is normally a negative number, which results in nutrient deficiency)
-    /// </summary>
-    [DefaultValue(-50d)]
-    public float RainWaterSatiety { get; set; } = -50f;
-
-    /// <summary>
-    /// The amount of satiety a player gets from drinking distilled water.
+    /// Modifier on the satiety of natural water
     /// </summary>
     [DefaultValue(0d)]
-    public float DistilledWaterSatiety { get; set; } = 0f;
+    public float NaturalWaterSatietyModifier { get; set; } = 0;
+    
+    /// <summary>
+    /// Modifier on the satiety of well water
+    /// </summary>
+    [DefaultValue(100d)]
+    public float WellWaterSatietyModifier { get; set; } = 100;
 
     /// <summary>
-    /// The amount of satiety a player gets from drinking boiled water.
+    /// Modifier on the satiety of rain water
     /// </summary>
     [DefaultValue(0d)]
-    public float BoiledWaterSatiety { get; set; } = 0f;
+    public float RainWaterSatietyModifier { get; set; } = 0;
 
     /// <summary>
-    /// The amount of satiety a player gets from drinking boiled rain water.
+    /// Modifier on the satiety of distilled water
     /// </summary>
     [DefaultValue(0d)]
-    public float BoiledRainWaterSatiety { get; set; } = 0f;
+    public float DistilledWaterSatietyModifier { get; set; } = 0;
 
     /// <summary>
-    /// The amount of satiety a player gets from drinking well water.
+    /// Modifier on the satiety of clean water
     /// </summary>
     [DefaultValue(0d)]
-    public float WellWaterFreshSatiety { get; set; } = 0f;
+    public float CleanWaterSatietyModifier { get; set; } = 0;
 
     /// <summary>
-    /// The amount of satiety a player gets from drinking well water that is salty.
-    /// (this is normally a negative number, which results in nutrient deficiency)
+    /// Modifier on the satiety of muddy water
     /// </summary>
-    [DefaultValue(-100d)]
-    public float WellWaterSaltSatiety { get; set; } = -100f;
-
+    [DefaultValue(-200d)]
+    public float MuddyWaterSatietyModifier { get; set; } = -200;
+    
     /// <summary>
-    /// The amount of satiety a player gets from drinking well water that is muddy.
-    /// (this is normally a negative number, which results in nutrient deficiency)
-    /// </summary>
-    [DefaultValue(-75d)]
-    public float WellWaterMuddySatiety { get; set; } = -75f;
-
-    /// <summary>
-    /// The amount of satiety a player gets from drinking well water that is tainted.
-    /// (this is normally a negative number, which results in nutrient deficiency)
-    /// </summary>
-    public float WellWaterTaintedSatiety { get; set; } = -400f;
-
-    /// <summary>
-    /// The amount of satiety a player gets from drinking well water that is poisoned.
-    /// </summary>
-    [DefaultValue(0d)]
-    public float WellWaterPoisonedSatiety { get; set; } = 0f;
-
-    /// <summary>
-    /// The amount of satiety a player gets from drinking well water that is muddy and salty.
-    /// (this is normally a negative number, which results in nutrient deficiency)
-    /// </summary>
-    [DefaultValue(-75d)]
-    public float WellWaterMuddySaltSatiety { get; set; } = -75f;
-
-    /// <summary>
-    /// The amount of satiety a player gets from drinking well water that is tainted and salty.
-    /// (this is normally a negative number, which results in nutrient deficiency)
+    /// Modifier on the satiety of tainted water
     /// </summary>
     [DefaultValue(-400d)]
-    public float WellWaterTaintedSaltSatiety { get; set; } = -400f;
-
+    public float TaintedWaterSatietyModifier { get; set; } = -400;
+    
     /// <summary>
-    /// The amount of satiety a player gets from drinking well water that is poisoned and salty.
+    /// Modifier on the satiety of poisoned water
     /// </summary>
     [DefaultValue(0d)]
-    public float WellWaterPoisonedSaltSatiety { get; set; } = 0f;
+    public float PoisonedWaterSatietyModifier { get; set; } = 0;
 }

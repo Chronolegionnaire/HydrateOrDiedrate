@@ -29,7 +29,7 @@ namespace HydrateOrDiedrate.Patches
             if (contents.Count == 1)
             {
                 string code = contents[0].Collectible.Code.ToString();
-                if (code == "game:waterportion" || code == "hydrateordiedrate:rainwaterportion")
+                if (code == "game:waterportion" || code == "hydrateordiedrate:waterportion-fresh-rain-clean")
                 {
                     List<ItemStack> simulated = new List<ItemStack> { contents[0], contents[0].Clone() };
                     FieldInfo apiField = AccessTools.Field(__instance.GetType().BaseType, "api");
@@ -95,7 +95,7 @@ namespace HydrateOrDiedrate.Patches
             if (contents.Count == 1)
             {
                 string code = contents[0].Collectible.Code.ToString();
-                if (code == "game:waterportion" || code == "hydrateordiedrate:rainwaterportion")
+                if (code == "game:waterportion" || code == "hydrateordiedrate:waterportion-fresh-rain-clean")
                 {
                     List<ItemStack> simulated = new List<ItemStack> { contents[0], contents[0].Clone() };
                     FieldInfo apiField = AccessTools.Field(__instance.GetType().BaseType, "api");
@@ -176,7 +176,7 @@ namespace HydrateOrDiedrate.Patches
             if (contents.Count == 1)
             {
                 string code = contents[0].Collectible.Code.ToString();
-                if (code == "game:waterportion" || code == "hydrateordiedrate:rainwaterportion")
+                if (code == "game:waterportion" || code == "hydrateordiedrate:waterportion-fresh-rain-clean")
                 {
                     List<ItemStack> simulated = new List<ItemStack> { contents[0], contents[0].Clone() };
 
@@ -242,7 +242,7 @@ namespace HydrateOrDiedrate.Patches
             if (stacks.Count == 1)
             {
                 string code = stacks[0].Collectible.Code.ToString();
-                if (code == "game:waterportion" || code == "hydrateordiedrate:rainwaterportion")
+                if (code == "game:waterportion" || code == "hydrateordiedrate:waterportion-fresh-rain-clean")
                 {
                     List<ItemStack> simulated = new List<ItemStack> { stacks[0], stacks[0].Clone() };
 
@@ -297,7 +297,7 @@ namespace HydrateOrDiedrate.Patches
             if (nonEmptySlots.Count == 1)
             {
                 string code = nonEmptySlots[0].Itemstack.Collectible.Code.ToString();
-                if (code == "game:waterportion" || code == "hydrateordiedrate:rainwaterportion")
+                if (code == "game:waterportion" || code == "hydrateordiedrate:waterportion-fresh-rain-clean")
                 {
                     bool duplicated = false;
                     for (int i = 0; i < cookingSlotsProvider.Slots.Length; i++)

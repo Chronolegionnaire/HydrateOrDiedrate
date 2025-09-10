@@ -75,7 +75,7 @@
       "whenFilled": {
         "stack": {
           "type": "item",
-          "code": "hydrateordiedrate:wellwaterportion-poisoned"
+          "code": "hydrateordiedrate:waterportion-fresh-well-poisoned"
         }
       }
     }

@@ -19,23 +19,23 @@ public static partial class RecipeGenerator
     internal static readonly Dictionary<AssetLocation, AssetLocation[]> DeadlyConversionMappings = new()
     {
         [new("game", "waterportion")] = [
-            new("hydrateordiedrate", "wellwaterportion-tainted"),
-            new("hydrateordiedrate", "wellwaterportion-poisoned")
+            new("hydrateordiedrate", "waterportion-fresh-well-tainted"),
+            new("hydrateordiedrate", "waterportion-fresh-well-poisoned")
         ]
     };
 
     internal static readonly Dictionary<AssetLocation, AssetLocation[]> ConversionMappings = new()
     {
         [new("game", "waterportion")] = [
-            new("hydrateordiedrate", "boiledwaterportion"),
-            new("hydrateordiedrate", "boiledrainwaterportion"),
-            new("hydrateordiedrate", "distilledwaterportion"),
-            new("hydrateordiedrate", "rainwaterportion"),
-            new("hydrateordiedrate", "wellwaterportion-fresh"),
+            new("hydrateordiedrate", "waterportion-boiled-natural-clean"),
+            new("hydrateordiedrate", "waterportion-boiled-rainwater-clean"),
+            new("hydrateordiedrate", "waterportion-fresh-distilled-clean"),
+            new("hydrateordiedrate", "waterportion-fresh-rain-clean"),
+            new("hydrateordiedrate", "waterportion-fresh-well-clean"),
         ],
 
         [new("game", "saltwaterportion")] = [
-            new("hydrateordiedrate", "wellwaterportion-salt"),
+            new("hydrateordiedrate", "waterportion-salt-well-clean"),
         ],
     };
 

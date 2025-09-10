@@ -27,7 +27,7 @@ namespace HydrateOrDiedrate
             this.rainMultiplier = rainMultiplier;
             positionBuffer = new Vec3d(entity.Pos.X + 0.5, entity.Pos.Y + 0.5, entity.Pos.Z + 0.5);
             var world = entity.Api.World;
-            var item = world.GetItem(new AssetLocation("hydrateordiedrate:rainwaterportion"));
+            var item = world.GetItem(new AssetLocation("hydrateordiedrate:waterportion-fresh-rain-clean"));
             if (item != null)
             {
                 rainWaterStack = new ItemStack(item);

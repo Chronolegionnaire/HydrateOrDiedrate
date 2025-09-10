@@ -75,7 +75,7 @@
       "whenFilled": {
         "stack": {
           "type": "item",
-          "code": "hydrateordiedrate:wellwaterportion-muddysalt"
+          "code": "hydrateordiedrate:waterportion-salt-well-muddy"
         }
       }
     }

@@ -82,10 +82,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
 
-        WaterPatches.PrepareWaterSatietyPatches(api);
-        WaterPatches.PrepareWellWaterSatietyPatches(api);
-        WaterPatches.PrepareWaterPerishPatches(api);
-        WaterPatches.PrepareWellWaterPerishPatches(api);
+        WaterPatches.ApplyConfigSettings(api);
 
         if(api is not ICoreServerAPI serverApi) return; //This data is decided by the server and synced over to client automatically
         RecipeGenerator.RecipeGenerator.GenerateVariants(serverApi, Mod.Logger); //NOTE: has to happen here and not in `AssetsFinalize` because otherwise Gourmand will crash
