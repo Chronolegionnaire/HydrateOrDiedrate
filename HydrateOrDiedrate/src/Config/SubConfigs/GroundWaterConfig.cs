@@ -124,7 +124,7 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     public int ProspectingRadius { get; set; } = 3;
 
     /// <summary>
-    /// SHow aquifer prospecting on Node mode rather than density search
+    /// Show aquifer prospecting on Node mode rather than density search
     /// </summary>
     [Category("Prospecting")]
     [DefaultValue(false)]

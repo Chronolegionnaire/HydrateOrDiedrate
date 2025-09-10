@@ -171,10 +171,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RegisterRainHarvester));
 
-        if (api.ModLoader.IsModEnabled("BetterProspecting"))
-        {
-            BetterProspectingAquiferPatch.Apply(api);
-        }
         if (api.ModLoader.IsModEnabled("smoothdigestion"))
         {
             EntityBehaviorSDHungerPatch.Apply(api);
