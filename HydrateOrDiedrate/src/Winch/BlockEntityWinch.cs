@@ -342,11 +342,11 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
     private void OnSlotModified(int slotid)
     {
-        if (slotid == 0)
+        if (slotid == 0 && InputSlot.Empty)
         {
-            if(InputSlot.Empty) BucketDepth = minBucketDepth;
-            renderer?.ScheduleMeshUpdate();
+            BucketDepth = minBucketDepth;
         }
+
         MarkDirty();
     }
 
@@ -374,6 +374,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
         BucketDepth = tree.GetFloat("bucketDepth", minBucketDepth);
         RotationPlayer = Api?.World.PlayerByUid(tree.GetString("RotationPlayerId"));
+        renderer?.ScheduleMeshUpdate();
     }
 
     public override void ToTreeAttributes(ITreeAttribute tree)
