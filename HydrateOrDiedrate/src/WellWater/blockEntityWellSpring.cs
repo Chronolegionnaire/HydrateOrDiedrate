@@ -36,6 +36,19 @@ public class BlockEntityWellSpring : BlockEntity
         RegisterGameTickListener(OnPeriodicShaftCheck, 30000);
         OnPeriodicShaftCheck(0);
     }
+    
+    private Block GetFluid(BlockPos p) => Api.World.BlockAccessor.GetBlock(p, BlockLayersAccess.Fluid);
+    
+    private Block GetSolid(BlockPos p) => Api.World.BlockAccessor.GetBlock(p, BlockLayersAccess.Solid);
+    
+    private void  SetFluid(int blockId, BlockPos p) => Api.World.BlockAccessor.SetBlock(blockId, p, BlockLayersAccess.Fluid);
+
+    private bool IsSolidBlocking(Block solidBlock)
+        => solidBlock != null
+           && solidBlock.Code != null
+           && solidBlock.Code.Path != "air"
+           && solidBlock.Replaceable < 500;
+    
     public override void OnBlockRemoved()
     {
         AquiferManager.RemoveWellSpringFromChunk(Api.World, Pos);
@@ -126,13 +139,14 @@ public class BlockEntityWellSpring : BlockEntity
         if (waterType == "muddy" || waterType == "muddysalt")
         {
             BlockPos firstPos = Pos.UpCopy(1);
-            Block firstBlock = blockAccessor.GetBlock(firstPos);
-            if (IsBlockingBlock(firstBlock))
+            Block solidAtFirst = GetSolid(firstPos);
+            if (IsSolidBlocking(solidAtFirst))
             {
                 accumulatedWater = 0.0;
                 return;
             }
-            if (firstBlock?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
+            Block fluidAtFirst = GetFluid(firstPos);
+            if (fluidAtFirst?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
             {
                 var existingBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(firstPos);
                 if (existingBE != null)
@@ -153,10 +167,10 @@ public class BlockEntityWellSpring : BlockEntity
                 }
             }
             bool skipPlacementCheck = isMuddy;
-            string blockPath = firstBlock?.Code?.Path;
-            bool isAir = blockPath == "air";
-            bool isSpreading = blockPath?.StartsWith($"wellwater{waterType}-spreading-") == true;
-            bool isNatural = blockPath?.StartsWith($"wellwater{waterType}-natural-") == true;
+            string fluidPath = fluidAtFirst?.Code?.Path;
+            bool isAir = fluidPath == "air";
+            bool isSpreading = fluidPath?.StartsWith($"wellwater{waterType}-spreading-") == true;
+            bool isNatural = fluidPath?.StartsWith($"wellwater{waterType}-natural-") == true;
 
             if ((isAir || isSpreading) && !isNatural &&
                 (skipPlacementCheck || IsValidPlacement(blockAccessor, firstPos)))
@@ -165,7 +179,7 @@ public class BlockEntityWellSpring : BlockEntity
                 Block waterBlock = Api.World.GetBlock(new AssetLocation(blockCode));
                 if (waterBlock != null)
                 {
-                    blockAccessor.SetBlock(waterBlock.BlockId, firstPos);
+                    SetFluid(waterBlock.BlockId, firstPos);
                     blockAccessor.TriggerNeighbourBlockUpdate(firstPos);
                     var newBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(firstPos);
                     if (newBE != null)
@@ -184,13 +198,10 @@ public class BlockEntityWellSpring : BlockEntity
         for (int i = 0; i < maxDepth && leftoverLiters > 0; i++)
         {
             BlockPos currentPos = Pos.UpCopy(i + 1);
-            Block currentBlock = blockAccessor.GetBlock(currentPos);
-            if (IsBlockingBlock(currentBlock))
-            {
-                break;
-            }
 
-            if (currentBlock?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
+            if (IsSolidBlocking(GetSolid(currentPos))) break;
+            Block fluidAt = GetFluid(currentPos);
+            if (fluidAt?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
             {
                 var existingBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(currentPos);
                 if (existingBE != null)
@@ -210,17 +221,14 @@ public class BlockEntityWellSpring : BlockEntity
         for (int i = 0; i < maxDepth && leftoverLiters > 0; i++)
         {
             BlockPos currentPos = Pos.UpCopy(i + 1);
-            Block currentBlock = blockAccessor.GetBlock(currentPos);
-            if (IsBlockingBlock(currentBlock))
-            {
-                break;
-            }
+            if (IsSolidBlocking(GetSolid(currentPos))) break;
 
             bool skipPlacementCheck = isMuddy;
-            string blockPath = currentBlock?.Code?.Path;
-            bool isAir = blockPath == "air";
-            bool isSpreading = blockPath?.StartsWith($"wellwater{waterType}-spreading-") == true;
-            bool isNatural = blockPath?.StartsWith($"wellwater{waterType}-natural-") == true;
+            Block fluidAt = GetFluid(currentPos);
+            string fluidPath = fluidAt?.Code?.Path;
+            bool isAir = fluidPath == "air";
+            bool isSpreading = fluidPath?.StartsWith($"wellwater{waterType}-spreading-") == true;
+            bool isNatural = fluidPath?.StartsWith($"wellwater{waterType}-natural-") == true;
 
             if ((isAir || isSpreading) && !isNatural &&
                 (skipPlacementCheck || IsValidPlacement(blockAccessor, currentPos)))
@@ -229,7 +237,7 @@ public class BlockEntityWellSpring : BlockEntity
                 Block waterBlock = Api.World.GetBlock(new AssetLocation(blockCode));
                 if (waterBlock != null)
                 {
-                    blockAccessor.SetBlock(waterBlock.BlockId, currentPos);
+                    SetFluid(waterBlock.BlockId, currentPos);
                     blockAccessor.TriggerNeighbourBlockUpdate(currentPos);
                     var newBE = blockAccessor.GetBlockEntity<BlockEntityWellWaterData>(currentPos);
                     if (newBE != null)
@@ -410,32 +418,24 @@ public class BlockEntityWellSpring : BlockEntity
         bool saltyFound = false;
         bool freshFound = false;
         for (int dx = -3; dx <= 2; dx++)
+        for (int dy = -3; dy <= 2; dy++)
+        for (int dz = -3; dz <= 2; dz++)
         {
-            for (int dy = -3; dy <= 2; dy++)
+            if (dx == 0 && dy == 0 && dz == 0) continue;
+
+            BlockPos checkPos = centerPos.AddCopy(dx, dy, dz);
+
+            Block checkBlock = Api.World.BlockAccessor.GetBlock(checkPos, BlockLayersAccess.Fluid);
+
+            if (checkBlock?.Code?.Domain == "game")
             {
-                for (int dz = -3; dz <= 2; dz++)
-                {
-                    if (dx == 0 && dy == 0 && dz == 0) continue;
-
-                    BlockPos checkPos = centerPos.AddCopy(dx, dy, dz);
-                    Block checkBlock = blockAccessor.GetBlock(checkPos);
-
-                    if (checkBlock?.Code?.Domain == "game")
-                    {
-                        if (checkBlock.Code.Path.StartsWith("saltwater-"))
-                        {
-                            saltyFound = true;
-                        }
-                        else if (checkBlock.Code.Path.StartsWith("water-") 
-                                 || checkBlock.Code.Path.StartsWith("boilingwater-"))
-                        {
-                            freshFound = true;
-                        }
-                    }
-
-                    if (saltyFound && freshFound) return (true, true);
-                }
+                if (checkBlock.Code.Path.StartsWith("saltwater-"))
+                    saltyFound = true;
+                else if (checkBlock.Code.Path.StartsWith("water-") || checkBlock.Code.Path.StartsWith("boilingwater-"))
+                    freshFound = true;
             }
+
+            if (saltyFound && freshFound) return (true, true);
         }
         return (saltyFound, freshFound);
     }

@@ -311,33 +311,46 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         BlockPos checkPos = Pos.DownCopy((int)Math.Ceiling(targetBucketDepth));
         if (checkPos.Y < 0) return false;
 
-        Block targetBlock = Api.World.BlockAccessor.GetBlock(checkPos);
+        Block solid = Api.World.BlockAccessor.GetBlock(checkPos, BlockLayersAccess.Solid);
+        Block fluid = Api.World.BlockAccessor.GetBlock(checkPos, BlockLayersAccess.Fluid);
 
-        if (targetBlock.IsLiquid())
+        if (fluid?.IsLiquid() == true)
         {
             TryFillBucketAtPos(checkPos);
             BucketDepth = targetBucketDepth;
             return true;
         }
-        else if(targetBlock.Replaceable >= 6000)
+
+        bool solidAllows = solid == null
+                           || solid.Code == null
+                           || solid.Code.Path == "air"
+                           || solid.Replaceable >= 500;
+
+        if (solidAllows)
         {
             BucketDepth = targetBucketDepth;
             return true;
         }
-        else return false;
+        return false;
     }
 
     private bool CanMove()
     {
-        if(InputSlot.Empty) return false;
-        if(IsRaising) return BucketDepth > minBucketDepth;
+        if (InputSlot.Empty) return false;
+        if (IsRaising) return BucketDepth > minBucketDepth;
 
         BlockPos checkPos = Pos.DownCopy((int)BucketDepth + 1);
         if (checkPos.Y < 0) return false;
 
-        Block targetBlock = Api.World.BlockAccessor.GetBlock(checkPos);
+        Block solid = Api.World.BlockAccessor.GetBlock(checkPos, BlockLayersAccess.Solid);
+        Block fluid = Api.World.BlockAccessor.GetBlock(checkPos, BlockLayersAccess.Fluid);
 
-        return targetBlock.Replaceable >= 6000 || targetBlock.IsLiquid();
+        bool solidAllows = solid == null
+                           || solid.Code == null
+                           || solid.Code.Path == "air"
+                           || solid.Replaceable >= 500;
+
+        return solidAllows || (fluid?.IsLiquid() == true);
     }
 
     private void OnSlotModified(int slotid)
@@ -415,7 +428,9 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         }
         return total;
     }
-    
+    // TODO
+    // This needs some kind of refreshing tick, total volume doesn't respond at all to outside changes to water blocks like deleting
+    // from a block being placed in them. Only updates when either the winch or the wellspring makes changes to total volume.
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
     {
         base.GetBlockInfo(forPlayer, dsc);

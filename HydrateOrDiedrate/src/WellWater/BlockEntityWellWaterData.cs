@@ -19,14 +19,36 @@ namespace HydrateOrDiedrate.wellwater
 
             if (api.Side == EnumAppSide.Server)
             {
-                if (Block != null && volume == 0)
+                if (volume == 0 && TryGetHeightFromFluid(Pos, out int h))
                 {
-                    int initialHeight = Block.Variant["height"].ToInt();
-                    volume = GetVolumeForHeight(initialHeight);
+                    volume = GetVolumeForHeight(h);
                 }
                 checkBlockListenerId = api.Event.RegisterGameTickListener(CheckBlock, 3000);
             }
         }
+        private bool TryGetHeightFromFluid(BlockPos pos, out int height)
+        {
+            height = 0;
+            var fluid = GetFluid(pos);
+            if (fluid?.Code?.Path == null) return false;
+
+            var parts = fluid.Code.Path.Split('-');
+            if (parts.Length >= 4 && parts[0].StartsWith("wellwater"))
+            {
+                height = parts[3].ToInt();
+                return true;
+            }
+            if (fluid.Variant != null && fluid.Variant.TryGetValue("height", out string hs) && hs.ToInt() > 0)
+            {
+                height = hs.ToInt();
+                return true;
+            }
+            return false;
+        }
+        private Block GetFluid(BlockPos p) => Api.World.BlockAccessor.GetBlock(p, BlockLayersAccess.Fluid);
+        private void  SetFluid(int blockId, BlockPos p) => Api.World.BlockAccessor.SetBlock(blockId, p, BlockLayersAccess.Fluid);
+        private static bool IsOurWellwater(Block b) =>
+            b?.Code?.Path?.StartsWith("wellwater") == true;
         public int Volume
         {
             get => volume;
@@ -45,7 +67,8 @@ namespace HydrateOrDiedrate.wellwater
                     return;
                 }
                 int newHeight = GetHeightForVolume(volume);
-                Block currentBlock = Api.World.BlockAccessor.GetBlock(Pos);
+                Block currentBlock = GetFluid(Pos);
+                if (currentBlock?.Code?.Path == null) return;
                 string[] parts = currentBlock.Code.Path.Split('-');
                 if (parts.Length >= 4)
                 {
@@ -64,6 +87,7 @@ namespace HydrateOrDiedrate.wellwater
         private void ChangeBlockHeight(Block currentBlock, int newHeight)
         {
             if (Api.Side != EnumAppSide.Server) return;
+            if (currentBlock?.Code?.Path == null) return;
             string[] parts = currentBlock.Code.Path.Split('-');
             if (parts.Length < 4)
             {
@@ -77,7 +101,7 @@ namespace HydrateOrDiedrate.wellwater
 
             if (newBlock != null && newBlock != currentBlock)
             {
-                Api.World.BlockAccessor.ExchangeBlock(newBlock.BlockId, Pos);
+                SetFluid(newBlock.BlockId, Pos);
                 Api.World.BlockAccessor.MarkBlockModified(Pos);
                 NotifyNeighborsOfHeightChange();
             }
@@ -105,8 +129,8 @@ namespace HydrateOrDiedrate.wellwater
             if (Api.Side != EnumAppSide.Server) return;
 
             if (Api.World.BlockAccessor.GetBlockEntity(Pos) != this) return;
-            Block currentBlock = Api.World.BlockAccessor.GetBlock(Pos);
-            if (!IsValidNaturalWellWaterBlock(currentBlock))
+            var fluid = GetFluid(Pos);
+            if (!IsValidNaturalWellWaterBlock(fluid))
             {
                 DeleteBlockAndEntity();
                 return;
@@ -117,13 +141,13 @@ namespace HydrateOrDiedrate.wellwater
                 DeleteBlockAndEntity();
                 return;
             }
-            CheckDeadEntityContamination(currentBlock);
-            CheckPoisonedItemContamination(currentBlock);
-            CheckNeighborContamination(currentBlock);
+            CheckDeadEntityContamination(fluid);
+            CheckPoisonedItemContamination(fluid);
+            CheckNeighborContamination(fluid);
             TryTransferVolumeVertically();
         }
 
-        private void DeleteBlockAndEntity()
+        private void DeleteBlockAndEntity(bool keepFluid = false)
         {
             if (Api.Side != EnumAppSide.Server) return;
 
@@ -137,12 +161,16 @@ namespace HydrateOrDiedrate.wellwater
                 }
             }
             Api.World.BlockAccessor.RemoveBlockEntity(Pos);
-            Block currentBlock = Api.World.BlockAccessor.GetBlock(Pos);
-            if (IsValidNaturalWellWaterBlock(currentBlock))
+
+            if (!keepFluid)
             {
-                Api.World.BlockAccessor.SetBlock(0, Pos, 2);
-                Api.World.BlockAccessor.MarkBlockModified(Pos);
-                Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(Pos);
+                Block currentBlock = GetFluid(Pos);
+                if (IsValidNaturalWellWaterBlock(currentBlock))
+                {
+                    SetFluid(0, Pos);
+                    Api.World.BlockAccessor.MarkBlockModified(Pos);
+                    Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(Pos);
+                }
             }
         }
         private bool IsValidNaturalWellWaterBlock(Block block)
@@ -281,7 +309,7 @@ namespace HydrateOrDiedrate.wellwater
             foreach (BlockFacing facing in BlockFacing.ALLFACES)
             {
                 BlockPos neighborPos = Pos.AddCopy(facing);
-                Block neighborBlock = Api.World.BlockAccessor.GetBlock(neighborPos);
+                Block neighborBlock = Api.World.BlockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
                 if (neighborBlock?.Code == null) continue;
 
                 string neighborPath = neighborBlock.Code.Path;
@@ -306,7 +334,7 @@ namespace HydrateOrDiedrate.wellwater
                 Block newBlock = Api.World.GetBlock(newBlockLoc);
                 if (newBlock != null && newBlock != this.Block)
                 {
-                    Api.World.BlockAccessor.ExchangeBlock(newBlock.BlockId, Pos);
+                    SetFluid(newBlock.BlockId, Pos);
                     BlockEntity newBE = Api.World.BlockAccessor.GetBlockEntity(Pos);
                     if (newBE is BlockEntityWellWaterData newWaterData)
                     {
@@ -348,8 +376,8 @@ namespace HydrateOrDiedrate.wellwater
             BlockPos currentPos = Pos.DownCopy();
             while (true)
             {
-                Block currentBlock = Api.World.BlockAccessor.GetBlock(currentPos);
-                if (currentBlock.Code.Path.Contains("wellwater"))
+                Block currentBlock = Api.World.BlockAccessor.GetBlock(currentPos, BlockLayersAccess.Fluid);
+                if (currentBlock?.Code?.Path?.Contains("wellwater") == true)
                 {
                     BlockEntity entity = Api.World.BlockAccessor.GetBlockEntity(currentPos);
                     if (entity is BlockEntityWellWaterData wellWaterEntity)
@@ -387,7 +415,7 @@ namespace HydrateOrDiedrate.wellwater
             Block newBlock = Api.World.GetBlock(newLoc);
             if (newBlock != null && newBlock != currentBlock)
             {
-                Api.World.BlockAccessor.ExchangeBlock(newBlock.BlockId, Pos);
+                SetFluid(newBlock.BlockId, Pos);
                 BlockEntity newBE = Api.World.BlockAccessor.GetBlockEntity(Pos);
                 if (newBE is BlockEntityWellWaterData newWaterData)
                 {
@@ -418,7 +446,7 @@ namespace HydrateOrDiedrate.wellwater
             Block newBlock = Api.World.GetBlock(newLoc);
             if (newBlock != null && newBlock != currentBlock)
             {
-                Api.World.BlockAccessor.ExchangeBlock(newBlock.BlockId, Pos);
+                SetFluid(newBlock.BlockId, Pos);
                 BlockEntity newBE = Api.World.BlockAccessor.GetBlockEntity(Pos);
                 if (newBE is BlockEntityWellWaterData newWaterData)
                 {
@@ -432,21 +460,20 @@ namespace HydrateOrDiedrate.wellwater
         {
             if (Api.Side == EnumAppSide.Server)
             {
-                UnregisterTickListeners();
-                if (CallbackHandlers != null)
+                Api.Event.RegisterCallback((dt) =>
                 {
-                    foreach (long callbackHandler in CallbackHandlers)
+                    var fluid = Api.World.BlockAccessor.GetBlock(Pos, BlockLayersAccess.Fluid);
+
+                    if (!IsOurWellwater(fluid))
                     {
-                        Api.Event.UnregisterCallback(callbackHandler);
+                        DeleteBlockAndEntity(keepFluid: true);
+                        return;
                     }
-                }
+                    MarkDirty(true);
+
+                }, 0);
             }
             base.OnExchanged(block);
-
-            if (Api.Side == EnumAppSide.Server)
-            {
-                Api.World.BlockAccessor.RemoveBlockEntity(Pos);
-            }
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
@@ -466,10 +493,9 @@ namespace HydrateOrDiedrate.wellwater
             base.OnBlockPlaced(byItemStack);
             if (Api.Side != EnumAppSide.Server) return;
 
-            if (Block != null)
+            if (TryGetHeightFromFluid(Pos, out int h))
             {
-                int initialHeight = Block.Variant["height"].ToInt();
-                volume = GetVolumeForHeight(initialHeight);
+                volume = GetVolumeForHeight(h);
             }
         }
 
