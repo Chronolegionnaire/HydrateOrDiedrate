@@ -5,9 +5,6 @@
     "wellwaterpoisoned-*-still-*": "BlockWater",
     "*": "BlockWaterflowing"
   },
-  "entityClassByType": {
-    "wellwaterpoisoned-natural-*-*": "BlockEntityWellWaterData"
-  },
   "behaviors": [
     {
       "name": "BlockBehaviorWellWaterFinite",

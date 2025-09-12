@@ -5,9 +5,6 @@
     "wellwatertaintedsalt-*-still-*": "BlockWater",
     "*": "BlockWaterflowing"
   },
-  "entityClassByType": {
-    "wellwatertaintedsalt-natural-*-*": "BlockEntityWellWaterData"
-  },
   "behaviors": [
     {
       "name": "BlockBehaviorWellWaterFinite",

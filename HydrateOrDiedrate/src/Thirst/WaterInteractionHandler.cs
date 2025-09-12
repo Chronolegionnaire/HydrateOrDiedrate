@@ -215,7 +215,7 @@ namespace HydrateOrDiedrate
                 StopDrinking(player, drinkData);
                 return;
             }
-            
+
             float progress = (float)(currentTime - drinkData.DrinkStartTime) / (float)drinkDuration;
             progress = Math.Min(1f, progress);
 
@@ -269,32 +269,37 @@ namespace HydrateOrDiedrate
                 }
 
                 if (isBoiling) ApplyHeatDamage(player, ModConfig.Instance.Thirst.BoilingWaterDamage);
-
-                var block = _api.World.BlockAccessor.GetBlock(blockSel.Position);
-                if (block.Code.Path.StartsWith("wellwater"))
+                var fluidBlock = _api.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
+                if (fluidBlock?.Code?.Path != null && fluidBlock.Code.Path.StartsWith("wellwater"))
                 {
-                    var blockBehavior = block.GetBehavior<BlockBehaviorWellWaterFinite>();
-                    var naturalSourcePos =
-                        blockBehavior?.FindNaturalSourceInLiquidChain(_api.World.BlockAccessor, blockSel.Position);
-                    if (naturalSourcePos != null)
+                    BlockEntityWellSpring spring = null;
+                    var scanPos = blockSel.Position.DownCopy();
+                    const int maxDepth = 512;
+                    for (int i = 0; i < maxDepth && scanPos.Y >= 0; i++, scanPos.Y--)
                     {
-                        var blockEntity = _api.World.BlockAccessor.GetBlockEntity(naturalSourcePos);
-                        if (blockEntity is BlockEntityWellWaterData wellWaterData)
+                        var be = _api.World.BlockAccessor.GetBlockEntity(scanPos);
+                        if (be is BlockEntityWellSpring ws)
                         {
-                            wellWaterData.Volume -= 1;
-                            int afterVolume = wellWaterData.Volume;
-                            if (afterVolume <= 0)
-                            {
-                                StopDrinking(player, drinkData);
-                                return;
-                            }
+                            spring = ws;
+                            break;
+                        }
+                    }
+                    if (spring != null)
+                    {
+                        int taken = spring.TryExtractLitersAt(blockSel.Position, 1);
+                        if (taken < 1)
+                        {
+                            StopDrinking(player, drinkData);
+                            return;
                         }
                     }
                 }
 
-                _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), blockSel.HitPosition.X,
-                    blockSel.HitPosition.Y, blockSel.HitPosition.Z, null, true, 32f, 1f);
+                _api.World.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"),
+                    blockSel.HitPosition.X, blockSel.HitPosition.Y, blockSel.HitPosition.Z, null, true, 32f, 1f);
+
                 SpawnWaterParticles(blockSel.HitPosition);
+
                 if (player.Entity.Controls.RightMouseDown)
                 {
                     drinkData.DrinkStartTime = currentTime;

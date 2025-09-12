@@ -5,9 +5,6 @@
     "wellwaterfresh-*-still-*": "BlockWater",
     "*": "BlockWaterflowing"
   },
-  "entityClassByType": {
-    "wellwaterfresh-natural-*-*": "BlockEntityWellWaterData"
-  },
   "behaviors": [
     {
       "name": "BlockBehaviorWellWaterFinite",
