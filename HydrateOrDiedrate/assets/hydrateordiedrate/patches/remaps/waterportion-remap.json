@@ -1,0 +1,21 @@
+[
+  {
+    "file": "game:config/remaps.json",
+    "op": "addmerge",
+    "path": "/hydrateordiedrate:2.2.10",
+    "value": [
+      "/iir remapq hydrateordiedrate:waterportion-boiled-rain-clean hydrateordiedrate:boiledrainwaterportion force",
+      "/iir remapq hydrateordiedrate:waterportion-boiled-natural-clean hydrateordiedrate:boiledwaterportion force",
+      "/iir remapq hydrateordiedrate:waterportion-fresh-distilled-clean hydrateordiedrate:distilledwaterportion force",
+      "/iir remapq hydrateordiedrate:waterportion-fresh-rain-clean hydrateordiedrate:rainwaterportion force",
+      "/iir remapq hydrateordiedrate:waterportion-fresh-well-clean hydrateordiedrate:wellwaterportion-fresh force",
+      "/iir remapq hydrateordiedrate:waterportion-salt-well-clean hydrateordiedrate:wellwaterportion-salt force",
+      "/iir remapq hydrateordiedrate:waterportion-salt-well-muddy hydrateordiedrate:wellwaterportion-muddysalt force",
+      "/iir remapq hydrateordiedrate:waterportion-fresh-well-muddy hydrateordiedrate:wellwaterportion-muddy force",
+      "/iir remapq hydrateordiedrate:waterportion-salt-well-tainted hydrateordiedrate:wellwaterportion-taintedsalt force",
+      "/iir remapq hydrateordiedrate:waterportion-fresh-well-tainted hydrateordiedrate:wellwaterportion-tainted force",
+      "/iir remapq hydrateordiedrate:waterportion-salt-well-poisoned hydrateordiedrate:wellwaterportion-poisonedsalt force",
+      "/iir remapq hydrateordiedrate:waterportion-fresh-well-poisoned hydrateordiedrate:wellwaterportion-poisoned force"
+    ]
+  }
+]

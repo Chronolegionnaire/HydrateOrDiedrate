@@ -284,7 +284,7 @@ public class ItemHydrationPatch : HydrationPatchBase
             },
             new()
             {
-                Code = "hydrateordiedrate:waterportion-boiled-rainwater-clean",
+                Code = "hydrateordiedrate:waterportion-boiled-rain-clean",
                 Value = 800
             },
             new()

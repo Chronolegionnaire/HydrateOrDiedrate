@@ -28,7 +28,7 @@ public static partial class RecipeGenerator
     {
         [new("game", "waterportion")] = [
             new("hydrateordiedrate", "waterportion-boiled-natural-clean"),
-            new("hydrateordiedrate", "waterportion-boiled-rainwater-clean"),
+            new("hydrateordiedrate", "waterportion-boiled-rain-clean"),
             new("hydrateordiedrate", "waterportion-fresh-distilled-clean"),
             new("hydrateordiedrate", "waterportion-fresh-rain-clean"),
             new("hydrateordiedrate", "waterportion-fresh-well-clean"),

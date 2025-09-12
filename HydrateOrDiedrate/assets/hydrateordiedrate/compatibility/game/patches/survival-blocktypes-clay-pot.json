@@ -11,7 +11,7 @@
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-blue-cooked/textureMapping/waterportion-boiled-rainwater-clean",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/waterportion-boiled-rain-clean",
     "value": [
       "water",
       "group2"

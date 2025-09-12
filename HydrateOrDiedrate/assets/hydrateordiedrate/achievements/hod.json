@@ -41,7 +41,7 @@
     "graphicCode": "hydrateordiedrate:boildwaterportion-fresh-rain-clean",
     "criteriaType": "EatAny",
     "criteriaData": [
-      "hydrateordiedrate:waterportion-boiled-rainwater-clean"
+      "hydrateordiedrate:waterportion-boiled-rain-clean"
     ]
   },
   {

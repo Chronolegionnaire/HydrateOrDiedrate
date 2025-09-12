@@ -28,7 +28,7 @@
   ],
   "cooksInto": {
     "type": "Item",
-    "code": "hydrateordiedrate:waterportion-boiled-rainwater-clean",
+    "code": "hydrateordiedrate:waterportion-boiled-rain-clean",
     "quantity": 100
   }
 }

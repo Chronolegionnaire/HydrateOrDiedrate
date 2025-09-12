@@ -15,7 +15,7 @@ public static class WaterPatches
     {
         foreach(var collectible in api.World.Collectibles)
         {
-            if(collectible.Code is null || collectible.Code.Path != "hydrateordiedrate") continue;
+            if(collectible.Code is null || collectible.Code.Domain != "hydrateordiedrate") continue;
 
             if(collectible is BlockForFluidsLayer)
             {
@@ -29,7 +29,7 @@ public static class WaterPatches
                 var nutrientProps =  containerProps["nutritionPropsPerLitre"];
                 if(nutrientProps is null) continue;
                 
-                if (nutrientProps.Value<float>("satiety") != 0) //Otherwise satiety was manually configured
+                if (nutrientProps.Value<float>("satiety") == 0) //Otherwise satiety was manually configured
                 {
                     var modifier = 0f;
 
@@ -46,7 +46,7 @@ public static class WaterPatches
                 {
                     //NutritionPropsPerLitreWhenInMeal should be present when health is non-zero, otherwise food recipes using this water will heal/damage the player
                     var nutrientsPropsWhenInMeal = nutrientProps.DeepClone();
-                    nutrientsPropsWhenInMeal["satiety"]?.Remove();
+                    nutrientsPropsWhenInMeal["satiety"]?.Parent.Remove();
                     nutrientProps["NutritionPropsPerLitreWhenInMeal"] = nutrientsPropsWhenInMeal;
                 }
             }

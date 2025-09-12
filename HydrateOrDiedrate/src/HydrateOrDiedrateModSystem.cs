@@ -82,8 +82,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
 
-        WaterPatches.ApplyConfigSettings(api);
-
         if(api is not ICoreServerAPI serverApi) return; //This data is decided by the server and synced over to client automatically
         RecipeGenerator.RecipeGenerator.GenerateVariants(serverApi, Mod.Logger); //NOTE: has to happen here and not in `AssetsFinalize` because otherwise Gourmand will crash
     }
@@ -92,6 +90,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.AssetsFinalize(api);
         if(api.Side != EnumAppSide.Server) return; //This data is decided by the server and synced over to client automatically
+        WaterPatches.ApplyConfigSettings(api);
         EntityProperties playerEntity = api.World.GetEntityType(new AssetLocation("game", "player"));
         var HoDbehaviors = new List<JsonObject>(3);
 

@@ -146,8 +146,18 @@
   "transitionableProps": [
     {
       "type": "Perish", //TODO maybe make a custom transition
-      "freshHours": { "avg": 150 },
-      "transitionHours": { "avg": 36 },
+      "freshHours": {
+        "avg": 150,
+        "avgByType": {
+          "*-boiled-*": 75
+        }
+      },
+      "transitionHours": {
+        "avg": 36,
+        "avgByType": {
+          "*-boiled-*": 18
+        }
+      },
       "transitionedStack": {
         "type": "item",
         "code": "game:waterportion",

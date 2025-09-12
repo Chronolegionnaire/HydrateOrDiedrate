@@ -240,33 +240,33 @@ public class ConfigLibCompatibility
         ImGui.DragFloat(Lang.Get(settingHydrationLossDelayMultiplierNormalized) + $"##hydrationLossDelayMultiplierNormalized-{id}", ref hydrationLossDelayMultiplierNormalized, 0.1f, 0.0f, 10.0f);
         thirstConfig.HydrationLossDelayMultiplierNormalized = hydrationLossDelayMultiplierNormalized;
 
-        float waterSatiety = satietyConfig.WaterSatiety;
-        ImGui.DragFloat(Lang.Get(settingWaterSatiety) + $"##waterSatiety-{id}", ref waterSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.WaterSatiety = waterSatiety;
-
-        float saltWaterSatiety = satietyConfig.SaltWaterSatiety;
-        ImGui.DragFloat(Lang.Get(settingSaltWaterSatiety) + $"##saltWaterSatiety-{id}", ref saltWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.SaltWaterSatiety = saltWaterSatiety;
-
-        float boilingWaterSatiety = satietyConfig.BoilingWaterSatiety;
-        ImGui.DragFloat(Lang.Get(settingBoilingWaterSatiety) + $"##boilingWaterSatiety-{id}", ref boilingWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.BoilingWaterSatiety = boilingWaterSatiety;
-
-        float rainWaterSatiety = satietyConfig.RainWaterSatiety;
-        ImGui.DragFloat(Lang.Get(settingRainWaterSatiety) + $"##rainWaterSatiety-{id}", ref rainWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.RainWaterSatiety = rainWaterSatiety;
-
-        float distilledWaterSatiety = satietyConfig.DistilledWaterSatiety;
-        ImGui.DragFloat(Lang.Get(settingDistilledWaterSatiety) + $"##distilledWaterSatiety-{id}", ref distilledWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.DistilledWaterSatiety = distilledWaterSatiety;
-        
-        float boiledWaterSatiety = satietyConfig.BoiledWaterSatiety;
-        ImGui.DragFloat(Lang.Get(settingBoiledWaterSatiety) + $"##boiledWaterSatiety-{id}", ref boiledWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.BoiledWaterSatiety = boiledWaterSatiety;
-        
-        float boiledRainWaterSatiety = satietyConfig.BoiledRainWaterSatiety;
-        ImGui.DragFloat(Lang.Get(settingBoiledRainWaterSatiety) + $"##boiledRainWaterSatiety-{id}", ref boiledRainWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.BoiledRainWaterSatiety = boiledRainWaterSatiety;
+        //float waterSatiety = satietyConfig.WaterSatiety;
+        //ImGui.DragFloat(Lang.Get(settingWaterSatiety) + $"##waterSatiety-{id}", ref waterSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.WaterSatiety = waterSatiety;
+        //
+        //float saltWaterSatiety = satietyConfig.SaltWaterSatiety;
+        //ImGui.DragFloat(Lang.Get(settingSaltWaterSatiety) + $"##saltWaterSatiety-{id}", ref saltWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.SaltWaterSatiety = saltWaterSatiety;
+        //
+        //float boilingWaterSatiety = satietyConfig.BoilingWaterSatiety;
+        //ImGui.DragFloat(Lang.Get(settingBoilingWaterSatiety) + $"##boilingWaterSatiety-{id}", ref boilingWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.BoilingWaterSatiety = boilingWaterSatiety;
+        //
+        //float rainWaterSatiety = satietyConfig.RainWaterSatiety;
+        //ImGui.DragFloat(Lang.Get(settingRainWaterSatiety) + $"##rainWaterSatiety-{id}", ref rainWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.RainWaterSatiety = rainWaterSatiety;
+        //
+        //float distilledWaterSatiety = satietyConfig.DistilledWaterSatiety;
+        //ImGui.DragFloat(Lang.Get(settingDistilledWaterSatiety) + $"##distilledWaterSatiety-{id}", ref distilledWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.DistilledWaterSatiety = distilledWaterSatiety;
+        //
+        //float boiledWaterSatiety = satietyConfig.BoiledWaterSatiety;
+        //ImGui.DragFloat(Lang.Get(settingBoiledWaterSatiety) + $"##boiledWaterSatiety-{id}", ref boiledWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.BoiledWaterSatiety = boiledWaterSatiety;
+        //
+        //float boiledRainWaterSatiety = satietyConfig.BoiledRainWaterSatiety;
+        //ImGui.DragFloat(Lang.Get(settingBoiledRainWaterSatiety) + $"##boiledRainWaterSatiety-{id}", ref boiledRainWaterSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.BoiledRainWaterSatiety = boiledRainWaterSatiety;
 
         float sprintThirstMultiplier = thirstConfig.SprintThirstMultiplier;
         ImGui.DragFloat(Lang.Get(settingSprintThirstMultiplier) + $"##sprintThirstMultiplier-{id}", ref sprintThirstMultiplier, 0.1f, 0.0f, 5.0f);
@@ -474,37 +474,37 @@ public class ConfigLibCompatibility
         ImGui.DragInt(Lang.Get(settingAquiferBoilingWaterMultiplier) + $"##aquiferBoilingWaterMultiplier-{id}", ref aquiferBoilingWaterMultiplier, 1, 1, 500);
         groundWaterConfig.AquiferBoilingWaterMultiplier = aquiferBoilingWaterMultiplier;
         
-        float wellWaterFreshSatiety = satietyConfig.WellWaterFreshSatiety;
-        ImGui.DragFloat(Lang.Get(settingWellWaterFreshSatiety) + $"##wellWaterFreshSatiety-{id}", ref wellWaterFreshSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.WellWaterFreshSatiety = wellWaterFreshSatiety;
-
-        float wellWaterSaltSatiety = satietyConfig.WellWaterSaltSatiety;
-        ImGui.DragFloat(Lang.Get(settingWellWaterSaltSatiety) + $"##wellWaterSaltSatiety-{id}", ref wellWaterSaltSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.WellWaterSaltSatiety = wellWaterSaltSatiety;
-
-        float wellWaterMuddySatiety = satietyConfig.WellWaterMuddySatiety;
-        ImGui.DragFloat(Lang.Get(settingWellWaterMuddySatiety) + $"##wellWaterMuddySatiety-{id}", ref wellWaterMuddySatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.WellWaterMuddySatiety = wellWaterMuddySatiety;
-
-        float wellWaterTaintedSatiety = satietyConfig.WellWaterTaintedSatiety;
-        ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSatiety) + $"##wellWaterTaintedSatiety-{id}", ref wellWaterTaintedSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.WellWaterTaintedSatiety = wellWaterTaintedSatiety;
-
-        float wellWaterPoisonedSatiety = satietyConfig.WellWaterPoisonedSatiety;
-        ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSatiety) + $"##wellWaterPoisonedSatiety-{id}", ref wellWaterPoisonedSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.WellWaterPoisonedSatiety = wellWaterPoisonedSatiety;
-
-        float wellWaterMuddySaltSatiety = satietyConfig.WellWaterMuddySaltSatiety;
-        ImGui.DragFloat(Lang.Get(settingWellWaterMuddySaltSatiety) + $"##wellWaterMuddySaltSatiety-{id}", ref wellWaterMuddySaltSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.WellWaterMuddySaltSatiety = wellWaterMuddySaltSatiety;
-
-        float wellWaterTaintedSaltSatiety = satietyConfig.WellWaterTaintedSaltSatiety;
-        ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSaltSatiety) + $"##wellWaterTaintedSaltSatiety-{id}", ref wellWaterTaintedSaltSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.WellWaterTaintedSaltSatiety = wellWaterTaintedSaltSatiety;
-
-        float wellWaterPoisonedSaltSatiety = satietyConfig.WellWaterPoisonedSaltSatiety;
-        ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltSatiety) + $"##wellWaterPoisonedSaltSatiety-{id}", ref wellWaterPoisonedSaltSatiety, 1.0f, -1000.0f, 1000.0f);
-        satietyConfig.WellWaterPoisonedSaltSatiety = wellWaterPoisonedSaltSatiety;
+        //float wellWaterFreshSatiety = satietyConfig.WellWaterFreshSatiety;
+        //ImGui.DragFloat(Lang.Get(settingWellWaterFreshSatiety) + $"##wellWaterFreshSatiety-{id}", ref wellWaterFreshSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.WellWaterFreshSatiety = wellWaterFreshSatiety;
+        //
+        //float wellWaterSaltSatiety = satietyConfig.WellWaterSaltSatiety;
+        //ImGui.DragFloat(Lang.Get(settingWellWaterSaltSatiety) + $"##wellWaterSaltSatiety-{id}", ref wellWaterSaltSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.WellWaterSaltSatiety = wellWaterSaltSatiety;
+        //
+        //float wellWaterMuddySatiety = satietyConfig.WellWaterMuddySatiety;
+        //ImGui.DragFloat(Lang.Get(settingWellWaterMuddySatiety) + $"##wellWaterMuddySatiety-{id}", ref wellWaterMuddySatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.WellWaterMuddySatiety = wellWaterMuddySatiety;
+        //
+        //float wellWaterTaintedSatiety = satietyConfig.WellWaterTaintedSatiety;
+        //ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSatiety) + $"##wellWaterTaintedSatiety-{id}", ref wellWaterTaintedSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.WellWaterTaintedSatiety = wellWaterTaintedSatiety;
+        //
+        //float wellWaterPoisonedSatiety = satietyConfig.WellWaterPoisonedSatiety;
+        //ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSatiety) + $"##wellWaterPoisonedSatiety-{id}", ref wellWaterPoisonedSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.WellWaterPoisonedSatiety = wellWaterPoisonedSatiety;
+        //
+        //float wellWaterMuddySaltSatiety = satietyConfig.WellWaterMuddySaltSatiety;
+        //ImGui.DragFloat(Lang.Get(settingWellWaterMuddySaltSatiety) + $"##wellWaterMuddySaltSatiety-{id}", ref wellWaterMuddySaltSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.WellWaterMuddySaltSatiety = wellWaterMuddySaltSatiety;
+        //
+        //float wellWaterTaintedSaltSatiety = satietyConfig.WellWaterTaintedSaltSatiety;
+        //ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSaltSatiety) + $"##wellWaterTaintedSaltSatiety-{id}", ref wellWaterTaintedSaltSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.WellWaterTaintedSaltSatiety = wellWaterTaintedSaltSatiety;
+        //
+        //float wellWaterPoisonedSaltSatiety = satietyConfig.WellWaterPoisonedSaltSatiety;
+        //ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltSatiety) + $"##wellWaterPoisonedSaltSatiety-{id}", ref wellWaterPoisonedSaltSatiety, 1.0f, -1000.0f, 1000.0f);
+        //satietyConfig.WellWaterPoisonedSaltSatiety = wellWaterPoisonedSaltSatiety;
         
         int prospectingRadius = groundWaterConfig.ProspectingRadius;
         ImGui.DragInt(Lang.Get(settingProspectingRadius) + $"##prospectingRadius-{id}", ref prospectingRadius, 1, 1, 10);
