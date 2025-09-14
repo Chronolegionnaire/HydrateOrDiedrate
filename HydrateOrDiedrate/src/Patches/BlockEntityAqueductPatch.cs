@@ -41,7 +41,7 @@ namespace HydrateOrDiedrate.patches
                 return true;
             }
             var blockAccessor = api.World.BlockAccessor;
-            var block = blockAccessor.GetBlock(blockPos, BlockLayersAccess.Fluid);
+            var block = blockAccessor.GetBlock(blockPos, 2);
             if (block == null) return true;
             if (block.Code?.Domain == "game")
             {
@@ -99,14 +99,14 @@ namespace HydrateOrDiedrate.patches
 
             var blockAccessor = api.World.BlockAccessor;
             var waterSourcePos = aqueduct.WaterSourcePos;
-            var liquidBlock = blockAccessor.GetBlock(aqueduct.Pos, BlockLayersAccess.Fluid);
+            var liquidBlock = blockAccessor.GetBlock(aqueduct.Pos, 2);
             if (liquidBlock != null && liquidBlock.IsLiquid())
             {
                 int neighboringWaterCount = 0;
                 foreach (var facing in BlockFacing.HORIZONTALS)
                 {
                     var neighborPos = aqueduct.Pos.AddCopy(facing);
-                    var neighborBlock = blockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
+                    var neighborBlock = blockAccessor.GetBlock(neighborPos, 2);
 
                     if (neighborBlock != null && neighborBlock.IsLiquid() &&
                         neighborBlock.LiquidCode == liquidBlock.LiquidCode)
@@ -125,7 +125,7 @@ namespace HydrateOrDiedrate.patches
                     var naturalSourcePos = blockBehavior.FindNaturalSourceInLiquidChain(blockAccessor, aqueduct.Pos);
                     if (neighboringWaterCount <= 2 && naturalSourcePos == null)
                     {
-                        blockAccessor.SetBlock(0, aqueduct.Pos, BlockLayersAccess.Fluid);
+                        blockAccessor.SetBlock(0, aqueduct.Pos, 2);
                         blockAccessor.TriggerNeighbourBlockUpdate(aqueduct.Pos);
                         aqueduct.MarkDirty(true);
                         return false;
@@ -135,7 +135,7 @@ namespace HydrateOrDiedrate.patches
 
             if (waterSourcePos != null)
             {
-                var sourceBlock = blockAccessor.GetBlock(waterSourcePos, BlockLayersAccess.Fluid);
+                var sourceBlock = blockAccessor.GetBlock(waterSourcePos, 2);
                 if (sourceBlock != null)
                 {
                     var domain = sourceBlock.Code?.Domain;
@@ -162,7 +162,7 @@ namespace HydrateOrDiedrate.patches
             var waterSourcePos = aqueduct.WaterSourcePos;
             if (waterSourcePos == null) return;
             var blockAccessor = api.World.BlockAccessor;
-            var sourceBlock = blockAccessor.GetBlock(waterSourcePos, BlockLayersAccess.Fluid);
+            var sourceBlock = blockAccessor.GetBlock(waterSourcePos, 2);
             if (sourceBlock != null && sourceBlock.Code?.Domain == "hydrateordiedrate")
             {
                 var tokens = sourceBlock.Code.Path.Split('-');
@@ -178,7 +178,7 @@ namespace HydrateOrDiedrate.patches
                     var newWaterBlock = api.World.GetBlock(new AssetLocation(newCode));
                     if (newWaterBlock != null)
                     {
-                        blockAccessor.SetBlock(newWaterBlock.BlockId, aqueduct.Pos, BlockLayersAccess.Fluid);
+                        blockAccessor.SetBlock(newWaterBlock.BlockId, aqueduct.Pos, 2);
                         blockAccessor.TriggerNeighbourBlockUpdate(aqueduct.Pos);
                         aqueduct.MarkDirty(true);
                     }

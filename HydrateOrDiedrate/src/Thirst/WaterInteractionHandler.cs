@@ -137,7 +137,7 @@ namespace HydrateOrDiedrate
                     if (block.GetType().GetInterface("IAqueduct") != null || block.Code.Path.StartsWith("furrowedland"))
                     {
                         var fluidBlock =
-                            player.Entity.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
+                            player.Entity.World.BlockAccessor.GetBlock(blockSel.Position, 2);
                         if (fluidBlock != null && fluidBlock.BlockMaterial == EnumBlockMaterial.Liquid)
                         {
                             block = fluidBlock;

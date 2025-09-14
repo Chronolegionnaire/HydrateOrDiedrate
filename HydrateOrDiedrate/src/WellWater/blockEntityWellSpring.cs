@@ -37,11 +37,11 @@ public class BlockEntityWellSpring : BlockEntity
         OnPeriodicShaftCheck(0);
     }
     
-    private Block GetFluid(BlockPos p) => Api.World.BlockAccessor.GetBlock(p, BlockLayersAccess.Fluid);
+    private Block GetFluid(BlockPos p) => Api.World.BlockAccessor.GetBlock(p, 2);
     
-    private Block GetSolid(BlockPos p) => Api.World.BlockAccessor.GetBlock(p, BlockLayersAccess.Solid);
+    private Block GetSolid(BlockPos p) => Api.World.BlockAccessor.GetBlock(p, 1);
     
-    private void  SetFluid(int blockId, BlockPos p) => Api.World.BlockAccessor.SetBlock(blockId, p, BlockLayersAccess.Fluid);
+    private void  SetFluid(int blockId, BlockPos p) => Api.World.BlockAccessor.SetBlock(blockId, p, 2);
 
     private bool IsSolidBlocking(Block solidBlock)
         => solidBlock != null
@@ -429,7 +429,7 @@ public class BlockEntityWellSpring : BlockEntity
 
             checkPos.Set(cx + dx, cy + dy, cz + dz);
 
-            Block checkBlock = blockAccessor.GetBlock(checkPos, BlockLayersAccess.Fluid);
+            Block checkBlock = blockAccessor.GetBlock(checkPos, 2);
 
             if (checkBlock?.Code?.Domain == "game")
             {

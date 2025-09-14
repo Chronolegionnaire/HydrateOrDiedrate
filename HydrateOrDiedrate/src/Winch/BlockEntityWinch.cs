@@ -69,10 +69,10 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         || solid.Replaceable >= 500;
 
     private static bool FluidIsLiquid(IBlockAccessor accessor, BlockPos pos) =>
-        accessor.GetBlock(pos, BlockLayersAccess.Fluid)?.IsLiquid() == true;
+        accessor.GetBlock(pos, 2)?.IsLiquid() == true;
 
     private static bool CellAllowsMove(IBlockAccessor accessor, BlockPos pos) =>
-        SolidAllows(accessor.GetBlock(pos, BlockLayersAccess.Solid)) || FluidIsLiquid(accessor, pos);
+        SolidAllows(accessor.GetBlock(pos, 1)) || FluidIsLiquid(accessor, pos);
     public override void Initialize(ICoreAPI api)
     {
         base.Initialize(api);
@@ -188,7 +188,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     //TODO all those different well water blocks should really be variants instead
     public ItemStack ExtractStackAtPos(BlockPos pos, int litersToExtract)
     {
-        Block block = Api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
+        Block block = Api.World.BlockAccessor.GetBlock(pos, 2);
         if(block.Attributes is null) return null;
 
         var props = block.Attributes["waterTightContainerProps"].AsObject<WaterTightContainableProps>();
@@ -230,13 +230,13 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         if (visited.Contains(pos)) return null;
         visited.Add(pos);
 
-        Block currentBlock = blockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
+        Block currentBlock = blockAccessor.GetBlock(pos, 2);
         if (currentBlock is not null && currentBlock.Variant["createdBy"] == "natural") return pos;
 
         foreach (BlockFacing facing in BlockFacing.ALLFACES)
         {
             BlockPos neighborPos = pos.AddCopy(facing);
-            Block neighborBlock = blockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
+            Block neighborBlock = blockAccessor.GetBlock(neighborPos, 2);
             
             if(neighborBlock is not null)
             {

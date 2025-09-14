@@ -371,7 +371,7 @@ namespace HydrateOrDiedrate.wellwater
 		}
 		public bool TryLoweringLiquidLevel(Block ourBlock, IWorldAccessor world, BlockPos pos)
 		{
-			var ourSolid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid);
+			var ourSolid = world.BlockAccessor.GetBlock(pos, 1);
 			var aqueductInterface = ourSolid.GetType().GetInterface("IAqueduct");
 
 			if (aqueductInterface != null)
@@ -448,7 +448,7 @@ namespace HydrateOrDiedrate.wellwater
 			if (visited == null) visited = new HashSet<BlockPos>();
 			if (visited.Contains(pos)) return null;
 			visited.Add(pos);
-			Block currentBlock = blockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
+			Block currentBlock = blockAccessor.GetBlock(pos, 2);
 			if (currentBlock != null && currentBlock.Variant["createdBy"] == "natural")
 			{
 				return pos;
@@ -456,7 +456,7 @@ namespace HydrateOrDiedrate.wellwater
 			foreach (BlockFacing facing in BlockFacing.ALLFACES)
 			{
 				BlockPos neighborPos = pos.AddCopy(facing);
-				Block neighborBlock = blockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
+				Block neighborBlock = blockAccessor.GetBlock(neighborPos, 2);
 				if (neighborBlock != null && neighborBlock.Code?.Domain == "game")
 				{
 					continue;
