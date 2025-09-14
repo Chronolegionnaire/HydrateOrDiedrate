@@ -9,8 +9,6 @@ public static class WellBlockUtils
     public static bool SolidAllows(Block solid) =>
         solid == null || solid.Code == null || solid.Code.Path == "air" || solid.Replaceable >= 500;
 
-    public static bool IsSolidBlocking(Block solid) => !SolidAllows(solid);
-
     public static bool FluidIsLiquid(this IBlockAccessor accessor, BlockPos pos) =>
         accessor.GetBlock(pos, BlockLayersAccess.Fluid)?.IsLiquid() == true;
 

@@ -126,7 +126,7 @@ public class BlockEntityWellSpring : BlockEntity
         {
             BlockPos firstPos = Pos.UpCopy(1);
             Block solidAtFirst = ba.GetSolid(firstPos);
-            if (WellBlockUtils.IsSolidBlocking(solidAtFirst))
+            if (!WellBlockUtils.SolidAllows(solidAtFirst))
             {
                 accumulatedWater = 0.0;
                 return;
@@ -186,7 +186,7 @@ public class BlockEntityWellSpring : BlockEntity
         {
             BlockPos currentPos = Pos.UpCopy(i + 1);
 
-            if (WellBlockUtils.IsSolidBlocking(ba.GetSolid(currentPos))) break;
+            if (!WellBlockUtils.SolidAllows(ba.GetSolid(currentPos))) break;
 
             Block fluidAt = ba.GetFluid(currentPos);
             if (fluidAt?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
@@ -209,7 +209,7 @@ public class BlockEntityWellSpring : BlockEntity
         for (int i = 0; i < maxDepth && leftoverLiters > 0; i++)
         {
             BlockPos currentPos = Pos.UpCopy(i + 1);
-            if (WellBlockUtils.IsSolidBlocking(ba.GetSolid(currentPos))) break;
+            if (!WellBlockUtils.SolidAllows(ba.GetSolid(currentPos))) break;
 
             bool skipPlacementCheck = isMuddy;
             Block fluidAt = ba.GetFluid(currentPos);
