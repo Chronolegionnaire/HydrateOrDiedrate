@@ -54,7 +54,7 @@ namespace HydrateOrDiedrate.wellwater
 		{
 			this.SpreadAndUpdateLiquidLevels(world, pos);
 			world.BulkBlockAccessor.Commit();
-			Block block = world.BlockAccessor.GetBlock(pos, 2);
+			Block block = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
 			if (block.HasBehavior<BlockBehaviorWellWaterFinite>(false))
 			{
 				this.updateOwnFlowDir(block, world, pos);
@@ -63,7 +63,7 @@ namespace HydrateOrDiedrate.wellwater
 			foreach (Cardinal val in Cardinal.ALL)
 			{
 				npos.Set(pos.X + val.Normali.X, pos.Y, pos.Z + val.Normali.Z);
-				Block neib = world.BlockAccessor.GetBlock(npos, 2);
+				Block neib = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 				if (neib.HasBehavior<BlockBehaviorWellWaterFinite>(false))
 				{
 					this.updateOwnFlowDir(neib, world, npos);
@@ -72,7 +72,7 @@ namespace HydrateOrDiedrate.wellwater
 		}
 		private void SpreadAndUpdateLiquidLevels(IWorldAccessor world, BlockPos pos)
 		{
-			Block ourBlock = world.BlockAccessor.GetBlock(pos, 2);
+			Block ourBlock = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
 			int liquidLevel = ourBlock.LiquidLevel;
 			var naturalSourcePos = FindNaturalSourceInLiquidChain(world.BlockAccessor, pos);
 
@@ -90,7 +90,7 @@ namespace HydrateOrDiedrate.wellwater
 				pos.Y--;
 				bool flag = world.BlockAccessor.GetMostSolidBlock(pos).CanAttachBlockAt(world.BlockAccessor, ourBlock, pos, BlockFacing.UP, null);
 				pos.Y++;
-				Block ourSolid = world.BlockAccessor.GetBlock(pos, 1);
+				Block ourSolid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid);
 				if ((flag || !this.TrySpreadDownwards(world, ourSolid, ourBlock, pos)) && liquidLevel > 1)
 				{
 					List<PosAndDist> downwardPaths = this.FindDownwardPaths(world, pos, ourBlock);
@@ -105,12 +105,12 @@ namespace HydrateOrDiedrate.wellwater
 						int nearbySourceBlockCount = this.CountNearbySourceBlocks(world.BlockAccessor, pos, ourBlock);
 						if (nearbySourceBlockCount >= 3 || (nearbySourceBlockCount == 2 && this.CountNearbyDiagonalSources(world.BlockAccessor, pos, ourBlock) >= 3))
 						{
-							world.BlockAccessor.SetBlock(this.GetMoreLiquidBlockId(world, pos, ourBlock), pos, 2);
+							world.BlockAccessor.SetBlock(this.GetMoreLiquidBlockId(world, pos, ourBlock), pos, BlockLayersAccess.Fluid);
 							BlockPos npos = pos.Copy();
 							for (int i = 0; i < BlockFacing.HORIZONTALS.Length; i++)
 							{
 								BlockFacing.HORIZONTALS[i].IterateThruFacingOffsets(npos);
-								Block nblock = world.BlockAccessor.GetBlock(npos, 2);
+								Block nblock = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 								if (nblock.HasBehavior<BlockBehaviorWellWaterFinite>(false))
 								{
 									this.updateOwnFlowDir(nblock, world, npos);
@@ -128,7 +128,7 @@ namespace HydrateOrDiedrate.wellwater
 			for (int i = 0; i < BlockFacing.HORIZONTALS.Length; i++)
 			{
 				BlockFacing.HORIZONTALS[i].IterateThruFacingOffsets(qpos);
-				Block nblock = blockAccessor.GetBlock(qpos, 2);
+				Block nblock = blockAccessor.GetBlock(qpos, BlockLayersAccess.Fluid);
 				if (this.IsSameLiquid(ourBlock, nblock) && this.IsLiquidSourceBlock(nblock))
 				{
 					nearbySourceBlockCount++;
@@ -145,7 +145,7 @@ namespace HydrateOrDiedrate.wellwater
 				if (val.IsDiagnoal)
 				{
 					npos.Set(pos.X + val.Normali.X, pos.Y, pos.Z + val.Normali.Z);
-					Block nblock = blockAccessor.GetBlock(npos, 2);
+					Block nblock = blockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 					if (this.IsSameLiquid(ourBlock, nblock) && this.IsLiquidSourceBlock(nblock))
 					{
 						nearbySourceBlockCount++;
@@ -160,7 +160,7 @@ namespace HydrateOrDiedrate.wellwater
 			{
 				if (this.CanSpreadIntoBlock(liquidBlock, solidBlock, pos, pod.pos, pod.pos.FacingFrom(pos), world))
 				{
-					Block neighborLiquid = world.BlockAccessor.GetBlock(pod.pos, 2);
+					Block neighborLiquid = world.BlockAccessor.GetBlock(pod.pos, BlockLayersAccess.Fluid);
 					if (this.IsDifferentCollidableLiquid(liquidBlock, neighborLiquid))
 					{
 						this.ReplaceLiquidBlock(neighborLiquid, pod.pos, world);
@@ -175,7 +175,7 @@ namespace HydrateOrDiedrate.wellwater
 		private bool TrySpreadDownwards(IWorldAccessor world, Block ourSolid, Block ourBlock, BlockPos pos)
 		{
 			BlockPos npos = pos.DownCopy(1);
-			Block belowLiquid = world.BlockAccessor.GetBlock(npos, 2);
+			Block belowLiquid = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 			if (this.CanSpreadIntoBlock(ourBlock, ourSolid, pos, npos, BlockFacing.DOWN, world))
 			{
 				if (this.IsDifferentCollidableLiquid(ourBlock, belowLiquid))
@@ -195,7 +195,7 @@ namespace HydrateOrDiedrate.wellwater
 						else
 						{
 							npos.Y--;
-							if (world.BlockAccessor.GetBlock(npos, 4).CanAttachBlockAt(world.BlockAccessor, ourBlock, npos, BlockFacing.UP, null) || this.IsLiquidSourceBlock(world.BlockAccessor.GetBlock(npos, 2)))
+							if (world.BlockAccessor.GetBlock(npos, 4).CanAttachBlockAt(world.BlockAccessor, ourBlock, npos, BlockFacing.UP, null) || this.IsLiquidSourceBlock(world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid)))
 							{
 								fillWithSource = this.CountNearbySourceBlocks(world.BlockAccessor, pos, ourBlock) >= 2;
 							}
@@ -259,7 +259,7 @@ namespace HydrateOrDiedrate.wellwater
 			{
 				return;
 			}
-			world.BulkBlockAccessor.SetBlock(spreadingBlock.BlockId, pos, 2);
+			world.BulkBlockAccessor.SetBlock(spreadingBlock.BlockId, pos, BlockLayersAccess.Fluid);
 			world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), pos, this.spreadDelay);
 			Block ourBlock = world.GetBlock(blockId);
 			this.TryReplaceNearbyLiquidBlocks(ourBlock, pos, world);
@@ -269,7 +269,7 @@ namespace HydrateOrDiedrate.wellwater
 			int blockId = this.GetLiquidBlockId(world, pos, block, block.LiquidLevel);
 			if (block.BlockId != blockId)
 			{
-				world.BlockAccessor.SetBlock(blockId, pos, 2);
+				world.BlockAccessor.SetBlock(blockId, pos, BlockLayersAccess.Fluid);
 			}
 		}
 		private void TryReplaceNearbyLiquidBlocks(Block ourBlock, BlockPos pos, IWorldAccessor world)
@@ -279,7 +279,7 @@ namespace HydrateOrDiedrate.wellwater
 			for (int i = 0; i < horizontals.Length; i++)
 			{
 				horizontals[i].IterateThruFacingOffsets(npos);
-				Block neib = world.BlockAccessor.GetBlock(npos, 2);
+				Block neib = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 				if (this.IsDifferentCollidableLiquid(ourBlock, neib))
 				{
 					this.ReplaceLiquidBlock(ourBlock, npos, world);
@@ -289,17 +289,17 @@ namespace HydrateOrDiedrate.wellwater
 		private bool TryFindSourceAndSpread(BlockPos startingPos, IWorldAccessor world)
 		{
 			BlockPos sourceBlockPos = startingPos.UpCopy(1);
-			Block sourceBlock = world.BlockAccessor.GetBlock(sourceBlockPos, 2);
+			Block sourceBlock = world.BlockAccessor.GetBlock(sourceBlockPos, BlockLayersAccess.Fluid);
 			while (sourceBlock.IsLiquid())
 			{
 				if (this.IsLiquidSourceBlock(sourceBlock))
 				{
-					Block ourSolid = world.BlockAccessor.GetBlock(sourceBlockPos, 1);
+					Block ourSolid = world.BlockAccessor.GetBlock(sourceBlockPos, BlockLayersAccess.Solid);
 					this.TrySpreadHorizontal(sourceBlock, ourSolid, world, sourceBlockPos);
 					return true;
 				}
 				sourceBlockPos.Add(0, 1, 0);
-				sourceBlock = world.BlockAccessor.GetBlock(sourceBlockPos, 2);
+				sourceBlock = world.BlockAccessor.GetBlock(sourceBlockPos, BlockLayersAccess.Fluid);
 			}
 			return false;
 		}
@@ -326,19 +326,19 @@ namespace HydrateOrDiedrate.wellwater
 		private void UpdateNeighbouringLiquids(BlockPos pos, IWorldAccessor world)
 		{
 			BlockPos npos = pos.DownCopy(1);
-			if (world.BlockAccessor.GetBlock(npos, 2).HasBehavior<BlockBehaviorWellWaterFinite>(false))
+			if (world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid).HasBehavior<BlockBehaviorWellWaterFinite>(false))
 			{
 				world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), npos.Copy(), this.spreadDelay);
 			}
 			npos.Up(2);
-			if (world.BlockAccessor.GetBlock(npos, 2).HasBehavior<BlockBehaviorWellWaterFinite>(false))
+			if (world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid).HasBehavior<BlockBehaviorWellWaterFinite>(false))
 			{
 				world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), npos.Copy(), this.spreadDelay);
 			}
 			foreach (Cardinal val in Cardinal.ALL)
 			{
 				npos.Set(pos.X + val.Normali.X, pos.Y, pos.Z + val.Normali.Z);
-				if (world.BlockAccessor.GetBlock(npos, 2).HasBehavior<BlockBehaviorWellWaterFinite>(false))
+				if (world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid).HasBehavior<BlockBehaviorWellWaterFinite>(false))
 				{
 					world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), npos.Copy(), this.spreadDelay);
 				}
@@ -371,7 +371,7 @@ namespace HydrateOrDiedrate.wellwater
 		}
 		public bool TryLoweringLiquidLevel(Block ourBlock, IWorldAccessor world, BlockPos pos)
 		{
-			var ourSolid = world.BlockAccessor.GetBlock(pos, 1);
+			var ourSolid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid);
 			var aqueductInterface = ourSolid.GetType().GetInterface("IAqueduct");
 
 			if (aqueductInterface != null)
@@ -423,7 +423,7 @@ namespace HydrateOrDiedrate.wellwater
 			for (int i = 0; i < 6; i++)
 			{
 				BlockFacing.ALLFACES[i].IterateThruFacingOffsets(npos);
-				Block liquidBlock = world.BlockAccessor.GetBlock(npos, 2);
+				Block liquidBlock = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 				if (liquidBlock.BlockId != 0)
 				{
 					liquidBlock.OnNeighbourBlockChange(world, npos, pos);
@@ -434,7 +434,7 @@ namespace HydrateOrDiedrate.wellwater
 		{
 			if (this.CanSpreadIntoBlock(ourblock, ourSolid, pos, npos, facing, world))
 			{
-				Block neighborLiquid = world.BlockAccessor.GetBlock(npos, 2);
+				Block neighborLiquid = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 				if (this.IsDifferentCollidableLiquid(ourblock, neighborLiquid))
 				{
 					this.ReplaceLiquidBlock(neighborLiquid, npos, world);
@@ -448,7 +448,7 @@ namespace HydrateOrDiedrate.wellwater
 			if (visited == null) visited = new HashSet<BlockPos>();
 			if (visited.Contains(pos)) return null;
 			visited.Add(pos);
-			Block currentBlock = blockAccessor.GetBlock(pos, 2);
+			Block currentBlock = blockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
 			if (currentBlock != null && currentBlock.Variant["createdBy"] == "natural")
 			{
 				return pos;
@@ -456,7 +456,7 @@ namespace HydrateOrDiedrate.wellwater
 			foreach (BlockFacing facing in BlockFacing.ALLFACES)
 			{
 				BlockPos neighborPos = pos.AddCopy(facing);
-				Block neighborBlock = blockAccessor.GetBlock(neighborPos, 2);
+				Block neighborBlock = blockAccessor.GetBlock(neighborPos, BlockLayersAccess.Fluid);
 				if (neighborBlock != null && neighborBlock.Code?.Domain == "game")
 				{
 					continue;
@@ -494,13 +494,13 @@ namespace HydrateOrDiedrate.wellwater
 			foreach (Cardinal val in Cardinal.ALL)
 			{
 				npos.Set(pos.X + val.Normali.X, pos.Y, pos.Z + val.Normali.Z);
-				Block nblock = blockAccessor.GetBlock(npos, 2);
+				Block nblock = blockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 				if (nblock.LiquidLevel != liquidLevel && nblock.Replaceable >= 6000 && nblock.IsLiquid())
 				{
 					Vec3i normal = ((nblock.LiquidLevel < liquidLevel) ? val.Normali : val.Opposite.Normali);
 					if (!val.IsDiagnoal)
 					{
-						nblock = blockAccessor.GetBlock(npos, 1);
+						nblock = blockAccessor.GetBlock(npos, BlockLayersAccess.Solid);
 						anySideFree |= !nblock.SideIsSolid(blockAccessor, npos, val.Opposite.Index / 2);
 					}
 					dir.X += normal.X;
@@ -527,9 +527,9 @@ namespace HydrateOrDiedrate.wellwater
 				})).BlockId;
 			}
 			pos.Y--;
-			Block downBlock = blockAccessor.GetBlock(pos, 2);
+			Block downBlock = blockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
 			pos.Y += 2;
-			Block upBlock = blockAccessor.GetBlock(pos, 2);
+			Block upBlock = blockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
 			pos.Y--;
 			bool flag = this.IsSameLiquid(downBlock, block);
 			bool upLiquid = this.IsSameLiquid(upBlock, block);
@@ -561,10 +561,10 @@ namespace HydrateOrDiedrate.wellwater
 		}
 		public int GetMaxNeighbourLiquidLevel(Block ourblock, IWorldAccessor world, BlockPos pos)
 		{
-			Block ourSolid = world.BlockAccessor.GetBlock(pos, 1);
+			Block ourSolid = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Solid);
 			BlockPos npos = pos.Copy();
 			npos.Y++;
-			Block ublock = world.BlockAccessor.GetBlock(npos, 2);
+			Block ublock = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 			npos.Y--;
 			if (this.IsSameLiquid(ourblock, ublock) && (double)ourSolid.GetLiquidBarrierHeightOnSide(BlockFacing.UP, pos) == 0.0)
 			{
@@ -574,11 +574,11 @@ namespace HydrateOrDiedrate.wellwater
 			for (int i = 0; i < BlockFacing.HORIZONTALS.Length; i++)
 			{
 				BlockFacing.HORIZONTALS[i].IterateThruFacingOffsets(npos);
-				Block nblock = world.BlockAccessor.GetBlock(npos, 2);
+				Block nblock = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 				if (this.IsSameLiquid(ourblock, nblock))
 				{
 					int nLevel = nblock.LiquidLevel;
-					if (ourSolid.GetLiquidBarrierHeightOnSide(BlockFacing.HORIZONTALS[i], pos) < (float)nLevel / 7f && world.BlockAccessor.GetBlock(npos, 1).GetLiquidBarrierHeightOnSide(BlockFacing.HORIZONTALS[i].Opposite, npos) < (float)nLevel / 7f)
+					if (ourSolid.GetLiquidBarrierHeightOnSide(BlockFacing.HORIZONTALS[i], pos) < (float)nLevel / 7f && world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Solid).GetLiquidBarrierHeightOnSide(BlockFacing.HORIZONTALS[i].Opposite, npos) < (float)nLevel / 7f)
 					{
 						level = Math.Max(level, nLevel);
 					}
@@ -592,12 +592,12 @@ namespace HydrateOrDiedrate.wellwater
 			{
 				return false;
 			}
-			if (world.BlockAccessor.GetBlock(npos, 1).GetLiquidBarrierHeightOnSide(facing.Opposite, npos) >= (float)ourblock.LiquidLevel / 7f)
+			if (world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Solid).GetLiquidBarrierHeightOnSide(facing.Opposite, npos) >= (float)ourblock.LiquidLevel / 7f)
 			{
 				return false;
 			}
 
-			Block neighborLiquid = world.BlockAccessor.GetBlock(npos, 2);
+			Block neighborLiquid = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
 			if (neighborLiquid.LiquidCode == ourblock.LiquidCode)
 			{
 				if (neighborLiquid.Variant["createdBy"] == "natural")
@@ -635,8 +635,8 @@ namespace HydrateOrDiedrate.wellwater
 				npos.Set(pos.X + offset.X, pos.Y - 1, pos.Z + offset.Y);
 				Block block = world.BlockAccessor.GetBlock(npos);
 				npos.Y++;
-				Block block2 = world.BlockAccessor.GetBlock(npos, 2);
-				Block aboveblock = world.BlockAccessor.GetBlock(npos, 1);
+				Block block2 = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
+				Block aboveblock = world.BlockAccessor.GetBlock(npos, BlockLayersAccess.Solid);
 				if (block2.LiquidLevel < ourBlock.LiquidLevel && block.Replaceable >= BlockBehaviorWellWaterFinite.ReplacableThreshold && aboveblock.Replaceable >= BlockBehaviorWellWaterFinite.ReplacableThreshold)
 				{
 					uncheckedPositions.Enqueue(new BlockPos(pos.X + offset.X, pos.Y, pos.Z + offset.Y, pos.dimension));

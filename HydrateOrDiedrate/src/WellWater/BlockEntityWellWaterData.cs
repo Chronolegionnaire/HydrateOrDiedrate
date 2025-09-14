@@ -39,8 +39,8 @@ namespace HydrateOrDiedrate.wellwater
             }
             return false;
         }
-        private Block GetFluid(BlockPos p) => Api.World.BlockAccessor.GetBlock(p, 2);
-        private void  SetFluid(int blockId, BlockPos p) => Api.World.BlockAccessor.SetBlock(blockId, p, 2);
+        private Block GetFluid(BlockPos p) => Api.World.BlockAccessor.GetBlock(p, BlockLayersAccess.Fluid);
+        private void  SetFluid(int blockId, BlockPos p) => Api.World.BlockAccessor.SetBlock(blockId, p, BlockLayersAccess.Fluid);
         private static bool IsOurWellwater(Block b)
         {
             if (b?.Code == null) return false;
@@ -458,7 +458,7 @@ namespace HydrateOrDiedrate.wellwater
             {
                 Api.Event.RegisterCallback((dt) =>
                 {
-                    var fluid = Api.World.BlockAccessor.GetBlock(Pos, 2);
+                    var fluid = Api.World.BlockAccessor.GetBlock(Pos, BlockLayersAccess.Fluid);
 
                     if (!IsOurWellwater(fluid))
                     {
