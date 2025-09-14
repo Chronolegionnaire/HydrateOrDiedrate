@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using HydrateOrDiedrate.wellwater;
+using HydrateOrDiedrate.Wells.WellWater;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
