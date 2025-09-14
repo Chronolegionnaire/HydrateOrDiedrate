@@ -28,12 +28,8 @@ namespace HydrateOrDiedrate.patches
         {
             ICoreAPI api = ApiField?.GetValue(__instance) as ICoreAPI;
             if (api == null) return true;
-            var block = api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
-            if (block?.Code == null || block.Code.Path == null || !block.Code.Path.StartsWith("wellwater"))
-            {
-                return true;
-            }
-            if (block.Attributes == null) return true;
+            var block = api.World.BlockAccessor.GetBlock(pos);
+            if (block == null || block.Attributes == null) return true;
             var waterTightContainerProps = block.Attributes["waterTightContainerProps"];
             if (waterTightContainerProps == null || !waterTightContainerProps.Exists) return true;
             var whenFilledStack = waterTightContainerProps["whenFilled"]?["stack"];
@@ -43,42 +39,58 @@ namespace HydrateOrDiedrate.patches
             var item = api.World.GetItem(new AssetLocation(itemCode));
             if (item == null) return true;
 
-            var spring = FindOwningSpringFor(api.World, pos);
-            if (spring == null)
+            BlockEntityWellWaterData wellWaterData = null;
+            var blockBehavior = block.GetBehavior<BlockBehaviorWellWaterFinite>();
+            if (blockBehavior != null)
+            {
+                var naturalSourcePos = blockBehavior.FindNaturalSourceInLiquidChain(api.World.BlockAccessor, pos);
+                if (naturalSourcePos != null)
+                {
+                    var blockEntity = api.World.BlockAccessor.GetBlockEntity(naturalSourcePos);
+                    if (blockEntity is BlockEntityWellWaterData sourceData)
+                    {
+                        wellWaterData = sourceData;
+                    }
+                }
+            }
+            if (wellWaterData == null)
+            {
+                var be = api.World.BlockAccessor.GetBlockEntity(pos);
+                if (be is BlockEntityWellWaterData fallbackData)
+                {
+                    wellWaterData = fallbackData;
+                }
+            }
+            if (wellWaterData == null) return true;
+            if (wellWaterData.Volume <= 0)
             {
                 __result = false;
                 return false;
             }
+
+            float availableLitres = wellWaterData.Volume;
             float currentLitres = __instance.GetCurrentLitres(itemslot.Itemstack);
             float containerCapacity = __instance.CapacityLitres - currentLitres;
-            if (containerCapacity <= 0.0001f)
+            if (containerCapacity <= 0)
             {
                 __result = false;
                 return false;
             }
-            int requestedLiters = Math.Max(0, (int)Math.Floor(containerCapacity));
-            if (requestedLiters <= 0)
-            {
-                __result = false;
-                return false;
-            }
-            int takenLiters = spring.TryExtractLitersAt(pos, requestedLiters);
-            if (takenLiters <= 0)
-            {
-                __result = false;
-                return false;
-            }
-            float transferLitres = takenLiters;
+
+            float transferLitres = Math.Min(availableLitres, containerCapacity);
+            int volumeToTake = (int)transferLitres;
+            wellWaterData.Volume -= volumeToTake;
+
             var contentStack = new ItemStack(item)
             {
                 StackSize = (int)(transferLitres * 1000)
             };
             int moved = __instance.SplitStackAndPerformAction((Entity)byEntity, itemslot, (ItemStack singleItem) =>
             {
-                float before = __instance.GetCurrentLitres(singleItem);
+                float beforeLitres = __instance.GetCurrentLitres(singleItem);
                 int filled = __instance.TryPutLiquid(singleItem, contentStack, transferLitres);
-                float after = __instance.GetCurrentLitres(singleItem);
-                return (Math.Abs(after - before) >= 0.001f) ? filled : 0;
+                float afterLitres = __instance.GetCurrentLitres(singleItem);
+                return (Math.Abs(afterLitres - beforeLitres) >= 0.001f) ? filled : 0;
             });
 
             if (moved > 0)
@@ -91,17 +103,6 @@ namespace HydrateOrDiedrate.patches
                 __result = false;
             }
             return false;
-        }
-        private static BlockEntityWellSpring FindOwningSpringFor(IWorldAccessor world, BlockPos pos)
-        {
-            var p = pos.DownCopy();
-            const int maxDepth = 512;
-            for (int i = 0; i < maxDepth && p.Y >= 0; i++, p.Y--)
-            {
-                var be = world.BlockAccessor.GetBlockEntity(p);
-                if (be is BlockEntityWellSpring spring) return spring;
-            }
-            return null;
         }
     }
 
@@ -119,53 +120,76 @@ namespace HydrateOrDiedrate.patches
             ICoreAPI api = ApiField?.GetValue(__instance) as ICoreAPI;
             if (api == null) return true;
             IWorldAccessor world = entityItem.World;
-            if (world.Side != EnumAppSide.Server) return true;
+            if (world.Side != EnumAppSide.Server)
+            {
+                return true;
+            }
             if (entityItem.Swimming && world.Rand.NextDouble() < 0.03)
             {
                 BlockPos pos = entityItem.SidedPos.AsBlockPos;
-                Block block = world.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
-
-                if (block?.Attributes != null && block.Code?.Path?.StartsWith("wellwater") == true)
+                Block block = world.BlockAccessor.GetBlock(pos);
+                if (block != null && block.Attributes != null)
                 {
                     var waterTightContainerProps = block.Attributes["waterTightContainerProps"];
-                    var whenFilledStack = waterTightContainerProps?["whenFilled"]?["stack"];
-                    string itemCode = whenFilledStack?["code"]?.AsString();
-
-                    if (!string.IsNullOrEmpty(itemCode))
+                    if (waterTightContainerProps != null && waterTightContainerProps.Exists)
                     {
-                        var item = world.GetItem(new AssetLocation(itemCode));
-                        if (item != null)
+                        var whenFilledStack = waterTightContainerProps["whenFilled"]?["stack"];
+                        if (whenFilledStack != null && whenFilledStack.Exists)
                         {
-                            var spring = FindOwningSpringFor(world, pos);
-                            if (spring != null)
+                            string itemCode = whenFilledStack["code"]?.AsString();
+                            if (!string.IsNullOrEmpty(itemCode))
                             {
-                                float currentLitres = __instance.GetCurrentLitres(entityItem.Itemstack);
-                                float containerCapacity = __instance.CapacityLitres - currentLitres;
-
-                                if (containerCapacity > 0.0001f)
+                                var item = world.GetItem(new AssetLocation(itemCode));
+                                if (item != null)
                                 {
-                                    int requestedLiters = Math.Max(0, (int)Math.Floor(containerCapacity));
-                                    int takenLiters = spring.TryExtractLitersAt(pos, requestedLiters);
-
-                                    if (takenLiters > 0)
+                                    BlockEntityWellWaterData wellWaterData = null;
+                                    var blockBehavior = block.GetBehavior<BlockBehaviorWellWaterFinite>();
+                                    if (blockBehavior != null)
                                     {
-                                        float transferLitres = takenLiters;
-                                        var contentStack = new ItemStack(item)
+                                        BlockPos naturalSourcePos = blockBehavior.FindNaturalSourceInLiquidChain(world.BlockAccessor, pos);
+                                        if (naturalSourcePos != null)
                                         {
-                                            StackSize = (int)(transferLitres * 100)
-                                        };
-                                        var dummySlot = new DummySlot(entityItem.Itemstack);
-                                        int moved = __instance.SplitStackAndPerformAction(entityItem, dummySlot, (ItemStack singleItem) =>
+                                            var blockEntity = world.BlockAccessor.GetBlockEntity(naturalSourcePos);
+                                            if (blockEntity is BlockEntityWellWaterData sourceData)
+                                            {
+                                                wellWaterData = sourceData;
+                                            }
+                                        }
+                                    }
+                                    if (wellWaterData == null)
+                                    {
+                                        var be = world.BlockAccessor.GetBlockEntity(pos);
+                                        if (be is BlockEntityWellWaterData fallbackData)
                                         {
-                                            float before = __instance.GetCurrentLitres(singleItem);
-                                            int filled = __instance.TryPutLiquid(singleItem, contentStack, transferLitres);
-                                            float after = __instance.GetCurrentLitres(singleItem);
-                                            return (Math.Abs(after - before) >= 0.001f) ? filled : 0;
-                                        });
-
-                                        if (moved > 0)
+                                            wellWaterData = fallbackData;
+                                        }
+                                    }
+                                    if (wellWaterData != null && wellWaterData.Volume > 0)
+                                    {
+                                        float availableLitres = wellWaterData.Volume;
+                                        float currentLitres = __instance.GetCurrentLitres(entityItem.Itemstack);
+                                        float containerCapacity = __instance.CapacityLitres - currentLitres;
+                                        if (containerCapacity > 0)
                                         {
-                                            __instance.DoLiquidMovedEffects(null, contentStack, moved, BlockLiquidContainerBase.EnumLiquidDirection.Fill);
+                                            float transferLitres = Math.Min(availableLitres, containerCapacity);
+                                            int volumeToTake = (int)transferLitres;
+                                            wellWaterData.Volume -= volumeToTake;
+                                            var contentStack = new ItemStack(item)
+                                            {
+                                                StackSize = (int)(transferLitres * 100)
+                                            };
+                                            var dummySlot = new DummySlot(entityItem.Itemstack);
+                                            int moved = __instance.SplitStackAndPerformAction(entityItem, dummySlot, (ItemStack singleItem) =>
+                                            {
+                                                float beforeLitres = __instance.GetCurrentLitres(singleItem);
+                                                int filled = __instance.TryPutLiquid(singleItem, contentStack, transferLitres);
+                                                float afterLitres = __instance.GetCurrentLitres(singleItem);
+                                                return (Math.Abs(afterLitres - beforeLitres) >= 0.001f) ? filled : 0;
+                                            });
+                                            if (moved > 0)
+                                            {
+                                                __instance.DoLiquidMovedEffects(null, contentStack, moved, BlockLiquidContainerBase.EnumLiquidDirection.Fill);
+                                            }
                                         }
                                     }
                                 }
@@ -190,17 +214,6 @@ namespace HydrateOrDiedrate.patches
                 }
             }
             return false;
-        }
-        private static BlockEntityWellSpring FindOwningSpringFor(IWorldAccessor world, BlockPos pos)
-        {
-            var p = pos.DownCopy();
-            const int maxDepth = 512;
-            for (int i = 0; i < maxDepth && p.Y >= 0; i++, p.Y--)
-            {
-                var be = world.BlockAccessor.GetBlockEntity(p);
-                if (be is BlockEntityWellSpring spring) return spring;
-            }
-            return null;
         }
     }
 }
