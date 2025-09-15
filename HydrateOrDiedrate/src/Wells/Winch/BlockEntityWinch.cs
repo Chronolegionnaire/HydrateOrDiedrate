@@ -521,6 +521,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
     {
         base.GetBlockInfo(forPlayer, dsc);
+        if (!ModConfig.Instance.GroundWater.WinchOutputInfo) return;
         if (!infoHasSpring)
         {
             dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.noSpring"));
