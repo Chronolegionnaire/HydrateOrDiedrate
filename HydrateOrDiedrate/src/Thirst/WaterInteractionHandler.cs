@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.wellwater;
+using HydrateOrDiedrate.Wells.WellWater;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;

@@ -1,4 +1,4 @@
-﻿using HydrateOrDiedrate.Aquifer;
+﻿using HydrateOrDiedrate.Wells.Aquifer;
 using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
