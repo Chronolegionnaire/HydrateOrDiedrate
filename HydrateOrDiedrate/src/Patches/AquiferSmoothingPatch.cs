@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using HydrateOrDiedrate.Aquifer;
+using HydrateOrDiedrate.Wells.Aquifer;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -32,7 +32,7 @@ public class PatchCollection<T> where T : PatchBase
     {
         var missingPatches = otherCollection.Patches
             .Where(patch => !Array.Exists(Patches, existingPatch => existingPatch.Code == patch.Code))
-            .ToList();
+            .ToArray();
         
         Patches = Patches.Append(missingPatches);
     }

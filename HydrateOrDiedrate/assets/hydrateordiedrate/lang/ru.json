@@ -191,28 +191,20 @@
   "achievement-hodplacekeg-desc": "Выдержанное, как прекрасное вино",
   "achievement-hodplacetun": "Смастерите бочку",
   "achievement-hodplacetun-desc": "*Шлепок по бочке* В эту малышку помещается так много жидкости.",
-  "aquifer-no-data": "Данные по водоносным горизонтам для этого региона отсутствуют.",
-  "aquifer-none": "Здесь нет водоносного горизонта.",
-  "aquifer-none-detected": "Водоносный горизонт не обнаружен.",
-  "aquifer-very-poor": "Обнаружен очень бедный {0} водой водоносный горизонт.",
-  "aquifer-poor": "Обнаружен бедный {0} водой водоносный горизонт.",
-  "aquifer-light": "Обнаружен слабоводный {0} водоносный горизонт.",
-  "aquifer-moderate": "Обнаружен умеренный {0} водоносный горизонт.",
-  "aquifer-heavy": "Обнаружен обильный {0} водоносный горизонт.",
-  "aquifer-direction": " Водоносный слой, похоже, становится сильнее к {0}.",
-  "aquifer-salt": "соль",
-  "aquifer-fresh": "свежий",
-  "direction-north": "север",
-  "direction-south": "юг",
-  "direction-east": "восток",
-  "direction-west": "запад",
+
+  "aquifer": "{0} водоносный горизонт",
+  "aquifer-detected": "{0} обнаружен.",
+
+  "aquifer-direction": "Водоносный слой, похоже, становится мощнее к {0}.",
+  "aquifer-direction-here": "Здесь водоносный слой, похоже, наиболее мощный.",
   "direction-above": "выше",
   "direction-below": "ниже",
-  "direction-here": "здесь",
   "direction-and": "и",
+
   "aquifer-info-prefix": "[Информация о водоносном горизонте]",
   "aquifer-water": "Вода",
   "noaquiferdetected": "Водоносный горизонт не обнаружен.",
+  "none": "Нет",
   "verypoor": "Очень бедный",
   "poor": "Бедный",
   "light": "Слабоводный",
@@ -221,6 +213,7 @@
   "aquiferinfo": "[Информация о водоносном горизонте]",
   "saltwater": "Солёная вода",
   "freshwater": "Свежая вода",
+
   "aquifer-command-description": "Очищает все сохраненные данные водоносного горизонта",
   "aquifer-command-not-initialized": "Система водоносных горизонтов не инициализирована.",
   "aquifer-command-cleared": "Данные водоносного горизонта были успешно очищены.",
@@ -278,6 +271,7 @@
   "winch.waterType":           "Тип воды: {0}",
   "winch.outputRate":          "Производительность: {0:F1}л/день",
   "winch.retentionVolume":     "Максимальный объем колодца: {0}литров",
-  "winch.totalShaftVolume":    "Текущий объем колодца: {0}л"
+  "winch.totalShaftVolume":    "Текущий объем колодца: {0}л",
+  "game:ore-$aquifer$": "Водоносный горизонт"
 }
  

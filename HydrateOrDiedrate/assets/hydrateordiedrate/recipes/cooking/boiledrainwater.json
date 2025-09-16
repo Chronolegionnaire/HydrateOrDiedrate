@@ -1,5 +1,5 @@
 {
-  "code": "hydrateordiedrate:boiledwater",
+  "code": "hydrateordiedrate:boiledrainwater",
   "perishableProps": {
     "type": "None",
     "freshHours": { "avg": 75 },
@@ -7,7 +7,7 @@
     "transitionRatio": 1,
     "transitionedStack": {
       "type": "item",
-      "code": "game:waterportion"
+      "code": "hydrateordiedrate:rainwaterportion"
     }
   },
   "shape": { "base": "game:block/food/meal/liquid" },

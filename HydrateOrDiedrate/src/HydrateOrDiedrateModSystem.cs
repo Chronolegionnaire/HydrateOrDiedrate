@@ -7,8 +7,8 @@ using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.patches;
-using HydrateOrDiedrate.wellwater;
-using HydrateOrDiedrate.winch;
+using HydrateOrDiedrate.Wells.WellWater;
+using HydrateOrDiedrate.Wells.Winch;
 using HydrateOrDiedrate.XSkill;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -127,7 +127,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             }
         }
 
-        Aquifer.AquiferManager.Initialize(api);
+        Wells.Aquifer.AquiferManager.Initialize(api);
     }
 
     public override void Start(ICoreAPI api)
@@ -167,10 +167,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RegisterRainHarvester));
 
-        if (api.ModLoader.IsModEnabled("BetterProspecting"))
-        {
-            BetterProspectingAquiferPatch.Apply(api);
-        }
         if (api.ModLoader.IsModEnabled("smoothdigestion"))
         {
             EntityBehaviorSDHungerPatch.Apply(api);
@@ -306,6 +302,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         _serverApi = null;
         _clientApi = null;
-        Aquifer.AquiferManager.Unload();
+        Wells.Aquifer.AquiferManager.Unload();
     }
 }
