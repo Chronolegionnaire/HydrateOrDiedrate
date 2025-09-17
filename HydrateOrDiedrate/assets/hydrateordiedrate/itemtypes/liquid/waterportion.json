@@ -144,7 +144,7 @@
   },
   "transitionableProps": [
     {
-      "type": "Perish", //TODO maybe make a custom transition
+      "type": "Perish",
       "freshHours": {
         "avg": 150,
         "avgByType": {
@@ -161,7 +161,8 @@
         "type": "item",
         "code": "game:waterportion",
         "codeByType": {
-          "*-salt-*": "game:saltwaterportion"
+          "*-salt-*": "game:saltwaterportion",
+          "*-boiled-rain-*": "hydrateordiedrate:boiled-natural-clean"
         }
       },
       "transitionRatio": 1.0

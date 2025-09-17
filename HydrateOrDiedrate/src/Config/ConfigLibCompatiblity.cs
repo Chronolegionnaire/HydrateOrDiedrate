@@ -1,4 +1,5 @@
 ﻿using ConfigLib;
+using HydrateOrDiedrate.Config.SubConfigs;
 using ImGuiNET;
 using System;
 using Vintagestory.API.Client;
@@ -16,13 +17,7 @@ public class ConfigLibCompatibility
     private const string settingThirstDecayRate = "hydrateordiedrate:Config.Setting.ThirstDecayRate";
     private const string settingThirstDecayRateMax = "hydrateordiedrate:Config.Setting.ThirstDecayRateMax";
     private const string settingHydrationLossDelayMultiplierNormalized = "hydrateordiedrate:Config.Setting.HydrationLossDelayMultiplierNormalized";
-    private const string settingWaterSatiety = "hydrateordiedrate:Config.Setting.WaterSatiety";
-    private const string settingSaltWaterSatiety = "hydrateordiedrate:Config.Setting.SaltWaterSatiety";
-    private const string settingBoilingWaterSatiety = "hydrateordiedrate:Config.Setting.BoilingWaterSatiety";
-    private const string settingRainWaterSatiety = "hydrateordiedrate:Config.Setting.RainWaterSatiety";
-    private const string settingBoiledWaterSatiety = "hydrateordiedrate:Config.Setting.BoiledWaterSatiety";
-    private const string settingBoiledRainWaterSatiety = "hydrateordiedrate:Config.Setting.BoiledRainWaterSatiety";
-    private const string settingDistilledWaterSatiety = "hydrateordiedrate:Config.Setting.DistilledWaterSatiety";
+    
     private const string settingSprintThirstMultiplier = "hydrateordiedrate:Config.Setting.SprintThirstMultiplier";
     private const string settingBoilingWaterDamage = "hydrateordiedrate:Config.Setting.BoilingWaterDamage";
 
@@ -82,41 +77,7 @@ public class ConfigLibCompatibility
     private const string settingAquiferWaterBlockMultiplier = "hydrateordiedrate:Config.Setting.AquiferWaterBlockMultiplier";
     private const string settingAquiferSaltWaterMultiplier = "hydrateordiedrate:Config.Setting.AquiferSaltWaterMultiplier";
     private const string settingAquiferBoilingWaterMultiplier = "hydrateordiedrate:Config.Setting.AquiferBoilingWaterMultiplier";
-    private const string settingWellWaterFreshSatiety = "hydrateordiedrate:Config.Setting.WellWaterFreshSatiety";
-    private const string settingWellWaterSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterSaltSatiety";
-    private const string settingWellWaterMuddySatiety = "hydrateordiedrate:Config.Setting.WellWaterMuddySatiety";
-    private const string settingWellWaterTaintedSatiety = "hydrateordiedrate:Config.Setting.WellWaterTaintedSatiety";
-    private const string settingWellWaterPoisonedSatiety = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSatiety";
-    private const string settingWellWaterMuddySaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterMuddySaltSatiety";
-    private const string settingWellWaterTaintedSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltSatiety";
-    private const string settingWellWaterPoisonedSaltSatiety = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltSatiety";
     private const string settingProspectingRadius = "hydrateordiedrate:Config.Setting.ProspectingRadius";
-
-    // Liquid Perish Rate Settings (new)
-    private const string settingRainWaterFreshHours = "hydrateordiedrate:Config.Setting.RainWaterFreshHours";
-    private const string settingRainWaterTransitionHours = "hydrateordiedrate:Config.Setting.RainWaterTransitionHours";
-    private const string settingBoiledWaterFreshHours = "hydrateordiedrate:Config.Setting.BoiledWaterFreshHours";
-    private const string settingBoiledWaterTransitionHours = "hydrateordiedrate:Config.Setting.BoiledWaterTransitionHours";
-    private const string settingBoiledRainWaterFreshHours = "hydrateordiedrate:Config.Setting.BoiledRainWaterFreshHours";
-    private const string settingBoiledRainWaterTransitionHours = "hydrateordiedrate:Config.Setting.BoiledRainWaterTransitionHours";
-    private const string settingDistilledWaterFreshHours = "hydrateordiedrate:Config.Setting.DistilledWaterFreshHours";
-    private const string settingDistilledWaterTransitionHours = "hydrateordiedrate:Config.Setting.DistilledWaterTransitionHours";
-    private const string settingWellWaterFreshFreshHours = "hydrateordiedrate:Config.Setting.WellWaterFreshFreshHours";
-    private const string settingWellWaterFreshTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterFreshTransitionHours";
-    private const string settingWellWaterSaltFreshHours = "hydrateordiedrate:Config.Setting.WellWaterSaltFreshHours";
-    private const string settingWellWaterSaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterSaltTransitionHours";
-    private const string settingWellWaterMuddyFreshHours = "hydrateordiedrate:Config.Setting.WellWaterMuddyFreshHours";
-    private const string settingWellWaterMuddyTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterMuddyTransitionHours";
-    private const string settingWellWaterTaintedFreshHours = "hydrateordiedrate:Config.Setting.WellWaterTaintedFreshHours";
-    private const string settingWellWaterTaintedTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterTaintedTransitionHours";
-    private const string settingWellWaterPoisonedFreshHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedFreshHours";
-    private const string settingWellWaterPoisonedTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedTransitionHours";
-    private const string settingWellWaterMuddySaltFreshHours = "hydrateordiedrate:Config.Setting.WellWaterMuddySaltFreshHours";
-    private const string settingWellWaterMuddySaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterMuddySaltTransitionHours";
-    private const string settingWellWaterTaintedSaltFreshHours = "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltFreshHours";
-    private const string settingWellWaterTaintedSaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltTransitionHours";
-    private const string settingWellWaterPoisonedSaltFreshHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltFreshHours";
-    private const string settingWellWaterPoisonedSaltTransitionHours = "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltTransitionHours";
     
     private const string settingWinchLowerSpeed = "hydrateordiedrate:Config.Setting.WinchLowerSpeed";
     private const string settingWinchRaiseSpeed = "hydrateordiedrate:Config.Setting.WinchRaiseSpeed";
@@ -239,35 +200,6 @@ public class ConfigLibCompatibility
         float hydrationLossDelayMultiplierNormalized = thirstConfig.HydrationLossDelayMultiplierNormalized;
         ImGui.DragFloat(Lang.Get(settingHydrationLossDelayMultiplierNormalized) + $"##hydrationLossDelayMultiplierNormalized-{id}", ref hydrationLossDelayMultiplierNormalized, 0.1f, 0.0f, 10.0f);
         thirstConfig.HydrationLossDelayMultiplierNormalized = hydrationLossDelayMultiplierNormalized;
-
-        //TODO rework config
-        //float waterSatiety = satietyConfig.WaterSatiety;
-        //ImGui.DragFloat(Lang.Get(settingWaterSatiety) + $"##waterSatiety-{id}", ref waterSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.WaterSatiety = waterSatiety;
-        //
-        //float saltWaterSatiety = satietyConfig.SaltWaterSatiety;
-        //ImGui.DragFloat(Lang.Get(settingSaltWaterSatiety) + $"##saltWaterSatiety-{id}", ref saltWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.SaltWaterSatiety = saltWaterSatiety;
-        //
-        //float boilingWaterSatiety = satietyConfig.BoilingWaterSatiety;
-        //ImGui.DragFloat(Lang.Get(settingBoilingWaterSatiety) + $"##boilingWaterSatiety-{id}", ref boilingWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.BoilingWaterSatiety = boilingWaterSatiety;
-        //
-        //float rainWaterSatiety = satietyConfig.RainWaterSatiety;
-        //ImGui.DragFloat(Lang.Get(settingRainWaterSatiety) + $"##rainWaterSatiety-{id}", ref rainWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.RainWaterSatiety = rainWaterSatiety;
-        //
-        //float distilledWaterSatiety = satietyConfig.DistilledWaterSatiety;
-        //ImGui.DragFloat(Lang.Get(settingDistilledWaterSatiety) + $"##distilledWaterSatiety-{id}", ref distilledWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.DistilledWaterSatiety = distilledWaterSatiety;
-        //
-        //float boiledWaterSatiety = satietyConfig.BoiledWaterSatiety;
-        //ImGui.DragFloat(Lang.Get(settingBoiledWaterSatiety) + $"##boiledWaterSatiety-{id}", ref boiledWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.BoiledWaterSatiety = boiledWaterSatiety;
-        //
-        //float boiledRainWaterSatiety = satietyConfig.BoiledRainWaterSatiety;
-        //ImGui.DragFloat(Lang.Get(settingBoiledRainWaterSatiety) + $"##boiledRainWaterSatiety-{id}", ref boiledRainWaterSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.BoiledRainWaterSatiety = boiledRainWaterSatiety;
 
         float sprintThirstMultiplier = thirstConfig.SprintThirstMultiplier;
         ImGui.DragFloat(Lang.Get(settingSprintThirstMultiplier) + $"##sprintThirstMultiplier-{id}", ref sprintThirstMultiplier, 0.1f, 0.0f, 5.0f);
@@ -475,140 +407,16 @@ public class ConfigLibCompatibility
         ImGui.DragInt(Lang.Get(settingAquiferBoilingWaterMultiplier) + $"##aquiferBoilingWaterMultiplier-{id}", ref aquiferBoilingWaterMultiplier, 1, 1, 500);
         groundWaterConfig.AquiferBoilingWaterMultiplier = aquiferBoilingWaterMultiplier;
         
-        //float wellWaterFreshSatiety = satietyConfig.WellWaterFreshSatiety;
-        //ImGui.DragFloat(Lang.Get(settingWellWaterFreshSatiety) + $"##wellWaterFreshSatiety-{id}", ref wellWaterFreshSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.WellWaterFreshSatiety = wellWaterFreshSatiety;
-        //
-        //float wellWaterSaltSatiety = satietyConfig.WellWaterSaltSatiety;
-        //ImGui.DragFloat(Lang.Get(settingWellWaterSaltSatiety) + $"##wellWaterSaltSatiety-{id}", ref wellWaterSaltSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.WellWaterSaltSatiety = wellWaterSaltSatiety;
-        //
-        //float wellWaterMuddySatiety = satietyConfig.WellWaterMuddySatiety;
-        //ImGui.DragFloat(Lang.Get(settingWellWaterMuddySatiety) + $"##wellWaterMuddySatiety-{id}", ref wellWaterMuddySatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.WellWaterMuddySatiety = wellWaterMuddySatiety;
-        //
-        //float wellWaterTaintedSatiety = satietyConfig.WellWaterTaintedSatiety;
-        //ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSatiety) + $"##wellWaterTaintedSatiety-{id}", ref wellWaterTaintedSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.WellWaterTaintedSatiety = wellWaterTaintedSatiety;
-        //
-        //float wellWaterPoisonedSatiety = satietyConfig.WellWaterPoisonedSatiety;
-        //ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSatiety) + $"##wellWaterPoisonedSatiety-{id}", ref wellWaterPoisonedSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.WellWaterPoisonedSatiety = wellWaterPoisonedSatiety;
-        //
-        //float wellWaterMuddySaltSatiety = satietyConfig.WellWaterMuddySaltSatiety;
-        //ImGui.DragFloat(Lang.Get(settingWellWaterMuddySaltSatiety) + $"##wellWaterMuddySaltSatiety-{id}", ref wellWaterMuddySaltSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.WellWaterMuddySaltSatiety = wellWaterMuddySaltSatiety;
-        //
-        //float wellWaterTaintedSaltSatiety = satietyConfig.WellWaterTaintedSaltSatiety;
-        //ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSaltSatiety) + $"##wellWaterTaintedSaltSatiety-{id}", ref wellWaterTaintedSaltSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.WellWaterTaintedSaltSatiety = wellWaterTaintedSaltSatiety;
-        //
-        //float wellWaterPoisonedSaltSatiety = satietyConfig.WellWaterPoisonedSaltSatiety;
-        //ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltSatiety) + $"##wellWaterPoisonedSaltSatiety-{id}", ref wellWaterPoisonedSaltSatiety, 1.0f, -1000.0f, 1000.0f);
-        //satietyConfig.WellWaterPoisonedSaltSatiety = wellWaterPoisonedSaltSatiety;
-        
         int prospectingRadius = groundWaterConfig.ProspectingRadius;
         ImGui.DragInt(Lang.Get(settingProspectingRadius) + $"##prospectingRadius-{id}", ref prospectingRadius, 1, 1, 10);
         groundWaterConfig.ProspectingRadius = prospectingRadius;
         
         ImGui.SeparatorText("Liquid Perish Rates");
-
-        float rainWaterFreshHours = perishRateConfig.RainWaterFreshHours;
-        ImGui.DragFloat(Lang.Get(settingRainWaterFreshHours) + $"##rainWaterFreshHours-{id}", ref rainWaterFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.RainWaterFreshHours = rainWaterFreshHours;
-
-        float rainWaterTransitionHours = perishRateConfig.RainWaterTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingRainWaterTransitionHours) + $"##rainWaterTransitionHours-{id}", ref rainWaterTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.RainWaterTransitionHours = rainWaterTransitionHours;
-
-        float boiledWaterFreshHours = perishRateConfig.BoiledWaterFreshHours;
-        ImGui.DragFloat(Lang.Get(settingBoiledWaterFreshHours) + $"##boiledWaterFreshHours-{id}", ref boiledWaterFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.BoiledWaterFreshHours = boiledWaterFreshHours;
-
-        float boiledWaterTransitionHours = perishRateConfig.BoiledWaterTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingBoiledWaterTransitionHours) + $"##boiledWaterTransitionHours-{id}", ref boiledWaterTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.BoiledWaterTransitionHours = boiledWaterTransitionHours;
-
-        float boiledRainWaterFreshHours = perishRateConfig.BoiledRainWaterFreshHours;
-        ImGui.DragFloat(Lang.Get(settingBoiledRainWaterFreshHours) + $"##boiledRainWaterFreshHours-{id}", ref boiledRainWaterFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.BoiledRainWaterFreshHours = boiledRainWaterFreshHours;
-
-        float boiledRainWaterTransitionHours = perishRateConfig.BoiledRainWaterTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingBoiledRainWaterTransitionHours) + $"##boiledRainWaterTransitionHours-{id}", ref boiledRainWaterTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.BoiledRainWaterTransitionHours = boiledRainWaterTransitionHours;
-
-        float distilledWaterFreshHours = perishRateConfig.DistilledWaterFreshHours;
-        ImGui.DragFloat(Lang.Get(settingDistilledWaterFreshHours) + $"##distilledWaterFreshHours-{id}", ref distilledWaterFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.DistilledWaterFreshHours = distilledWaterFreshHours;
-
-        float distilledWaterTransitionHours = perishRateConfig.DistilledWaterTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingDistilledWaterTransitionHours) + $"##distilledWaterTransitionHours-{id}", ref distilledWaterTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.DistilledWaterTransitionHours = distilledWaterTransitionHours;
-
-        float wellWaterFreshFreshHours = perishRateConfig.WellWaterFreshFreshHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterFreshFreshHours) + $"##wellWaterFreshFreshHours-{id}", ref wellWaterFreshFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterFreshFreshHours = wellWaterFreshFreshHours;
-
-        float wellWaterFreshTransitionHours = perishRateConfig.WellWaterFreshTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterFreshTransitionHours) + $"##wellWaterFreshTransitionHours-{id}", ref wellWaterFreshTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterFreshTransitionHours = wellWaterFreshTransitionHours;
-
-        float wellWaterSaltFreshHours = perishRateConfig.WellWaterSaltFreshHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterSaltFreshHours) + $"##wellWaterSaltFreshHours-{id}", ref wellWaterSaltFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterSaltFreshHours = wellWaterSaltFreshHours;
-
-        float wellWaterSaltTransitionHours = perishRateConfig.WellWaterSaltTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterSaltTransitionHours) + $"##wellWaterSaltTransitionHours-{id}", ref wellWaterSaltTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterSaltTransitionHours = wellWaterSaltTransitionHours;
-
-        float wellWaterMuddyFreshHours = perishRateConfig.WellWaterMuddyFreshHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterMuddyFreshHours) + $"##wellWaterMuddyFreshHours-{id}", ref wellWaterMuddyFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterMuddyFreshHours = wellWaterMuddyFreshHours;
-
-        float wellWaterMuddyTransitionHours = perishRateConfig.WellWaterMuddyTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterMuddyTransitionHours) + $"##wellWaterMuddyTransitionHours-{id}", ref wellWaterMuddyTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterMuddyTransitionHours = wellWaterMuddyTransitionHours;
-
-        float wellWaterTaintedFreshHours = perishRateConfig.WellWaterTaintedFreshHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterTaintedFreshHours) + $"##wellWaterTaintedFreshHours-{id}", ref wellWaterTaintedFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterTaintedFreshHours = wellWaterTaintedFreshHours;
-
-        float wellWaterTaintedTransitionHours = perishRateConfig.WellWaterTaintedTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterTaintedTransitionHours) + $"##wellWaterTaintedTransitionHours-{id}", ref wellWaterTaintedTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterTaintedTransitionHours = wellWaterTaintedTransitionHours;
-
-        float wellWaterPoisonedFreshHours = perishRateConfig.WellWaterPoisonedFreshHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedFreshHours) + $"##wellWaterPoisonedFreshHours-{id}", ref wellWaterPoisonedFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterPoisonedFreshHours = wellWaterPoisonedFreshHours;
-
-        float wellWaterPoisonedTransitionHours = perishRateConfig.WellWaterPoisonedTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedTransitionHours) + $"##wellWaterPoisonedTransitionHours-{id}", ref wellWaterPoisonedTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterPoisonedTransitionHours = wellWaterPoisonedTransitionHours;
-
-        float wellWaterMuddySaltFreshHours = perishRateConfig.WellWaterMuddySaltFreshHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterMuddySaltFreshHours) + $"##wellWaterMuddySaltFreshHours-{id}", ref wellWaterMuddySaltFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterMuddySaltFreshHours = wellWaterMuddySaltFreshHours;
-
-        float wellWaterMuddySaltTransitionHours = perishRateConfig.WellWaterMuddySaltTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterMuddySaltTransitionHours) + $"##wellWaterMuddySaltTransitionHours-{id}", ref wellWaterMuddySaltTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterMuddySaltTransitionHours = wellWaterMuddySaltTransitionHours;
-
-        float wellWaterTaintedSaltFreshHours = perishRateConfig.WellWaterTaintedSaltFreshHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSaltFreshHours) + $"##wellWaterTaintedSaltFreshHours-{id}", ref wellWaterTaintedSaltFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterTaintedSaltFreshHours = wellWaterTaintedSaltFreshHours;
-
-        float wellWaterTaintedSaltTransitionHours = perishRateConfig.WellWaterTaintedSaltTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterTaintedSaltTransitionHours) + $"##wellWaterTaintedSaltTransitionHours-{id}", ref wellWaterTaintedSaltTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterTaintedSaltTransitionHours = wellWaterTaintedSaltTransitionHours;
-
-        float wellWaterPoisonedSaltFreshHours = perishRateConfig.WellWaterPoisonedSaltFreshHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltFreshHours) + $"##wellWaterPoisonedSaltFreshHours-{id}", ref wellWaterPoisonedSaltFreshHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterPoisonedSaltFreshHours = wellWaterPoisonedSaltFreshHours;
-
-        float wellWaterPoisonedSaltTransitionHours = perishRateConfig.WellWaterPoisonedSaltTransitionHours;
-        ImGui.DragFloat(Lang.Get(settingWellWaterPoisonedSaltTransitionHours) + $"##wellWaterPoisonedSaltTransitionHours-{id}", ref wellWaterPoisonedSaltTransitionHours, 1.0f, 0.0f, 1000.0f);
-        perishRateConfig.WellWaterPoisonedSaltTransitionHours = wellWaterPoisonedSaltTransitionHours;
         
+        bool waterPerish = perishRateConfig.Enabled;
+        ImGui.Checkbox(Lang.Get(settingWaterPerish) + $"##waterPerish-{id}", ref waterPerish);
+        perishRateConfig.Enabled = waterPerish;
+
         ImGui.SeparatorText("Winch Speed");
         float winchLowerSpeed = groundWaterConfig.WinchLowerSpeed;
         ImGui.DragFloat(Lang.Get(settingWinchLowerSpeed) + $"##winchLowerSpeed-{id}", ref winchLowerSpeed, 0.01f, 0.0f, 5.0f);
@@ -641,10 +449,6 @@ public class ConfigLibCompatibility
         int aquiferMinimumWaterBlockThreshold = groundWaterConfig.AquiferMinimumWaterBlockThreshold;
         ImGui.DragInt(Lang.Get(settingAquiferMinimumWaterBlockThreshold) + $"##aquiferMinimumWaterBlockThreshold-{id}", ref aquiferMinimumWaterBlockThreshold, 1, 0, 100);
         groundWaterConfig.AquiferMinimumWaterBlockThreshold = aquiferMinimumWaterBlockThreshold;
-        
-        bool waterPerish = perishRateConfig.Enabled;
-        ImGui.Checkbox(Lang.Get(settingWaterPerish) + $"##waterPerish-{id}", ref waterPerish);
-        perishRateConfig.Enabled = waterPerish;
         
         bool aquiferDataOnProspectingNodeMode = groundWaterConfig.AquiferDataOnProspectingNodeMode;
         ImGui.Checkbox(Lang.Get(settingAquiferDataOnProspectingNodeMode) + $"##aquiferDataOnProspectingNodeMode-{id}", ref aquiferDataOnProspectingNodeMode);

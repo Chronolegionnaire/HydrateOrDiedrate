@@ -11,6 +11,8 @@ namespace HydrateOrDiedrate
         {
             try
             {
+
+                //TODO how do you even get ByType inside an attribute? that should be automatically unpacked.
                 if (collectible?.Attributes?.Token[Attributes.HydrationByType] is JObject hydrationByType)
                 {
                     if (hydrationByType.TryGetValue(type, out var token)) return token.ToObject<float>();
@@ -19,6 +21,7 @@ namespace HydrateOrDiedrate
             }
             catch (Exception)
             {
+                //TODO log
             }
 
             return 0f;

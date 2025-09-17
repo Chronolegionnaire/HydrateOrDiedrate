@@ -1,11 +1,8 @@
 ﻿using HydrateOrDiedrate.Config;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
-using Vintagestory.ServerMods.NoObf;
 
 namespace HydrateOrDiedrate;
 

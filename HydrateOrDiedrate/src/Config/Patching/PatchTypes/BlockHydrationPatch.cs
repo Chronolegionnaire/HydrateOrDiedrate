@@ -42,60 +42,11 @@ public class BlockHydrationPatch : HydrationPatchBase
                 Value = 600,
                 IsBoiling = true
             },
-            new BlockHydrationPatch
+            new BlockHydrationPatch //TODO
             {
                 Code = "water*",
                 Value = 600,
                 HungerReduction = 100
-            },
-            new BlockHydrationPatch
-            {
-                Code = "wellwaterfresh*",
-                Value = 750
-            },
-            new BlockHydrationPatch
-            {
-                Code = "wellwatersalt*",
-                Value = -600,
-                HungerReduction = 100
-            },
-            new BlockHydrationPatch
-            {
-                Code = "wellwatermuddy*",
-                Value = 600,
-                HungerReduction = 50
-            },
-            new BlockHydrationPatch
-            {
-                Code = "wellwatertainted*",
-                Value = 750,
-                HungerReduction = 400,
-                Healing = -5
-            },
-            new BlockHydrationPatch
-            {
-                Code = "wellwaterpoisoned*",
-                Value = 750,
-                Healing = -20
-            },
-            new BlockHydrationPatch
-            {
-                Code = "wellwatermuddysalt*",
-                Value = -600,
-                HungerReduction = 50
-            },
-            new BlockHydrationPatch
-            {
-                Code = "wellwatertaintedsalt*",
-                Value = -600,
-                HungerReduction = 400,
-                Healing = -5
-            },
-            new BlockHydrationPatch
-            {
-                Code = "wellwaterpoisonedsalt*",
-                Value = -600,
-                Healing = -20
             },
             new BlockHydrationPatch
             {
