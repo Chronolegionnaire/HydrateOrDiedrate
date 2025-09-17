@@ -34,7 +34,7 @@ namespace HydrateOrDiedrate.patches
                 return;
             }
 
-            float totalHydration = HydrationCalculator.GetTotalHydration(byEntity.World, (slot.Itemstack.Collectible as BlockMeal)?.GetNonEmptyContents(byEntity.World, slot.Itemstack));
+            float totalHydration = HydrationCalculator.GetTotalHydration(byEntity.World, (slot.Itemstack.Collectible as IBlockMealContainer)?.GetNonEmptyContents(byEntity.World, slot.Itemstack));
             if (totalHydration != 0)
             {
                 var player = byEntity as EntityPlayer;

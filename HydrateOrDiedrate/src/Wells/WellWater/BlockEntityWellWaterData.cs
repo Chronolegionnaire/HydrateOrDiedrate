@@ -182,8 +182,8 @@ namespace HydrateOrDiedrate.Wells.WellWater
         {
             if (Api.Side != EnumAppSide.Server) return;
             string ourPath = currentBlock.Code.Path;
-            bool isFresh = ourPath.Contains("fresh") || ourPath.Contains("muddy");
-            bool isSalt = ourPath.Contains("salt") || ourPath.Contains("muddysalt");
+            bool isFresh = ourPath.Contains("fresh");
+            bool isSalt = ourPath.Contains("salt");
 
             if (!isFresh && !isSalt) return;
 
@@ -299,7 +299,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
             string ourPath = currentBlock.Code.Path;
             if (ourPath.Contains("tainted") || ourPath.Contains("poisoned")) return;
             bool isSalt = ourPath.Contains("salt");
-            bool isFreshish = ourPath.Contains("fresh") || ourPath.Contains("muddy") || ourPath.Contains("muddysalt");
+            bool isFreshish = ourPath.Contains("fresh") || ourPath.Contains("muddy") || ourPath.Contains("muddysalt"); //TODO
             if (!isFreshish) return;
             foreach (BlockFacing facing in BlockFacing.ALLFACES)
             {

@@ -21,12 +21,11 @@
     "waterportion-fresh-boiled-clean",
     "waterportion-fresh-rain-clean",
     "waterportion-fresh-distilled-clean",
-    
+
     "waterportion-fresh-well-*",
     "waterportion-salt-well-*",
-    
+
     "waterportion-boiled-natural-clean",
-    "waterportion-boiled-well-clean",
     "waterportion-boiled-rain-clean"
   ],
 

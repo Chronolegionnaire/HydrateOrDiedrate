@@ -240,6 +240,7 @@ public class ConfigLibCompatibility
         ImGui.DragFloat(Lang.Get(settingHydrationLossDelayMultiplierNormalized) + $"##hydrationLossDelayMultiplierNormalized-{id}", ref hydrationLossDelayMultiplierNormalized, 0.1f, 0.0f, 10.0f);
         thirstConfig.HydrationLossDelayMultiplierNormalized = hydrationLossDelayMultiplierNormalized;
 
+        //TODO rework config
         //float waterSatiety = satietyConfig.WaterSatiety;
         //ImGui.DragFloat(Lang.Get(settingWaterSatiety) + $"##waterSatiety-{id}", ref waterSatiety, 1.0f, -1000.0f, 1000.0f);
         //satietyConfig.WaterSatiety = waterSatiety;

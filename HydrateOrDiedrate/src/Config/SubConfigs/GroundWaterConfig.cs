@@ -6,6 +6,13 @@ namespace HydrateOrDiedrate.Config.SubConfigs;
 public class GroundWaterConfig //TODO: this could potentially be split even further into WellConfig and AquiferConfig.
 {
     /// <summary>
+    /// How much muddy water a shallow well should produce each day
+    /// </summary>
+    [Category("Well")]
+    [DefaultValue(4d)]
+    public float ShallowWellLitersPerDay { get; set; } = 4f;
+    
+    /// <summary>
     /// Scales the flow rate of natural springs in wells
     /// </summary>
     [Category("Well")]

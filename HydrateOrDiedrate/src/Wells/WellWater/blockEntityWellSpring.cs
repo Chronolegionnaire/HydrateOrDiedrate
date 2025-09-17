@@ -16,13 +16,14 @@ public class BlockEntityWellSpring : BlockEntity
     private double accumulatedWater = 0.0;
     private double LastInGameDay = -1.0;
 
-    private string cachedRingMaterial;
     private bool canPlaceToConfiguredLevel; //TODO not read?
+    
+    private string cachedRingMaterial;
     private int partialValidatedHeight;
     private const double AquiferRatingToLitersOutputRatio = 0.5;
     
-    private string lastWaterType;
-    private double lastDailyLiters;
+    public string LastWaterType { get; private set; }
+    public double LastDailyLiters { get; private set; }
 
     public override void Initialize(ICoreAPI api)
     {
@@ -42,6 +43,26 @@ public class BlockEntityWellSpring : BlockEntity
         base.OnBlockRemoved();
     }
 
+    private bool HandleShallowWell(double elapsedDays)
+    {
+        if(!IsSurroundedBySoil(Api.World.BlockAccessor, Pos)) return false;
+
+        var (nearbySalty, nearbyFresh) = CheckForNearbyGameWater(Api.World.BlockAccessor, Pos);
+        if(!nearbyFresh && !nearbySalty) return true;
+        
+        LastWaterType = GetWaterType(nearbyFresh && !nearbySalty, "muddy");
+        LastDailyLiters = ModConfig.Instance.GroundWater.ShallowWellLitersPerDay;
+        accumulatedWater += LastDailyLiters * elapsedDays * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
+        if (accumulatedWater >= 1.0)
+        {
+            var wholeLiters = (int)accumulatedWater;
+            AddOrPlaceWater(wholeLiters, nearbyFresh && !nearbySalty, "muddy");
+            accumulatedWater -= wholeLiters;
+        }
+
+        return true;
+    }
+
     private void OnServerTick(float dt)
     {
         double currentInGameDays = Api.World.Calendar.TotalDays;
@@ -52,54 +73,30 @@ public class BlockEntityWellSpring : BlockEntity
         }
 
         double elapsedDays = currentInGameDays - LastInGameDay;
-        if (elapsedDays <= 0) return;
+        if (elapsedDays <= 0.05) return; //Only check 20 times a day
         LastInGameDay = currentInGameDays;
 
+        if (HandleShallowWell(elapsedDays)) return;
+
         var chunk = Api.World.BlockAccessor.GetChunkAtBlockPos(Pos);
-        bool isMuddy = IsSurroundedBySoil(Api.World.BlockAccessor, Pos);
 
-        var aquiferData = AquiferManager.GetAquiferChunkData(chunk, Api.Logger)?.Data;
-        if (aquiferData is null || (aquiferData.AquiferRating == 0 && !isMuddy)) return;
+        if(AquiferManager.GetAquiferChunkData(chunk, Api.Logger)?.Data is not { AquiferRating: not 0 } aquiferData) return;
+        if(AquiferManager.GetWellspringsInChunk(chunk) is not { Count: not 0} wellsprings) return;
 
-        var wellsprings = AquiferManager.GetWellspringsInChunk(chunk);
-        if (wellsprings.Count == 0) return;
-        
-        var (isSalty, isFresh) = CheckForNearbyGameWater(Api.World.BlockAccessor, Pos);
-        if (isMuddy)
-        {
-            if (isFresh || isSalty)
-            {
-                accumulatedWater += 0.001 * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
-                if (accumulatedWater >= 1.0)
-                {
-                    int wholeLiters = (int)Math.Floor(accumulatedWater);
-                    accumulatedWater -= wholeLiters;
-                    string waterType = isSalty ? "muddysalt" : "muddy";
-                    AddOrPlaceWater(waterType, wholeLiters);
-                    accumulatedWater = 0;
-                }
-            }
-            
-            return;
-        }
         double remainingRating = (double)aquiferData.AquiferRating / wellsprings.Count;
         var thisSpring = wellsprings.FirstOrDefault(ws => ws.Position.Equals(Pos));
         if (thisSpring is null) return;
 
-        double dailyLiters = Math.Max(0, remainingRating * AquiferRatingToLitersOutputRatio) * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
-        lastDailyLiters = dailyLiters;
-        MarkDirty(true);
-        double litersThisTick = dailyLiters * elapsedDays;
-        accumulatedWater += litersThisTick;
+        LastWaterType = GetWaterType(!aquiferData.IsSalty);
+        LastDailyLiters = Math.Max(0, remainingRating * AquiferRatingToLitersOutputRatio) * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
+        accumulatedWater += LastDailyLiters * elapsedDays;
         if (accumulatedWater >= 1.0)
         {
             int wholeLiters = (int)Math.Floor(accumulatedWater);
             accumulatedWater -= wholeLiters;
-            string waterType = aquiferData.IsSalty ? "salt" : "fresh";
-            lastWaterType = waterType;
-            MarkDirty(true);
-            AddOrPlaceWater(waterType, wholeLiters);
+            AddOrPlaceWater(wholeLiters, !aquiferData.IsSalty);
         }
+        MarkDirty(true);
     }
 
     private void OnPeriodicShaftCheck(float dt)
@@ -117,137 +114,63 @@ public class BlockEntityWellSpring : BlockEntity
 
         MarkDirty(true);
     }
-    private void AddOrPlaceWater(string waterType, int litersToAdd)
+
+    /// <returns>The amount of liters that where leftover after placement</returns>
+    private int AddOrPlaceWater(int litersToAdd, bool isFresh = true, string pollution = "clean")
     {
         var ba = Api.World.BlockAccessor;
-        bool isMuddy = IsSurroundedBySoil(ba, Pos);
+        
+        var baseWaterCode = $"wellwater-{(isFresh ? "fresh" : "salt")}-{pollution}";
+        int maxVolume = GetMaxVolumeForWaterType(LastWaterType);
 
-        if (waterType == "muddy" || waterType == "muddysalt")
-        {
-            BlockPos firstPos = Pos.UpCopy(1);
-            Block solidAtFirst = ba.GetSolid(firstPos);
-            if (!WellBlockUtils.SolidAllows(solidAtFirst))
-            {
-                accumulatedWater = 0.0;
-                return;
-            }
-
-            Block fluidAtFirst = ba.GetFluid(firstPos);
-            if (fluidAtFirst?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
-            {
-                var existingBE = ba.GetBlockEntity<BlockEntityWellWaterData>(firstPos);
-                if (existingBE != null)
-                {
-                    int maxVolume = 9;
-                    if (existingBE.Volume >= maxVolume)
-                    {
-                        accumulatedWater = 0.0;
-                        return;
-                    }
-                    else
-                    {
-                        int addedVolume = Math.Min(maxVolume - existingBE.Volume, litersToAdd);
-                        existingBE.Volume += addedVolume;
-                        accumulatedWater = 0.0;
-                        return;
-                    }
-                }
-            }
-            bool skipPlacementCheck = isMuddy;
-            string fluidPath = fluidAtFirst?.Code?.Path;
-            bool isAir = fluidPath == "air";
-            bool isSpreading = fluidPath?.StartsWith($"wellwater{waterType}-spreading-") == true;
-            bool isNatural = fluidPath?.StartsWith($"wellwater{waterType}-natural-") == true;
-
-            if ((isAir || isSpreading) && !isNatural &&
-                (skipPlacementCheck || IsValidPlacement(ba, firstPos)))
-            {
-                string blockCode = $"hydrateordiedrate:wellwater{waterType}-natural-still-1";
-                Block waterBlock = Api.World.GetBlock(new AssetLocation(blockCode));
-                if (waterBlock != null)
-                {
-                    ba.SetFluid(waterBlock.BlockId, firstPos);
-                    ba.TriggerNeighbourBlockUpdate(firstPos);
-                    var newBE = ba.GetBlockEntity<BlockEntityWellWaterData>(firstPos);
-                    if (newBE != null)
-                    {
-                        int maxVolume = 9;
-                        int volumeToSet = Math.Min(litersToAdd, maxVolume);
-                        newBE.Volume = volumeToSet;
-                    }
-                }
-            }
-            accumulatedWater = 0.0;
-            return;
-        }
         int maxDepth = DetermineMaxDepthBasedOnCached(cachedRingMaterial, partialValidatedHeight);
         int leftoverLiters = litersToAdd;
+        
+        var currentPos = Pos.Copy();
         for (int i = 0; i < maxDepth && leftoverLiters > 0; i++)
         {
-            BlockPos currentPos = Pos.UpCopy(i + 1);
+            currentPos.Up();
 
             if (!WellBlockUtils.SolidAllows(ba.GetSolid(currentPos))) break;
 
             Block fluidAt = ba.GetFluid(currentPos);
-            if (fluidAt?.Code?.Path.StartsWith($"wellwater{waterType}") == true)
-            {
-                var existingBE = ba.GetBlockEntity<BlockEntityWellWaterData>(currentPos);
-                if (existingBE != null)
-                {
-                    int maxVolume = isMuddy ? 9 : 70;
-                    int availableCapacity = maxVolume - existingBE.Volume;
-                    if (availableCapacity > 0)
-                    {
-                        int addedVolume = Math.Min(availableCapacity, leftoverLiters);
-                        existingBE.Volume += addedVolume;
-                        leftoverLiters -= addedVolume;
-                    }
-                }
-            }
-        }
+            if ((fluidAt.Code?.Path.StartsWith(baseWaterCode)) != true) continue;
 
-        for (int i = 0; i < maxDepth && leftoverLiters > 0; i++)
+            if (ba.GetBlockEntity(currentPos) is not BlockEntityWellWaterData existingBE) continue;
+
+            int availableCapacity = maxVolume - existingBE.Volume;
+            if (availableCapacity <= 0) continue;
+
+            int addedVolume = Math.Min(availableCapacity, leftoverLiters);
+            existingBE.Volume += addedVolume;
+            existingBE.MarkDirty();
+            leftoverLiters -= addedVolume;
+        }
+        
+        var waterBlock = Api.World.GetBlock(new AssetLocation("hydrateordiedrate", $"{baseWaterCode}-natural-still-1"));
+        if(waterBlock is null) return leftoverLiters;
+
+        currentPos.Set(Pos);
+        for (int i = 0; i < maxDepth && leftoverLiters > 0; i++) //TODO this can probably just be a single loop
         {
-            BlockPos currentPos = Pos.UpCopy(i + 1);
+            currentPos.Up();
             if (!WellBlockUtils.SolidAllows(ba.GetSolid(currentPos))) break;
+            if (!IsValidPlacement(ba, currentPos, baseWaterCode)) break;
 
-            bool skipPlacementCheck = isMuddy;
-            Block fluidAt = ba.GetFluid(currentPos);
-            string fluidPath = fluidAt?.Code?.Path;
-            bool isAir = fluidPath == "air";
-            bool isSpreading = fluidPath?.StartsWith($"wellwater{waterType}-spreading-") == true;
-            bool isNatural = fluidPath?.StartsWith($"wellwater{waterType}-natural-") == true;
+            ba.SetFluid(waterBlock.BlockId, currentPos);
+            ba.TriggerNeighbourBlockUpdate(currentPos);
 
-            if ((isAir || isSpreading) && !isNatural &&
-                (skipPlacementCheck || IsValidPlacement(ba, currentPos)))
-            {
-                string blockCode = $"hydrateordiedrate:wellwater{waterType}-natural-still-1";
-                Block waterBlock = Api.World.GetBlock(new AssetLocation(blockCode));
-                if (waterBlock != null)
-                {
-                    ba.SetFluid(waterBlock.BlockId, currentPos);
-                    ba.TriggerNeighbourBlockUpdate(currentPos);
-                    var newBE = ba.GetBlockEntity<BlockEntityWellWaterData>(currentPos);
-                    if (newBE != null)
-                    {
-                        int maxVolume = isMuddy ? 9 : 70;
-                        int volumeToSet = Math.Min(leftoverLiters, maxVolume);
-                        newBE.Volume = volumeToSet;
-                        leftoverLiters -= volumeToSet;
-                    }
-                }
-            }
+            if (ba.GetBlockEntity(currentPos) is not BlockEntityWellWaterData newBE) continue;
+            
+            int volumeToSet = Math.Min(leftoverLiters, maxVolume);
+            newBE.Volume = volumeToSet;
+            leftoverLiters -= volumeToSet;
         }
 
-        if (leftoverLiters > 0)
-        {
-            accumulatedWater = 0.0;
-        }
+        return leftoverLiters;
     }
-
-    private bool IsBlockingBlock(Block block) => block?.Code is not null && block.Code.Path != "air"  && !block.Code.Path.Contains("wellwater");
     
-    private int DetermineMaxDepthBasedOnCached(string ringMat, int validatedLevels)
+    private static int DetermineMaxDepthBasedOnCached(string ringMat, int validatedLevels)
     {
         int baseDepth = ModConfig.Instance.GroundWater.WellwaterDepthMaxBase;
         if (validatedLevels <= 0 || ringMat == "none") return baseDepth;
@@ -266,7 +189,7 @@ public class BlockEntityWellSpring : BlockEntity
         return baseDepth;
     }
 
-    private string CheckBaseRingMaterial(IBlockAccessor blockAccessor, BlockPos pos)
+    private static string CheckBaseRingMaterial(IBlockAccessor blockAccessor, BlockPos pos)
     {
         //TODO do more efficient walk
         Block[] neighbors =
@@ -286,36 +209,27 @@ public class BlockEntityWellSpring : BlockEntity
         return "none";
     }
 
-    private int CheckColumnForMaterial(IBlockAccessor blockAccessor, BlockPos basePos, string ringMaterial)
+    private static int CheckColumnForMaterial(IBlockAccessor blockAccessor, BlockPos basePos, string ringMaterial)
     {
-        if (ringMaterial == "none")
+        int maxCheck = ringMaterial switch
         {
-            return 0;
-        }
-        int maxCheck;
-        if (ringMaterial == "brick")
-        {
-            maxCheck = ModConfig.Instance.GroundWater.WellwaterDepthMaxClay;
-        }
-        else if (ringMaterial == "stonebrick")
-        {
-            maxCheck = ModConfig.Instance.GroundWater.WellwaterDepthMaxStone;
-        }
-        else
-        {
-            return 0;
-        }
+            "brick" => ModConfig.Instance.GroundWater.WellwaterDepthMaxClay,
+            "stonebrick" => ModConfig.Instance.GroundWater.WellwaterDepthMaxStone,
+            _ => 0
+        };
+        if(maxCheck == 0) return 0;
+
         int validatedHeight = 0;
         for (int level = 1; level <= maxCheck; level++)
         {
             BlockPos checkPos = basePos.UpCopy(level);
-            Block[] neighbors = new Block[]
-            {
+            Block[] neighbors =
+            [
                 blockAccessor.GetBlock(checkPos.NorthCopy()),
                 blockAccessor.GetBlock(checkPos.EastCopy()),
                 blockAccessor.GetBlock(checkPos.SouthCopy()),
                 blockAccessor.GetBlock(checkPos.WestCopy())
-            };
+            ];
             if (ringMaterial == "brick")
             {
                 bool allBrick = neighbors.All(b =>
@@ -343,8 +257,9 @@ public class BlockEntityWellSpring : BlockEntity
         return validatedHeight;
     }
 
-    private bool IsSurroundedBySoil(IBlockAccessor blockAccessor, BlockPos pos)
+    private static bool IsSurroundedBySoil(IBlockAccessor blockAccessor, BlockPos pos)
     {
+        //TODO perf
         Block[] blocks = new Block[]
         {
             blockAccessor.GetBlock(pos.NorthCopy()),
@@ -359,37 +274,60 @@ public class BlockEntityWellSpring : BlockEntity
             b?.Code?.Path.StartsWith("gravel-") == true
         );
     }
-    private bool IsValidPlacement(IBlockAccessor blockAccessor, BlockPos pos)
+
+    private static bool IsValidPlacement(IBlockAccessor blockAccessor, BlockPos pos, string baseWaterCode)
     {
-        Block northBlock = blockAccessor.GetBlock(pos.NorthCopy());
-        Block eastBlock  = blockAccessor.GetBlock(pos.EastCopy());
-        Block southBlock = blockAccessor.GetBlock(pos.SouthCopy());
-        Block westBlock  = blockAccessor.GetBlock(pos.WestCopy());
+        Block fluidAtPos = blockAccessor.GetFluid(pos);
+        if (fluidAtPos.BlockId != 0 && fluidAtPos.Code?.Path.StartsWith(baseWaterCode) != true) return false;
+        
+        bool isAir = fluidAtPos.Id == 0;
+        bool isSpreading = fluidAtPos.Variant["createdBy"] == "spreading";
+        bool isNatural = fluidAtPos.Variant["createdBy"] == "natural";
 
-        bool northSolid = northBlock != null && northBlock.SideSolid[BlockFacing.SOUTH.Index];
-        bool eastSolid  = eastBlock  != null && eastBlock.SideSolid[BlockFacing.WEST.Index];
-        bool southSolid = southBlock != null && southBlock.SideSolid[BlockFacing.NORTH.Index];
-        bool westSolid  = westBlock  != null && westBlock.SideSolid[BlockFacing.EAST.Index];
-
-        return northSolid && eastSolid && southSolid && westSolid;
+        return (isAir || isSpreading) && !isNatural && SidesAreSolid(blockAccessor, pos);
     }
-    public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
+
+    private static bool SidesAreSolid(IBlockAccessor blockAccessor, BlockPos pos)
     {
-        base.FromTreeAttributes(tree, worldForResolving);
+        var currentPos = pos.NorthCopy();
+        Block block = blockAccessor.GetBlock(currentPos);
+        if(block is null || !block.SideSolid[BlockFacing.SOUTH.Index]) return false;
+
+        currentPos.Set(pos);
+        currentPos.East();
+        block  = blockAccessor.GetBlock(currentPos);
+        if(block is null || !block.SideSolid[BlockFacing.WEST.Index]) return false;
+
+        currentPos.Set(pos);
+        currentPos.South();
+        block  = blockAccessor.GetBlock(currentPos);
+        if(block is null || !block.SideSolid[BlockFacing.NORTH.Index]) return false;
+
+        currentPos.Set(pos);
+        currentPos.West();
+        block  = blockAccessor.GetBlock(currentPos);
+        if(block is null || !block.SideSolid[BlockFacing.EAST.Index]) return false;
+
+        return true;
+    }
+
+    public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
+    {
+        base.FromTreeAttributes(tree, worldAccessForResolve);
         accumulatedWater     = tree.GetDouble("accumulatedWater", 0.0);
-        lastDailyLiters      = tree.GetDouble("lastDailyLiters", lastDailyLiters);
+        LastDailyLiters      = tree.GetDouble("lastDailyLiters", LastDailyLiters);
         cachedRingMaterial   = tree.GetString("cachedRingMaterial", cachedRingMaterial);
         partialValidatedHeight = tree.GetInt("partialValidatedHeight", partialValidatedHeight);
-        lastWaterType        = tree.GetString("lastWaterType", lastWaterType);
+        LastWaterType        = tree.GetString("lastWaterType", LastWaterType);
         LastInGameDay       = tree.GetDouble("lastInGameTime", LastInGameDay);
     }
     public override void ToTreeAttributes(ITreeAttribute tree)
     {
         base.ToTreeAttributes(tree);
         tree.SetDouble("accumulatedWater", accumulatedWater);
-        tree.SetDouble("lastDailyLiters", lastDailyLiters);
+        tree.SetDouble("lastDailyLiters", LastDailyLiters);
         tree.SetString("cachedRingMaterial", cachedRingMaterial);
-        tree.SetString("lastWaterType", lastWaterType ?? "");
+        tree.SetString("lastWaterType", LastWaterType ?? string.Empty);
         tree.SetInt("partialValidatedHeight", partialValidatedHeight);
         tree.SetDouble("lastInGameTime", LastInGameDay);
     }
@@ -401,12 +339,12 @@ public class BlockEntityWellSpring : BlockEntity
         dsc.AppendLine(description);
     }
 
-    private (bool isSalty, bool isFresh) CheckForNearbyGameWater(IBlockAccessor blockAccessor, BlockPos centerPos)
+    private static (bool nearbySalty, bool nearbyFresh) CheckForNearbyGameWater(IBlockAccessor blockAccessor, BlockPos centerPos)
     {
         bool saltyFound = false;
         bool freshFound = false;
 
-        var checkPos = new BlockPos();
+        var checkPos = centerPos.Copy();
         int cx = centerPos.X, cy = centerPos.Y, cz = centerPos.Z;
 
         for (int dx = -3; dx <= 2; dx++)
@@ -418,23 +356,28 @@ public class BlockEntityWellSpring : BlockEntity
             checkPos.Set(cx + dx, cy + dy, cz + dz);
 
             Block checkBlock = blockAccessor.GetBlock(checkPos, BlockLayersAccess.Fluid);
+            if(checkBlock?.Code?.Domain != "game") continue;
 
-            if (checkBlock?.Code?.Domain == "game")
+            if (checkBlock.Code.Path.StartsWith("saltwater-"))
             {
-                if (checkBlock.Code.Path.StartsWith("saltwater-"))
-                    saltyFound = true;
-                else if (checkBlock.Code.Path.StartsWith("water-") || checkBlock.Code.Path.StartsWith("boilingwater-"))
-                    freshFound = true;
+                saltyFound = true;
+            }
+            else if (checkBlock.Code.Path.StartsWith("water-") || checkBlock.Code.Path.StartsWith("boilingwater-"))
+            {
+                freshFound = true;
             }
 
-            if (saltyFound && freshFound) return (true, true);
+            if (saltyFound && freshFound) break;
         }
 
         return (saltyFound, freshFound);
     }
-    public string GetWaterType() => lastWaterType;
 
-    public double GetCurrentOutputRate() => lastDailyLiters;
+    public static string GetWaterType(bool isFresh, string pollution = "clean") => $"{(isFresh ? "fresh" : "salt")}-well-{pollution}";
+
+    public static int GetMaxVolumeForWaterType(string waterType) => waterType.Contains("muddy") ? 9 : 70;
+
+    public int GetMaxTotalVolume() => GetRetentionDepth() * GetMaxVolumeForWaterType(LastWaterType);
 
     public int GetRetentionDepth() => DetermineMaxDepthBasedOnCached(cachedRingMaterial, partialValidatedHeight);
 }
