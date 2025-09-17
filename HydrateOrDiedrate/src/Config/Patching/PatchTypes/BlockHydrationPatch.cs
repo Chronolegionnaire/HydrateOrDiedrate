@@ -21,11 +21,7 @@ public class BlockHydrationPatch : HydrationPatchBase
 
     public override void Apply(CollectibleObject collectible, float value)
     {
-
-        //TODO: this really should just be: `collectible.Attributes.Token["hydration"] = value;` why does the original code have this weird logic?
-        var hydrationByType = collectible.Attributes.Token["hydrationByType"] ??= new JObject();
-        hydrationByType["*"] = value;
-
+        collectible.Attributes.Token["hydration"] = value;
         collectible.Attributes.Token[Attributes.IsBoiling] = IsBoiling;
         collectible.Attributes.Token[Attributes.HungerReduction] = HungerReduction;
         collectible.Attributes.Token[Attributes.Healing] = Healing;
@@ -34,31 +30,6 @@ public class BlockHydrationPatch : HydrationPatchBase
     public static PatchCollection<BlockHydrationPatch> GenerateDefaultPatchCollection() => new()
     {
         Priority = 5,
-        Patches =
-        [
-            new BlockHydrationPatch
-            {
-                Code = "boilingwater*",
-                Value = 600,
-                IsBoiling = true
-            },
-            new BlockHydrationPatch //TODO
-            {
-                Code = "water*",
-                Value = 600,
-                HungerReduction = 100
-            },
-            new BlockHydrationPatch
-            {
-                Code = "saltwater*",
-                Value = -600,
-                HungerReduction = 100
-            },
-            new BlockHydrationPatch
-            {
-                Code = "distilledwater*",
-                Value = 600
-            }
-        ]
+        Patches = []
     };
 }

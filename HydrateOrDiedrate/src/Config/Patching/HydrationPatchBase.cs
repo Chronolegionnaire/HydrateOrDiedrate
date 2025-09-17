@@ -9,6 +9,6 @@ public abstract class HydrationPatchBase : PatchBase
     public override float Value { get; set; }
 
 
-    [JsonProperty(Attributes.HydrationByType)]
+    [JsonProperty("hydrationByType")]
     public override Dictionary<string, float> ValueByType { get; set; }
 }

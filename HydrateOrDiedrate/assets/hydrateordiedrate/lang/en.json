@@ -67,6 +67,8 @@
   "hydrateordiedrate:Config.Setting.AquiferBoilingWaterMultiplier": "Boiling Water Multiplier: Enhances the aquifer rating when near hot springs (boiling water).",
 
   "hydrateordiedrate:Config.Setting.ProspectingRadius": "The chunk radius that will be checked when prospecting for aquifers",
+  
+  //TODO
   "hydrateordiedrate:Config.Setting.RainWaterFreshHours": "Rain Water Fresh Hours",
   "hydrateordiedrate:Config.Setting.RainWaterTransitionHours": "Rain Water Transition Hours",
   "hydrateordiedrate:Config.Setting.BoiledWaterFreshHours": "Boiled Water Fresh Hours",
@@ -91,6 +93,7 @@
   "hydrateordiedrate:Config.Setting.WellWaterTaintedSaltTransitionHours": "Well Water (Tainted Salt) Transition Hours",
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltFreshHours": "Well Water (Poisoned Salt) Fresh Hours",
   "hydrateordiedrate:Config.Setting.WellWaterPoisonedSaltTransitionHours": "Well Water (Poisoned Salt) Transition Hours",
+
   "hydrateordiedrate:Config.Setting.WaterPerish": "Set to false to remove water transition entirely so new water types will never perish into regular water",
   "hydrateordiedrate:Config.Setting.settingAquiferRatingCeilingAboveSeaLevel": "Max aquifer rating above sea level",
   "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale": "Aquifer depth multiplier scale",
@@ -142,8 +145,8 @@
   "hydrateordiedrate:item-waterportion-salt-well-tainted": "Tainted Salty Well Water",
   "hydrateordiedrate:item-waterportion-salt-well-poisoned": "Poisoned Salty Well Water",
   "hydrateordiedrate:block-wellspring": "Well Spring",
-  "hydrateordiedrate:block-wellwater-fresh-*": "Fresh Well Water",
-  "hydrateordiedrate:block-wellwater-salt-*": "Salty Well Water",
+  "hydrateordiedrate:block-wellwater-fresh-clean-*": "Fresh Well Water",
+  "hydrateordiedrate:block-wellwater-salt-clean-*": "Salty Well Water",
   "hydrateordiedrate:block-wellwater-fresh-muddy-*": "Muddy Well Water",
   "hydrateordiedrate:block-wellwater-salt-muddy-*": "Muddy Salty Well Water",
   "hydrateordiedrate:block-wellwater-fresh-poisoned-*": "Poisoned Well Water",

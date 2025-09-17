@@ -173,14 +173,14 @@ namespace HydrateOrDiedrate
                         return;
                     }
 
-                    float hydrationValue = BlockHydrationManager.GetHydrationValue(block, "*");
+                    float hydrationValue = HydrationManager.GetBlockHydration(player.Entity.Api, block);
                     if (hydrationValue != 0)
                     {
                         if (!drinkData.IsDrinking)
                         {
                             drinkData.IsDrinking = true;
                             drinkData.DrinkStartTime = currentTime;
-                            bool isDangerous = hydrationValue < 0 || BlockHydrationManager.IsBlockBoiling(block);
+                            bool isDangerous = hydrationValue < 0 || HydrationManager.IsBoiling(player.Entity.Api, block);
                             SendDrinkProgressToClient(player, 0f, true, isDangerous);
                         }
 
@@ -205,12 +205,11 @@ namespace HydrateOrDiedrate
             }
         }
 
-        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime,
-            CollectibleObject collectible, PlayerDrinkData drinkData)
+        private void HandleDrinkingStep(IServerPlayer player, BlockSelection blockSel, long currentTime, Block block, PlayerDrinkData drinkData)
         {
             if (!drinkData.IsDrinking) return;
 
-            if (collectible == null)
+            if (block == null)
             {
                 StopDrinking(player, drinkData);
                 return;
@@ -219,10 +218,10 @@ namespace HydrateOrDiedrate
             float progress = (float)(currentTime - drinkData.DrinkStartTime) / (float)drinkDuration;
             progress = Math.Min(1f, progress);
 
-            float hydrationValue = BlockHydrationManager.GetHydrationValue(collectible, "*");
-            bool isBoiling = BlockHydrationManager.IsBlockBoiling(collectible);
-            int hungerReduction = BlockHydrationManager.GetBlockHungerReduction(collectible);
-            int healthEffect = BlockHydrationManager.GetBlockHealth(collectible);
+            float hydrationValue = HydrationManager.GetBlockHydration(player.Entity.Api, block);
+            bool isBoiling = HydrationManager.IsBoiling(player.Entity.Api, block);
+            int hungerReduction = HydrationManager.GetHungerReduction(player.Entity.Api, block);
+            int healthEffect = HydrationManager.GetHealing(player.Entity.Api, block);
 
             bool isDangerous = hydrationValue < 0 || isBoiling;
 
@@ -236,7 +235,7 @@ namespace HydrateOrDiedrate
                 if (thirstBehavior == null || thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
                 {
                     player.SendIngameError("fullhydration",
-                        Lang.Get("hydrateordiedrate:waterinteraction-fullhydration"));
+                    Lang.Get("hydrateordiedrate:waterinteraction-fullhydration"));
                     StopDrinking(player, drinkData);
                     return;
                 }
@@ -270,10 +269,10 @@ namespace HydrateOrDiedrate
 
                 if (isBoiling) ApplyHeatDamage(player, ModConfig.Instance.Thirst.BoilingWaterDamage);
 
-                var block = _api.World.BlockAccessor.GetBlock(blockSel.Position);
-                if (block.Code.Path.StartsWith("wellwater"))
+                var block2 = _api.World.BlockAccessor.GetBlock(blockSel.Position);
+                if (block2.Code.Path.StartsWith("wellwater"))
                 {
-                    var blockBehavior = block.GetBehavior<BlockBehaviorWellWaterFinite>();
+                    var blockBehavior = block2.GetBehavior<BlockBehaviorWellWaterFinite>();
                     var naturalSourcePos =
                         blockBehavior?.FindNaturalSourceInLiquidChain(_api.World.BlockAccessor, blockSel.Position);
                     if (naturalSourcePos != null)
