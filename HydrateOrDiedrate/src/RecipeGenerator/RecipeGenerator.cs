@@ -2,6 +2,7 @@ using HarmonyLib;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -86,7 +87,7 @@ public static partial class RecipeGenerator
 
     public static void GenerateVariants(ICoreServerAPI api, ILogger logger)
     {
-        logger.Event("Starting HoD water variant recipe generation...");
+        logger.VerboseDebug("Starting HoD water variant recipe generation...");
         var recipeLists = FindRecipeLists(api);
 
         foreach(var recipeList in recipeLists)
@@ -108,7 +109,7 @@ public static partial class RecipeGenerator
                 logger.Error("[{0}] Exception generating HoD water variant recipes for {1} ({2}): {3}", recipeList.Source, recipeList.TargetObject, recipeList.HostMemberName, ex);
             }
         }
-        logger.Event("HoD water variant recipe generation completed.");
+        logger.VerboseDebug("HoD water variant recipe generation completed.");
     }
 
     public static RecipeItemProcessor GetRecipeListProcessor(RecipeListInfo recipeListInfo)

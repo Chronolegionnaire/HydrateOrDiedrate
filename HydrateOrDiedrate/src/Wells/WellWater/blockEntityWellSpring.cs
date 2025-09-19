@@ -15,8 +15,6 @@ public class BlockEntityWellSpring : BlockEntity
     private const int updateIntervalMs = 500;
     private double accumulatedWater = 0.0;
     private double LastInGameDay = -1.0;
-
-    private bool canPlaceToConfiguredLevel; //TODO not read?
     
     private string cachedRingMaterial;
     private int partialValidatedHeight;
@@ -37,6 +35,7 @@ public class BlockEntityWellSpring : BlockEntity
         RegisterGameTickListener(OnPeriodicShaftCheck, 30000);
         OnPeriodicShaftCheck(0);
     }
+
     public override void OnBlockRemoved()
     {
         AquiferManager.RemoveWellSpringFromChunk(Api.World, Pos);
@@ -102,16 +101,7 @@ public class BlockEntityWellSpring : BlockEntity
     private void OnPeriodicShaftCheck(float dt)
     {
         cachedRingMaterial = CheckBaseRingMaterial(Api.World.BlockAccessor, Pos);
-        int validatedLevels = CheckColumnForMaterial(Api.World.BlockAccessor, Pos, cachedRingMaterial);
-        partialValidatedHeight = validatedLevels;
-        
-        canPlaceToConfiguredLevel = cachedRingMaterial switch
-        {
-            "brick" when validatedLevels >= ModConfig.Instance.GroundWater.WellwaterDepthMaxClay => true,
-            "stonebrick" when validatedLevels >= ModConfig.Instance.GroundWater.WellwaterDepthMaxStone => true,
-            _ => false,
-        };
-
+        partialValidatedHeight = CheckColumnForMaterial(Api.World.BlockAccessor, Pos, cachedRingMaterial);
         MarkDirty(true);
     }
 
