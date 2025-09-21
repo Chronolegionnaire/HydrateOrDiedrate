@@ -2,6 +2,8 @@
 using HydrateOrDiedrate.Config.SubConfigs;
 using ImGuiNET;
 using System;
+using System.Data;
+using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -135,10 +137,40 @@ public class ConfigLibCompatibility
         });
     }
 
+    public static void LoadLiquidPortions(ICoreAPI api, ModConfig config)
+    {
+        foreach(var item in api.World.Items)
+        {
+            if(!item.GetType().Name.Equals("ItemLiquidPortion", StringComparison.OrdinalIgnoreCase) || !item.Code.Path.Contains("water")) continue;
+
+            if (!config.Satiety.ItemSatietyMapping.ContainsKey(item.Code))
+            {
+                var satiety = item.Attributes?.Token["waterTightContainerProps"]?["nutritionPropsPerLitre"]?.Value<float>("satiety");
+                if(satiety is null || satiety > 0) continue;
+                
+                config.Satiety.ItemSatietyMapping[item.Code] = satiety.Value;
+            }
+
+            var perish = item.TransitionableProps?.FirstOrDefault(static item => item.Type == EnumTransitionType.Perish);
+            if(perish is not null)
+            {
+                config.PerishRates.TransitionConfig[item.Code] = new ItemTransitionConfig
+                {
+                    FreshHours = perish.FreshHours.avg,
+                    TransitionHours = perish.TransitionHours.avg,
+                };
+            }
+        }
+    }
+
     private void EditConfig(string id, ControlButtons buttons, ICoreClientAPI api)
     {
         //Ensure we have a copy of the config ready (late initialized because we only need this if the editor was opened)
-        EditInstance ??= ModConfig.Instance.JsonCopy();
+        if(EditInstance is null)
+        {
+            EditInstance = ModConfig.Instance.JsonCopy();
+            LoadLiquidPortions(api, EditInstance);
+        }
         
         Edit(EditInstance, id);
 
@@ -200,6 +232,20 @@ public class ConfigLibCompatibility
         float hydrationLossDelayMultiplierNormalized = thirstConfig.HydrationLossDelayMultiplierNormalized;
         ImGui.DragFloat(Lang.Get(settingHydrationLossDelayMultiplierNormalized) + $"##hydrationLossDelayMultiplierNormalized-{id}", ref hydrationLossDelayMultiplierNormalized, 0.1f, 0.0f, 10.0f);
         thirstConfig.HydrationLossDelayMultiplierNormalized = hydrationLossDelayMultiplierNormalized;
+
+        if (ImGui.CollapsingHeader($"{Lang.Get("game:Satiety")}##satietylookup-{id}"))
+        {
+            ImGui.Indent();
+            foreach((var code, var satiety) in satietyConfig.ItemSatietyMapping)
+            {
+                var currentSatiety = satiety;
+                ImGui.DragFloat($"{Lang.Get($"{code.Domain}:item-{code.Path}")}##satietylookup-{code.Domain}-{code.Path}-{id}", ref currentSatiety);
+
+                satietyConfig.ItemSatietyMapping[code] = currentSatiety;
+            }
+            ImGui.Unindent();
+            ImGui.Spacing();
+        }
 
         float sprintThirstMultiplier = thirstConfig.SprintThirstMultiplier;
         ImGui.DragFloat(Lang.Get(settingSprintThirstMultiplier) + $"##sprintThirstMultiplier-{id}", ref sprintThirstMultiplier, 0.1f, 0.0f, 5.0f);
@@ -416,6 +462,23 @@ public class ConfigLibCompatibility
         bool waterPerish = perishRateConfig.Enabled;
         ImGui.Checkbox(Lang.Get(settingWaterPerish) + $"##waterPerish-{id}", ref waterPerish);
         perishRateConfig.Enabled = waterPerish;
+
+        if (ImGui.CollapsingHeader($"{Lang.Get("hydrateordiedrate:Config.Setting.Transition")}##transitionconfig-{id}"))
+        {
+            ImGui.Indent();
+            foreach((var code, var transitionConfig) in perishRateConfig.TransitionConfig)
+            {
+                var freshHours = transitionConfig.FreshHours;
+                ImGui.DragFloat($"{Lang.Get("hydrateordiedrate:Config.Setting.FreshHours" ,Lang.Get($"{code.Domain}:item-{code.Path}"))}##transitionconfig-fresh-{code.Domain}-{code.Path}-{id}", ref freshHours);
+                transitionConfig.FreshHours = freshHours;
+
+                var transitionHours = transitionConfig.TransitionHours;
+                ImGui.DragFloat($"{Lang.Get("hydrateordiedrate:Config.Setting.TransitionHours" ,Lang.Get($"{code.Domain}:item-{code.Path}"))}##transitionconfig-fresh-{code.Domain}-{code.Path}-{id}", ref transitionHours);
+                transitionConfig.TransitionHours = transitionHours;
+                ImGui.Spacing();
+            }
+            ImGui.Unindent();
+        }
 
         ImGui.SeparatorText("Winch Speed");
         float winchLowerSpeed = groundWaterConfig.WinchLowerSpeed;

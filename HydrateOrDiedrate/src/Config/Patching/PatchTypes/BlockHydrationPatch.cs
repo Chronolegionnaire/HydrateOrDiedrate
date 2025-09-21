@@ -1,6 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 using Vintagestory.API.Common;
 
 namespace HydrateOrDiedrate.Config.Patching.PatchTypes;

@@ -1,5 +1,7 @@
 ﻿using ProtoBuf;
+using System.Collections.Generic;
 using System.ComponentModel;
+using Vintagestory.API.Common;
 
 namespace HydrateOrDiedrate.Config.SubConfigs;
 
@@ -10,4 +12,6 @@ public class PerishRatesConfig
     /// </summary>
     [DefaultValue(true)]
     public bool Enabled { get; set; } = true;
+
+    public Dictionary<AssetLocation, ItemTransitionConfig> TransitionConfig { get; set; } = [];
 }

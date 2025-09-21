@@ -64,6 +64,13 @@
 
       "nutritionPropsPerLitre": {
         "satiety": 0,
+        "satietyByType": {
+          "waterportion-salt-well-muddy": -75,
+          "waterportion-*-well-tainted": -400,
+          "waterportion-salt-well-*": -100,
+          "*-muddy": -75,
+          "waterportion-fresh-rain-clean": -50
+        },
         "foodcategory": "NoNutrition",
         "healthByType": {
           "*-tainted": -5,

@@ -69,19 +69,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.AssetsLoaded(api);
 
-        if(api.Side == EnumAppSide.Client) return; //This data is decided by the server and synced over to client automatically
-
-        //TODO needs further refactor but for now this will do
-        if (!ModConfig.Instance.PerishRates.Enabled)
-        {
-            foreach(var item in api.World.Items)
-            {
-                if(item.Code is null || item.Code.Domain != Mod.Info.ModID || !item.Code.Path.Contains("water")) continue;
-                if(item.TransitionableProps is null || !Array.Exists(item.TransitionableProps, static t => t.Type == EnumTransitionType.Perish)) continue;
-                item.TransitionableProps = [.. item.TransitionableProps.Where(t => t.Type != EnumTransitionType.Perish)];
-            }
-        }
-
         if(api is not ICoreServerAPI serverApi) return; //This data is decided by the server and synced over to client automatically
         RecipeGenerator.RecipeGenerator.GenerateVariants(serverApi, Mod.Logger); //NOTE: has to happen here and not in `AssetsFinalize` because otherwise Gourmand will crash
     }

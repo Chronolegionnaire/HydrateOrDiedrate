@@ -1,8 +1,7 @@
 ﻿using HydrateOrDiedrate.Config;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 using Vintagestory.API.Common;
-using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate;
 
@@ -10,69 +9,45 @@ public static class WaterPatches
 {
     public static void ApplyConfigSettings(ICoreAPI api)
     {
+        foreach((var code, var satiety) in ModConfig.Instance.Satiety.ItemSatietyMapping)
+        {
+            var item = api.World.GetItem(code);
+            if (item is null) continue;
+
+            var nutrients = item.Attributes?.Token["waterTightContainerProps"]?["nutritionPropsPerLitre"];
+            if(nutrients is null) continue;
+            nutrients["satiety"] = satiety;
+        }
+
         foreach(var collectible in api.World.Collectibles)
         {
-            if(collectible.Code is null || collectible.Code.Domain != "hydrateordiedrate") continue;
+            if (collectible.Code is null || collectible.Code.Domain != "hydrateordiedrate" || collectible.ItemClass != EnumItemClass.Item || !collectible.GetType().Name.Equals("ItemLiquidPortion", StringComparison.OrdinalIgnoreCase)) continue;
 
-            if(collectible is BlockForFluidsLayer)
+            if (collectible.Code.Path.Contains("water"))
             {
-                //TODO maybe add similar logic for the fluid blocks
+                if (!ModConfig.Instance.PerishRates.Enabled)
+                {
+                    collectible.TransitionableProps = [.. collectible.TransitionableProps.Where(t => t.Type != EnumTransitionType.Perish)];
+                }
+                else if(ModConfig.Instance.PerishRates.TransitionConfig.TryGetValue(collectible.Code, out var config))
+                {
+                    var perishtTransition = collectible.TransitionableProps.FirstOrDefault(static item => item.Type == EnumTransitionType.Perish);
+                    if(perishtTransition is not null)
+                    {
+                        perishtTransition.FreshHours.avg = config.FreshHours;
+                        perishtTransition.TransitionHours.avg = config.TransitionHours;
+                    }
+                }
             }
-            else if(collectible.Class.Equals("ItemLiquidPortion", StringComparison.OrdinalIgnoreCase))
+            
+            var nutrientProps = collectible.Attributes?.Token["waterTightContainerProps"]?["nutritionPropsPerLitre"];
+            if (nutrientProps is not null && nutrientProps.Value<float>("health") != 0 && nutrientProps["NutritionPropsPerLitreWhenInMeal"] is null)
             {
-                var containerProps = collectible.Attributes?.Token["waterTightContainerProps"];
-                if(containerProps is null) continue;
-                
-                var nutrientProps =  containerProps["nutritionPropsPerLitre"];
-                if(nutrientProps is null) continue;
-                
-                if (nutrientProps.Value<float>("satiety") == 0) //Otherwise satiety was manually configured
-                {
-                    var modifier = 0f;
-
-                    modifier += GetTypeSatietyModifier(collectible.Variant["type"]);
-                    modifier += GetSourceSatietyModifier(collectible.Variant["source"]);
-                    modifier += GetPolutionSatietyModifier(collectible.Variant["pollution"]);
-
-                    modifier = Math.Min(modifier, 0);
-
-                    nutrientProps["satiety"] = JToken.FromObject(modifier);
-                }
-
-                if(nutrientProps.Value<float>("health") != 0 && nutrientProps["NutritionPropsPerLitreWhenInMeal"] is null)
-                {
-                    //NutritionPropsPerLitreWhenInMeal should be present when health is non-zero, otherwise food recipes using this water will heal/damage the player
-                    var nutrientsPropsWhenInMeal = nutrientProps.DeepClone();
-                    nutrientsPropsWhenInMeal["satiety"]?.Parent.Remove();
-                    nutrientProps["NutritionPropsPerLitreWhenInMeal"] = nutrientsPropsWhenInMeal;
-                }
+                //NutritionPropsPerLitreWhenInMeal should be present when health is non-zero, otherwise food recipes using this water will heal/damage the player
+                var nutrientsPropsWhenInMeal = nutrientProps.DeepClone();
+                nutrientsPropsWhenInMeal["satiety"]?.Parent.Remove();
+                nutrientProps["NutritionPropsPerLitreWhenInMeal"] = nutrientsPropsWhenInMeal;
             }
         }
     }
-
-    public static float GetTypeSatietyModifier(string waterType) => waterType switch
-    {
-        "fresh" => ModConfig.Instance.Satiety.FreshWaterSatietyModifier,
-        "salt" => ModConfig.Instance.Satiety.SaltWaterSatietyModifier,
-        "boiled" => ModConfig.Instance.Satiety.BoiledWaterSatietyModifier,
-        _ => 0f
-    };
-
-    public static float GetSourceSatietyModifier(string source) => source switch
-    {
-        "natural" => ModConfig.Instance.Satiety.NaturalWaterSatietyModifier,
-        "well" => ModConfig.Instance.Satiety.WellWaterSatietyModifier,
-        "rain" => ModConfig.Instance.Satiety.RainWaterSatietyModifier,
-        "distilled" => ModConfig.Instance.Satiety.DistilledWaterSatietyModifier,
-        _ => 0f
-    };
-
-    public static float GetPolutionSatietyModifier(string pollutionLevel) => pollutionLevel switch
-    {
-        "clean" => ModConfig.Instance.Satiety.CleanWaterSatietyModifier,
-        "muddy" => ModConfig.Instance.Satiety.MuddyWaterSatietyModifier,
-        "tainted" => ModConfig.Instance.Satiety.TaintedWaterSatietyModifier,
-        "poisoned" => ModConfig.Instance.Satiety.PoisonedWaterSatietyModifier,
-        _ => 0f
-    };
 }
