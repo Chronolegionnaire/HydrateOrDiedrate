@@ -199,7 +199,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             if (!WellBlockUtils.SolidAllows(ba.GetSolid(currentPos))) break;
 
             Block fluidAt = ba.GetFluid(currentPos);
-            if ((fluidAt.Code?.Path.StartsWith(baseWaterCode)) != true) continue;
+            if ((fluidAt.Code?.Path.StartsWith(baseWaterCode)) != true) break;
 
             if (ba.GetBlockEntity(currentPos) is not BlockEntityWellWaterData existingBE) continue;
 
@@ -219,6 +219,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         for (int i = 0; i < maxDepth && leftoverLiters > 0; i++) //TODO this can probably just be a single loop
         {
             currentPos.Up();
+            if(ba.GetBlockEntity(currentPos) is BlockEntityWellWaterData) continue;
             if (!WellBlockUtils.SolidAllows(ba.GetSolid(currentPos))) break;
             if (!IsValidPlacement(ba, currentPos, baseWaterCode)) break;
 
@@ -308,11 +309,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         Block fluidAtPos = blockAccessor.GetFluid(pos);
         if (fluidAtPos.BlockId != 0 && fluidAtPos.Code?.Path.StartsWith(baseWaterCode) != true) return false;
 
-        bool isAir = fluidAtPos.Id == 0;
-        bool isSpreading = fluidAtPos.Variant["createdBy"] == "spreading";
-        bool isNatural = fluidAtPos.Variant["createdBy"] == "natural";
-
-        return (isAir || isSpreading) && !isNatural && blockAccessor.IsContainedBySolids(pos, BlockFacing.HORIZONTALS);
+        return blockAccessor.IsContainedBySolids(pos, BlockFacing.HORIZONTALS);
     }
 
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)

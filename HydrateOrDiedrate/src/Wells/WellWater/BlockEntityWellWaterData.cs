@@ -63,46 +63,35 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
                 var ba = Api.World.BlockAccessor;
                 Block currentBlock = ba.GetFluid(Pos);
-                if (currentBlock?.Code == null || currentBlock.Variant == null) { MarkDirty(true); return; }
-
-                int oldHeight = 0;
-                if (currentBlock.Variant.TryGetValue("height", out string hs)) int.TryParse(hs, out oldHeight);
-
-                if (newHeight != oldHeight)
+                if (currentBlock?.Code == null || currentBlock.Variant == null) 
                 {
-                    ChangeBlockHeight(currentBlock, newHeight);
+                    MarkDirty(true);
+                    return;
                 }
+
+                if(!currentBlock.Variant.TryGetValue("height", out string hs) || !int.TryParse(hs, out int oldHeight)) return;
+
+                if (newHeight != oldHeight) ChangeBlockHeight(currentBlock, newHeight);
 
                 MarkDirty(true);
             }
         }
-        private int GetHeightForVolume(int vol) => Math.Min(7, (vol - 1) / 10 + 1);
-        private int GetVolumeForHeight(int height) => height * 10 - 9;
+        private static int GetHeightForVolume(int vol) => Math.Min(7, (vol - 1) / 10 + 1);
+        private static int GetVolumeForHeight(int height) => height * 10 - 9;
+
         private void ChangeBlockHeight(Block currentBlock, int newHeight)
         {
             if (Api.Side != EnumAppSide.Server) return;
             if (currentBlock?.Code == null || currentBlock.Variant == null) return;
 
-            string path = currentBlock.Code.Path;
-            int dash = path.IndexOf('-');
-            string baseType = dash > 0 ? path.Substring(0, dash) : path;
+            Block newBlock = Api.World.GetBlock(currentBlock.CodeWithVariant("height", newHeight.ToString()));
 
-            if (!currentBlock.Variant.TryGetValue("createdBy", out string createdBy)) return;
+            if (newBlock is null || newBlock == currentBlock) return;
 
-            currentBlock.Variant.TryGetValue("flow", out string flow);
-
-            if (string.IsNullOrEmpty(createdBy) || string.IsNullOrEmpty(flow)) return;
-
-            string finalPath = $"{baseType}-{createdBy}-{flow}-{newHeight}";
-            AssetLocation newBlockLoc = new AssetLocation(currentBlock.Code.Domain, finalPath);
-            Block newBlock = Api.World.GetBlock(newBlockLoc);
-
-            if (newBlock != null && newBlock != currentBlock)
-            {
-                Api.World.BlockAccessor.SetFluid(newBlock.BlockId, Pos);
-                NotifyNeighborsOfHeightChange();
-            }
+            Api.World.BlockAccessor.SetFluid(newBlock.BlockId, Pos);
+            NotifyNeighborsOfHeightChange();
         }
+
         private void NotifyNeighborsOfHeightChange()
         {
             if (Api.Side != EnumAppSide.Server) return;
