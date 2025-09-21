@@ -1,13 +1,14 @@
-﻿using HydrateOrDiedrate.Wells.Aquifer;
-using HydrateOrDiedrate.Config;
+﻿using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.Wells.Aquifer;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.API.Client;
 
 namespace HydrateOrDiedrate.Wells.WellWater;
 
@@ -31,13 +32,19 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             }
 
             originBlock = value;
-            if(Api is not ICoreClientAPI capi) return;
-
-            textureSources = value is null ? null : [
-                capi.Tesselator.GetTextureSource(value, returnNullWhenMissing: true),
-                capi.Tesselator.GetTextureSource(Block, returnNullWhenMissing: true)
-            ];
+            UpdateTextureSources();
+            MarkDirty(true);
         }
+    }
+
+    private void UpdateTextureSources()
+    {
+        if(Api is not ICoreClientAPI capi) return;
+
+        textureSources = OriginBlock is null ? null : [
+            capi.Tesselator.GetTextureSource(OriginBlock, returnNullWhenMissing: true),
+            capi.Tesselator.GetTextureSource(Block, returnNullWhenMissing: true)
+        ];
     }
     
     private ITexPositionSource[] textureSources = [];
@@ -47,19 +54,28 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     {
         get
         {
+            var unknown = ((ICoreClientAPI)Api).BlockTextureAtlas.UnknownTexturePosition;
             TextureAtlasPosition result;
+
             for (int i = 0; i < textureSources.Length; i++)
             {
                 result = textureSources[i][textureCode];
-                if(result is not null) return result;
+                if(result is not null && result != unknown) return result;
+                
+                if(textureCode == "all")
+                {
+                    result = textureSources[i]["north"]; //HACK: base game annoyingly empties the 'all' identifier
+                    if(result is not null && result != unknown) return result;
+                }
             }
             
             for (int i = 0; i < textureSources.Length - 1; i++)
             {
                 result = textureSources[i]["all"];
-                if(result is not null) return result;
+                if(result is not null&& result != unknown) return result;
             }
-            return  ((ICoreClientAPI)Api).BlockTextureAtlas.UnknownTexturePosition;
+
+            return unknown;
         }
     }
 
@@ -84,35 +100,45 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         base.Initialize(api);
 
         if ((int)LastInGameDay == -1) LastInGameDay = api.World.Calendar.TotalDays;
+        
+        UpdateTextureSources();
         if (api.Side != EnumAppSide.Server) return;
         
         AquiferManager.AddWellSpringToChunk(api.World, Pos);
         RegisterGameTickListener(OnServerTick, updateIntervalMs);
         RegisterGameTickListener(OnPeriodicShaftCheck, 30000);
         
+        OriginBlock ??= api.World.FindMostLikelyOriginBlockFromNeighbors(Pos) ?? api.World.GetBlock(new AssetLocation("game", "rock-granite"));
         OnPeriodicShaftCheck(0);
         HandleWell(0);
     }
 
-    //TODO figure this out
-    //public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
-    //{
-    //    base.OnTesselation(mesher, tessThreadTesselator);
-    //    //if(OriginBlock is null) return false;
-    //    var meshData = GenMesh();
-    //    meshData.AddMeshData(meshData);
-    //
-    //    return true;
-    //}
+    public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
+    {
+        if(base.OnTesselation(mesher, tessThreadTesselator)) return true;
 
-    public MeshData GenMesh()
-    {        
-        if(Api is not ICoreClientAPI capi) return null;
+        var meshData = GetMesh();
+        if(meshData is null) return false;
+        mesher.AddMeshData(meshData);
+    
+        return true;
+    }
+
+    public MeshData GetMesh()
+    {
+        if(Api is not ICoreClientAPI capi || OriginBlock is null) return null;
+        if(!capi.ObjectCache.TryGetValue("wellspringmeshes", out var obj) || obj is not Dictionary<AssetLocation, MeshData> cachedMeshes)
+        {
+            capi.ObjectCache["wellspringmeshes"] = cachedMeshes = [];
+        }
+        if(cachedMeshes.TryGetValue(OriginBlock.Code, out var result)) return result;
+
         var shape = Shape.TryGet(Api, new AssetLocation("hydrateordiedrate","shapes/block/wellspring.json"));
-        capi.Tesselator.TesselateShape(Block, shape, out var result);
-
+        capi.Tesselator.TesselateShape("wellspirng", shape, out result, this, new Vec3f(Block.Shape.rotateX, Block.Shape.rotateY, Block.Shape.rotateZ), 0, 0, 0, null, null);
+        cachedMeshes[OriginBlock.Code] = result;
         return result;
     }
+
 
     public override void OnBlockRemoved()
     {
@@ -188,7 +214,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         var baseWaterCode = $"wellwater-{(isFresh ? "fresh" : "salt")}-{pollution}";
         int maxVolume = GetMaxVolumeForWaterType(LastWaterType);
 
-        int maxDepth = DetermineMaxDepthBasedOnCached(cachedRingMaterial, partialValidatedHeight);
+        int maxDepth = pollution == "muddy" ? 1 : DetermineMaxDepthBasedOnCached(cachedRingMaterial, partialValidatedHeight);
         int leftoverLiters = litersToAdd;
 
         var currentPos = Pos.Copy();
@@ -309,7 +335,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         Block fluidAtPos = blockAccessor.GetFluid(pos);
         if (fluidAtPos.BlockId != 0 && fluidAtPos.Code?.Path.StartsWith(baseWaterCode) != true) return false;
 
-        return blockAccessor.IsContainedBySolids(pos, BlockFacing.HORIZONTALS);
+        return baseWaterCode.Contains("muddy") || blockAccessor.IsContainedBySolids(pos, BlockFacing.HORIZONTALS);
     }
 
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
@@ -342,11 +368,6 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
         var originBlockId = tree.TryGetInt("OriginBlockId");
         if (originBlockId.HasValue && originBlockId != OriginBlock?.Id) OriginBlock = worldAccessForResolve.GetBlock(originBlockId.Value);
-        else if(Api is not null)
-        {
-            OriginBlock = worldAccessForResolve.FindMostLikelyOriginBlockFromNeighbors(Pos)
-                ?? worldAccessForResolve.GetBlock(new AssetLocation("game", "rock-granite"));
-        }
     }
 
     public static string GetWaterType(bool isFresh, string pollution = "clean") => $"{(isFresh ? "fresh" : "salt")}-well-{pollution}";

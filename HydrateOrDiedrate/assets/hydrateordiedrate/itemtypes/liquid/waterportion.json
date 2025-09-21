@@ -162,7 +162,7 @@
         "code": "game:waterportion",
         "codeByType": {
           "*-salt-*": "game:saltwaterportion",
-          "*-boiled-rain-*": "hydrateordiedrate:boiled-natural-clean"
+          "*-boiled-rain-*": "hydrateordiedrate:waterportion-boiled-natural-clean"
         }
       },
       "transitionRatio": 1.0

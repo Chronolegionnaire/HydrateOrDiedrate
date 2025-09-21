@@ -13,7 +13,6 @@
       ]
     }
   },
-  "drawtype": "json",
   "creativeinventory": {
     "general": [
       "*"
@@ -31,7 +30,7 @@
   "textures": {
     "all": { "base": "game:block/soil/fertmedium" },
     "stoney1": { "base": "game:block/stone/dirtygravel/wet/stoney1" },
-    "waterportiontransparent": { "base":  "hydrateordiedrate:waterportiontransparent" }
+    "waterportiontransparent": { "base": "hydrateordiedrate:waterportiontransparent" }
   },
   "replaceable": 90,
   "resistance": 8,
