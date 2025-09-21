@@ -21,32 +21,31 @@ public static class WaterPatches
 
         foreach(var collectible in api.World.Collectibles)
         {
-            if (collectible.Code is null || collectible.Code.Domain != "hydrateordiedrate" || collectible.ItemClass != EnumItemClass.Item || !collectible.GetType().Name.Equals("ItemLiquidPortion", StringComparison.OrdinalIgnoreCase)) continue;
+            if (collectible.Code is null || !collectible.Code.Path.Contains("water") || collectible.ItemClass != EnumItemClass.Item || !collectible.GetType().Name.Equals("ItemLiquidPortion", StringComparison.OrdinalIgnoreCase)) continue;
 
-            if (collectible.Code.Path.Contains("water"))
+            Console.WriteLine(collectible.Code.ToString());
+            if (!ModConfig.Instance.PerishRates.Enabled)
             {
-                if (!ModConfig.Instance.PerishRates.Enabled)
+                collectible.TransitionableProps = [.. collectible.TransitionableProps.Where(t => t.Type != EnumTransitionType.Perish)];
+            }
+            else if (ModConfig.Instance.PerishRates.TransitionConfig.TryGetValue(collectible.Code, out var config))
+            {
+                var perishtTransition = collectible.TransitionableProps.FirstOrDefault(static item => item.Type == EnumTransitionType.Perish);
+                if (perishtTransition is not null)
                 {
-                    collectible.TransitionableProps = [.. collectible.TransitionableProps.Where(t => t.Type != EnumTransitionType.Perish)];
-                }
-                else if(ModConfig.Instance.PerishRates.TransitionConfig.TryGetValue(collectible.Code, out var config))
-                {
-                    var perishtTransition = collectible.TransitionableProps.FirstOrDefault(static item => item.Type == EnumTransitionType.Perish);
-                    if(perishtTransition is not null)
-                    {
-                        perishtTransition.FreshHours.avg = config.FreshHours;
-                        perishtTransition.TransitionHours.avg = config.TransitionHours;
-                    }
+                    perishtTransition.FreshHours.avg = config.FreshHours;
+                    perishtTransition.TransitionHours.avg = config.TransitionHours;
                 }
             }
             
-            var nutrientProps = collectible.Attributes?.Token["waterTightContainerProps"]?["nutritionPropsPerLitre"];
-            if (nutrientProps is not null && nutrientProps.Value<float>("health") != 0 && nutrientProps["NutritionPropsPerLitreWhenInMeal"] is null)
+            var waterTightProps = collectible.Attributes?.Token["waterTightContainerProps"];
+            var nutrientProps = waterTightProps?["nutritionPropsPerLitre"];
+            if (nutrientProps is not null && waterTightProps["NutritionPropsPerLitreWhenInMeal"] is null)
             {
                 //NutritionPropsPerLitreWhenInMeal should be present when health is non-zero, otherwise food recipes using this water will heal/damage the player
                 var nutrientsPropsWhenInMeal = nutrientProps.DeepClone();
                 nutrientsPropsWhenInMeal["satiety"]?.Parent.Remove();
-                nutrientProps["NutritionPropsPerLitreWhenInMeal"] = nutrientsPropsWhenInMeal;
+                waterTightProps["NutritionPropsPerLitreWhenInMeal"] = nutrientsPropsWhenInMeal;
             }
         }
     }
