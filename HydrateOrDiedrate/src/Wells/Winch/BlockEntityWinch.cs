@@ -159,21 +159,24 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
     private void TryFillBucketAtPos(BlockPos pos)
     {
-        if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container || !BucketIsEmpty()) return;
-        int bucketCapacity = (int) container.CapacityLitres;
-        var stack = ExtractStackAtPos(pos, bucketCapacity);
-        if(stack is null || stack.StackSize <= 0) return;
+        if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container) return;
+        int remainingCapacity = (int) (container.CapacityLitres - container.GetCurrentLitres(InputSlot.Itemstack));
         
-        InputSlot.Itemstack.Attributes["contents"] = new TreeAttribute
-        {
-            ["0"] = new ItemstackAttribute(stack)
-        };
+        if(remainingCapacity < 1) return;
+        var content = container.GetContent(InputSlot.Itemstack);
+
+        var stack = ExtractStackAtPos(pos, remainingCapacity, content?.Collectible.Code);
+        if(stack is null || stack.StackSize <= 0) return;
+        if(content is not null) stack.StackSize += content.StackSize;
+
+        container.SetContent(InputSlot.Itemstack, stack);
+        
         InputSlot.MarkDirty();
         MarkDirty();
     }
 
     //TODO all those different well water blocks should really be variants instead
-    public ItemStack ExtractStackAtPos(BlockPos pos, int litersToExtract)
+    public ItemStack ExtractStackAtPos(BlockPos pos, int litersToExtract, AssetLocation filter = null)
     {
         Block block = Api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
         if(block.Attributes is null) return null;
@@ -181,6 +184,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         var props = block.Attributes["waterTightContainerProps"].AsObject<WaterTightContainableProps>();
         var stack = props?.WhenFilled?.Stack;
         if(stack is null || !stack.Resolve(Api.World, nameof(BlockEntityWinch))) return null;
+        if(filter is not null && stack.Code != filter) return null;
 
         if (block.Code.Path.StartsWith("wellwater"))
         {
@@ -244,6 +248,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         return null;
     }
 
+    //TODO REMOVE
     private bool BucketIsEmpty()
     {
         if (InputSlot.Empty) return false;
