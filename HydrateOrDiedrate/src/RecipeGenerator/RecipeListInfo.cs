@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,16 +55,18 @@ public class RecipeListInfo
 
             if(newRecipes.Count == 0) return;
 
-            var registerMethod = TargetObject.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .SingleOrDefault(m => m.Name.Contains("register", StringComparison.OrdinalIgnoreCase) && m.GetParameters().Length == 1 && m.GetParameters()[0].ParameterType == ElementType);
+            var registerMethods = TargetObject.GetType()
+                .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(m => m.Name.Contains("register", StringComparison.OrdinalIgnoreCase) && m.GetParameters().Length == 1 && m.GetParameters()[0].ParameterType == ElementType)
+                .ToArray();
 
-            if(registerMethod is not null)
+            if(registerMethods.Length == 1 )
             {
                 foreach (var newRecipe in newRecipes)
                 {
                     try
                     {
-                        registerMethod.Invoke(TargetObject, [newRecipe]);
+                            registerMethods[0].Invoke(TargetObject, [newRecipe]);
                     }
                     catch (Exception e)
                     {
@@ -73,6 +76,10 @@ public class RecipeListInfo
                 }
 
                 return;
+            }
+            else if(registerMethods.Length > 1)
+            {
+                logger.Warning("[{0}] Found multiple registration methods that could not be differentiated between for {1} ({2}): {3}", Source, TargetObject, HostMemberName, string.Join(", ", registerMethods.Select(method => $"{method.DeclaringType.FullName}:{method.Name}")));
             }
 
             if (RecipeList.GetType().IsArray)

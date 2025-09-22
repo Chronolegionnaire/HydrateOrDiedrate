@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.RecipeGenerator;
 
@@ -21,8 +22,8 @@ public static partial class RecipeGenerator
 
                 foreach(var toCode in toCodes)
                 {
-                    var newRecipe = gridRecipe.Clone();
-                    newRecipe.Name = newRecipe.Name.Clone();
+                    if(!gridRecipe.TryClone(out var newRecipe)) continue;
+                    newRecipe.Name = newRecipe.Name?.Clone();
                     ModifyRecipeName(newRecipe.Name, toCode);
                     ReplaceRequiresContentCode(newRecipe.Attributes.Token, toCode);
                     newRecipe.ResolveIngredients(world);
@@ -53,8 +54,8 @@ public static partial class RecipeGenerator
 
             foreach(var toCode in toCodes)
             {
-                var newRecipe = gridRecipe.Clone();
-                newRecipe.Name = newRecipe.Name.Clone();
+                if(!gridRecipe.TryClone(out var newRecipe)) continue;
+                newRecipe.Name = newRecipe.Name?.Clone();
                 ModifyRecipeName(newRecipe.Name, toCode);
                 ReplaceCodes(world, newRecipe.resolvedIngredients, matches, toCode);
                 if(!newRecipe.ResolveIngredients(world)) continue;

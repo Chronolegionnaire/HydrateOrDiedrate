@@ -68,4 +68,31 @@ public static class Util
         FieldInfo => true,
         _ => false,
     };
+
+    /// <summary>
+    /// Helper method for cloning objects that ensures the higest clone method is called
+    /// (in case someone overrides the method and just hides it with `new` keyword)
+    /// </summary>
+    public static bool TryClone<T>(this T instance, out T result)
+    {
+        result = default;
+        if(instance is null) return false;
+        try
+        {
+            var type = instance.GetType();
+            var cloneMethods = type.GetMethods(AccessTools.all)
+                .Where(method => type.IsAssignableFrom(method.ReturnType) && !method.IsStatic && method.GetParameters().Length == 0)
+                .ToArray();
+
+            if(cloneMethods.Length != 1) return false;
+            
+            result = (T)cloneMethods[0].Invoke(instance, []);
+
+            return result is not null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
