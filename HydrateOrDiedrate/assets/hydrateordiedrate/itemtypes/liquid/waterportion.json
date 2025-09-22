@@ -1,0 +1,182 @@
+{
+  "code": "waterportion",
+  "class": "ItemLiquidPortion",
+  "matterState": "liquid",
+
+  "variantGroups": [
+    {
+      "code": "type",
+      "states": [ "fresh", "salt", "boiled" ]
+    },
+    {
+      "code": "source",
+      "states": [ "natural", "well", "rain", "distilled" ]
+    },
+    {
+      "code": "pollution",
+      "states": [ "clean", "muddy", "tainted", "poisoned" ]
+    }
+  ],
+  "allowedVariants": [
+    "waterportion-fresh-boiled-clean",
+    "waterportion-fresh-rain-clean",
+    "waterportion-fresh-distilled-clean",
+
+    "waterportion-fresh-well-*",
+    "waterportion-salt-well-*",
+
+    "waterportion-boiled-natural-clean",
+    "waterportion-boiled-rain-clean"
+  ],
+
+  "attributes": {
+    "handbook": {
+      "ignoreCreativeInvStacks": true
+    },
+
+    "distillationProps": { //TODO maybe limit what can be distilled? (also maybe we could have this leave salt behind for salt water?)
+      "distilledStack": {
+        "type": "item",
+        "code": "hydrateordiedrate:waterportion-fresh-distilled-clean"
+      },
+      "ratio": 1.0
+    },
+
+    "waterTightContainerProps": {
+      "containable": true,
+      "itemsPerLitre": 100,
+      "texture": {
+        "base": "game:block/liquid/waterportion",
+        "baseByType": {
+          "*-tainted": "hydrateordiedrate:waterportiontainted",
+          "*-poisoned": "hydrateordiedrate:waterportionpoisoned",
+          "*-muddy": "hydrateordiedrate:waterportionmuddy"
+        }
+      },
+      "tintIndex": 2,
+      "whenSpilled": {
+        "action": "DropContents",
+        "stack": {
+          "type": "item",
+          "code": "hydrateordiedrate:waterportion-{type}-{source}-{pollution}"
+        }
+      },
+
+      "nutritionPropsPerLitre": {
+        "satiety": 0,
+        "satietyByType": {
+          "waterportion-salt-well-muddy": -75,
+          "waterportion-*-well-tainted": -400,
+          "waterportion-salt-well-*": -100,
+          "*-muddy": -75,
+          "waterportion-fresh-rain-clean": -50
+        },
+        "foodcategory": "NoNutrition",
+        "healthByType": {
+          "*-tainted": -5,
+          "*-poisoned": -20
+        }
+      }
+
+    }
+  },
+
+  "shape": { "base": "game:item/liquid" },
+  "texture": {
+    "base": "game:block/liquid/waterportion",
+    "baseByType": {
+      "*-tainted": "hydrateordiedrate:waterportiontainted",
+      "*-poisoned": "hydrateordiedrate:waterportionpoisoned",
+      "*-muddy": "hydrateordiedrate:waterportionmuddy"
+    }
+  },
+  "creativeinventoryStacks": [
+    {
+      "tabs": [ "general", "liquids" ],
+      "stacks": [
+        {
+          "type": "block",
+          "code": "game:woodbucket",
+          "attributes": {
+            "ucontents": [
+              {
+                "type": "item",
+                "code": "hydrateordiedrate:waterportion-{type}-{source}-{pollution}",
+                "makefull": true
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "maxstacksize": 5000,
+  "materialDensity": 200,
+  "guiTransform": {
+    "translation": {
+      "x": 0,
+      "y": 1,
+      "z": 0
+    },
+    "rotation": {
+      "x": 123,
+      "y": -33,
+      "z": -13
+    },
+    "origin": {
+      "x": 0.5,
+      "y": 0,
+      "z": 0.5
+    },
+    "scale": 1.4
+  },
+  "fpHandTransform": {
+    "translation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rotation": {
+      "x": 25,
+      "y": 157,
+      "z": -5
+    }
+  },
+  "tpHandTransform": {
+    "translation": {
+      "x": -1.5,
+      "y": -1,
+      "z": -1.4
+    }
+  },
+  "transitionableProps": [
+    {
+      "type": "Perish",
+      "freshHours": {
+        "avg": 150,
+        "avgByType": {
+          "*-boiled-*": 75
+        }
+      },
+      "transitionHours": {
+        "avg": 36,
+        "avgByType": {
+          "*-boiled-*": 18
+        }
+      },
+      "transitionedStack": {
+        "type": "item",
+        "code": "game:waterportion",
+        "codeByType": {
+          "*-salt-*": "game:saltwaterportion",
+          "*-boiled-rain-*": "hydrateordiedrate:waterportion-boiled-natural-clean"
+        }
+      },
+      "transitionRatio": 1.0
+    }
+  ],
+  "transitionablePropsByType": {
+    "*-tainted": [], //TODO these used to become rot?
+    "*-poisoned": []
+  }
+}

@@ -11,10 +11,10 @@
   {
     "enabled": "true",
     "id": "hoddrinkboiledwater",
-    "graphicCode": "hydrateordiedrate:boiledwaterportion",
+    "graphicCode": "hydrateordiedrate:waterportion-boiled-natural-clean",
     "criteriaType": "EatAny",
     "criteriaData": [
-      "hydrateordiedrate:boiledwaterportion"
+      "hydrateordiedrate:waterportion-boiled-natural-clean"
     ]
   },
   {
@@ -23,52 +23,52 @@
     "graphicCode": "hydrateordiedrate:istilledwaterportion",
     "criteriaType": "EatAny",
     "criteriaData": [
-      "hydrateordiedrate:distilledwaterportion"
+      "hydrateordiedrate:waterportion-fresh-distilled-clean"
     ]
   },
   {
     "enabled": "true",
     "id": "hoddrinkrainwater",
-    "graphicCode": "hydrateordiedrate:rainwaterportion",
+    "graphicCode": "hydrateordiedrate:waterportion-fresh-rain-clean",
     "criteriaType": "EatAny",
     "criteriaData": [
-      "hydrateordiedrate:rainwaterportion"
+      "hydrateordiedrate:waterportion-fresh-rain-clean"
     ]
   },
   {
     "enabled": "true",
     "id": "hoddrinkboiledrainwater",
-    "graphicCode": "hydrateordiedrate:boildrainwaterportion",
+    "graphicCode": "hydrateordiedrate:boildwaterportion-fresh-rain-clean",
     "criteriaType": "EatAny",
     "criteriaData": [
-      "hydrateordiedrate:boiledrainwaterportion"
+      "hydrateordiedrate:waterportion-boiled-rain-clean"
     ]
   },
   {
     "enabled": "true",
     "id": "hoddrinkfreshwellwater",
-    "graphicCode": "hydrateordiedrate:wellwaterportion-fresh",
+    "graphicCode": "hydrateordiedrate:waterportion-fresh-well-clean",
     "criteriaType": "EatAny",
     "criteriaData": [
-      "hydrateordiedrate:wellwaterportion-fresh"
+      "hydrateordiedrate:waterportion-fresh-well-clean"
     ]
   },
   {
     "enabled": "true",
     "id": "hoddrinkfreshwellwater",
-    "graphicCode": "hydrateordiedrate:wellwaterportion-fresh",
+    "graphicCode": "hydrateordiedrate:waterportion-fresh-well-clean",
     "criteriaType": "EatAny",
     "criteriaData": [
-      "hydrateordiedrate:wellwaterportion-fresh"
+      "hydrateordiedrate:waterportion-fresh-well-clean"
     ]
   },
   {
     "enabled": "true",
     "id": "hoddrinktaintedwellwater",
-    "graphicCode": "hydrateordiedrate:wellwaterportion-tainted",
+    "graphicCode": "hydrateordiedrate:waterportion-fresh-well-tainted",
     "criteriaType": "EatAny",
     "criteriaData": [
-      "hydrateordiedrate:wellwaterportion-tainted"
+      "hydrateordiedrate:waterportion-fresh-well-tainted"
     ]
   },
   {

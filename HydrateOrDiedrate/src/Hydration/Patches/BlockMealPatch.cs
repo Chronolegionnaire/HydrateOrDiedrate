@@ -34,7 +34,7 @@ namespace HydrateOrDiedrate.patches
                 return;
             }
 
-            float totalHydration = HydrationCalculator.GetTotalHydration(byEntity.World, (slot.Itemstack.Collectible as BlockMeal)?.GetNonEmptyContents(byEntity.World, slot.Itemstack));
+            float totalHydration = HydrationCalculator.GetTotalHydration(byEntity.World, (slot.Itemstack.Collectible as IBlockMealContainer)?.GetNonEmptyContents(byEntity.World, slot.Itemstack));
             if (totalHydration != 0)
             {
                 var player = byEntity as EntityPlayer;
@@ -77,8 +77,7 @@ namespace HydrateOrDiedrate.patches
 
                 if (servingsConsumed <= 0) return;
 
-                float hydrationPerServing = __state.TotalHydration / __state.ServingsBeforeConsume;
-                float totalHydrationConsumed = hydrationPerServing * servingsConsumed;
+                float totalHydrationConsumed = __state.TotalHydration * servingsConsumed;
                 float maxDelay = 600f; 
                 __state.HydLossDelay = Math.Min(__state.HydLossDelay, maxDelay);
                 var thirstBehavior = __state.Player.GetBehavior<EntityBehaviorThirst>();

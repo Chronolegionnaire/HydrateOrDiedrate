@@ -2,6 +2,7 @@ using HarmonyLib;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
@@ -19,23 +20,23 @@ public static partial class RecipeGenerator
     internal static readonly Dictionary<AssetLocation, AssetLocation[]> DeadlyConversionMappings = new()
     {
         [new("game", "waterportion")] = [
-            new("hydrateordiedrate", "wellwaterportion-tainted"),
-            new("hydrateordiedrate", "wellwaterportion-poisoned")
+            new("hydrateordiedrate", "waterportion-fresh-well-tainted"),
+            new("hydrateordiedrate", "waterportion-fresh-well-poisoned")
         ]
     };
 
     internal static readonly Dictionary<AssetLocation, AssetLocation[]> ConversionMappings = new()
     {
         [new("game", "waterportion")] = [
-            new("hydrateordiedrate", "boiledwaterportion"),
-            new("hydrateordiedrate", "boiledrainwaterportion"),
-            new("hydrateordiedrate", "distilledwaterportion"),
-            new("hydrateordiedrate", "rainwaterportion"),
-            new("hydrateordiedrate", "wellwaterportion-fresh"),
+            new("hydrateordiedrate", "waterportion-boiled-natural-clean"),
+            new("hydrateordiedrate", "waterportion-boiled-rain-clean"),
+            new("hydrateordiedrate", "waterportion-fresh-distilled-clean"),
+            new("hydrateordiedrate", "waterportion-fresh-rain-clean"),
+            new("hydrateordiedrate", "waterportion-fresh-well-clean"),
         ],
 
         [new("game", "saltwaterportion")] = [
-            new("hydrateordiedrate", "wellwaterportion-salt"),
+            new("hydrateordiedrate", "waterportion-salt-well-clean"),
         ],
     };
 
@@ -86,7 +87,7 @@ public static partial class RecipeGenerator
 
     public static void GenerateVariants(ICoreServerAPI api, ILogger logger)
     {
-        logger.Event("Starting HoD water variant recipe generation...");
+        logger.VerboseDebug("Starting HoD water variant recipe generation...");
         var recipeLists = FindRecipeLists(api);
 
         foreach(var recipeList in recipeLists)
@@ -108,7 +109,7 @@ public static partial class RecipeGenerator
                 logger.Error("[{0}] Exception generating HoD water variant recipes for {1} ({2}): {3}", recipeList.Source, recipeList.TargetObject, recipeList.HostMemberName, ex);
             }
         }
-        logger.Event("HoD water variant recipe generation completed.");
+        logger.VerboseDebug("HoD water variant recipe generation completed.");
     }
 
     public static RecipeItemProcessor GetRecipeListProcessor(RecipeListInfo recipeListInfo)

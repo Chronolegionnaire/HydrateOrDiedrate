@@ -4,6 +4,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Common.Entities;
+using XLib.XEffects;
 
 namespace HydrateOrDiedrate.Wells.WellWater
 {
@@ -62,46 +63,35 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
                 var ba = Api.World.BlockAccessor;
                 Block currentBlock = ba.GetFluid(Pos);
-                if (currentBlock?.Code == null || currentBlock.Variant == null) { MarkDirty(true); return; }
-
-                int oldHeight = 0;
-                if (currentBlock.Variant.TryGetValue("height", out string hs)) int.TryParse(hs, out oldHeight);
-
-                if (newHeight != oldHeight)
+                if (currentBlock?.Code == null || currentBlock.Variant == null) 
                 {
-                    ChangeBlockHeight(currentBlock, newHeight);
+                    MarkDirty(true);
+                    return;
                 }
+
+                if(!currentBlock.Variant.TryGetValue("height", out string hs) || !int.TryParse(hs, out int oldHeight)) return;
+
+                if (newHeight != oldHeight) ChangeBlockHeight(currentBlock, newHeight);
 
                 MarkDirty(true);
             }
         }
-        private int GetHeightForVolume(int vol) => Math.Min(7, (vol - 1) / 10 + 1);
-        private int GetVolumeForHeight(int height) => height * 10 - 9;
+        private static int GetHeightForVolume(int vol) => Math.Min(7, (vol - 1) / 10 + 1);
+        private static int GetVolumeForHeight(int height) => height * 10 - 9;
+
         private void ChangeBlockHeight(Block currentBlock, int newHeight)
         {
             if (Api.Side != EnumAppSide.Server) return;
             if (currentBlock?.Code == null || currentBlock.Variant == null) return;
 
-            string path = currentBlock.Code.Path;
-            int dash = path.IndexOf('-');
-            string baseType = dash > 0 ? path.Substring(0, dash) : path;
+            Block newBlock = Api.World.GetBlock(currentBlock.CodeWithVariant("height", newHeight.ToString()));
 
-            if (!currentBlock.Variant.TryGetValue("createdBy", out string createdBy)) return;
+            if (newBlock is null || newBlock == currentBlock) return;
 
-            currentBlock.Variant.TryGetValue("flow", out string flow);
-
-            if (string.IsNullOrEmpty(createdBy) || string.IsNullOrEmpty(flow)) return;
-
-            string finalPath = $"{baseType}-{createdBy}-{flow}-{newHeight}";
-            AssetLocation newBlockLoc = new AssetLocation(currentBlock.Code.Domain, finalPath);
-            Block newBlock = Api.World.GetBlock(newBlockLoc);
-
-            if (newBlock != null && newBlock != currentBlock)
-            {
-                Api.World.BlockAccessor.SetFluid(newBlock.BlockId, Pos);
-                NotifyNeighborsOfHeightChange();
-            }
+            Api.World.BlockAccessor.SetFluid(newBlock.BlockId, Pos);
+            NotifyNeighborsOfHeightChange();
         }
+
         private void NotifyNeighborsOfHeightChange()
         {
             if (Api.Side != EnumAppSide.Server) return;
@@ -170,27 +160,28 @@ namespace HydrateOrDiedrate.Wells.WellWater
                 }
             }
         }
-        private bool IsValidNaturalWellWaterBlock(Block block)
+        
+        private static bool IsValidNaturalWellWaterBlock(Block block)
         {
             if (!WellBlockUtils.IsOurWellwater(block) || block.Variant == null) return false;
-            if (block.Variant.TryGetValue("createdBy", out string createdBy) && createdBy.Equals("natural", StringComparison.OrdinalIgnoreCase))
-                return true;
+            if (block.Variant.TryGetValue("createdBy", out string createdBy) && createdBy.Equals("natural", StringComparison.OrdinalIgnoreCase)) return true;
 
             return false;
         }
+
         private void CheckDeadEntityContamination(Block currentBlock)
         {
-            if (Api.Side != EnumAppSide.Server) return;
+            if (Api.Side != EnumAppSide.Server || !WellBlockUtils.IsOurWellwater(currentBlock) || !IsClean(currentBlock, allowMuddy: true)) return;
             string ourPath = currentBlock.Code.Path;
-            bool isFresh = ourPath.Contains("fresh") || ourPath.Contains("muddy");
-            bool isSalt = ourPath.Contains("salt") || ourPath.Contains("muddysalt");
+            bool isFresh = ourPath.Contains("fresh");
+            bool isSalt = ourPath.Contains("salt");
 
             if (!isFresh && !isSalt) return;
 
             Cuboidf[] collBoxes = currentBlock.GetCollisionBoxes(Api.World.BlockAccessor, Pos);
             if (collBoxes == null || collBoxes.Length == 0)
             {
-                collBoxes = new Cuboidf[] { Cuboidf.Default() };
+                collBoxes = [ Cuboidf.Default() ];
             }
 
             var nearbyEntities = Api.World.GetEntitiesAround(
@@ -202,12 +193,12 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
             foreach (Cuboidf box in collBoxes)
             {
-                Vec3d blockMin = new Vec3d(Pos.X + box.X1, Pos.Y + box.Y1, Pos.Z + box.Z1);
-                Vec3d blockMax = new Vec3d(Pos.X + box.X2, Pos.Y + box.Y2, Pos.Z + box.Z2);
+                Vec3d blockMin = new(Pos.X + box.X1, Pos.Y + box.Y1, Pos.Z + box.Z1);
+                Vec3d blockMax = new(Pos.X + box.X2, Pos.Y + box.Y2, Pos.Z + box.Z2);
 
                 foreach (Entity entity in nearbyEntities)
                 {
-                    if (!(entity is EntityAgent agent)) continue;
+                    if (entity is not EntityAgent agent) continue;
                     var eMin = agent.ServerPos.XYZ.AddCopy(agent.CollisionBox.X1, agent.CollisionBox.Y1, agent.CollisionBox.Z1);
                     var eMax = agent.ServerPos.XYZ.AddCopy(agent.CollisionBox.X2, agent.CollisionBox.Y2, agent.CollisionBox.Z2);
 
@@ -220,7 +211,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
                     if (!agent.Alive)
                     {
-                        ConvertToTaintedVariant(currentBlock, isSalt);
+                        Pollute(currentBlock, "tainted");
                         return;
                     }
                 }
@@ -229,18 +220,12 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
         private void CheckPoisonedItemContamination(Block currentBlock)
         {
-            if (Api.Side != EnumAppSide.Server) return;
-
-            string ourPath = currentBlock.Code?.Path ?? "";
-            bool isFresh = ourPath.Contains("fresh") || ourPath.Contains("muddy");
-            bool isSalt = ourPath.Contains("salt") || ourPath.Contains("muddysalt");
-
-            if (!isFresh && !isSalt) return;
+            if (Api.Side != EnumAppSide.Server || !IsClean(currentBlock, allowMuddy: true)) return;
 
             Cuboidf[] collBoxes = currentBlock.GetCollisionBoxes(Api.World.BlockAccessor, Pos);
             if (collBoxes == null || collBoxes.Length == 0)
             {
-                collBoxes = new Cuboidf[] { Cuboidf.Default() };
+                collBoxes = [ Cuboidf.Default() ];
             }
 
             var nearbyEntities = Api.World.GetEntitiesAround(
@@ -252,8 +237,8 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
             foreach (Cuboidf box in collBoxes)
             {
-                Vec3d blockMin = new Vec3d(Pos.X + box.X1, Pos.Y + box.Y1, Pos.Z + box.Z1);
-                Vec3d blockMax = new Vec3d(Pos.X + box.X2, Pos.Y + box.Y2, Pos.Z + box.Z2);
+                Vec3d blockMin = new(Pos.X + box.X1, Pos.Y + box.Y1, Pos.Z + box.Z1);
+                Vec3d blockMax = new(Pos.X + box.X2, Pos.Y + box.Y2, Pos.Z + box.Z2);
 
                 foreach (Entity entity in nearbyEntities)
                 {
@@ -283,7 +268,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
                         if (intersects)
                         {
-                            ConvertToPoisonedVariant(currentBlock, isSalt);
+                            Pollute(currentBlock, "poisoned");
                             return;
                         }
                     }
@@ -291,45 +276,39 @@ namespace HydrateOrDiedrate.Wells.WellWater
             }
         }
 
+        private static bool IsClean(Block block, bool allowMuddy = false)
+        {
+            var pollution = block.Variant["pollution"];
+            return string.IsNullOrEmpty(pollution) || pollution == "clean" || (allowMuddy && pollution == "muddy");
+        }
+
         private void CheckNeighborContamination(Block currentBlock)
         {
-            if (Api.Side != EnumAppSide.Server) return;
-            if (currentBlock?.Code == null) return;
+            if (Api.Side != EnumAppSide.Server || currentBlock?.Code == null || !IsClean(currentBlock, allowMuddy: true)) return;
             var ba = Api.World.BlockAccessor;
-            string ourPath = currentBlock.Code.Path;
-            if (ourPath.Contains("tainted") || ourPath.Contains("poisoned")) return;
-            bool isSalt = ourPath.Contains("salt");
-            bool isFreshish = ourPath.Contains("fresh") || ourPath.Contains("muddy") || ourPath.Contains("muddysalt");
-            if (!isFreshish) return;
-            foreach (BlockFacing facing in BlockFacing.ALLFACES)
+
+            var neighborPos = Pos.Copy();
+            var sidesToCheck = BlockFacing.ALLFACES;
+            for (int i = 0; i < sidesToCheck.Length; i++)
             {
-                BlockPos neighborPos = Pos.AddCopy(facing);
+                sidesToCheck[i].IterateThruFacingOffsets(neighborPos);
+
                 Block neighborBlock = ba.GetFluid(neighborPos);
                 if (!WellBlockUtils.IsOurWellwater(neighborBlock)) continue;
-                string nPath = neighborBlock.Code.Path;
-                bool neighborIsTainted = nPath.Contains("wellwatertainted");
-                bool neighborIsPoisoned = nPath.Contains("wellwaterpoisoned");
-                if (!neighborIsTainted && !neighborIsPoisoned) continue;
-                bool neighborIsSalt = nPath.Contains("salt");
-                string newBaseType = neighborIsTainted ? "wellwatertainted" : "wellwaterpoisoned";
-                string finalBase = (isSalt || neighborIsSalt) ? newBaseType + "salt" : newBaseType;
-                if (currentBlock.Variant == null) return;
-                if (!currentBlock.Variant.TryGetValue("createdBy", out string createdBy)) return;
-                currentBlock.Variant.TryGetValue("flow", out string flow);
-                int height = 0;
-                if (currentBlock.Variant.TryGetValue("height", out string hs)) int.TryParse(hs, out height);
-                if (string.IsNullOrEmpty(createdBy) || string.IsNullOrEmpty(flow) || height <= 0) return;
-                string finalPath = $"{finalBase}-{createdBy}-{flow}-{height}";
-                AssetLocation newBlockLoc = new AssetLocation(Block.Code.Domain, finalPath);
-                Block newBlock = Api.World.GetBlock(newBlockLoc);
-                if (newBlock != null && newBlock != this.Block)
+
+                if (IsClean(neighborBlock, allowMuddy: true)) continue;
+
+                var type = currentBlock.Variant["type"] == "salt" ? "salt" : neighborBlock.Variant["type"];
+                AssetLocation newBlockCode = new("hydrateordiedrate", $"wellwater-{type}-{neighborBlock.Variant["pollution"]}-{currentBlock.Variant["createdBy"]}-{currentBlock.Variant["flow"]}-{currentBlock.Variant["height"]}");
+
+                Block newBlock = Api.World.GetBlock(newBlockCode);
+                if (newBlock == null || newBlock == currentBlock) return;
+
+                ba.SetFluid(newBlock.BlockId, Pos);
+                if (ba.GetBlockEntity(Pos) is BlockEntityWellWaterData newWaterData)
                 {
-                    ba.SetFluid(newBlock.BlockId, Pos);
-                    if (ba.GetBlockEntity(Pos) is BlockEntityWellWaterData newWaterData)
-                    {
-                        newWaterData.Volume = this.volume;
-                        newWaterData.MarkDirty(true);
-                    }
+                    newWaterData.Volume = volume;
+                    newWaterData.MarkDirty(true);
                 }
 
                 return;
@@ -339,114 +318,90 @@ namespace HydrateOrDiedrate.Wells.WellWater
         private void TryTransferVolumeVertically()
         {
             if (Api.Side != EnumAppSide.Server) return;
-
-            var entitiesBelow = GetWellWaterEntitiesBelow();
-            if (entitiesBelow.Count == 0) return;
-
-            foreach (var entity in entitiesBelow)
+            if (volume <= 0) DeleteBlockAndEntity();
+            if (PromoteBelowIfSpreading()) return;
+            foreach (var entity in GetWellWaterEntitiesBelow())
             {
-                if (this.volume <= 0)
-                {
-                    DeleteBlockAndEntity();
-                    break;
-                }
-
-                int transferableVolume = Math.Min(this.volume, MaxVolume - entity.Volume);
+                int transferableVolume = Math.Min(volume, MaxVolume - entity.Volume); //TODO this doesn't respect the override on muddy wellwater capacity in GetMaxVolumeForWaterType...?
                 if (transferableVolume > 0)
                 {
-                    this.Volume -= transferableVolume;
+                    Volume -= transferableVolume;
                     entity.Volume += transferableVolume;
                 }
+
+                if (volume <= 0) break;
             }
+            
+            if (volume <= 0) DeleteBlockAndEntity();
+        }
+        
+        private bool PromoteBelowIfSpreading()
+        {
+            var ba = Api.World.BlockAccessor;
+            var belowPos = Pos.DownCopy();
+            Block below = ba.GetFluid(belowPos);
+
+            if (!WellBlockUtils.IsOurWellwater(below) || below?.Variant == null) return false;
+            if (!below.Variant.TryGetValue("createdBy", out string cb) || cb == "natural") return false;
+
+            string type = below.Variant["type"];
+            string pollution = below.Variant["pollution"];
+            string flow = below.Variant["flow"];
+            string height = below.Variant["height"];
+
+            var naturalCode = new AssetLocation("hydrateordiedrate",
+                $"wellwater-{type}-{pollution}-natural-{flow}-{height}");
+
+            Block naturalBlock = Api.World.GetBlock(naturalCode);
+            if (naturalBlock == null) return false;
+
+            ba.SetFluid(naturalBlock.BlockId, belowPos);
+
+            var be = ba.GetBlockEntity(belowPos) as BlockEntityWellWaterData;
+            if (be == null)
+            {
+                Api.World.BlockAccessor.MarkBlockEntityDirty(belowPos);
+                be = ba.GetBlockEntity(belowPos) as BlockEntityWellWaterData;
+            }
+            if (be != null)
+            {
+                be.Volume = Math.Min(volume, be.Volume + volume);
+                be.MarkDirty(true);
+            }
+
+            Volume = 0;
+            return true;
         }
 
         
-        private List<BlockEntityWellWaterData> GetWellWaterEntitiesBelow()
+        private IEnumerable<BlockEntityWellWaterData> GetWellWaterEntitiesBelow()
         {
             var ba = Api.World.BlockAccessor;
-            List<BlockEntityWellWaterData> entitiesBelow = new List<BlockEntityWellWaterData>();
             BlockPos currentPos = Pos.DownCopy();
 
             while (true)
             {
                 Block currentBlock = ba.GetFluid(currentPos);
-                if (WellBlockUtils.IsOurWellwater(currentBlock))
-                {
-                    if (ba.GetBlockEntity(currentPos) is BlockEntityWellWaterData wellWaterEntity)
-                    {
-                        entitiesBelow.Add(wellWaterEntity);
-                    }
-                    currentPos = currentPos.DownCopy();
-                }
-                else
-                {
-                    break;
-                }
-            }
+                if (!WellBlockUtils.IsOurWellwater(currentBlock)) break;
+                if (ba.GetBlockEntity(currentPos) is BlockEntityWellWaterData wellWaterEntity) yield return wellWaterEntity;
 
-            entitiesBelow.Reverse();
-            return entitiesBelow;
-        }
-
-        private void ConvertToPoisonedVariant(Block currentBlock, bool isSalt)
-        {
-            if (Api.Side != EnumAppSide.Server) return;
-            if (currentBlock.Code.Path.Contains("tainted")) return;
-            if (currentBlock?.Variant == null) return;
-
-            int oldVol = this.volume;
-
-            if (!currentBlock.Variant.TryGetValue("createdBy", out string createdBy)) return;
-
-            currentBlock.Variant.TryGetValue("flow", out string flow);
-            int height = 0;
-            if (currentBlock.Variant.TryGetValue("height", out string hs)) int.TryParse(hs, out height);
-
-            if (string.IsNullOrEmpty(createdBy) || string.IsNullOrEmpty(flow) || height <= 0) return;
-
-            string newBase = isSalt ? "wellwaterpoisonedsalt" : "wellwaterpoisoned";
-            string finalPath = $"{newBase}-{createdBy}-{flow}-{height}";
-            AssetLocation newLoc = new AssetLocation(currentBlock.Code.Domain, finalPath);
-            Block newBlock = Api.World.GetBlock(newLoc);
-            if (newBlock != null && newBlock != currentBlock)
-            {
-                Api.World.BlockAccessor.SetFluid(newBlock.BlockId, Pos);
-                if (Api.World.BlockAccessor.GetBlockEntity(Pos) is BlockEntityWellWaterData newWaterData)
-                {
-                    newWaterData.Volume = oldVol;
-                    newWaterData.MarkDirty(true);
-                }
+                currentPos.Y--;
             }
         }
 
-        private void ConvertToTaintedVariant(Block currentBlock, bool isSalt)
+        private void Pollute(Block currentBlock, string pollution)
         {
-            if (Api.Side != EnumAppSide.Server) return;
-            if (currentBlock.Code.Path.Contains("poisoned")) return;
-            if (currentBlock?.Variant == null) return;
+            if (Api.Side != EnumAppSide.Server || !IsClean(currentBlock, allowMuddy: true)) return;
+            AssetLocation newBlockCode = currentBlock.CodeWithVariant("pollution", pollution);
 
-            int oldVol = this.volume;
+            Block newBlock = Api.World.GetBlock(newBlockCode);
+            if (newBlock == null || newBlock == currentBlock) return;
 
-            if (!currentBlock.Variant.TryGetValue("createdBy", out string createdBy)) return;
-
-            currentBlock.Variant.TryGetValue("flow", out string flow);
-            int height = 0;
-            if (currentBlock.Variant.TryGetValue("height", out string hs)) int.TryParse(hs, out height);
-
-            if (string.IsNullOrEmpty(createdBy) || string.IsNullOrEmpty(flow) || height <= 0) return;
-
-            string newBase = isSalt ? "wellwatertaintedsalt" : "wellwatertainted";
-            string finalPath = $"{newBase}-{createdBy}-{flow}-{height}";
-            AssetLocation newLoc = new AssetLocation(currentBlock.Code.Domain, finalPath);
-            Block newBlock = Api.World.GetBlock(newLoc);
-            if (newBlock != null && newBlock != currentBlock)
+            Api.World.BlockAccessor.SetFluid(newBlock.BlockId, Pos);
+            if (Api.World.BlockAccessor.GetBlockEntity(Pos) is BlockEntityWellWaterData newWaterData)
             {
-                Api.World.BlockAccessor.SetFluid(newBlock.BlockId, Pos);
-                if (Api.World.BlockAccessor.GetBlockEntity(Pos) is BlockEntityWellWaterData newWaterData)
-                {
-                    newWaterData.Volume = oldVol;
-                    newWaterData.MarkDirty(true);
-                }
+                newWaterData.Volume = volume;
+                newWaterData.MarkDirty(true);
             }
         }
 
@@ -477,9 +432,9 @@ namespace HydrateOrDiedrate.Wells.WellWater
             tree.SetInt("volume", volume);
         }
 
-        public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
+        public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
         {
-            base.FromTreeAttributes(tree, worldForResolving);
+            base.FromTreeAttributes(tree, worldAccessForResolve);
             volume = tree.GetInt("volume");
         }
 

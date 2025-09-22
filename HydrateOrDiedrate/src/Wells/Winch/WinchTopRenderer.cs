@@ -75,7 +75,7 @@ public class WinchTopRenderer : IRenderer
 
         if(lastContainerStack is not null)
         {
-            if(containerStack.Equals(Capi.World, lastContainerStack, GlobalConstants.IgnoredStackAttributes)) return;
+            if(containerStack.Equals(Capi.World, lastContainerStack, GlobalConstants.IgnoredStackAttributes) && ((BlockLiquidContainerTopOpened)lastContainerStack.Collectible).GetCurrentLitres(lastContainerStack) == container.GetCurrentLitres(containerStack)) return;
             CleanupContainerData();
         }
         

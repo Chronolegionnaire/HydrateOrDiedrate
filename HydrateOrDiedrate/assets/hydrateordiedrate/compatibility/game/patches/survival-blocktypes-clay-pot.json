@@ -1,7 +1,7 @@
 [
   {
     "op": "add",
-    "path": "/attributesByType/claypot-blue-cooked/textureMapping/rainwaterportion",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/waterportion-fresh-rain-clean",
     "value": [
       "water",
       "group2"
@@ -11,7 +11,7 @@
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-blue-cooked/textureMapping/boiledrainwaterportion",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/waterportion-boiled-rain-clean",
     "value": [
       "water",
       "group2"
@@ -21,7 +21,7 @@
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-blue-cooked/textureMapping/distilledwaterportion",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/waterportion-fresh-distilled-clean",
     "value": [
       "water",
       "group2"
@@ -31,7 +31,7 @@
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-blue-cooked/textureMapping/boiledwaterportion",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/waterportion-boiled-natural-clean",
     "value": [
       "water",
       "group2"
@@ -41,7 +41,7 @@
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-blue-cooked/textureMapping/wellwaterportion-fresh",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/waterportion-fresh-well-clean",
     "value": [
       "water",
       "group2"
@@ -51,7 +51,7 @@
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-blue-cooked/textureMapping/wellwaterportion-tainted",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/waterportion-fresh-well-tainted",
     "value": [
       "water",
       "group2"
@@ -61,7 +61,7 @@
   },
   {
     "op": "add",
-    "path": "/attributesByType/claypot-blue-cooked/textureMapping/wellwaterportion-poisoned",
+    "path": "/attributesByType/claypot-blue-cooked/textureMapping/waterportion-fresh-well-poisoned",
     "value": [
       "water",
       "group2"

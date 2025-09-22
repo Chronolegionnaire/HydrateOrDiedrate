@@ -28,7 +28,7 @@
   ],
   "cooksInto": {
     "type": "Item",
-    "code": "hydrateordiedrate:boiledwaterportion",
+    "code": "hydrateordiedrate:waterportion-boiled-natural-clean",
     "quantity": 100
   }
 }

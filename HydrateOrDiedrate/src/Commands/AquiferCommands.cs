@@ -16,7 +16,6 @@ namespace HydrateOrDiedrate.Commands
                 .WithArgs(api.ChatCommands.Parsers.Int("rating"))
                 .HandleWith(static (args) =>
                 {
-                    //TODO remove "hydrateordiedrate:aquifer-command-not-initialized"
                     int rating = (int)args[0];
                     rating = Math.Clamp(rating, 0, 100);
 

@@ -5,10 +5,10 @@
     "authors": [
       "Chronolegionnaire",
       "Nightingale33",
-        "TheInsanityGod"  
+      "TheInsanityGod"
     ],
     "description": "Adds a thirst and hot weather mechanic to the game.",
-    "version": "2.2.13",
+    "version": "2.2.14",
     "dependencies": {
         "game": "*"
     }

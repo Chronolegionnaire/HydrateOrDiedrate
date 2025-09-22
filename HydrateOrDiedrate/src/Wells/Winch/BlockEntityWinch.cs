@@ -19,6 +19,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     public const float minTurnpeed = 0.00001f;
     public const float minBucketDepth = 0.5f;
     public const string WinchBaseMeshPath = "shapes/block/winch/base.json";
+    private static readonly AssetLocation WaterFillSound = new AssetLocation("game", "sounds/effect/water-fill.ogg");
 
     private WinchTopRenderer renderer;
     private BEBehaviorMPConsumer mpc;
@@ -44,15 +45,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     public override string InventoryClassName => "winch";
     
     public override InventoryBase Inventory { get; }
-    
-    private bool infoHasSpring;
-    private string infoWaterType = "";
-    private float infoOutputRate;
-    private long infoRetentionVolume;
-    private long infoTotalShaftVolume;
-    private BlockPos infoSpringPos;
-    private long? infoTickListenerId;
-    private const int InfoScanIntervalMs = 1000;
+
     private const int InfoMaxSearchDepth = 256;
 
     public BlockEntityWinch()
@@ -76,11 +69,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     public override void Initialize(ICoreAPI api)
     {
         base.Initialize(api);
-        if (api.Side == EnumAppSide.Server && ModConfig.Instance.GroundWater.WinchOutputInfo)
-        {
-            RefreshInfoCache();
-            infoTickListenerId ??= RegisterGameTickListener(_ => RefreshInfoCache(), InfoScanIntervalMs);
-        }
         if (api is not ICoreClientAPI capi)
         {
             RegisterGameTickListener(ChanceForSoundEffect, 5000);
@@ -170,23 +158,27 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         }
     }
 
-    private void TryFillBucketAtPos(BlockPos pos)
+    private bool TryFillBucketAtPos(BlockPos pos)
     {
-        if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container || !BucketIsEmpty()) return;
-        int bucketCapacity = (int) container.CapacityLitres;
-        var stack = ExtractStackAtPos(pos, bucketCapacity);
-        if(stack is null || stack.StackSize <= 0) return;
-        
-        InputSlot.Itemstack.Attributes["contents"] = new TreeAttribute
-        {
-            ["0"] = new ItemstackAttribute(stack)
-        };
+        if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container) return false;
+
+        int remainingCapacity = (int)(container.CapacityLitres - container.GetCurrentLitres(InputSlot.Itemstack));
+        if (remainingCapacity < 1) return false;
+
+        var content = container.GetContent(InputSlot.Itemstack);
+
+        var stack = ExtractStackAtPos(pos, remainingCapacity, content?.Collectible.Code);
+        if (stack is null || stack.StackSize <= 0) return false;
+
+        if (content is not null) stack.StackSize += content.StackSize;
+
+        container.SetContent(InputSlot.Itemstack, stack);
         InputSlot.MarkDirty();
         MarkDirty();
+        return true;
     }
 
-    //TODO all those different well water blocks should really be variants instead
-    public ItemStack ExtractStackAtPos(BlockPos pos, int litersToExtract)
+    public ItemStack ExtractStackAtPos(BlockPos pos, int litersToExtract, AssetLocation filter = null)
     {
         Block block = Api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
         if(block.Attributes is null) return null;
@@ -194,6 +186,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         var props = block.Attributes["waterTightContainerProps"].AsObject<WaterTightContainableProps>();
         var stack = props?.WhenFilled?.Stack;
         if(stack is null || !stack.Resolve(Api.World, nameof(BlockEntityWinch))) return null;
+        if(filter is not null && stack.Code != filter) return null;
 
         if (block.Code.Path.StartsWith("wellwater"))
         {
@@ -257,6 +250,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         return null;
     }
 
+    //TODO REMOVE
     private bool BucketIsEmpty()
     {
         if (InputSlot.Empty) return false;
@@ -333,17 +327,23 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
     private bool TryMoveToBucketDepth(float targetBucketDepth)
     {
-        int ceilDepth = (int)Math.Ceiling(targetBucketDepth);
         var ba = Api.World.BlockAccessor;
-
-        var checkPos = new BlockPos();
-        checkPos.Set(Pos.X, Pos.Y - ceilDepth, Pos.Z);
+        var checkPos = Pos.DownCopy((int)Math.Ceiling(targetBucketDepth));
 
         if (checkPos.Y < 0) return false;
 
         if (WellBlockUtils.FluidIsLiquid(ba, checkPos))
         {
-            TryFillBucketAtPos(checkPos);
+            if (TryFillBucketAtPos(checkPos))
+            {
+                Api.World.PlaySoundAt(
+                    WaterFillSound,
+                    Pos.X + 0.5,
+                    (Pos.Y - Math.Ceiling(targetBucketDepth)) + 0.5,
+                    Pos.Z + 0.5
+                );
+            }
+
             BucketDepth = targetBucketDepth;
             return true;
         }
@@ -364,7 +364,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
         var ba = Api.World.BlockAccessor;
 
-        var checkPos = new BlockPos();
+        var checkPos = new BlockPos(Pos.dimension);
         checkPos.Set(Pos.X, Pos.Y - ((int)BucketDepth + 1), Pos.Z);
         if (checkPos.Y < 0) return false;
 
@@ -373,11 +373,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
     private void OnSlotModified(int slotid)
     {
-        if (slotid == 0 && InputSlot.Empty)
-        {
-            BucketDepth = minBucketDepth;
-        }
-
+        if (slotid == 0 && InputSlot.Empty) BucketDepth = minBucketDepth;
         MarkDirty();
     }
 
@@ -407,23 +403,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         BucketDepth = tree.GetFloat("bucketDepth", minBucketDepth);
         RotationPlayer = Api?.World.PlayerByUid(tree.GetString("RotationPlayerId"));
 
-        if (ModConfig.Instance.GroundWater.WinchOutputInfo)
-        {
-            infoHasSpring       = tree.GetBool("infoHasSpring", false);
-            infoWaterType       = tree.GetString("infoWaterType", "");
-            infoOutputRate      = tree.GetFloat("infoOutputRate", 0f);
-            infoRetentionVolume = tree.GetLong("infoRetentionVolume", 0L);
-            infoTotalShaftVolume= tree.GetLong("infoTotalShaftVolume", 0L);
-        }
-        else
-        {
-            infoHasSpring = false;
-            infoWaterType = "";
-            infoOutputRate = 0f;
-            infoRetentionVolume = 0L;
-            infoTotalShaftVolume = 0L;
-        }
-
         renderer?.ScheduleMeshUpdate();
     }
 
@@ -437,29 +416,18 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         TreeAttribute invTree = new();
         Inventory.ToTreeAttributes(invTree);
         tree["inventory"] = invTree;
-
-        if (ModConfig.Instance.GroundWater.WinchOutputInfo)
-        {
-            tree.SetBool("infoHasSpring", infoHasSpring);
-            tree.SetString("infoWaterType", infoWaterType ?? "");
-            tree.SetFloat("infoOutputRate", infoOutputRate);
-            tree.SetLong("infoRetentionVolume", infoRetentionVolume);
-            tree.SetLong("infoTotalShaftVolume", infoTotalShaftVolume);
-        }
     }
 
 
     public override void OnBlockBroken(IPlayer byPlayer = null)
     {
-        if (Api.Side == EnumAppSide.Server)
-        {
-            Inventory.DropAll(Pos.ToVec3d().Add(0.5, -BucketDepth, 0.5));
-        }
+        if (Api.Side == EnumAppSide.Server) Inventory.DropAll(Pos.ToVec3d().Add(0.5, -BucketDepth, 0.5));
         base.OnBlockBroken(byPlayer);
     }
     
     public virtual string DialogTitle => Lang.Get("hydrateordiedrate:Winch");
 
+    //TODO should be public and moved to wellspring instead
     private long GetTotalShaftWaterVolume(BlockPos springPos)
     {
         long total = 0;
@@ -475,63 +443,24 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         }
         return total;
     }
-    private void RefreshInfoCache()
-    {
-        if (Api == null || Api.Side != EnumAppSide.Server) return;
 
-        var ba = Api.World.BlockAccessor;
-        var foundSpring = FindWellSpringBelow(ba, Pos, InfoMaxSearchDepth);
-
-        bool changed = false;
-        if (foundSpring == null)
-        {
-            changed |= infoHasSpring != false;       infoHasSpring = false;
-            changed |= infoWaterType != "";          infoWaterType = "";
-            changed |= Math.Abs(infoOutputRate) > 0; infoOutputRate = 0f;
-            changed |= infoRetentionVolume != 0L;    infoRetentionVolume = 0L;
-            changed |= infoTotalShaftVolume != 0L;   infoTotalShaftVolume = 0L;
-            infoSpringPos = null;
-        }
-        else
-        {
-            var newHasSpring   = true;
-            var newWaterType   = foundSpring.GetWaterType();
-            var newOutputRate  = (float)foundSpring.GetCurrentOutputRate();
-            var newRetention   = (long)(foundSpring.GetRetentionDepth() * 70);
-            var newSpringPos   = foundSpring.Pos;
-            var newTotal       = GetTotalShaftWaterVolume(newSpringPos);
-
-            changed |= infoHasSpring != newHasSpring;
-            changed |= infoWaterType != newWaterType;
-            changed |= Math.Abs(infoOutputRate - newOutputRate) > 0.0001f;
-            changed |= infoRetentionVolume != newRetention;
-            changed |= infoTotalShaftVolume != newTotal;
-            changed |= infoSpringPos == null || !infoSpringPos.Equals(newSpringPos);
-
-            infoHasSpring       = newHasSpring;
-            infoWaterType       = newWaterType;
-            infoOutputRate      = newOutputRate;
-            infoRetentionVolume = newRetention;
-            infoTotalShaftVolume= newTotal;
-            infoSpringPos       = newSpringPos;
-        }
-
-        if (changed) MarkDirty();
-    }
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
     {
         base.GetBlockInfo(forPlayer, dsc);
         if (!ModConfig.Instance.GroundWater.WinchOutputInfo) return;
-        if (!infoHasSpring)
+        
+        var foundSpring = FindWellSpringBelow(Api.World.BlockAccessor, Pos, InfoMaxSearchDepth);
+        if (foundSpring is null)
         {
             dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.noSpring"));
             return;
         }
+
         dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.springDetected"));
-        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.waterType", infoWaterType));
-        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.outputRate", infoOutputRate));
-        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.retentionVolume", infoRetentionVolume));
-        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.totalShaftVolume", infoTotalShaftVolume));
+        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.waterType", string.IsNullOrEmpty(foundSpring.LastWaterType) ? string.Empty : Lang.Get($"hydrateordiedrate:item-waterportion-{foundSpring.LastWaterType}")));
+        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.outputRate", foundSpring.LastDailyLiters));
+        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.retentionVolume", foundSpring.GetMaxTotalVolume()));
+        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.totalShaftVolume", GetTotalShaftWaterVolume(foundSpring.Pos)));
     }
 
     public override void Dispose()
