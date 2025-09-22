@@ -319,7 +319,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
         {
             if (Api.Side != EnumAppSide.Server) return;
             if (volume <= 0) DeleteBlockAndEntity();
-
+            if (PromoteBelowIfSpreading()) return;
             foreach (var entity in GetWellWaterEntitiesBelow())
             {
                 int transferableVolume = Math.Min(volume, MaxVolume - entity.Volume); //TODO this doesn't respect the override on muddy wellwater capacity in GetMaxVolumeForWaterType...?
@@ -333,6 +333,44 @@ namespace HydrateOrDiedrate.Wells.WellWater
             }
             
             if (volume <= 0) DeleteBlockAndEntity();
+        }
+        
+        private bool PromoteBelowIfSpreading()
+        {
+            var ba = Api.World.BlockAccessor;
+            var belowPos = Pos.DownCopy();
+            Block below = ba.GetFluid(belowPos);
+
+            if (!WellBlockUtils.IsOurWellwater(below) || below?.Variant == null) return false;
+            if (!below.Variant.TryGetValue("createdBy", out string cb) || cb == "natural") return false;
+
+            string type = below.Variant["type"];
+            string pollution = below.Variant["pollution"];
+            string flow = below.Variant["flow"];
+            string height = below.Variant["height"];
+
+            var naturalCode = new AssetLocation("hydrateordiedrate",
+                $"wellwater-{type}-{pollution}-natural-{flow}-{height}");
+
+            Block naturalBlock = Api.World.GetBlock(naturalCode);
+            if (naturalBlock == null) return false;
+
+            ba.SetFluid(naturalBlock.BlockId, belowPos);
+
+            var be = ba.GetBlockEntity(belowPos) as BlockEntityWellWaterData;
+            if (be == null)
+            {
+                Api.World.BlockAccessor.MarkBlockEntityDirty(belowPos);
+                be = ba.GetBlockEntity(belowPos) as BlockEntityWellWaterData;
+            }
+            if (be != null)
+            {
+                be.Volume = Math.Min(volume, be.Volume + volume);
+                be.MarkDirty(true);
+            }
+
+            Volume = 0;
+            return true;
         }
 
         
