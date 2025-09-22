@@ -28,18 +28,23 @@ public class BlockWinch : BlockMPBase
             {
                 case 0:
                     var sourceSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
-                    if(sourceSlot is not null)
+                    if (sourceSlot is not null)
                     {
-                        if((sourceSlot.Empty != beWinch.InputSlot.Empty) && sourceSlot.TryFlipWith(beWinch.InputSlot)) return true;
+                        if ((sourceSlot.Empty != beWinch.InputSlot.Empty) && sourceSlot.TryFlipWith(beWinch.InputSlot)) return true;
 
-                        if(TryTransferLiquid(beWinch.InputSlot.Itemstack, sourceSlot.Itemstack))
+                        if (TryTransferLiquid(beWinch.InputSlot.Itemstack, sourceSlot.Itemstack))
                         {
                             sourceSlot.MarkDirty();
                             beWinch.InputSlot.MarkDirty();
+                            world.PlaySoundAt(
+                                new AssetLocation("game", "sounds/effect/water-fill.ogg"),
+                                blockSel.Position.X + 0.5,
+                                blockSel.Position.Y + 0.5,
+                                blockSel.Position.Z + 0.5
+                            );
                             return true;
                         }
                     }
-
                     break;
 
                 case 1:

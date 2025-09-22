@@ -19,6 +19,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     public const float minTurnpeed = 0.00001f;
     public const float minBucketDepth = 0.5f;
     public const string WinchBaseMeshPath = "shapes/block/winch/base.json";
+    private static readonly AssetLocation WaterFillSound = new AssetLocation("game", "sounds/effect/water-fill.ogg");
 
     private WinchTopRenderer renderer;
     private BEBehaviorMPConsumer mpc;
@@ -157,25 +158,26 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         }
     }
 
-    private void TryFillBucketAtPos(BlockPos pos)
+    private bool TryFillBucketAtPos(BlockPos pos)
     {
-        if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container) return;
-        int remainingCapacity = (int) (container.CapacityLitres - container.GetCurrentLitres(InputSlot.Itemstack));
-        
-        if(remainingCapacity < 1) return;
+        if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container) return false;
+
+        int remainingCapacity = (int)(container.CapacityLitres - container.GetCurrentLitres(InputSlot.Itemstack));
+        if (remainingCapacity < 1) return false;
+
         var content = container.GetContent(InputSlot.Itemstack);
 
         var stack = ExtractStackAtPos(pos, remainingCapacity, content?.Collectible.Code);
-        if(stack is null || stack.StackSize <= 0) return;
-        if(content is not null) stack.StackSize += content.StackSize;
+        if (stack is null || stack.StackSize <= 0) return false;
+
+        if (content is not null) stack.StackSize += content.StackSize;
 
         container.SetContent(InputSlot.Itemstack, stack);
-        
         InputSlot.MarkDirty();
         MarkDirty();
+        return true;
     }
 
-    //TODO all those different well water blocks should really be variants instead
     public ItemStack ExtractStackAtPos(BlockPos pos, int litersToExtract, AssetLocation filter = null)
     {
         Block block = Api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
@@ -332,7 +334,16 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
         if (WellBlockUtils.FluidIsLiquid(ba, checkPos))
         {
-            TryFillBucketAtPos(checkPos);
+            if (TryFillBucketAtPos(checkPos))
+            {
+                Api.World.PlaySoundAt(
+                    WaterFillSound,
+                    Pos.X + 0.5,
+                    (Pos.Y - Math.Ceiling(targetBucketDepth)) + 0.5,
+                    Pos.Z + 0.5
+                );
+            }
+
             BucketDepth = targetBucketDepth;
             return true;
         }
