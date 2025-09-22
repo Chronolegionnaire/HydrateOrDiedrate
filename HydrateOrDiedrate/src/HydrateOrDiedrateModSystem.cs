@@ -77,7 +77,14 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.AssetsFinalize(api);
         if(api.Side != EnumAppSide.Server) return; //This data is decided by the server and synced over to client automatically
-        WaterPatches.ApplyConfigSettings(api);
+        try
+        {
+            WaterPatches.ApplyConfigSettings(api);
+        }
+        catch(Exception ex)
+        {
+            Mod.Logger.Error("Failed to apply config settings: {0}", ex);
+        }
         EntityProperties playerEntity = api.World.GetEntityType(new AssetLocation("game", "player"));
         var HoDbehaviors = new List<JsonObject>(3);
 

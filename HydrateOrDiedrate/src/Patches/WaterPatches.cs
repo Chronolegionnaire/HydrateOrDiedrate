@@ -23,18 +23,20 @@ public static class WaterPatches
         {
             if (collectible.Code is null || !collectible.Code.Path.Contains("water") || collectible.ItemClass != EnumItemClass.Item || !collectible.GetType().Name.Equals("ItemLiquidPortion", StringComparison.OrdinalIgnoreCase)) continue;
 
-            Console.WriteLine(collectible.Code.ToString());
-            if (!ModConfig.Instance.PerishRates.Enabled)
+            if(collectible.TransitionableProps is not null)
             {
-                collectible.TransitionableProps = [.. collectible.TransitionableProps.Where(t => t.Type != EnumTransitionType.Perish)];
-            }
-            else if (ModConfig.Instance.PerishRates.TransitionConfig.TryGetValue(collectible.Code, out var config))
-            {
-                var perishtTransition = collectible.TransitionableProps.FirstOrDefault(static item => item.Type == EnumTransitionType.Perish);
-                if (perishtTransition is not null)
+                if (!ModConfig.Instance.PerishRates.Enabled)
                 {
-                    perishtTransition.FreshHours.avg = config.FreshHours;
-                    perishtTransition.TransitionHours.avg = config.TransitionHours;
+                    collectible.TransitionableProps = [.. collectible.TransitionableProps.Where(t => t.Type != EnumTransitionType.Perish)];
+                }
+                else if (ModConfig.Instance.PerishRates.TransitionConfig.TryGetValue(collectible.Code, out var config))
+                {
+                    var perishtTransition = collectible.TransitionableProps.FirstOrDefault(static item => item.Type == EnumTransitionType.Perish);
+                    if (perishtTransition is not null)
+                    {
+                        perishtTransition.FreshHours.avg = config.FreshHours;
+                        perishtTransition.TransitionHours.avg = config.TransitionHours;
+                    }
                 }
             }
             
