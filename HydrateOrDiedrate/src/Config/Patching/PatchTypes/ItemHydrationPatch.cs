@@ -24,28 +24,28 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "game:juiceportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 750,
-                    ["game:juiceportion-cranberry"] = 600,
-                    ["game:juiceportion-blueberry"] = 700,
-                    ["game:juiceportion-pinkapple"] = 750,
-                    ["game:juiceportion-lychee"] = 850,
-                    ["game:juiceportion-redcurrant"] = 800,
-                    ["game:juiceportion-breadfruit"] = 500,
-                    ["game:juiceportion-pineapple"] = 950,
-                    ["game:juiceportion-blackcurrant"] = 800,
-                    ["game:juiceportion-saguaro"] = 600,
-                    ["game:juiceportion-whitecurrant"] = 800,
-                    ["game:juiceportion-redapple"] = 900,
-                    ["game:juiceportion-yellowapple"] = 900,
-                    ["game:juiceportion-apple"] = 900,
-                    ["game:juiceportion-cherry"] = 800,
-                    ["game:juiceportion-peach"] = 950,
-                    ["game:juiceportion-pear"] = 950,
-                    ["game:juiceportion-orange"] = 1000,
-                    ["game:juiceportion-mango"] = 950,
-                    ["game:juiceportion-pomegranate"] = 850,
-                    ["game:juiceportion-redgrapes"] = 950,
-                    ["game:juiceportion-greengrapes"] = 950
+                    ["*"] = 950,
+                    ["game:juiceportion-cranberry"] = 900,
+                    ["game:juiceportion-blueberry"] = 1000,
+                    ["game:juiceportion-pinkapple"] = 1050,
+                    ["game:juiceportion-lychee"] = 1250,
+                    ["game:juiceportion-redcurrant"] = 1100,
+                    ["game:juiceportion-breadfruit"] = 800,
+                    ["game:juiceportion-pineapple"] = 1250,
+                    ["game:juiceportion-blackcurrant"] = 1100,
+                    ["game:juiceportion-saguaro"] = 1300,
+                    ["game:juiceportion-whitecurrant"] = 1100,
+                    ["game:juiceportion-redapple"] = 1200,
+                    ["game:juiceportion-yellowapple"] = 1200,
+                    ["game:juiceportion-apple"] = 1200,
+                    ["game:juiceportion-cherry"] = 1100,
+                    ["game:juiceportion-peach"] = 1250,
+                    ["game:juiceportion-pear"] = 1250,
+                    ["game:juiceportion-orange"] = 1300,
+                    ["game:juiceportion-mango"] = 1250,
+                    ["game:juiceportion-pomegranate"] = 1150,
+                    ["game:juiceportion-redgrapes"] = 1250,
+                    ["game:juiceportion-greengrapes"] = 1250
                 }
             },
             new()
@@ -62,7 +62,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                     ["game:fruit-breadfruit"] = 5,
                     ["game:fruit-pineapple"] = 35,
                     ["game:fruit-blackcurrant"] = 40,
-                    ["game:fruit-saguaro"] = 15,
+                    ["game:fruit-saguaro"] = 60,
                     ["game:fruit-whitecurrant"] = 40,
                     ["game:fruit-redapple"] = 30,
                     ["game:fruit-yellowapple"] = 30,
@@ -262,7 +262,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                     ["game:vegetable-cookedcattailroot"] = 100,
                     ["game:vegetable-pumpkin"] = 20,
                     ["game:vegetable-cassava"] = 200,
-                    ["game:vegetable-cookedpapyrusroot"] = 25,
+                    ["game:vegetable-cookedpapyrusroot"] = 100,
                     ["game:vegetable-bellpepper"] = 30,
                     ["game:vegetable-olive"] = 15
                 }
@@ -302,34 +302,34 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "game:ciderportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 500,
-                    ["game:ciderportion-cranberry"] = 450,
-                    ["game:ciderportion-blueberry"] = 500,
-                    ["game:ciderportion-pinkapple"] = 500,
-                    ["game:ciderportion-lychee"] = 550,
-                    ["game:ciderportion-redcurrant"] = 500,
-                    ["game:ciderportion-breadfruit"] = 250,
-                    ["game:ciderportion-pineapple"] = 500,
-                    ["game:ciderportion-blackcurrant"] = 450,
-                    ["game:ciderportion-saguaro"] = 300,
-                    ["game:ciderportion-whitecurrant"] = 550,
-                    ["game:ciderportion-redapple"] = 500,
-                    ["game:ciderportion-yellowapple"] = 500,
-                    ["game:ciderportion-cherry"] = 400,
-                    ["game:ciderportion-peach"] = 475,
-                    ["game:ciderportion-pear"] = 525,
-                    ["game:ciderportion-orange"] = 400,
-                    ["game:ciderportion-mango"] = 525,
-                    ["game:ciderportion-pomegranate"] = 425,
-                    ["game:ciderportion-apple"] = 500,
-                    ["game:ciderportion-mead"] = 400,
-                    ["game:ciderportion-spelt"] = 450,
-                    ["game:ciderportion-rice"] = 450,
-                    ["game:ciderportion-rye"] = 450,
-                    ["game:ciderportion-amaranth"] = 450,
-                    ["game:ciderportion-cassava"] = 450,
-                    ["game:ciderportion-redgrapes"] = 550,
-                    ["game:ciderportion-greengrapes"] = 550
+                    ["*"] = 800,
+                    ["game:ciderportion-cranberry"] = 750,
+                    ["game:ciderportion-blueberry"] = 800,
+                    ["game:ciderportion-pinkapple"] = 800,
+                    ["game:ciderportion-lychee"] = 850,
+                    ["game:ciderportion-redcurrant"] = 800,
+                    ["game:ciderportion-breadfruit"] = 550,
+                    ["game:ciderportion-pineapple"] = 800,
+                    ["game:ciderportion-blackcurrant"] = 750,
+                    ["game:ciderportion-saguaro"] = 900,
+                    ["game:ciderportion-whitecurrant"] = 850,
+                    ["game:ciderportion-redapple"] = 800,
+                    ["game:ciderportion-yellowapple"] = 800,
+                    ["game:ciderportion-cherry"] = 700,
+                    ["game:ciderportion-peach"] = 775,
+                    ["game:ciderportion-pear"] = 825,
+                    ["game:ciderportion-orange"] = 700,
+                    ["game:ciderportion-mango"] = 825,
+                    ["game:ciderportion-pomegranate"] = 725,
+                    ["game:ciderportion-apple"] = 800,
+                    ["game:ciderportion-mead"] = 700,
+                    ["game:ciderportion-spelt"] = 750,
+                    ["game:ciderportion-rice"] = 750,
+                    ["game:ciderportion-rye"] = 750,
+                    ["game:ciderportion-amaranth"] = 750,
+                    ["game:ciderportion-cassava"] = 750,
+                    ["game:ciderportion-redgrapes"] = 850,
+                    ["game:ciderportion-greengrapes"] = 850
                 }
             },
             new()
@@ -409,66 +409,37 @@ public class ItemHydrationPatch : HydrationPatchBase
             },
             new()
             {
-                Code = "game:mushroom-*",
-                ValueByType = new()
-                {
-                    ["*"] = 0,
-                    ["game:mushroom-flyagaric"] = -25,
-                    ["game:mushroom-earthball"] = -30,
-                    ["game:mushroom-deathcap"] = -35,
-                    ["game:mushroom-elfinsaddle"] = -30,
-                    ["game:mushroom-jackolantern"] = -25,
-                    ["game:mushroom-devilbolete"] = -80,
-                    ["game:mushroom-bitterbolete"] = -15,
-                    ["game:mushroom-devilstooth"] = -25,
-                    ["game:mushroom-golddropmilkcap"] = -20,
-                    ["game:mushroom-beardedtooth"] = 10,
-                    ["game:mushroom-whiteoyster"] = 10,
-                    ["game:mushroom-pinkoyster"] = 10,
-                    ["game:mushroom-dryadsaddle"] = 10,
-                    ["game:mushroom-tinderhoof"] = 10,
-                    ["game:mushroom-chickenofthewoods"] = 10,
-                    ["game:mushroom-reishi"] = 5,
-                    ["game:mushroom-funeralbell"] = -20,
-                    ["game:mushroom-livermushroom"] = 10,
-                    ["game:mushroom-pinkbonnet"] = -25,
-                    ["game:mushroom-shiitake"] = 5,
-                    ["game:mushroom-deerear"] = 5
-                }
-            },
-            new()
-            {
                 Code = "game:spiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 350,
-                    ["game:spiritportion-cranberry"] = 320,
-                    ["game:spiritportion-blueberry"] = 360,
-                    ["game:spiritportion-pinkapple"] = 380,
-                    ["game:spiritportion-lychee"] = 440,
-                    ["game:spiritportion-redcurrant"] = 350,
-                    ["game:spiritportion-breadfruit"] = 230,
-                    ["game:spiritportion-pineapple"] = 400,
-                    ["game:spiritportion-blackcurrant"] = 340,
-                    ["game:spiritportion-saguaro"] = 260,
-                    ["game:spiritportion-whitecurrant"] = 370,
-                    ["game:spiritportion-redapple"] = 400,
-                    ["game:spiritportion-yellowapple"] = 400,
-                    ["game:spiritportion-cherry"] = 330,
-                    ["game:spiritportion-peach"] = 400,
-                    ["game:spiritportion-pear"] = 450,
-                    ["game:spiritportion-orange"] = 370,
-                    ["game:spiritportion-mango"] = 450,
-                    ["game:spiritportion-pomegranate"] = 390,
-                    ["game:spiritportion-apple"] = 400,
-                    ["game:spiritportion-mead"] = 200,
-                    ["game:spiritportion-spelt"] = 225,
-                    ["game:spiritportion-rice"] = 225,
-                    ["game:spiritportion-rye"] = 225,
-                    ["game:spiritportion-amaranth"] = 225,
-                    ["game:spiritportion-cassava"] = 225,
-                    ["game:spiritportion-redgrapes"] = 380,
-                    ["game:spiritportion-greengrapes"] = 380
+                    ["*"] = 650,
+                    ["game:spiritportion-cranberry"] = 620,
+                    ["game:spiritportion-blueberry"] = 660,
+                    ["game:spiritportion-pinkapple"] = 680,
+                    ["game:spiritportion-lychee"] = 740,
+                    ["game:spiritportion-redcurrant"] = 650,
+                    ["game:spiritportion-breadfruit"] = 530,
+                    ["game:spiritportion-pineapple"] = 700,
+                    ["game:spiritportion-blackcurrant"] = 640,
+                    ["game:spiritportion-saguaro"] = 850,
+                    ["game:spiritportion-whitecurrant"] = 670,
+                    ["game:spiritportion-redapple"] = 700,
+                    ["game:spiritportion-yellowapple"] = 700,
+                    ["game:spiritportion-cherry"] = 630,
+                    ["game:spiritportion-peach"] = 700,
+                    ["game:spiritportion-pear"] = 750,
+                    ["game:spiritportion-orange"] = 850,
+                    ["game:spiritportion-mango"] = 750,
+                    ["game:spiritportion-pomegranate"] = 690,
+                    ["game:spiritportion-apple"] = 700,
+                    ["game:spiritportion-mead"] = 500,
+                    ["game:spiritportion-spelt"] = 525,
+                    ["game:spiritportion-rice"] = 525,
+                    ["game:spiritportion-rye"] = 525,
+                    ["game:spiritportion-amaranth"] = 525,
+                    ["game:spiritportion-cassava"] = 525,
+                    ["game:spiritportion-redgrapes"] = 680,
+                    ["game:spiritportion-greengrapes"] = 680
                 }
             },
             new()
@@ -536,18 +507,18 @@ public class ItemHydrationPatch : HydrationPatchBase
             },
             new()
             {
-                Code = "butcher:smoked-*",
+                Code = "butchering:smoked-*",
                 ValueByType = new()
                 {
                     ["*"] = -50,
-                    ["butcher:smoked-none-redmeat"] = -60,
-                    ["butcher:smoked-cured-redmeat"] = -80,
-                    ["butcher:smoked-none-bushmeat"] = -50,
-                    ["butcher:smoked-cured-bushmeat"] = -70,
-                    ["butcher:smoked-none-fish"] = -50,
-                    ["butcher:smoked-cured-fish"] = -80,
-                    ["butcher:smoked-none-primemeat"] = -50,
-                    ["butcher:smoked-healing-primemeat"] = -80
+                    ["butchering:smoked-none-redmeat"] = -60,
+                    ["butchering:smoked-cured-redmeat"] = -80,
+                    ["butchering:smoked-none-bushmeat"] = -50,
+                    ["butchering:smoked-cured-bushmeat"] = -70,
+                    ["butchering:smoked-none-fish"] = -50,
+                    ["butchering:smoked-cured-fish"] = -80,
+                    ["butchering:smoked-none-primemeat"] = -50,
+                    ["butchering:smoked-healing-primemeat"] = -80
                 }
             },
             new()
@@ -578,6 +549,48 @@ public class ItemHydrationPatch : HydrationPatchBase
             {
                 Code = "butchering:offal",
                 Value = 3
+            },
+            new()
+            {
+                Code = "butchering:bloodbread-*",
+                ValueByType = new()
+                {
+                    ["butchering:bloodbread-spelt-partbaked"] = -40,
+                    ["butchering:bloodbread-spelt-perfect"] = -50,
+                    ["butchering:bloodbread-spelt-charred"] = -80,
+
+                    ["butchering:bloodbread-rye-partbaked"] = -40,
+                    ["butchering:bloodbread-rye-perfect"] = -50,
+                    ["butchering:bloodbread-rye-charred"] = -100,
+
+                    ["butchering:bloodbread-flax-partbaked"] = -35,
+                    ["butchering:bloodbread-flax-perfect"] = -40,
+                    ["butchering:bloodbread-flax-charred"] = -70,
+
+                    ["butchering:bloodbread-rice-partbaked"] = -50,
+                    ["butchering:bloodbread-rice-perfect"] = -60,
+                    ["butchering:bloodbread-rice-charred"] = -80,
+
+                    ["butchering:bloodbread-cassava-partbaked"] = -40,
+                    ["butchering:bloodbread-cassava-perfect"] = -50,
+                    ["butchering:bloodbread-cassava-charred"] = -80,
+
+                    ["butchering:bloodbread-amaranth-partbaked"] = -35,
+                    ["butchering:bloodbread-amaranth-perfect"] = -40,
+                    ["butchering:bloodbread-amaranth-charred"] = -70,
+
+                    ["butchering:bloodbread-sunflower-partbaked"] = -40,
+                    ["butchering:bloodbread-sunflower-perfect"] = -50,
+                    ["butchering:bloodbread-sunflower-charred"] = -80
+                }
+            },
+            new()
+            {
+                Code = "butchering:blooddough-*",
+                ValueByType = new()
+                {
+                    ["*"] = 5
+                }
             },
             new()
             {
@@ -673,14 +686,14 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:potentspiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 170,
-                    ["expandedfoods:potentspiritportion-apple"] = 170,
-                    ["expandedfoods:potentspiritportion-mead"] = 180,
-                    ["expandedfoods:potentspiritportion-spelt"] = 175,
-                    ["expandedfoods:potentspiritportion-rice"] = 175,
-                    ["expandedfoods:potentspiritportion-rye"] = 175,
-                    ["expandedfoods:potentspiritportion-amaranth"] = 175,
-                    ["expandedfoods:potentspiritportion-cassava"] = 175
+                    ["*"] = 470,
+                    ["expandedfoods:potentspiritportion-apple"] = 470,
+                    ["expandedfoods:potentspiritportion-mead"] = 480,
+                    ["expandedfoods:potentspiritportion-spelt"] = 475,
+                    ["expandedfoods:potentspiritportion-rice"] = 475,
+                    ["expandedfoods:potentspiritportion-rye"] = 475,
+                    ["expandedfoods:potentspiritportion-amaranth"] = 475,
+                    ["expandedfoods:potentspiritportion-cassava"] = 475
                 }
             },
             new()
@@ -734,14 +747,14 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:strongspiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 150,
-                    ["expandedfoods:strongspiritportion-apple"] = 150,
-                    ["expandedfoods:strongspiritportion-mead"] = 160,
-                    ["expandedfoods:strongspiritportion-spelt"] = 155,
-                    ["expandedfoods:strongspiritportion-rice"] = 155,
-                    ["expandedfoods:strongspiritportion-rye"] = 155,
-                    ["expandedfoods:strongspiritportion-amaranth"] = 155,
-                    ["expandedfoods:strongspiritportion-cassava"] = 155
+                    ["*"] = 450,
+                    ["expandedfoods:strongspiritportion-apple"] = 450,
+                    ["expandedfoods:strongspiritportion-mead"] = 460,
+                    ["expandedfoods:strongspiritportion-spelt"] = 455,
+                    ["expandedfoods:strongspiritportion-rice"] = 455,
+                    ["expandedfoods:strongspiritportion-rye"] = 455,
+                    ["expandedfoods:strongspiritportion-amaranth"] = 455,
+                    ["expandedfoods:strongspiritportion-cassava"] = 455
                 }
             },
             new()
@@ -750,13 +763,13 @@ public class ItemHydrationPatch : HydrationPatchBase
                 ValueByType = new()
                 {
                     ["*"] = 150,
-                    ["expandedfoods:strongwineportion-apple"] = 150,
-                    ["expandedfoods:strongwineportion-mead"] = 160,
-                    ["expandedfoods:strongwineportion-spelt"] = 155,
-                    ["expandedfoods:strongwineportion-rice"] = 155,
-                    ["expandedfoods:strongwineportion-rye"] = 155,
-                    ["expandedfoods:strongwineportion-amaranth"] = 155,
-                    ["expandedfoods:strongwineportion-cassava"] = 155
+                    ["expandedfoods:strongwineportion-apple"] = 450,
+                    ["expandedfoods:strongwineportion-mead"] = 460,
+                    ["expandedfoods:strongwineportion-spelt"] = 455,
+                    ["expandedfoods:strongwineportion-rice"] = 455,
+                    ["expandedfoods:strongwineportion-rye"] = 455,
+                    ["expandedfoods:strongwineportion-amaranth"] = 455,
+                    ["expandedfoods:strongwineportion-cassava"] = 455
                 }
             },
             new()
@@ -814,7 +827,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:wildpotentspiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 50
+                    ["*"] = 450
                 }
             },
             new()
@@ -822,7 +835,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:wildpotentwineportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 400
                 }
             },
             new()
@@ -830,7 +843,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:wildstrongspiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 50
+                    ["*"] = 450
                 }
             },
             new()
@@ -838,7 +851,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:wildstrongwineportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 50
+                    ["*"] = 450
                 }
             },
             new()
@@ -854,7 +867,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:wildtreepotentspiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 50
+                    ["*"] = 450
                 }
             },
             new()
@@ -862,7 +875,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:wildtreepotentwineportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 400
                 }
             },
             new()
@@ -870,7 +883,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:wildtreestrongspiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 50
+                    ["*"] = 450
                 }
             },
             new()
@@ -878,7 +891,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "expandedfoods:wildtreestrongwineportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 400
                 }
             },
             new()
@@ -1564,7 +1577,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaperegion:fruit-*",
                 ValueByType = new()
                 {
-                    ["*"] = 30
+                    ["*"] = 40
                 }
             },
             new()
@@ -1572,7 +1585,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaperegion:vegetable-*",
                 ValueByType = new()
                 {
-                    ["*"] = 15
+                    ["*"] = 30
                 }
             },
             new()
@@ -1580,7 +1593,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaribbeanregion:vegetable-*",
                 ValueByType = new()
                 {
-                    ["*"] = 15
+                    ["*"] = 35
                 }
             },
             new()
@@ -1588,7 +1601,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaribbeanregion:vegetable-nonpalm-*",
                 ValueByType = new()
                 {
-                    ["*"] = 15
+                    ["*"] = 30
                 }
             },
             new()
@@ -1596,7 +1609,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaribbeanregion:fruit-*",
                 ValueByType = new()
                 {
-                    ["*"] = 10
+                    ["*"] = 50
                 }
             },
             new()
@@ -1604,7 +1617,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaribbeanregion:flour-*",
                 ValueByType = new()
                 {
-                    ["*"] = -7
+                    ["*"] = -30
                 }
             },
             new()
@@ -1612,7 +1625,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaribbeanregion:dough-*",
                 ValueByType = new()
                 {
-                    ["*"] = -2
+                    ["*"] = 5
                 }
             },
             new()
@@ -1620,7 +1633,9 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaribbeanregion:bread-*",
                 ValueByType = new()
                 {
-                    ["*"] = -5
+                    ["*-partbaked"] = -40,
+                    ["*-perfect"] = -50,
+                    ["*-charred"] = -80
                 }
             },
             new()
@@ -1628,7 +1643,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaribbeanregion:spiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 400
                 }
             },
             new()
@@ -1636,7 +1651,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaribbeanregion:juiceportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 50
+                    ["*"] = 1100
                 }
             },
             new()
@@ -1644,7 +1659,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescaribbeanregion:ciderportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 300
+                    ["*"] = 750
                 }
             },
             new()
@@ -1652,7 +1667,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescentralaustralianregion:vegetable-*",
                 ValueByType = new()
                 {
-                    ["*"] = 5
+                    ["*"] = 30
                 }
             },
             new()
@@ -1668,7 +1683,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescentralaustralianregion:fruit-*",
                 ValueByType = new()
                 {
-                    ["*"] = 10
+                    ["*"] = 40
                 }
             },
             new()
@@ -1700,7 +1715,9 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescentralaustralianregion:bread-*",
                 ValueByType = new()
                 {
-                    ["*"] = -5
+                    ["*-partbaked"] = -40,
+                    ["*-perfect"] = -50,
+                    ["*-charred"] = -80
                 }
             },
             new()
@@ -1708,7 +1725,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescentralaustralianregion:ciderportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 350
+                    ["*"] = 750
                 }
             },
             new()
@@ -1716,7 +1733,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescentralaustralianregion:juiceportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 800
+                    ["*"] = 1100
                 }
             },
             new()
@@ -1724,7 +1741,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescentralaustralianregion:spiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 400
                 }
             },
             new()
@@ -1732,7 +1749,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzoneseastasiaticregion:vegetable-*",
                 ValueByType = new()
                 {
-                    ["*"] = 5
+                    ["*"] = 30
                 }
             },
             new()
@@ -1748,7 +1765,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzoneseastasiaticregion:fruit-*",
                 ValueByType = new()
                 {
-                    ["*"] = 10
+                    ["*"] = 40
                 }
             },
             new()
@@ -1764,7 +1781,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzoneseastasiaticregion:dough-*",
                 ValueByType = new()
                 {
-                    ["*"] = -2
+                    ["*"] = 5
                 }
             },
             new()
@@ -1772,7 +1789,9 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzoneseastasiaticregion:bread-*",
                 ValueByType = new()
                 {
-                    ["*"] = -5
+                    ["*-partbaked"] = -40,
+                    ["*-perfect"] = -50,
+                    ["*-charred"] = -80
                 }
             },
             new()
@@ -1780,7 +1799,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzoneseastasiaticregion:spiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 400
                 }
             },
             new()
@@ -1788,7 +1807,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzoneseastasiaticregion:juiceportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 700
+                    ["*"] = 1100
                 }
             },
             new()
@@ -1796,7 +1815,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzoneseastasiaticregion:ciderportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 350
+                    ["*"] = 750
                 }
             },
             new()
@@ -1804,7 +1823,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonesneozeylandicregion:fruit-*",
                 ValueByType = new()
                 {
-                    ["*"] = 10
+                    ["*"] = 40
                 }
             },
             new()
@@ -1812,7 +1831,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonesneozeylandicregion:vegetable-*",
                 ValueByType = new()
                 {
-                    ["*"] = 5
+                    ["*"] = 30
                 }
             },
             new()
@@ -1820,7 +1839,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescosmopolitanregion:vegetable-*",
                 ValueByType = new()
                 {
-                    ["*"] = 5
+                    ["*"] = 30
                 }
             },
             new()
@@ -1852,7 +1871,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescosmopolitanregion:fruit-*",
                 ValueByType = new()
                 {
-                    ["*"] = 10
+                    ["*"] = 40
                 }
             },
             new()
@@ -1868,7 +1887,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescosmopolitanregion:dough-*",
                 ValueByType = new()
                 {
-                    ["*"] = -2
+                    ["*"] = 5
                 }
             },
             new()
@@ -1876,7 +1895,9 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescosmopolitanregion:bread-*",
                 ValueByType = new()
                 {
-                    ["*"] = -5
+                    ["*-partbaked"] = -40,
+                    ["*-perfect"] = -50,
+                    ["*-charred"] = -80
                 }
             },
             new()
@@ -1884,7 +1905,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescosmopolitanregion:ciderportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 350
+                    ["*"] = 750
                 }
             },
             new()
@@ -1892,7 +1913,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescosmopolitanregion:juiceportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 800
+                    ["*"] = 1100
                 }
             },
             new()
@@ -1900,7 +1921,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonescosmopolitanregion:spiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 400
                 }
             },
             new()
@@ -1908,7 +1929,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonesmediterraneanregion:vegetable-*",
                 ValueByType = new()
                 {
-                    ["*"] = 5
+                    ["*"] = 30
                 }
             },
             new()
@@ -1916,7 +1937,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonesmediterraneanregion:fruit-*",
                 ValueByType = new()
                 {
-                    ["*"] = 10
+                    ["*"] = 40
                 }
             },
             new()
@@ -1932,7 +1953,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonesmediterraneanregion:ciderportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 350
+                    ["*"] = 750
                 }
             },
             new()
@@ -1940,7 +1961,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonesmediterraneanregion:juiceportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 800
+                    ["*"] = 1100
                 }
             },
             new()
@@ -1948,7 +1969,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "floralzonesmediterraneanregion:spiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 400
                 }
             },
             new()
@@ -1956,7 +1977,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "newworldcrops:vegetable-*",
                 ValueByType = new()
                 {
-                    ["*"] = 5
+                    ["*"] = 30
                 }
             },
             new()
@@ -1988,7 +2009,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "newworldcrops:grain-*",
                 ValueByType = new()
                 {
-                    ["*"] = -3
+                    ["*"] = -20
                 }
             },
             new()
@@ -2004,7 +2025,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "newworldcrops:dough-*",
                 ValueByType = new()
                 {
-                    ["*"] = -2
+                    ["*"] = 5
                 }
             },
             new()
@@ -2012,7 +2033,9 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "newworldcrops:bread-*",
                 ValueByType = new()
                 {
-                    ["*"] = -5
+                    ["*-partbaked"] = -40,
+                    ["*-perfect"] = -50,
+                    ["*-charred"] = -80
                 }
             },
             new()
@@ -2020,7 +2043,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "warriordrink:spiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 400
                 }
             },
             new()
@@ -2036,7 +2059,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "wildcraftfruit:vegetable-*",
                 ValueByType = new()
                 {
-                    ["*"] = 5
+                    ["*"] = 30
                 }
             },
             new()
@@ -2052,111 +2075,112 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "wildcraftfruit:fruit-*",
                 ValueByType = new()
                 {
-                ["*"] = 10,
-                ["wildcraftfruit:fruit-watermelon"] = 50,
-                ["wildcraftfruit:fruit-illawarra"] = 15,
-                ["wildcraftfruit:fruit-creepingpine"] = 8,
-                ["wildcraftfruit:fruit-pandanbits"] = 12,
-                ["wildcraftfruit:fruit-maritabits"] = 10,
-                ["wildcraftfruit:fruit-crowseye"] = 7,
-                ["wildcraftfruit:fruit-kakaha"] = 20,
-                ["wildcraftfruit:fruit-flaxlily"] = 10,
-                ["wildcraftfruit:fruit-engkala"] = 18,
-                ["wildcraftfruit:fruit-kawakawa"] = 15,
-                ["wildcraftfruit:fruit-gooseberry"] = 12,
-                ["wildcraftfruit:fruit-blackgrape"] = 30,
-                ["wildcraftfruit:fruit-redgrape"] = 30,
-                ["wildcraftfruit:fruit-whitegrape"] = 30,
-                ["wildcraftfruit:fruit-foxgrape"] = 28,
-                ["wildcraftfruit:fruit-virgingrape"] = 25,
-                ["wildcraftfruit:fruit-gardenstrawberry"] = 18,
-                ["wildcraftfruit:fruit-strawberry"] = 18,
-                ["wildcraftfruit:fruit-falsestrawberry"] = 15,
-                ["wildcraftfruit:fruit-raspberry"] = 20,
-                ["wildcraftfruit:fruit-blueraspberry"] = 20,
-                ["wildcraftfruit:fruit-brambleberry"] = 16,
-                ["wildcraftfruit:fruit-cloudberry"] = 15,
-                ["wildcraftfruit:fruit-knyazberry"] = 22,
-                ["wildcraftfruit:fruit-bushlawyer"] = 10,
-                ["wildcraftfruit:fruit-dogrose"] = 14,
-                ["wildcraftfruit:fruit-hawthorn"] = 12,
-                ["wildcraftfruit:fruit-rowanberry"] = 12,
-                ["wildcraftfruit:fruit-quince"] = 18,
-                ["wildcraftfruit:fruit-loquat"] = 16,
-                ["wildcraftfruit:fruit-pittedcherry"] = 15,
-                ["wildcraftfruit:fruit-apricot"] = 22,
-                ["wildcraftfruit:fruit-pittedapricot"] = 22,
-                ["wildcraftfruit:fruit-purpleplum"] = 25,
-                ["wildcraftfruit:fruit-cherryplum"] = 20,
-                ["wildcraftfruit:fruit-sallowthorn"] = 10,
-                ["wildcraftfruit:fruit-jujube"] = 18,
-                ["wildcraftfruit:fruit-fig"] = 20,
-                ["wildcraftfruit:fruit-falseorange"] = 25,
-                ["wildcraftfruit:fruit-pittedbreadfruit"] = 15,
-                ["wildcraftfruit:fruit-silvernettle"] = 8,
-                ["wildcraftfruit:fruit-cucumber"] = 35,
-                ["wildcraftfruit:fruit-muskmelon"] = 45,
-                ["wildcraftfruit:fruit-mirzamelon"] = 40,
-                ["wildcraftfruit:fruit-bryony"] = 10,
-                ["wildcraftfruit:fruit-passionfruit"] = 22,
-                ["wildcraftfruit:fruit-achacha"] = 18,
-                ["wildcraftfruit:fruit-spindle"] = 10,
-                ["wildcraftfruit:fruit-ugni"] = 15,
-                ["wildcraftfruit:fruit-midyimberry"] = 18,
-                ["wildcraftfruit:fruit-munthari"] = 15,
-                ["wildcraftfruit:fruit-guajava"] = 20,
-                ["wildcraftfruit:fruit-feijoa"] = 22,
-                ["wildcraftfruit:fruit-roseapple"] = 25,
-                ["wildcraftfruit:fruit-lillypillypink"] = 20,
-                ["wildcraftfruit:fruit-lillypillyblue"] = 20,
-                ["wildcraftfruit:fruit-lillypillywhite"] = 20,
-                ["wildcraftfruit:fruit-beachalmondwhole"] = 12,
-                ["wildcraftfruit:fruit-pittedbeachalmond"] = 12,
-                ["wildcraftfruit:fruit-bluetongue"] = 18,
-                ["wildcraftfruit:fruit-turkscap"] = 14,
-                ["wildcraftfruit:fruit-cocoa"] = 15,
-                ["wildcraftfruit:fruit-wolfberry"] = 10,
-                ["wildcraftfruit:fruit-caperberry"] = 12,
-                ["wildcraftfruit:fruit-citron"] = 25,
-                ["wildcraftfruit:fruit-lemon"] = 30,
-                ["wildcraftfruit:fruit-pomelo"] = 35,
-                ["wildcraftfruit:fruit-fingerlime"] = 28,
-                ["wildcraftfruit:fruit-kumquat"] = 20,
-                ["wildcraftfruit:fruit-lemonaspen"] = 30,
-                ["wildcraftfruit:fruit-cashewwhole"] = 8,
-                ["wildcraftfruit:fruit-cashewapple"] = 25,
-                ["wildcraftfruit:fruit-chinaberry"] = 10,
-                ["wildcraftfruit:fruit-pittedchinaberry"] = 10,
-                ["wildcraftfruit:fruit-redquandong"] = 20,
-                ["wildcraftfruit:fruit-rubysaltbush"] = 12,
-                ["wildcraftfruit:fruit-pokeberry"] = 8,
-                ["wildcraftfruit:fruit-bunchberry"] = 15,
-                ["wildcraftfruit:fruit-cheeseberry"] = 15,
-                ["wildcraftfruit:fruit-pineheath"] = 10,
-                ["wildcraftfruit:fruit-pricklyheath"] = 10,
-                ["wildcraftfruit:fruit-honeypots"] = 12,
-                ["wildcraftfruit:fruit-crowberry"] = 10,
-                ["wildcraftfruit:fruit-lingonberry"] = 15,
-                ["wildcraftfruit:fruit-huckleberry"] = 18,
-                ["wildcraftfruit:fruit-kiwi"] = 20,
-                ["wildcraftfruit:fruit-honeysuckle"] = 12,
-                ["wildcraftfruit:fruit-snowberry"] = 8,
-                ["wildcraftfruit:fruit-blackelder"] = 10,
-                ["wildcraftfruit:fruit-elderberry"] = 15,
-                ["wildcraftfruit:fruit-ivy"] = 10,
-                ["wildcraftfruit:fruit-blacknightshade"] = 10,
-                ["wildcraftfruit:fruit-blacknightshadeunripe"] = 8,
-                ["wildcraftfruit:fruit-bitternightshade"] = 8,
-                ["wildcraftfruit:fruit-naranjilla"] = 18,
-                ["wildcraftfruit:fruit-husktomato"] = 15,
-                ["wildcraftfruit:fruit-beautyberry"] = 15,
-                ["wildcraftfruit:fruit-numnum"] = 15,
-                ["wildcraftfruit:fruit-seamango"] = 20,
-                ["wildcraftfruit:fruit-coralbead"] = 10,
-                ["wildcraftfruit:fruit-pilo"] = 15,
-                ["wildcraftfruit:fruit-mingimingi"] = 15,
-                ["wildcraftfruit:fruit-fractureberry"] = 10
-            }
+                    ["*"] = 40,
+
+                    ["wildcraftfruit:fruit-watermelon"] = 60,
+                    ["wildcraftfruit:fruit-illawarra"] = 35,
+                    ["wildcraftfruit:fruit-creepingpine"] = 30,
+                    ["wildcraftfruit:fruit-pandanbits"] = 35,
+                    ["wildcraftfruit:fruit-maritabits"] = 35,
+                    ["wildcraftfruit:fruit-crowseye"] = 28,
+                    ["wildcraftfruit:fruit-kakaha"] = 40,
+                    ["wildcraftfruit:fruit-flaxlily"] = 35,
+                    ["wildcraftfruit:fruit-engkala"] = 40,
+                    ["wildcraftfruit:fruit-kawakawa"] = 35,
+                    ["wildcraftfruit:fruit-gooseberry"] = 35,
+                    ["wildcraftfruit:fruit-blackgrape"] = 40,
+                    ["wildcraftfruit:fruit-redgrape"] = 40,
+                    ["wildcraftfruit:fruit-whitegrape"] = 40,
+                    ["wildcraftfruit:fruit-foxgrape"] = 38,
+                    ["wildcraftfruit:fruit-virgingrape"] = 36,
+                    ["wildcraftfruit:fruit-gardenstrawberry"] = 40,
+                    ["wildcraftfruit:fruit-strawberry"] = 40,
+                    ["wildcraftfruit:fruit-falsestrawberry"] = 30,
+                    ["wildcraftfruit:fruit-raspberry"] = 40,
+                    ["wildcraftfruit:fruit-blueraspberry"] = 40,
+                    ["wildcraftfruit:fruit-brambleberry"] = 36,
+                    ["wildcraftfruit:fruit-cloudberry"] = 35,
+                    ["wildcraftfruit:fruit-knyazberry"] = 42,
+                    ["wildcraftfruit:fruit-bushlawyer"] = 34,
+                    ["wildcraftfruit:fruit-dogrose"] = 32,
+                    ["wildcraftfruit:fruit-hawthorn"] = 32,
+                    ["wildcraftfruit:fruit-rowanberry"] = 32,
+                    ["wildcraftfruit:fruit-quince"] = 38,
+                    ["wildcraftfruit:fruit-loquat"] = 36,
+                    ["wildcraftfruit:fruit-pittedcherry"] = 40,
+                    ["wildcraftfruit:fruit-apricot"] = 40,
+                    ["wildcraftfruit:fruit-pittedapricot"] = 40,
+                    ["wildcraftfruit:fruit-purpleplum"] = 40,
+                    ["wildcraftfruit:fruit-cherryplum"] = 38,
+                    ["wildcraftfruit:fruit-sallowthorn"] = 30,
+                    ["wildcraftfruit:fruit-jujube"] = 35,
+                    ["wildcraftfruit:fruit-fig"] = 38,
+                    ["wildcraftfruit:fruit-falseorange"] = 40,
+                    ["wildcraftfruit:fruit-pittedbreadfruit"] = 20,
+                    ["wildcraftfruit:fruit-silvernettle"] = 28,
+                    ["wildcraftfruit:fruit-cucumber"] = 50,
+                    ["wildcraftfruit:fruit-muskmelon"] = 55,
+                    ["wildcraftfruit:fruit-mirzamelon"] = 55,
+                    ["wildcraftfruit:fruit-bryony"] = 28,
+                    ["wildcraftfruit:fruit-passionfruit"] = 42,
+                    ["wildcraftfruit:fruit-achacha"] = 38,
+                    ["wildcraftfruit:fruit-spindle"] = 28,
+                    ["wildcraftfruit:fruit-ugni"] = 34,
+                    ["wildcraftfruit:fruit-midyimberry"] = 36,
+                    ["wildcraftfruit:fruit-munthari"] = 34,
+                    ["wildcraftfruit:fruit-guajava"] = 40,
+                    ["wildcraftfruit:fruit-feijoa"] = 40,
+                    ["wildcraftfruit:fruit-roseapple"] = 45,
+                    ["wildcraftfruit:fruit-lillypillypink"] = 38,
+                    ["wildcraftfruit:fruit-lillypillyblue"] = 38,
+                    ["wildcraftfruit:fruit-lillypillywhite"] = 38,
+                    ["wildcraftfruit:fruit-beachalmondwhole"] = 20,
+                    ["wildcraftfruit:fruit-pittedbeachalmond"] = 20,
+                    ["wildcraftfruit:fruit-bluetongue"] = 36,
+                    ["wildcraftfruit:fruit-turkscap"] = 32,
+                    ["wildcraftfruit:fruit-cocoa"] = 25,
+                    ["wildcraftfruit:fruit-wolfberry"] = 32,
+                    ["wildcraftfruit:fruit-caperberry"] = 30,
+                    ["wildcraftfruit:fruit-citron"] = 35,
+                    ["wildcraftfruit:fruit-lemon"] = 35,
+                    ["wildcraftfruit:fruit-pomelo"] = 40,
+                    ["wildcraftfruit:fruit-fingerlime"] = 35,
+                    ["wildcraftfruit:fruit-kumquat"] = 30,
+                    ["wildcraftfruit:fruit-lemonaspen"] = 35,
+                    ["wildcraftfruit:fruit-cashewwhole"] = 15,
+                    ["wildcraftfruit:fruit-cashewapple"] = 45,
+                    ["wildcraftfruit:fruit-chinaberry"] = 20,
+                    ["wildcraftfruit:fruit-pittedchinaberry"] = 20,
+                    ["wildcraftfruit:fruit-redquandong"] = 38,
+                    ["wildcraftfruit:fruit-rubysaltbush"] = 30,
+                    ["wildcraftfruit:fruit-pokeberry"] = 20,
+                    ["wildcraftfruit:fruit-bunchberry"] = 35,
+                    ["wildcraftfruit:fruit-cheeseberry"] = 35,
+                    ["wildcraftfruit:fruit-pineheath"] = 28,
+                    ["wildcraftfruit:fruit-pricklyheath"] = 28,
+                    ["wildcraftfruit:fruit-honeypots"] = 30,
+                    ["wildcraftfruit:fruit-crowberry"] = 32,
+                    ["wildcraftfruit:fruit-lingonberry"] = 35,
+                    ["wildcraftfruit:fruit-huckleberry"] = 38,
+                    ["wildcraftfruit:fruit-kiwi"] = 40,
+                    ["wildcraftfruit:fruit-honeysuckle"] = 30,
+                    ["wildcraftfruit:fruit-snowberry"] = 25,
+                    ["wildcraftfruit:fruit-blackelder"] = 30,
+                    ["wildcraftfruit:fruit-elderberry"] = 35,
+                    ["wildcraftfruit:fruit-ivy"] = 20,
+                    ["wildcraftfruit:fruit-blacknightshade"] = 22,
+                    ["wildcraftfruit:fruit-blacknightshadeunripe"] = 18,
+                    ["wildcraftfruit:fruit-bitternightshade"] = 18,
+                    ["wildcraftfruit:fruit-naranjilla"] = 38,
+                    ["wildcraftfruit:fruit-husktomato"] = 35,
+                    ["wildcraftfruit:fruit-beautyberry"] = 34,
+                    ["wildcraftfruit:fruit-numnum"] = 34,
+                    ["wildcraftfruit:fruit-seamango"] = 38,
+                    ["wildcraftfruit:fruit-coralbead"] = 20,
+                    ["wildcraftfruit:fruit-pilo"] = 32,
+                    ["wildcraftfruit:fruit-mingimingi"] = 32,
+                    ["wildcraftfruit:fruit-fractureberry"] = 30
+                }
             },
             new()
             {
@@ -2171,7 +2195,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "wildcraftfruit:dough-*",
                 ValueByType = new()
                 {
-                    ["*"] = -2
+                    ["*"] = 5
                 }
             },
             new()
@@ -2179,7 +2203,10 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "wildcraftfruit:bread-*",
                 ValueByType = new()
                 {
-                    ["*"] = -5
+                    ["*"] = -50,
+                    ["*-partbaked"] = -40,
+                    ["*-perfect"] = -50,
+                    ["*-charred"] = -80
                 }
             },
             new()
@@ -2195,24 +2222,368 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "wildcraftfruit:spiritportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 100
+                    ["*"] = 650,
+                    ["wildcraftfruit:spiritportion-juniper"] = 680,
+                    ["wildcraftfruit:spiritportion-avocado"] = 520,
+                    ["wildcraftfruit:spiritportion-sumac"] = 720,
+                    ["wildcraftfruit:spiritportion-illawarra"] = 650,
+                    ["wildcraftfruit:spiritportion-creepingpine"] = 630,
+                    ["wildcraftfruit:spiritportion-pandanbits"] = 660,
+                    ["wildcraftfruit:spiritportion-maritabits"] = 660,
+                    ["wildcraftfruit:spiritportion-crowseye"] = 630,
+                    ["wildcraftfruit:spiritportion-kakaha"] = 660,
+                    ["wildcraftfruit:spiritportion-flaxlily"] = 650,
+                    ["wildcraftfruit:spiritportion-engkala"] = 670,
+                    ["wildcraftfruit:spiritportion-kawakawa"] = 650,
+                    ["wildcraftfruit:spiritportion-baneberry"] = 600,
+                    ["wildcraftfruit:spiritportion-gooseberry"] = 660,
+                    ["wildcraftfruit:spiritportion-blackgrape"] = 680,
+                    ["wildcraftfruit:spiritportion-redgrape"] = 680,
+                    ["wildcraftfruit:spiritportion-whitegrape"] = 680,
+                    ["wildcraftfruit:spiritportion-foxgrape"] = 670,
+                    ["wildcraftfruit:spiritportion-virgingrape"] = 670,
+                    ["wildcraftfruit:spiritportion-strawberry"] = 650,
+                    ["wildcraftfruit:spiritportion-gardenstrawberry"] = 650,
+                    ["wildcraftfruit:spiritportion-falsestrawberry"] = 630,
+                    ["wildcraftfruit:spiritportion-raspberry"] = 660,
+                    ["wildcraftfruit:spiritportion-blueraspberry"] = 660,
+                    ["wildcraftfruit:spiritportion-brambleberry"] = 650,
+                    ["wildcraftfruit:spiritportion-dewberry"] = 640,
+                    ["wildcraftfruit:spiritportion-cloudberry"] = 660,
+                    ["wildcraftfruit:spiritportion-knyazberry"] = 690,
+                    ["wildcraftfruit:spiritportion-bushlawyer"] = 640,
+                    ["wildcraftfruit:spiritportion-dogrose"] = 640,
+                    ["wildcraftfruit:spiritportion-hawthorn"] = 630,
+                    ["wildcraftfruit:spiritportion-rowanberry"] = 630,
+                    ["wildcraftfruit:spiritportion-sorb"] = 650,
+                    ["wildcraftfruit:spiritportion-aronia"] = 630,
+                    ["wildcraftfruit:spiritportion-crabapple"] = 700,
+                    ["wildcraftfruit:spiritportion-sandpear"] = 750,
+                    ["wildcraftfruit:spiritportion-quince"] = 690,
+                    ["wildcraftfruit:spiritportion-loquat"] = 700,
+                    ["wildcraftfruit:spiritportion-apricot"] = 700,
+                    ["wildcraftfruit:spiritportion-sloe"] = 630,
+                    ["wildcraftfruit:spiritportion-purpleplum"] = 700,
+                    ["wildcraftfruit:spiritportion-greengage"] = 700,
+                    ["wildcraftfruit:spiritportion-cherryplum"] = 690,
+                    ["wildcraftfruit:spiritportion-sallowthorn"] = 620,
+                    ["wildcraftfruit:spiritportion-jujube"] = 640,
+                    ["wildcraftfruit:spiritportion-fig"] = 700,
+                    ["wildcraftfruit:spiritportion-falseorange"] = 720,
+                    ["wildcraftfruit:spiritportion-jackfruit"] = 660,
+                    ["wildcraftfruit:spiritportion-cempedak"] = 660,
+                    ["wildcraftfruit:spiritportion-silvernettle"] = 630,
+                    ["wildcraftfruit:spiritportion-cucumber"] = 700,
+                    ["wildcraftfruit:spiritportion-muskmelon"] = 800,
+                    ["wildcraftfruit:spiritportion-honeydewmelon"] = 800,
+                    ["wildcraftfruit:spiritportion-mirzamelon"] = 800,
+                    ["wildcraftfruit:spiritportion-watermelon"] = 800,
+                    ["wildcraftfruit:spiritportion-bryony"] = 600,
+                    ["wildcraftfruit:spiritportion-passionfruit"] = 690,
+                    ["wildcraftfruit:spiritportion-granadilla"] = 690,
+                    ["wildcraftfruit:spiritportion-achacha"] = 690,
+                    ["wildcraftfruit:spiritportion-spindle"] = 600,
+                    ["wildcraftfruit:spiritportion-ugni"] = 650,
+                    ["wildcraftfruit:spiritportion-midyimberry"] = 650,
+                    ["wildcraftfruit:spiritportion-munthari"] = 650,
+                    ["wildcraftfruit:spiritportion-guajava"] = 700,
+                    ["wildcraftfruit:spiritportion-feijoa"] = 700,
+                    ["wildcraftfruit:spiritportion-roseapple"] = 720,
+                    ["wildcraftfruit:spiritportion-bluetongue"] = 660,
+                    ["wildcraftfruit:spiritportion-turkscap"] = 630,
+                    ["wildcraftfruit:spiritportion-cocoa"] = 650,
+                    ["wildcraftfruit:spiritportion-wolfberry"] = 630,
+                    ["wildcraftfruit:spiritportion-caperberry"] = 630,
+                    ["wildcraftfruit:spiritportion-rambutan"] = 700,
+                    ["wildcraftfruit:spiritportion-citron"] = 720,
+                    ["wildcraftfruit:spiritportion-pomelo"] = 850,
+                    ["wildcraftfruit:spiritportion-grapefruit"] = 850,
+                    ["wildcraftfruit:spiritportion-lime"] = 750,
+                    ["wildcraftfruit:spiritportion-fingerlime"] = 750,
+                    ["wildcraftfruit:spiritportion-kumquat"] = 700,
+                    ["wildcraftfruit:spiritportion-lemonaspen"] = 720,
+                    ["wildcraftfruit:spiritportion-cashewapple"] = 800,
+                    ["wildcraftfruit:spiritportion-wani"] = 750,
+                    ["wildcraftfruit:spiritportion-redquandong"] = 690,
+                    ["wildcraftfruit:spiritportion-rubysaltbush"] = 630,
+                    ["wildcraftfruit:spiritportion-pokeberry"] = 600,
+                    ["wildcraftfruit:spiritportion-bunchberry"] = 650,
+                    ["wildcraftfruit:spiritportion-bearberry"] = 630,
+                    ["wildcraftfruit:spiritportion-cheeseberry"] = 650,
+                    ["wildcraftfruit:spiritportion-pineheath"] = 630,
+                    ["wildcraftfruit:spiritportion-pricklyheath"] = 630,
+                    ["wildcraftfruit:spiritportion-honeypots"] = 630,
+                    ["wildcraftfruit:spiritportion-crowberry"] = 630,
+                    ["wildcraftfruit:spiritportion-lingonberry"] = 650,
+                    ["wildcraftfruit:spiritportion-huckleberry"] = 660,
+                    ["wildcraftfruit:spiritportion-kiwi"] = 700,
+                    ["wildcraftfruit:spiritportion-kolomikta"] = 690,
+                    ["wildcraftfruit:spiritportion-woodbine"] = 650,
+                    ["wildcraftfruit:spiritportion-honeysuckle"] = 600,
+                    ["wildcraftfruit:spiritportion-snowberry"] = 600,
+                    ["wildcraftfruit:spiritportion-blackelder"] = 670,
+                    ["wildcraftfruit:spiritportion-elderberry"] = 670,
+                    ["wildcraftfruit:spiritportion-ivy"] = 520,
+                    ["wildcraftfruit:spiritportion-hairyappleberry"] = 660,
+                    ["wildcraftfruit:spiritportion-purpleappleberry"] = 660,
+                    ["wildcraftfruit:spiritportion-blacknightshade"] = 620,
+                    ["wildcraftfruit:spiritportion-naranjilla"] = 750,
+                    ["wildcraftfruit:spiritportion-belladonna"] = 500,
+                    ["wildcraftfruit:spiritportion-husktomato"] = 660,
+                    ["wildcraftfruit:spiritportion-beautyberry"] = 640,
+                    ["wildcraftfruit:spiritportion-numnum"] = 650,
+                    ["wildcraftfruit:spiritportion-seamango"] = 600,
+                    ["wildcraftfruit:spiritportion-coralbead"] = 500,
+                    ["wildcraftfruit:spiritportion-pilo"] = 650,
+                    ["wildcraftfruit:spiritportion-mingimingi"] = 650,
+                    ["wildcraftfruit:spiritportion-fractureberry"] = 640
                 }
             },
             new()
+        {
+            Code = "wildcraftfruit:finespiritportion-*",
+            ValueByType = new()
             {
-                Code = "wildcraftfruit:finespiritportion-*",
-                ValueByType = new()
-                {
-                    ["*"] = 300
-                }
-            },
+                ["*"] = 850,
+                ["wildcraftfruit:finespiritportion-juniper"] = 880,
+                ["wildcraftfruit:finespiritportion-avocado"] = 720,
+                ["wildcraftfruit:finespiritportion-sumac"] = 920,
+                ["wildcraftfruit:finespiritportion-illawarra"] = 850,
+                ["wildcraftfruit:finespiritportion-creepingpine"] = 830,
+                ["wildcraftfruit:finespiritportion-pandanbits"] = 860,
+                ["wildcraftfruit:finespiritportion-maritabits"] = 860,
+                ["wildcraftfruit:finespiritportion-crowseye"] = 830,
+                ["wildcraftfruit:finespiritportion-kakaha"] = 860,
+                ["wildcraftfruit:finespiritportion-flaxlily"] = 850,
+                ["wildcraftfruit:finespiritportion-engkala"] = 870,
+                ["wildcraftfruit:finespiritportion-kawakawa"] = 850,
+                ["wildcraftfruit:finespiritportion-baneberry"] = 800,
+                ["wildcraftfruit:finespiritportion-gooseberry"] = 860,
+                ["wildcraftfruit:finespiritportion-blackgrape"] = 880,
+                ["wildcraftfruit:finespiritportion-redgrape"] = 880,
+                ["wildcraftfruit:finespiritportion-whitegrape"] = 880,
+                ["wildcraftfruit:finespiritportion-foxgrape"] = 870,
+                ["wildcraftfruit:finespiritportion-virgingrape"] = 870,
+                ["wildcraftfruit:finespiritportion-strawberry"] = 850,
+                ["wildcraftfruit:finespiritportion-gardenstrawberry"] = 850,
+                ["wildcraftfruit:finespiritportion-falsestrawberry"] = 830,
+                ["wildcraftfruit:finespiritportion-raspberry"] = 860,
+                ["wildcraftfruit:finespiritportion-blueraspberry"] = 860,
+                ["wildcraftfruit:finespiritportion-brambleberry"] = 850,
+                ["wildcraftfruit:finespiritportion-dewberry"] = 840,
+                ["wildcraftfruit:finespiritportion-cloudberry"] = 860,
+                ["wildcraftfruit:finespiritportion-knyazberry"] = 890,
+                ["wildcraftfruit:finespiritportion-bushlawyer"] = 840,
+                ["wildcraftfruit:finespiritportion-dogrose"] = 840,
+                ["wildcraftfruit:finespiritportion-hawthorn"] = 830,
+                ["wildcraftfruit:finespiritportion-rowanberry"] = 830,
+                ["wildcraftfruit:finespiritportion-sorb"] = 850,
+                ["wildcraftfruit:finespiritportion-aronia"] = 830,
+                ["wildcraftfruit:finespiritportion-crabapple"] = 900,
+                ["wildcraftfruit:finespiritportion-sandpear"] = 950,
+                ["wildcraftfruit:finespiritportion-quince"] = 890,
+                ["wildcraftfruit:finespiritportion-loquat"] = 900,
+                ["wildcraftfruit:finespiritportion-apricot"] = 900,
+                ["wildcraftfruit:finespiritportion-sloe"] = 830,
+                ["wildcraftfruit:finespiritportion-purpleplum"] = 900,
+                ["wildcraftfruit:finespiritportion-greengage"] = 900,
+                ["wildcraftfruit:finespiritportion-cherryplum"] = 890,
+                ["wildcraftfruit:finespiritportion-sallowthorn"] = 820,
+                ["wildcraftfruit:finespiritportion-jujube"] = 840,
+                ["wildcraftfruit:finespiritportion-fig"] = 900,
+                ["wildcraftfruit:finespiritportion-falseorange"] = 920,
+                ["wildcraftfruit:finespiritportion-jackfruit"] = 860,
+                ["wildcraftfruit:finespiritportion-cempedak"] = 860,
+                ["wildcraftfruit:finespiritportion-silvernettle"] = 830,
+                ["wildcraftfruit:finespiritportion-cucumber"] = 900,
+                ["wildcraftfruit:finespiritportion-muskmelon"] = 1000,
+                ["wildcraftfruit:finespiritportion-honeydewmelon"] = 1000,
+                ["wildcraftfruit:finespiritportion-mirzamelon"] = 1000,
+                ["wildcraftfruit:finespiritportion-watermelon"] = 1000,
+                ["wildcraftfruit:finespiritportion-bryony"] = 800,
+                ["wildcraftfruit:finespiritportion-passionfruit"] = 890,
+                ["wildcraftfruit:finespiritportion-granadilla"] = 890,
+                ["wildcraftfruit:finespiritportion-achacha"] = 890,
+                ["wildcraftfruit:finespiritportion-spindle"] = 800,
+                ["wildcraftfruit:finespiritportion-ugni"] = 850,
+                ["wildcraftfruit:finespiritportion-midyimberry"] = 850,
+                ["wildcraftfruit:finespiritportion-munthari"] = 850,
+                ["wildcraftfruit:finespiritportion-guajava"] = 900,
+                ["wildcraftfruit:finespiritportion-feijoa"] = 900,
+                ["wildcraftfruit:finespiritportion-roseapple"] = 920,
+                ["wildcraftfruit:finespiritportion-bluetongue"] = 860,
+                ["wildcraftfruit:finespiritportion-turkscap"] = 830,
+                ["wildcraftfruit:finespiritportion-cocoa"] = 850,
+                ["wildcraftfruit:finespiritportion-wolfberry"] = 830,
+                ["wildcraftfruit:finespiritportion-caperberry"] = 830,
+                ["wildcraftfruit:finespiritportion-rambutan"] = 900,
+                ["wildcraftfruit:finespiritportion-citron"] = 920,
+                ["wildcraftfruit:finespiritportion-pomelo"] = 1050,
+                ["wildcraftfruit:finespiritportion-grapefruit"] = 1050,
+                ["wildcraftfruit:finespiritportion-lime"] = 950,
+                ["wildcraftfruit:finespiritportion-fingerlime"] = 950,
+                ["wildcraftfruit:finespiritportion-kumquat"] = 900,
+                ["wildcraftfruit:finespiritportion-lemonaspen"] = 920,
+                ["wildcraftfruit:finespiritportion-cashewapple"] = 1000,
+                ["wildcraftfruit:finespiritportion-wani"] = 950,
+                ["wildcraftfruit:finespiritportion-redquandong"] = 890,
+                ["wildcraftfruit:finespiritportion-rubysaltbush"] = 830,
+                ["wildcraftfruit:finespiritportion-pokeberry"] = 800,
+                ["wildcraftfruit:finespiritportion-bunchberry"] = 850,
+                ["wildcraftfruit:finespiritportion-bearberry"] = 830,
+                ["wildcraftfruit:finespiritportion-cheeseberry"] = 850,
+                ["wildcraftfruit:finespiritportion-pineheath"] = 830,
+                ["wildcraftfruit:finespiritportion-pricklyheath"] = 830,
+                ["wildcraftfruit:finespiritportion-honeypots"] = 830,
+                ["wildcraftfruit:finespiritportion-crowberry"] = 830,
+                ["wildcraftfruit:finespiritportion-lingonberry"] = 850,
+                ["wildcraftfruit:finespiritportion-huckleberry"] = 860,
+                ["wildcraftfruit:finespiritportion-kiwi"] = 900,
+                ["wildcraftfruit:finespiritportion-kolomikta"] = 890,
+                ["wildcraftfruit:finespiritportion-woodbine"] = 850,
+                ["wildcraftfruit:finespiritportion-honeysuckle"] = 800,
+                ["wildcraftfruit:finespiritportion-snowberry"] = 800,
+                ["wildcraftfruit:finespiritportion-blackelder"] = 870,
+                ["wildcraftfruit:finespiritportion-elderberry"] = 870,
+                ["wildcraftfruit:finespiritportion-ivy"] = 720,
+                ["wildcraftfruit:finespiritportion-hairyappleberry"] = 860,
+                ["wildcraftfruit:finespiritportion-purpleappleberry"] = 860,
+                ["wildcraftfruit:finespiritportion-blacknightshade"] = 820,
+                ["wildcraftfruit:finespiritportion-naranjilla"] = 950,
+                ["wildcraftfruit:finespiritportion-belladonna"] = 700,
+                ["wildcraftfruit:finespiritportion-husktomato"] = 860,
+                ["wildcraftfruit:finespiritportion-beautyberry"] = 840,
+                ["wildcraftfruit:finespiritportion-numnum"] = 850,
+                ["wildcraftfruit:finespiritportion-seamango"] = 800,
+                ["wildcraftfruit:finespiritportion-coralbead"] = 700,
+                ["wildcraftfruit:finespiritportion-pilo"] = 850,
+                ["wildcraftfruit:finespiritportion-mingimingi"] = 850,
+                ["wildcraftfruit:finespiritportion-fractureberry"] = 840
+            }
+        },
             new()
             {
                 Code = "wildcraftfruit:juiceportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 800,
-                    ["wildcraftfruit:juiceportion-watermelon"] = 1000
+                    ["*"] = 900,
+                    ["wildcraftfruit:juiceportion-juniper"] = 950,
+                    ["wildcraftfruit:juiceportion-avocado"] = 850,
+                    ["wildcraftfruit:juiceportion-sumac"] = 1100,
+                    ["wildcraftfruit:juiceportion-illawarra"] = 1100,
+                    ["wildcraftfruit:juiceportion-creepingpine"] = 1000,
+                    ["wildcraftfruit:juiceportion-pandanbits"] = 1100,
+                    ["wildcraftfruit:juiceportion-maritabits"] = 1100,
+                    ["wildcraftfruit:juiceportion-crowseye"] = 1000,
+                    ["wildcraftfruit:juiceportion-kakaha"] = 1050,
+                    ["wildcraftfruit:juiceportion-flaxlily"] = 1050,
+                    ["wildcraftfruit:juiceportion-engkala"] = 1100,
+                    ["wildcraftfruit:juiceportion-kawakawa"] = 1050,
+                    ["wildcraftfruit:juiceportion-baneberry"] = 900,
+                    ["wildcraftfruit:juiceportion-gooseberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-blackgrape"] = 1250,
+                    ["wildcraftfruit:juiceportion-redgrape"] = 1250,
+                    ["wildcraftfruit:juiceportion-whitegrape"] = 1250,
+                    ["wildcraftfruit:juiceportion-foxgrape"] = 1200,
+                    ["wildcraftfruit:juiceportion-virgingrape"] = 1200,
+                    ["wildcraftfruit:juiceportion-strawberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-gardenstrawberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-falsestrawberry"] = 1000,
+                    ["wildcraftfruit:juiceportion-raspberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-blueraspberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-brambleberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-dewberry"] = 1050,
+                    ["wildcraftfruit:juiceportion-cloudberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-knyazberry"] = 1150,
+                    ["wildcraftfruit:juiceportion-bushlawyer"] = 1000,
+                    ["wildcraftfruit:juiceportion-dogrose"] = 1050,
+                    ["wildcraftfruit:juiceportion-hawthorn"] = 1000,
+                    ["wildcraftfruit:juiceportion-rowanberry"] = 1000,
+                    ["wildcraftfruit:juiceportion-sorb"] = 1050,
+                    ["wildcraftfruit:juiceportion-aronia"] = 1000,
+                    ["wildcraftfruit:juiceportion-crabapple"] = 1150,
+                    ["wildcraftfruit:juiceportion-sandpear"] = 1250,
+                    ["wildcraftfruit:juiceportion-quince"] = 1100,
+                    ["wildcraftfruit:juiceportion-loquat"] = 1150,
+                    ["wildcraftfruit:juiceportion-apricot"] = 1200,
+                    ["wildcraftfruit:juiceportion-sloe"] = 1000,
+                    ["wildcraftfruit:juiceportion-purpleplum"] = 1150,
+                    ["wildcraftfruit:juiceportion-greengage"] = 1150,
+                    ["wildcraftfruit:juiceportion-cherryplum"] = 1150,
+                    ["wildcraftfruit:juiceportion-sallowthorn"] = 1000,
+                    ["wildcraftfruit:juiceportion-jujube"] = 1000,
+                    ["wildcraftfruit:juiceportion-fig"] = 1150,
+                    ["wildcraftfruit:juiceportion-falseorange"] = 1200,
+                    ["wildcraftfruit:juiceportion-jackfruit"] = 1050,
+                    ["wildcraftfruit:juiceportion-cempedak"] = 1050,
+                    ["wildcraftfruit:juiceportion-silvernettle"] = 1000,
+                    ["wildcraftfruit:juiceportion-cucumber"] = 1250,
+                    ["wildcraftfruit:juiceportion-muskmelon"] = 1300,
+                    ["wildcraftfruit:juiceportion-honeydewmelon"] = 1300,
+                    ["wildcraftfruit:juiceportion-mirzamelon"] = 1300,
+                    ["wildcraftfruit:juiceportion-watermelon"] = 1300,
+                    ["wildcraftfruit:juiceportion-bryony"] = 900,
+                    ["wildcraftfruit:juiceportion-passionfruit"] = 1150,
+                    ["wildcraftfruit:juiceportion-granadilla"] = 1150,
+                    ["wildcraftfruit:juiceportion-achacha"] = 1150,
+                    ["wildcraftfruit:juiceportion-spindle"] = 900,
+                    ["wildcraftfruit:juiceportion-ugni"] = 1050,
+                    ["wildcraftfruit:juiceportion-midyimberry"] = 1050,
+                    ["wildcraftfruit:juiceportion-munthari"] = 1050,
+                    ["wildcraftfruit:juiceportion-guajava"] = 1200,
+                    ["wildcraftfruit:juiceportion-feijoa"] = 1200,
+                    ["wildcraftfruit:juiceportion-roseapple"] = 1200,
+                    ["wildcraftfruit:juiceportion-lillypillypink"] = 1100,
+                    ["wildcraftfruit:juiceportion-bluetongue"] = 1100,
+                    ["wildcraftfruit:juiceportion-turkscap"] = 1000,
+                    ["wildcraftfruit:juiceportion-cocoa"] = 1050,
+                    ["wildcraftfruit:juiceportion-wolfberry"] = 1000,
+                    ["wildcraftfruit:juiceportion-caperberry"] = 1000,
+                    ["wildcraftfruit:juiceportion-rambutan"] = 1250,
+                    ["wildcraftfruit:juiceportion-citron"] = 1200,
+                    ["wildcraftfruit:juiceportion-pomelo"] = 1300,
+                    ["wildcraftfruit:juiceportion-grapefruit"] = 1300,
+                    ["wildcraftfruit:juiceportion-lime"] = 1250,
+                    ["wildcraftfruit:juiceportion-fingerlime"] = 1250,
+                    ["wildcraftfruit:juiceportion-kumquat"] = 1150,
+                    ["wildcraftfruit:juiceportion-lemonaspen"] = 1200,
+                    ["wildcraftfruit:juiceportion-cashewapple"] = 1300,
+                    ["wildcraftfruit:juiceportion-wani"] = 1250,
+                    ["wildcraftfruit:juiceportion-redquandong"] = 1150,
+                    ["wildcraftfruit:juiceportion-rubysaltbush"] = 1000,
+                    ["wildcraftfruit:juiceportion-pokeberry"] = 900,
+                    ["wildcraftfruit:juiceportion-bunchberry"] = 1050,
+                    ["wildcraftfruit:juiceportion-bearberry"] = 1000,
+                    ["wildcraftfruit:juiceportion-cheeseberry"] = 1050,
+                    ["wildcraftfruit:juiceportion-pineheath"] = 1000,
+                    ["wildcraftfruit:juiceportion-pricklyheath"] = 1000,
+                    ["wildcraftfruit:juiceportion-honeypots"] = 1000,
+                    ["wildcraftfruit:juiceportion-crowberry"] = 1000,
+                    ["wildcraftfruit:juiceportion-lingonberry"] = 1050,
+                    ["wildcraftfruit:juiceportion-huckleberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-kiwi"] = 1200,
+                    ["wildcraftfruit:juiceportion-kolomikta"] = 1150,
+                    ["wildcraftfruit:juiceportion-woodbine"] = 1050,
+                    ["wildcraftfruit:juiceportion-honeysuckle"] = 900,
+                    ["wildcraftfruit:juiceportion-snowberry"] = 900,
+                    ["wildcraftfruit:juiceportion-blackelder"] = 1100,
+                    ["wildcraftfruit:juiceportion-elderberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-ivy"] = 850,
+                    ["wildcraftfruit:juiceportion-hairyappleberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-purpleappleberry"] = 1100,
+                    ["wildcraftfruit:juiceportion-blacknightshade"] = 950,
+                    ["wildcraftfruit:juiceportion-blacknightshadeunripe"] = 900,
+                    ["wildcraftfruit:juiceportion-bitternightshade"] = 900,
+                    ["wildcraftfruit:juiceportion-naranjilla"] = 1250,
+                    ["wildcraftfruit:juiceportion-belladonna"] = 800,
+                    ["wildcraftfruit:juiceportion-husktomato"] = 1100,
+                    ["wildcraftfruit:juiceportion-beautyberry"] = 1000,
+                    ["wildcraftfruit:juiceportion-numnum"] = 1050,
+                    ["wildcraftfruit:juiceportion-seamango"] = 900,
+                    ["wildcraftfruit:juiceportion-coralbead"] = 800,
+                    ["wildcraftfruit:juiceportion-pilo"] = 1050,
+                    ["wildcraftfruit:juiceportion-mingimingi"] = 1050,
+                    ["wildcraftfruit:juiceportion-fractureberry"] = 1000
                 }
             },
             new()
@@ -2220,7 +2591,122 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "wildcraftfruit:ciderportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 400
+                    ["*"] = 800,
+                    ["wildcraftfruit:ciderportion-juniper"] = 775,
+                    ["wildcraftfruit:ciderportion-avocado"] = 650,
+                    ["wildcraftfruit:ciderportion-sumac"] = 825,
+                    ["wildcraftfruit:ciderportion-pomace"] = 300,
+                    ["wildcraftfruit:ciderportion-illawarra"] = 800,
+                    ["wildcraftfruit:ciderportion-creepingpine"] = 775,
+                    ["wildcraftfruit:ciderportion-pandanbits"] = 800,
+                    ["wildcraftfruit:ciderportion-maritabits"] = 800,
+                    ["wildcraftfruit:ciderportion-crowseye"] = 775,
+                    ["wildcraftfruit:ciderportion-kakaha"] = 800,
+                    ["wildcraftfruit:ciderportion-flaxlily"] = 790,
+                    ["wildcraftfruit:ciderportion-engkala"] = 825,
+                    ["wildcraftfruit:ciderportion-kawakawa"] = 790,
+                    ["wildcraftfruit:ciderportion-baneberry"] = 700,
+                    ["wildcraftfruit:ciderportion-gooseberry"] = 800,
+                    ["wildcraftfruit:ciderportion-blackgrape"] = 850,
+                    ["wildcraftfruit:ciderportion-redgrape"] = 850,
+                    ["wildcraftfruit:ciderportion-whitegrape"] = 850,
+                    ["wildcraftfruit:ciderportion-foxgrape"] = 825,
+                    ["wildcraftfruit:ciderportion-virgingrape"] = 825,
+                    ["wildcraftfruit:ciderportion-strawberry"] = 800,
+                    ["wildcraftfruit:ciderportion-gardenstrawberry"] = 800,
+                    ["wildcraftfruit:ciderportion-falsestrawberry"] = 775,
+                    ["wildcraftfruit:ciderportion-raspberry"] = 800,
+                    ["wildcraftfruit:ciderportion-blueraspberry"] = 800,
+                    ["wildcraftfruit:ciderportion-brambleberry"] = 800,
+                    ["wildcraftfruit:ciderportion-dewberry"] = 775,
+                    ["wildcraftfruit:ciderportion-cloudberry"] = 800,
+                    ["wildcraftfruit:ciderportion-knyazberry"] = 825,
+                    ["wildcraftfruit:ciderportion-bushlawyer"] = 775,
+                    ["wildcraftfruit:ciderportion-dogrose"] = 775,
+                    ["wildcraftfruit:ciderportion-hawthorn"] = 750,
+                    ["wildcraftfruit:ciderportion-rowanberry"] = 750,
+                    ["wildcraftfruit:ciderportion-sorb"] = 775,
+                    ["wildcraftfruit:ciderportion-aronia"] = 750,
+                    ["wildcraftfruit:ciderportion-crabapple"] = 800,
+                    ["wildcraftfruit:ciderportion-sandpear"] = 825,
+                    ["wildcraftfruit:ciderportion-quince"] = 800,
+                    ["wildcraftfruit:ciderportion-loquat"] = 800,
+                    ["wildcraftfruit:ciderportion-apricot"] = 800,
+                    ["wildcraftfruit:ciderportion-sloe"] = 750,
+                    ["wildcraftfruit:ciderportion-purpleplum"] = 800,
+                    ["wildcraftfruit:ciderportion-greengage"] = 800,
+                    ["wildcraftfruit:ciderportion-cherryplum"] = 800,
+                    ["wildcraftfruit:ciderportion-sallowthorn"] = 750,
+                    ["wildcraftfruit:ciderportion-jujube"] = 760,
+                    ["wildcraftfruit:ciderportion-fig"] = 800,
+                    ["wildcraftfruit:ciderportion-falseorange"] = 800,
+                    ["wildcraftfruit:ciderportion-jackfruit"] = 775,
+                    ["wildcraftfruit:ciderportion-cempedak"] = 775,
+                    ["wildcraftfruit:ciderportion-silvernettle"] = 760,
+                    ["wildcraftfruit:ciderportion-cucumber"] = 850,
+                    ["wildcraftfruit:ciderportion-muskmelon"] = 900,
+                    ["wildcraftfruit:ciderportion-honeydewmelon"] = 900,
+                    ["wildcraftfruit:ciderportion-mirzamelon"] = 900,
+                    ["wildcraftfruit:ciderportion-watermelon"] = 900,
+                    ["wildcraftfruit:ciderportion-bryony"] = 700,
+                    ["wildcraftfruit:ciderportion-passionfruit"] = 800,
+                    ["wildcraftfruit:ciderportion-granadilla"] = 800,
+                    ["wildcraftfruit:ciderportion-achacha"] = 800,
+                    ["wildcraftfruit:ciderportion-spindle"] = 700,
+                    ["wildcraftfruit:ciderportion-ugni"] = 775,
+                    ["wildcraftfruit:ciderportion-midyimberry"] = 775,
+                    ["wildcraftfruit:ciderportion-munthari"] = 775,
+                    ["wildcraftfruit:ciderportion-guajava"] = 800,
+                    ["wildcraftfruit:ciderportion-feijoa"] = 800,
+                    ["wildcraftfruit:ciderportion-roseapple"] = 825,
+                    ["wildcraftfruit:ciderportion-bluetongue"] = 800,
+                    ["wildcraftfruit:ciderportion-turkscap"] = 760,
+                    ["wildcraftfruit:ciderportion-cocoa"] = 775,
+                    ["wildcraftfruit:ciderportion-wolfberry"] = 760,
+                    ["wildcraftfruit:ciderportion-caperberry"] = 760,
+                    ["wildcraftfruit:ciderportion-rambutan"] = 825,
+                    ["wildcraftfruit:ciderportion-citron"] = 800,
+                    ["wildcraftfruit:ciderportion-pomelo"] = 850,
+                    ["wildcraftfruit:ciderportion-grapefruit"] = 850,
+                    ["wildcraftfruit:ciderportion-lime"] = 825,
+                    ["wildcraftfruit:ciderportion-fingerlime"] = 825,
+                    ["wildcraftfruit:ciderportion-kumquat"] = 800,
+                    ["wildcraftfruit:ciderportion-lemonaspen"] = 800,
+                    ["wildcraftfruit:ciderportion-cashewapple"] = 900,
+                    ["wildcraftfruit:ciderportion-wani"] = 825,
+                    ["wildcraftfruit:ciderportion-redquandong"] = 800,
+                    ["wildcraftfruit:ciderportion-rubysaltbush"] = 760,
+                    ["wildcraftfruit:ciderportion-pokeberry"] = 700,
+                    ["wildcraftfruit:ciderportion-bunchberry"] = 775,
+                    ["wildcraftfruit:ciderportion-bearberry"] = 760,
+                    ["wildcraftfruit:ciderportion-cheeseberry"] = 775,
+                    ["wildcraftfruit:ciderportion-pineheath"] = 760,
+                    ["wildcraftfruit:ciderportion-pricklyheath"] = 760,
+                    ["wildcraftfruit:ciderportion-honeypots"] = 760,
+                    ["wildcraftfruit:ciderportion-crowberry"] = 760,
+                    ["wildcraftfruit:ciderportion-lingonberry"] = 780,
+                    ["wildcraftfruit:ciderportion-huckleberry"] = 800,
+                    ["wildcraftfruit:ciderportion-kiwi"] = 800,
+                    ["wildcraftfruit:ciderportion-kolomikta"] = 790,
+                    ["wildcraftfruit:ciderportion-woodbine"] = 775,
+                    ["wildcraftfruit:ciderportion-honeysuckle"] = 700,
+                    ["wildcraftfruit:ciderportion-snowberry"] = 700,
+                    ["wildcraftfruit:ciderportion-blackelder"] = 800,
+                    ["wildcraftfruit:ciderportion-elderberry"] = 800,
+                    ["wildcraftfruit:ciderportion-ivy"] = 650,
+                    ["wildcraftfruit:ciderportion-hairyappleberry"] = 800,
+                    ["wildcraftfruit:ciderportion-purpleappleberry"] = 800,
+                    ["wildcraftfruit:ciderportion-blacknightshade"] = 720,
+                    ["wildcraftfruit:ciderportion-naranjilla"] = 825,
+                    ["wildcraftfruit:ciderportion-belladonna"] = 550,
+                    ["wildcraftfruit:ciderportion-husktomato"] = 800,
+                    ["wildcraftfruit:ciderportion-beautyberry"] = 775,
+                    ["wildcraftfruit:ciderportion-numnum"] = 775,
+                    ["wildcraftfruit:ciderportion-seamango"] = 700,
+                    ["wildcraftfruit:ciderportion-coralbead"] = 550,
+                    ["wildcraftfruit:ciderportion-pilo"] = 775,
+                    ["wildcraftfruit:ciderportion-mingimingi"] = 775,
+                    ["wildcraftfruit:ciderportion-fractureberry"] = 775
                 }
             },
             new()
@@ -2228,7 +2714,122 @@ public class ItemHydrationPatch : HydrationPatchBase
                 Code = "wildcraftfruit:fineciderportion-*",
                 ValueByType = new()
                 {
-                    ["*"] = 600
+                    ["*"] = 1000,
+                    ["wildcraftfruit:fineciderportion-juniper"] = 975,
+                    ["wildcraftfruit:fineciderportion-avocado"] = 850,
+                    ["wildcraftfruit:fineciderportion-sumac"] = 1025,
+                    ["wildcraftfruit:fineciderportion-pomace"] = 500,
+                    ["wildcraftfruit:fineciderportion-illawarra"] = 1000,
+                    ["wildcraftfruit:fineciderportion-creepingpine"] = 975,
+                    ["wildcraftfruit:fineciderportion-pandanbits"] = 1000,
+                    ["wildcraftfruit:fineciderportion-maritabits"] = 1000,
+                    ["wildcraftfruit:fineciderportion-crowseye"] = 975,
+                    ["wildcraftfruit:fineciderportion-kakaha"] = 1000,
+                    ["wildcraftfruit:fineciderportion-flaxlily"] = 990,
+                    ["wildcraftfruit:fineciderportion-engkala"] = 1025,
+                    ["wildcraftfruit:fineciderportion-kawakawa"] = 990,
+                    ["wildcraftfruit:fineciderportion-baneberry"] = 900,
+                    ["wildcraftfruit:fineciderportion-gooseberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-blackgrape"] = 1050,
+                    ["wildcraftfruit:fineciderportion-redgrape"] = 1050,
+                    ["wildcraftfruit:fineciderportion-whitegrape"] = 1050,
+                    ["wildcraftfruit:fineciderportion-foxgrape"] = 1025,
+                    ["wildcraftfruit:fineciderportion-virgingrape"] = 1025,
+                    ["wildcraftfruit:fineciderportion-strawberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-gardenstrawberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-falsestrawberry"] = 975,
+                    ["wildcraftfruit:fineciderportion-raspberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-blueraspberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-brambleberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-dewberry"] = 975,
+                    ["wildcraftfruit:fineciderportion-cloudberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-knyazberry"] = 1025,
+                    ["wildcraftfruit:fineciderportion-bushlawyer"] = 975,
+                    ["wildcraftfruit:fineciderportion-dogrose"] = 975,
+                    ["wildcraftfruit:fineciderportion-hawthorn"] = 950,
+                    ["wildcraftfruit:fineciderportion-rowanberry"] = 950,
+                    ["wildcraftfruit:fineciderportion-sorb"] = 975,
+                    ["wildcraftfruit:fineciderportion-aronia"] = 950,
+                    ["wildcraftfruit:fineciderportion-crabapple"] = 1000,
+                    ["wildcraftfruit:fineciderportion-sandpear"] = 1025,
+                    ["wildcraftfruit:fineciderportion-quince"] = 1000,
+                    ["wildcraftfruit:fineciderportion-loquat"] = 1000,
+                    ["wildcraftfruit:fineciderportion-apricot"] = 1000,
+                    ["wildcraftfruit:fineciderportion-sloe"] = 950,
+                    ["wildcraftfruit:fineciderportion-purpleplum"] = 1000,
+                    ["wildcraftfruit:fineciderportion-greengage"] = 1000,
+                    ["wildcraftfruit:fineciderportion-cherryplum"] = 1000,
+                    ["wildcraftfruit:fineciderportion-sallowthorn"] = 950,
+                    ["wildcraftfruit:fineciderportion-jujube"] = 960,
+                    ["wildcraftfruit:fineciderportion-fig"] = 1000,
+                    ["wildcraftfruit:fineciderportion-falseorange"] = 1000,
+                    ["wildcraftfruit:fineciderportion-jackfruit"] = 975,
+                    ["wildcraftfruit:fineciderportion-cempedak"] = 975,
+                    ["wildcraftfruit:fineciderportion-silvernettle"] = 960,
+                    ["wildcraftfruit:fineciderportion-cucumber"] = 1050,
+                    ["wildcraftfruit:fineciderportion-muskmelon"] = 1100,
+                    ["wildcraftfruit:fineciderportion-honeydewmelon"] = 1100,
+                    ["wildcraftfruit:fineciderportion-mirzamelon"] = 1100,
+                    ["wildcraftfruit:fineciderportion-watermelon"] = 1100,
+                    ["wildcraftfruit:fineciderportion-bryony"] = 900,
+                    ["wildcraftfruit:fineciderportion-passionfruit"] = 1000,
+                    ["wildcraftfruit:fineciderportion-granadilla"] = 1000,
+                    ["wildcraftfruit:fineciderportion-achacha"] = 1000,
+                    ["wildcraftfruit:fineciderportion-spindle"] = 900,
+                    ["wildcraftfruit:fineciderportion-ugni"] = 975,
+                    ["wildcraftfruit:fineciderportion-midyimberry"] = 975,
+                    ["wildcraftfruit:fineciderportion-munthari"] = 975,
+                    ["wildcraftfruit:fineciderportion-guajava"] = 1000,
+                    ["wildcraftfruit:fineciderportion-feijoa"] = 1000,
+                    ["wildcraftfruit:fineciderportion-roseapple"] = 1025,
+                    ["wildcraftfruit:fineciderportion-bluetongue"] = 1000,
+                    ["wildcraftfruit:fineciderportion-turkscap"] = 960,
+                    ["wildcraftfruit:fineciderportion-cocoa"] = 975,
+                    ["wildcraftfruit:fineciderportion-wolfberry"] = 960,
+                    ["wildcraftfruit:fineciderportion-caperberry"] = 960,
+                    ["wildcraftfruit:fineciderportion-rambutan"] = 1025,
+                    ["wildcraftfruit:fineciderportion-citron"] = 1000,
+                    ["wildcraftfruit:fineciderportion-pomelo"] = 1050,
+                    ["wildcraftfruit:fineciderportion-grapefruit"] = 1050,
+                    ["wildcraftfruit:fineciderportion-lime"] = 1025,
+                    ["wildcraftfruit:fineciderportion-fingerlime"] = 1025,
+                    ["wildcraftfruit:fineciderportion-kumquat"] = 1000,
+                    ["wildcraftfruit:fineciderportion-lemonaspen"] = 1000,
+                    ["wildcraftfruit:fineciderportion-cashewapple"] = 1100,
+                    ["wildcraftfruit:fineciderportion-wani"] = 1025,
+                    ["wildcraftfruit:fineciderportion-redquandong"] = 1000,
+                    ["wildcraftfruit:fineciderportion-rubysaltbush"] = 960,
+                    ["wildcraftfruit:fineciderportion-pokeberry"] = 900,
+                    ["wildcraftfruit:fineciderportion-bunchberry"] = 975,
+                    ["wildcraftfruit:fineciderportion-bearberry"] = 960,
+                    ["wildcraftfruit:fineciderportion-cheeseberry"] = 975,
+                    ["wildcraftfruit:fineciderportion-pineheath"] = 960,
+                    ["wildcraftfruit:fineciderportion-pricklyheath"] = 960,
+                    ["wildcraftfruit:fineciderportion-honeypots"] = 960,
+                    ["wildcraftfruit:fineciderportion-crowberry"] = 960,
+                    ["wildcraftfruit:fineciderportion-lingonberry"] = 980,
+                    ["wildcraftfruit:fineciderportion-huckleberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-kiwi"] = 1000,
+                    ["wildcraftfruit:fineciderportion-kolomikta"] = 990,
+                    ["wildcraftfruit:fineciderportion-woodbine"] = 975,
+                    ["wildcraftfruit:fineciderportion-honeysuckle"] = 900,
+                    ["wildcraftfruit:fineciderportion-snowberry"] = 900,
+                    ["wildcraftfruit:fineciderportion-blackelder"] = 1000,
+                    ["wildcraftfruit:fineciderportion-elderberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-ivy"] = 850,
+                    ["wildcraftfruit:fineciderportion-hairyappleberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-purpleappleberry"] = 1000,
+                    ["wildcraftfruit:fineciderportion-blacknightshade"] = 920,
+                    ["wildcraftfruit:fineciderportion-naranjilla"] = 1025,
+                    ["wildcraftfruit:fineciderportion-belladonna"] = 750,
+                    ["wildcraftfruit:fineciderportion-husktomato"] = 1000,
+                    ["wildcraftfruit:fineciderportion-beautyberry"] = 975,
+                    ["wildcraftfruit:fineciderportion-numnum"] = 975,
+                    ["wildcraftfruit:fineciderportion-seamango"] = 900,
+                    ["wildcraftfruit:fineciderportion-coralbead"] = 750,
+                    ["wildcraftfruit:fineciderportion-pilo"] = 975,
+                    ["wildcraftfruit:fineciderportion-mingimingi"] = 975,
+                    ["wildcraftfruit:fineciderportion-fractureberry"] = 975
                 }
             },
             new()
@@ -2270,10 +2871,66 @@ public class ItemHydrationPatch : HydrationPatchBase
             },
             new()
             {
+                Code = "wildcraftfruit:flowerwine-*",
+                ValueByType = new()
+                {
+                    ["wildcraftfruit:flowerwine-currant"] = 900,
+                    ["wildcraftfruit:flowerwine-rose"] = 875,
+                    ["wildcraftfruit:flowerwine-passionflower"] = 850,
+                    ["wildcraftfruit:flowerwine-hibiscus"] = 875,
+                    ["wildcraftfruit:flowerwine-honeysuckle"] = 850,
+                    ["wildcraftfruit:flowerwine-elder"] = 900
+                }
+            },
+            new()
+            {
                 Code = "wildcraftfruit:lemonade-*",
                 ValueByType = new()
                 {
-                    ["*"] = 850
+                    ["wildcraftfruit:lemonade-orange"] = 1500,
+                    ["wildcraftfruit:lemonade-citron"] = 1480,
+                    ["wildcraftfruit:lemonade-pomelo"] = 1550,
+                    ["wildcraftfruit:lemonade-grapefruit"] = 1550,
+                    ["wildcraftfruit:lemonade-lime"] = 1500,
+                    ["wildcraftfruit:lemonade-kumquat"] = 1475,
+                    ["wildcraftfruit:lemonade-fingerlime"] = 1475
+                }
+            },
+            new()
+            {
+                Code = "wildcraftfruit:soymilkportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 800
+                }
+            },
+            new()
+            {
+                Code = "wildcraftfruit:chocomilkportion-*",
+                ValueByType = new()
+                {
+                    ["*"] = 800
+                }
+            },
+            new()
+            {
+                Code = "wildcraftfruit:tinctureportion-*",
+                ValueByType = new()
+                {
+                    ["wildcraftfruit:tinctureportion-raspberry"] = -290,
+                    ["wildcraftfruit:tinctureportion-elderberry"] = -300,
+                    ["wildcraftfruit:tinctureportion-rosehip"] = -320,
+                    ["wildcraftfruit:tinctureportion-orange"] = -290,
+                    ["wildcraftfruit:tinctureportion-citron"] = -300,
+                    ["wildcraftfruit:tinctureportion-lime"] = -305,
+                    ["wildcraftfruit:tinctureportion-grapefruit"] = -315,
+                    ["wildcraftfruit:tinctureportion-ivy"] = -380,
+                    ["wildcraftfruit:tinctureportion-aronia"] = -330,
+                    ["wildcraftfruit:tinctureportion-bearberry"] = -340,
+                    ["wildcraftfruit:tinctureportion-passionflower"] = -300,
+                    ["wildcraftfruit:tinctureportion-cloudberry"] = -280,
+                    ["wildcraftfruit:tinctureportion-hawthorn"] = -310,
+                    ["wildcraftfruit:tinctureportion-juniper"] = -320
                 }
             },
             new()
@@ -2388,7 +3045,7 @@ public class ItemHydrationPatch : HydrationPatchBase
                     ["*"] = -5,
                     ["saltandsands:bivalvemeat-freshwatermussel-*"] = 20
                 }
-            },
+            }
         ]
     };
 }
