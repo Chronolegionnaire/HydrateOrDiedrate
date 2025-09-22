@@ -68,8 +68,8 @@ public static partial class RecipeGenerator
 
             foreach(var toCode in toCodes)
             {
-                var newRecipe = cookingRecipe.Clone();
-                newRecipe.Name = newRecipe.Name.Clone();
+                if(!cookingRecipe.TryClone(out var newRecipe)) continue;
+                newRecipe.Name = newRecipe.Name?.Clone();
                 ModifyRecipeName(newRecipe.Name, toCode);
                 ReplaceCodes(world, newRecipe.Ingredients, matches, toCode);
                 if(!newRecipe.Resolve(world, SourceForLogging)) continue;

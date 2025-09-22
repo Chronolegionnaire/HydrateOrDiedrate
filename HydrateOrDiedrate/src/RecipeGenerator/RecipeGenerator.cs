@@ -143,6 +143,7 @@ public static partial class RecipeGenerator
     
     public static void ModifyRecipeName(AssetLocation name, AssetLocation toCode)
     {
+        if(name is null) return;
         name.Domain = toCode.Domain;
         name.Path = $"-HoD-{name.Path}-{toCode.Path}";
     }
