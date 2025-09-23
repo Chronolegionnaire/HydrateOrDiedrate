@@ -22,7 +22,7 @@ public static class HydrationManager
     public static float GetHydration(ItemStack itemStack)
     {
         var collectible = itemStack?.Collectible;
-        if (collectible is null) return 0f;
+        if (collectible?.Code is null) return 0f;
 
         if (CustomHydrationEvaluators.TryGetValue(collectible.Code, out var evaluator)) return evaluator(itemStack);
 
