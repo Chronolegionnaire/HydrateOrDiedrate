@@ -334,7 +334,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
         if (WellBlockUtils.FluidIsLiquid(ba, checkPos))
         {
-            if (TryFillBucketAtPos(checkPos))
+            if (Api.Side == EnumAppSide.Server && TryFillBucketAtPos(checkPos))
             {
                 Api.World.PlaySoundAt(
                     WaterFillSound,
