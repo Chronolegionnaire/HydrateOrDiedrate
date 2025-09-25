@@ -250,16 +250,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         return null;
     }
 
-    //TODO REMOVE
-    private bool BucketIsEmpty()
-    {
-        if (InputSlot.Empty) return false;
-        if (!InputSlot.Itemstack.Attributes.HasAttribute("contents")) return true;
-
-        ITreeAttribute contents = InputSlot.Itemstack.Attributes.GetTreeAttribute("contents");
-        return contents is null || contents.GetItemstack("0") is null;
-    }
-
     public bool TryStartTurning(IPlayer player)
     {
         if(ConnectedToMechanicalNetwork || InputSlot.Empty || (RotationPlayer is not null)) return false;
