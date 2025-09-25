@@ -77,10 +77,10 @@ namespace HydrateOrDiedrate.Wells.WellWater
             }
         }
 
-        public void ChangeFluid(int blockId, bool keepVolume = true)
+        public void ChangeFluid(int newFluidBlockId, bool keepVolume = true)
         {
             var blockAccessor = Api.World.BlockAccessor;
-            blockAccessor.SetFluid(blockId, Pos);
+            blockAccessor.SetFluid(newFluidBlockId, Pos);
             if(keepVolume && blockAccessor.GetBlockEntity(Pos) is BlockEntityWellWaterData newBE)
             {
                 newBE.Volume = Volume;
