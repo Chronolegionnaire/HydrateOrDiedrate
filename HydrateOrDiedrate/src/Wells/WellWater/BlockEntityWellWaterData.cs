@@ -76,7 +76,20 @@ namespace HydrateOrDiedrate.Wells.WellWater
                 MarkDirty(true);
             }
         }
+
+        public void ChangeFluid(int newFluidBlockId, bool keepVolume = true)
+        {
+            var blockAccessor = Api.World.BlockAccessor;
+            blockAccessor.SetFluid(newFluidBlockId, Pos);
+            if(keepVolume && blockAccessor.GetBlockEntity(Pos) is BlockEntityWellWaterData newBE)
+            {
+                newBE.Volume = Volume;
+                newBE.MarkDirty();
+            }
+        }
+
         private static int GetHeightForVolume(int vol) => Math.Min(7, (vol - 1) / 10 + 1);
+        
         private static int GetVolumeForHeight(int height) => height * 10 - 9;
 
         private void ChangeBlockHeight(Block currentBlock, int newHeight)
@@ -88,7 +101,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
             if (newBlock is null || newBlock == currentBlock) return;
 
-            Api.World.BlockAccessor.SetFluid(newBlock.BlockId, Pos);
+            ChangeFluid(newBlock.BlockId);
             NotifyNeighborsOfHeightChange();
         }
 
@@ -156,7 +169,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
                 Block currentBlock = ba.GetFluid(Pos);
                 if (IsValidNaturalWellWaterBlock(currentBlock))
                 {
-                    ba.SetFluid(0, Pos);
+                    ChangeFluid(0, false);
                 }
             }
         }
@@ -304,13 +317,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
                 Block newBlock = Api.World.GetBlock(newBlockCode);
                 if (newBlock == null || newBlock == currentBlock) return;
 
-                ba.SetFluid(newBlock.BlockId, Pos);
-                if (ba.GetBlockEntity(Pos) is BlockEntityWellWaterData newWaterData)
-                {
-                    newWaterData.Volume = volume;
-                    newWaterData.MarkDirty(true);
-                }
-
+                ChangeFluid(newBlock.BlockId);
                 return;
             }
         }
@@ -357,18 +364,11 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
             ba.SetFluid(naturalBlock.BlockId, belowPos);
 
-            var be = ba.GetBlockEntity(belowPos) as BlockEntityWellWaterData;
-            if (be == null)
+            if(ba.GetBlockEntity(belowPos) is BlockEntityWellWaterData be)
             {
-                Api.World.BlockAccessor.MarkBlockEntityDirty(belowPos);
-                be = ba.GetBlockEntity(belowPos) as BlockEntityWellWaterData;
-            }
-            if (be != null)
-            {
-                be.Volume = Math.Min(volume, be.Volume + volume);
+                be.Volume = volume;
                 be.MarkDirty(true);
             }
-
             Volume = 0;
             return true;
         }
@@ -397,12 +397,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
             Block newBlock = Api.World.GetBlock(newBlockCode);
             if (newBlock == null || newBlock == currentBlock) return;
 
-            Api.World.BlockAccessor.SetFluid(newBlock.BlockId, Pos);
-            if (Api.World.BlockAccessor.GetBlockEntity(Pos) is BlockEntityWellWaterData newWaterData)
-            {
-                newWaterData.Volume = volume;
-                newWaterData.MarkDirty(true);
-            }
+            ChangeFluid(newBlock.Id);
         }
 
         public override void OnExchanged(Block block)
