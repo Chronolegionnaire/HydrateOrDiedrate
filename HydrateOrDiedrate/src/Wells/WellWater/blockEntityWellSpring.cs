@@ -201,8 +201,9 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
     private void OnPeriodicShaftCheck(float dt)
     {
-        cachedRingMaterial = CheckBaseRingMaterial(Api.World.BlockAccessor, Pos);
-        partialValidatedHeight = CheckColumnForMaterial(Api.World.BlockAccessor, Pos, cachedRingMaterial);
+        var pos = Pos.UpCopy();
+        cachedRingMaterial = CheckBaseRingMaterial(Api.World.BlockAccessor, pos);
+        partialValidatedHeight = CheckColumnForMaterial(Api.World.BlockAccessor, pos, cachedRingMaterial);
         MarkDirty();
     }
 
@@ -299,7 +300,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         for (int i = 0; i < sidesToCheck.Length; i++)
         {
             sidesToCheck[i].IterateThruFacingOffsets(pos);
-            var ringMaterial = GetRingMaterial(blockAccessor.GetBlock(blockPos));
+            var ringMaterial = GetRingMaterial(blockAccessor.GetBlock(pos));
             result ??= ringMaterial;
             if(ringMaterial == "none" || result != ringMaterial) return "none";
         }
