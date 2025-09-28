@@ -62,6 +62,7 @@ public class BlockWinch : BlockMPBase
         var existingLiters = targetContainer.GetCurrentLitres(target);
         var remainingSpace = targetContainer.CapacityLitres - existingLiters;
         if(remainingSpace <= 0) return false;
+        remainingSpace *= target.StackSize;
 
         var existingContent = targetContainer.GetContent(target);
         var newContent = sourceContainer.GetContent(source);
@@ -69,6 +70,7 @@ public class BlockWinch : BlockMPBase
 
         var addedLiquid = sourceContainer.TryTakeLiquid(source, remainingSpace);
         if(addedLiquid is null) return false;
+        addedLiquid.StackSize /= target.StackSize;
         if(existingContent is not null) addedLiquid.StackSize += existingContent.StackSize;
 
         targetContainer.SetContent(target, addedLiquid);
