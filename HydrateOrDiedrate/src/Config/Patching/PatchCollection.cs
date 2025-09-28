@@ -47,7 +47,11 @@ public class PatchCollection<T> where T : PatchBase
             {
                 result = defaultConfig;
             }
-            else result.MergeMissing(defaultConfig);
+            else
+            {
+                result.Patches = [.. result.Patches.Where(static patch => patch is not null)];
+                result.MergeMissing(defaultConfig);
+            }
 
             api.StoreModConfig(result, path);
         }
