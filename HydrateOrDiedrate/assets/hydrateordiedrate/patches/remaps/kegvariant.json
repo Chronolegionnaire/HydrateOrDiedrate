@@ -1,0 +1,11 @@
+[
+  {
+    "file": "game:config/remaps.json",
+    "op": "addmerge",
+    "path": "/hydrateordiedrate:2.2.20",
+    "value": [
+      "/bir remapq hydrateordiedrate:kegtapped hydrateordiedrate:keg-tapped",
+      "/bir remapq hydrateordiedrate:keg hydrateordiedrate:keg-untapped"
+    ]
+  }
+]

@@ -86,7 +86,7 @@
     "graphicCode": "hydrateordiedrate:kegtapped",
     "criteriaType": "CreateAnyFromGridRecipe",
     "criteriaData": [
-      "hydrateordiedrate:keg"
+      "hydrateordiedrate:keg-*"
     ]
   },
   {

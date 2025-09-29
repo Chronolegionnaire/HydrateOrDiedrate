@@ -27,7 +27,7 @@ public class BlockEntityKeg : BlockEntityLiquidContainer
     {
         if (inventory is null) return;
 
-        var isTapped = Block.Code.Path == "kegtapped";
+        var isTapped = Block.Code.Path == "keg-tapped";
         
         //Note: sadly TakeLocked is not fully respected by liquid container code so we still need to overwrite some other methods
         inventory.TakeLocked = !isTapped;

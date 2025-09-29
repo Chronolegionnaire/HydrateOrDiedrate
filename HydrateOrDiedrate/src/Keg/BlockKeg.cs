@@ -42,7 +42,7 @@ public class BlockKeg : BlockLiquidContainerBase
             return true;
         }
         
-        if(Code.Path != "kegtapped")
+        if(Code.Path != "keg-tapped")
         {
             ItemStack heldItem = byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack;
             if (heldItem?.Collectible is ItemKegTap && byPlayer.InventoryManager.OffhandTool == EnumTool.Hammer)
@@ -80,7 +80,7 @@ public class BlockKeg : BlockLiquidContainerBase
             return secondsUsed < requiredActionTime;
         }
 
-        if (Code.Path != "kegtapped" && byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack?.Collectible is ItemKegTap && byPlayer.InventoryManager.OffhandTool == EnumTool.Hammer)
+        if (Code.Path != "keg-tapped" && byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack?.Collectible is ItemKegTap && byPlayer.InventoryManager.OffhandTool == EnumTool.Hammer)
         {
             if (secondsUsed >= playNextSound)
             {
@@ -110,11 +110,11 @@ public class BlockKeg : BlockLiquidContainerBase
         }
 
         //finish tapping animation
-        if (Code.Path != "kegtapped" && byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack?.Collectible is ItemKegTap && byPlayer.InventoryManager.OffhandTool == EnumTool.Hammer)
+        if (Code.Path != "keg-tapped" && byPlayer.InventoryManager.ActiveHotbarSlot?.Itemstack?.Collectible is ItemKegTap && byPlayer.InventoryManager.OffhandTool == EnumTool.Hammer)
         {
             if(secondsUsed >= requiredActionTime)
             {
-                Block tappedKegBlock = world.GetBlock(new AssetLocation("hydrateordiedrate", "kegtapped"));
+                Block tappedKegBlock = world.GetBlock(new AssetLocation("hydrateordiedrate", "keg-tapped"));
 
                 //Exchange block so that BlockEntity does not get removed
                 world.BlockAccessor.ExchangeBlock(tappedKegBlock.BlockId, blockSel.Position);
@@ -157,7 +157,7 @@ public class BlockKeg : BlockLiquidContainerBase
             }
         }
 
-        if (Code.Path == "kegtapped" && random.NextDouble() < ModConfig.Instance.Containers.KegTapDropChance)
+        if (Code.Path == "keg-tapped" && random.NextDouble() < ModConfig.Instance.Containers.KegTapDropChance)
         {
             world.SpawnItemEntity(new ItemStack(world.GetItem(new AssetLocation("hydrateordiedrate", "kegtap"))), position.ToVec3d());
         }
