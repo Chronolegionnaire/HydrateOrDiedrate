@@ -8,7 +8,7 @@
       "TheInsanityGod"
     ],
     "description": "Adds a thirst and hot weather mechanic to the game.",
-    "version": "2.2.15",
+    "version": "2.2.21",
     "dependencies": {
         "game": "*"
     }

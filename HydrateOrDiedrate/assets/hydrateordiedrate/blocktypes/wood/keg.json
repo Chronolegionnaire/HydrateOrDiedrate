@@ -12,7 +12,13 @@
 		},
 		{ "name": "Lockable" }
 	],
-	"shape": { "base": "hydrateordiedrate:block/keg", "rotateY": 180 },
+	"variantgroups": [
+		{ "code": "state", "states": ["tapped", "untapped"] }
+	],
+	"shapebytype": {
+		"keg-tapped": { "base": "hydrateordiedrate:block/kegtapped", "rotateY": 180 },
+		"keg-untapped": { "base": "hydrateordiedrate:block/keg", "rotateY": 180 }
+	},
 	"textures": {
 		"blackbronze4": { "base": "game:block/metal/sheet/blackbronze4" },
 		"bottom": { "base": "game:block/wood/barrel/bottom" },
