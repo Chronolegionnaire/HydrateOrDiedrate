@@ -5,15 +5,19 @@ using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate;
 
 public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity)
 {
+    private StoryStructuresSpawnConditions storySys;
 
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
         base.Initialize(properties, attributes);
+        storySys = entity.Api.ModLoader.GetModSystem<StoryStructuresSpawnConditions>(false);
         InitThirstAttributes();
         UpdateMovementPenalty();
     }
@@ -168,6 +172,10 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
 
         thirstDecayRate = Math.Min(thirstDecayRate, config.ThirstDecayRate * config.ThirstDecayRateMax);
 
+        if(storySys?.GetStoryStructureAt(entity.SidedPos.AsBlockPos) is not null)
+        {
+            thirstDecayRate *= GameMath.Clamp(ModConfig.Instance.Thirst.ThirstRateAtStoryLocations, 0, 2);
+        }
 
         if (entity.World.ElapsedMilliseconds - lastMoveMs > 3000L) thirstDecayRate *= config.IdleThirstModifier;
 

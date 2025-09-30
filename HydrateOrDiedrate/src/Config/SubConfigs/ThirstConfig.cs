@@ -111,4 +111,13 @@ public class ThirstConfig
     [Range(0d, 1d)]
     [DefaultValue(0.5f)]
     public float ThirstPercentageOnRespawn { get; set; } = 0.5f;
+    
+    /// <summary>
+    /// How much thirst is effected in story locations.
+    /// </summary>
+    [Category("Story")]
+    [DisplayFormat(DataFormatString = "P")]
+    [Range(0d, 2d)]
+    [DefaultValue(1.00f)]
+    public float ThirstRateAtStoryLocations { get; set; } = 1.00f;
 }
