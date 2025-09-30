@@ -83,7 +83,7 @@
   {
     "enabled": "true",
     "id": "hodplacekeg",
-    "graphicCode": "hydrateordiedrate:kegtapped",
+    "graphicCode": "hydrateordiedrate:keg-tapped",
     "criteriaType": "CreateAnyFromGridRecipe",
     "criteriaData": [
       "hydrateordiedrate:keg-*"
