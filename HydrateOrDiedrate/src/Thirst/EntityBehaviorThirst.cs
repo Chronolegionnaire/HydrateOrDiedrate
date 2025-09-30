@@ -5,15 +5,19 @@ using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate;
 
 public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity)
 {
+    private StoryStructuresSpawnConditions storySys;
 
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
         base.Initialize(properties, attributes);
+        storySys = entity.Api.ModLoader.GetModSystem<StoryStructuresSpawnConditions>(false);
         InitThirstAttributes();
         UpdateMovementPenalty();
     }
@@ -159,15 +163,29 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
             thirstDecayRate *= config.SprintThirstMultiplier;
         }
 
-        foreach(var modifier in player.SidedProperties.Behaviors.OfType<IThirstRateModifier>())
+        foreach (var modifier in player.SidedProperties.Behaviors.OfType<IThirstRateModifier>())
         {
             var newThirstDecayRate = modifier.OnThirstRateCalculate(thirstDecayRate);
-            
+
             if (float.IsFinite(newThirstDecayRate)) thirstDecayRate = newThirstDecayRate;
         }
 
         thirstDecayRate = Math.Min(thirstDecayRate, config.ThirstDecayRate * config.ThirstDecayRateMax);
 
+        if (storySys != null)
+        {
+            float storyMul = ModConfig.Instance.Thirst.ThirstRateAtStoryLocations;
+            if (storyMul < 1f && player != null)
+            {
+                var pos = player.ServerPos;
+                bool inStory = storySys.GetStoryStructureAt(new BlockPos((int)pos.X, (int)pos.Y, (int)pos.Z)) != null;
+                if (inStory)
+                {
+                    float cap = ModConfig.Instance.Thirst.ThirstDecayRate * Math.Max(0f, storyMul);
+                    if (thirstDecayRate > cap) thirstDecayRate = cap;
+                }
+            }
+        }
 
         if (entity.World.ElapsedMilliseconds - lastMoveMs > 3000L) thirstDecayRate *= config.IdleThirstModifier;
 
