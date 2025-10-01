@@ -16,24 +16,16 @@ namespace HydrateOrDiedrate.Wells.WellWater
         {
             base.Initialize(api);
             if (api.Side != EnumAppSide.Server) return;
-            tickId = RegisterGameTickListener(Tick, 1000);
+            RegisterGameTickListener(ServerTick, 1000);
         }
 
-        private void Tick(float dt)
+        private void ServerTick(float dt)
         {
             if (Api.Side != EnumAppSide.Server) return;
-            if (Api.World.BlockAccessor.GetBlockEntity(Pos) != this) return;
 
             ageSeconds += dt;
 
-            var ba = Api.World.BlockAccessor;
-            var fluid = ba.GetFluid(Pos);
-            if (!WellBlockUtils.IsOurWellwater(fluid))
-            {
-                DeleteSelf(keepFluid: true);
-                return;
-            }
-            bool hasSpring = HasGoverningSpringBelow(Pos);
+            bool hasSpring = HasGoverningSpringBelow(Pos) is not null;
 
             everSawSpring |= hasSpring;
 
@@ -50,66 +42,36 @@ namespace HydrateOrDiedrate.Wells.WellWater
             DeleteSelf(keepFluid: false);
         }
 
-        private bool HasGoverningSpringBelow(BlockPos start)
+        private BlockEntityWellSpring HasGoverningSpringBelow(BlockPos start)
         {
             var ba = Api.World.BlockAccessor;
             var scan = start.DownCopy();
             for (int i = 0; i < 64; i++)
             {
-                var be = ba.GetBlockEntity(scan);
-                if (be is WellWater.BlockEntityWellSpring) return true;
+                var be = ba.GetBlockEntity<BlockEntityWellSpring>(scan);
+                if(be is not null) return be;
                 if (!WellBlockUtils.SolidAllows(ba.GetSolid(scan))) break;
                 scan.Y--;
             }
-            return false;
+
+            return null;
         }
 
-        public bool TryGetGoverningSpring(out BlockPos springPos, out BlockEntityWellSpring spring)
-        {
-            springPos = null;
-            spring = null;
-            if (Api == null) return false;
-            var ba = Api.World.BlockAccessor;
-
-            var scan = Pos.DownCopy();
-            for (int i = 0; i < 64; i++)
-            {
-                var be = ba.GetBlockEntity(scan);
-                if (be is BlockEntityWellSpring ws)
-                {
-                    springPos = scan.Copy();
-                    spring = ws;
-                    return true;
-                }
-                if (!WellBlockUtils.SolidAllows(ba.GetSolid(scan))) break;
-                scan.Y--;
-            }
-            return false;
-        }
+        public BlockEntityWellSpring TryGetGoverningSpring() => HasGoverningSpringBelow(Pos);
 
         private void DeleteSelf(bool keepFluid)
         {
             if (Api.Side != EnumAppSide.Server) return;
 
-            UnregisterGameTickListener(tickId);
             Api.World.BlockAccessor.RemoveBlockEntity(Pos);
 
             if (!keepFluid)
             {
                 var ba = Api.World.BlockAccessor;
                 var fluid = ba.GetFluid(Pos);
-                if (WellBlockUtils.IsOurWellwater(fluid))
-                {
-                    ba.SetFluid(0, Pos);
-                    ba.TriggerNeighbourBlockUpdate(Pos);
-                }
+                ba.SetFluid(0, Pos);
+                ba.TriggerNeighbourBlockUpdate(Pos);
             }
-        }
-
-        public override void OnBlockRemoved()
-        {
-            if (Api?.Side == EnumAppSide.Server) UnregisterGameTickListener(tickId);
-            base.OnBlockRemoved();
         }
         public override void ToTreeAttributes(ITreeAttribute tree)
         {

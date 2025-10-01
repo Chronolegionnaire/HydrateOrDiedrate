@@ -32,30 +32,12 @@ public static class WellBlockUtils
     
     public static BlockEntityWellSpring FindGoverningSpring(ICoreAPI api, Block blockAtPos, BlockPos pos)
     {
-        if (api == null) return null;
+        if (api == null || pos == null) return null;
         var ba = api.World.BlockAccessor;
-
         var behavior = blockAtPos?.GetBehavior<BlockBehaviorWellWaterFinite>();
-        BlockPos probe = pos;
-        if (behavior != null)
-        {
-            var natural = behavior.FindNaturalSourceInLiquidChain(ba, pos);
-            if (natural != null) probe = natural;
-        }
-
-        var be = ba.GetBlockEntity(probe) ?? ba.GetBlockEntity(pos);
-        if (be is BlockEntityWellWaterSentinel sent &&
-            sent.TryGetGoverningSpring(out _, out var spring))
-        {
-            return spring;
-        }
-
-        if (be is BlockEntityWellWaterSentinel sent2 &&
-            sent2.TryGetGoverningSpring(out _, out var spring2))
-        {
-            return spring2;
-        }
-
-        return null;
+        BlockPos probe = behavior?.FindNaturalSourceInLiquidChain(ba, pos) ?? pos;
+        var sentinel = ba.GetBlockEntity<BlockEntityWellWaterSentinel>(probe)
+                       ?? (probe.Equals(pos) ? null : ba.GetBlockEntity<BlockEntityWellWaterSentinel>(pos));
+        return sentinel?.TryGetGoverningSpring();
     }
 }

@@ -22,15 +22,25 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     public int TotalLiters => totalVolumeLiters;
     public string CurrentPollution => currentPollution;
     public bool IsFresh => (LastWaterType?.StartsWith("fresh") ?? true);
-
-    public int TryDrainLiters(int requested)
+    private bool didInitialReconcile = false;
+    private const int reconcileIntervalMs = 5000;
+    public int TryChangeVolume(int change)
     {
-        if (requested <= 0 || totalVolumeLiters <= 0) return 0;
-        int drained = Math.Min(requested, totalVolumeLiters);
-        totalVolumeLiters -= drained;
+        if (change == 0) return 0;
+
+        int perBlockMax = GetMaxVolumeForWaterType(LastWaterType ?? "fresh-well-clean");
+        int capacity = GetRetentionDepth() * perBlockMax;
+        totalVolumeLiters = Math.Clamp(totalVolumeLiters, 0, capacity);
+        long proposed = (long)totalVolumeLiters + change;
+        int clamped = (int)Math.Clamp(proposed, 0, capacity);
+
+        int applied = clamped - totalVolumeLiters;
+        totalVolumeLiters = clamped;
+
         SyncWaterColumn();
         MarkDirty(true);
-        return drained;
+
+        return applied;
     }
     private static int HeightFromVolume(int vol) => Math.Min(7, (vol + 9) / 10);
     private static int VolumeFromHeight(int height) => Math.Min(70, height * 10);
@@ -114,16 +124,18 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     public override void Initialize(ICoreAPI api)
     {
         base.Initialize(api);
-
         if ((int)LastInGameDay == -1) LastInGameDay = api.World.Calendar.TotalDays;
-        
+
         UpdateTextureSources();
         if (api.Side != EnumAppSide.Server) return;
-        
+
         AquiferManager.AddWellSpringToChunk(api.World, Pos);
         RegisterGameTickListener(OnServerTick, updateIntervalMs);
         RegisterGameTickListener(OnPeriodicShaftCheck, 30000);
-        
+
+        ReconcileStoredVolumeWithWorld();
+        didInitialReconcile = true;
+        RegisterGameTickListener(_ => ReconcileStoredVolumeWithWorld(), reconcileIntervalMs);
         OriginBlock ??= api.World.FindMostLikelyOriginBlockFromNeighbors(Pos) ?? api.World.GetBlock(new AssetLocation("game", "rock-granite"));
         OnPeriodicShaftCheck(0);
         HandleWell(0);
@@ -174,7 +186,9 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
         int wholeLiters = (int)accumulatedWater;
         accumulatedWater -= wholeLiters;
-        AddOrAccumulateWater(wholeLiters, nearbyFresh && !nearbySalty, "muddy");
+        LastWaterType = GetWaterType(nearbyFresh && !nearbySalty, "muddy");
+        currentPollution = "muddy";
+        TryChangeVolume(wholeLiters);
     }
 
     private void HandleAquiferWell(double elapsedDays)
@@ -192,10 +206,11 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         LastDailyLiters = Math.Max(0, remainingRating * AquiferRatingToLitersOutputRatio) * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
         accumulatedWater += LastDailyLiters * elapsedDays;
         if (accumulatedWater < 1.0) return;
-
         int wholeLiters = (int)Math.Floor(accumulatedWater);
         accumulatedWater -= wholeLiters;
-        AddOrAccumulateWater(wholeLiters, !aquiferData.IsSalty);
+        LastWaterType = GetWaterType(!aquiferData.IsSalty);
+        currentPollution = "clean";
+        TryChangeVolume(wholeLiters);
     }
 
     private void HandleWell(double elapsedDays)
@@ -209,7 +224,6 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     {
         double currentInGameDays = Api.World.Calendar.TotalDays;
 
-        ReconcileStoredVolumeWithWorld();
         RunContaminationChecks();
         SyncWaterColumn();
         MarkDirty();
@@ -231,22 +245,6 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         partialValidatedHeight = CheckColumnForMaterial(Api.World.BlockAccessor, pos, cachedRingMaterial);
         MarkDirty();
     }
-    
-    private int AddOrAccumulateWater(int litersToAdd, bool isFresh = true, string pollution = "clean")
-    {
-        LastWaterType = GetWaterType(isFresh, pollution);
-        currentPollution = pollution;
-
-        int before = totalVolumeLiters;
-        totalVolumeLiters += Math.Max(0, litersToAdd);
-        int capacity = GetRetentionDepth() * GetMaxVolumeForWaterType(LastWaterType ?? "fresh-well-clean");
-        if (totalVolumeLiters > capacity) totalVolumeLiters = capacity;
-        SyncWaterColumn();
-        MarkDirty(true);
-        return Math.Max(0, litersToAdd - (totalVolumeLiters - before));
-    }
-
-    
     private static int DetermineMaxDepthBasedOnCached(string ringMat, int validatedLevels)
     {
         int baseDepth = ModConfig.Instance.GroundWater.WellwaterDepthMaxBase;
@@ -387,6 +385,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         }
         int cappedMax = retentionDepth * perBlockMax;
         if (totalVolumeLiters > cappedMax) totalVolumeLiters = cappedMax;
+        ClearExcessAboveRetention(baseCode, retentionDepth);
     }
 
     private static (bool isFresh, string pollution) ParseTypeFromFluid(Block fluid)
@@ -467,10 +466,9 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     {
         if (currentPollution != "clean" && currentPollution != "muddy") return;
 
-        if (CheckDeadEntityContaminationColumn() || CheckPoisonedItemContaminationColumn() || CheckNeighborContaminationColumn())
-        {
-            SetColumnPollution(currentPollution);
-        }
+        if (CheckDeadEntityContaminationColumn()) return;
+        if (CheckPoisonedItemContaminationColumn()) return;
+        if (CheckNeighborContaminationColumn()) return;
     }
 
     private void SetColumnPollution(string pollution)
@@ -478,7 +476,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         currentPollution = pollution;
         SyncWaterColumn();
     }
-    private bool ForEachWaterLevel(Vintagestory.API.Common.Func<BlockPos, bool> fn)
+    private bool ForEachWaterLevel(System.Func<BlockPos, Block, bool> fn)
     {
         var ba = Api.World.BlockAccessor;
         var pos = Pos.Copy();
@@ -489,10 +487,11 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             pos.Y++;
             var fluid = ba.GetFluid(pos);
             if (!WellBlockUtils.IsOurWellwater(fluid)) break;
-            if (fn(pos)) return true;
+            if (fn(pos, fluid)) return true;
         }
         return false;
     }
+
 
     private bool CheckDeadEntityContaminationColumn()
     {
@@ -500,9 +499,8 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         if (!isFresh) return false;
 
         var ba = Api.World.BlockAccessor;
-        return ForEachWaterLevel(levelPos =>
+        return ForEachWaterLevel((levelPos, block) =>
         {
-            var block = ba.GetFluid(levelPos);
             if (block == null) return false;
 
             var collBoxes = block.GetCollisionBoxes(ba, levelPos) ?? [ Cuboidf.Default() ];
@@ -543,9 +541,8 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     private bool CheckPoisonedItemContaminationColumn()
     {
         var ba = Api.World.BlockAccessor;
-        return ForEachWaterLevel(levelPos =>
+        return ForEachWaterLevel((levelPos, block) =>
         {
-            var block = ba.GetFluid(levelPos);
             if (block == null) return false;
 
             var collBoxes = block.GetCollisionBoxes(ba, levelPos) ?? [ Cuboidf.Default() ];
@@ -558,8 +555,8 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
             foreach (var box in collBoxes)
             {
-                var min = new Vec3d(levelPos.X + box.X1, levelPos.Y + box.Y1, levelPos.Z + box.Z1);
-                var max = new Vec3d(levelPos.X + box.X2, levelPos.Y + box.Y2, levelPos.Z + box.Z2);
+                var min = new Vec3d(levelPos.X + box.X1, levelPos.Y + box.Y1, levelPos.Z + box.Y1);
+                var max = new Vec3d(levelPos.X + box.X2, levelPos.Y + box.Y2, levelPos.Z + box.Y2);
 
                 foreach (var e in nearbyItems)
                 {
@@ -593,7 +590,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         var ba = Api.World.BlockAccessor;
         bool pollutedNeighborFound = false;
 
-        ForEachWaterLevel(levelPos =>
+        ForEachWaterLevel((levelPos, _block) =>
         {
             foreach (var face in BlockFacing.ALLFACES)
             {
@@ -613,6 +610,23 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         });
 
         return pollutedNeighborFound;
+    }
+    private void ClearExcessAboveRetention(string baseCode, int retentionDepth)
+    {
+        var ba = Api.World.BlockAccessor;
+        var pos = Pos.Copy();
+
+        pos.Y += retentionDepth + 1;
+        for (int i = 0; i < 64; i++)
+        {
+            var fluid = ba.GetFluid(pos);
+            if (fluid?.Code?.Path?.StartsWith(baseCode) != true) break;
+            if (!WellBlockUtils.IsOurWellwater(fluid)) break;
+
+            ba.SetFluid(0, pos);
+            ba.TriggerNeighbourBlockUpdate(pos);
+            pos.Y++;
+        }
     }
     
     public override void ToTreeAttributes(ITreeAttribute tree)

@@ -132,7 +132,6 @@ public static partial class AquiferManager
         };
 
         chunk.LiveModData[AquiferModDataKey] = chunkData;
-        chunk.SetModdata(AquiferModDataKey, chunkData);
         chunk.MarkModified();
         return true;
     }

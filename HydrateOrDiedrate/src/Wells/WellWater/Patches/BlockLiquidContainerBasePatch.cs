@@ -39,10 +39,13 @@ namespace HydrateOrDiedrate.Wells.Patches
             var item = api.World.GetItem(new AssetLocation(itemCode));
             if (item == null) return true;
 
+            if (!WellBlockUtils.IsOurWellwater(block))
+            {
+                return true;
+            }
             var spring = WellBlockUtils.FindGoverningSpring(api, block, pos);
             if (spring == null)
             {
-                // Not our well water -> let vanilla handle (and play its sounds)
                 return true;
             }
             if (spring.TotalLiters <= 0)
@@ -68,7 +71,7 @@ namespace HydrateOrDiedrate.Wells.Patches
                 return false;
             }
 
-            int actuallyDrained = spring.TryDrainLiters(volumeToTake);
+            int actuallyDrained = spring.TryChangeVolume(volumeToTake);
             if (actuallyDrained <= 0)
             {
                 __result = false;
@@ -99,7 +102,6 @@ namespace HydrateOrDiedrate.Wells.Patches
             }
             else
             {
-                spring.TryDrainLiters(-actuallyDrained);
                 __result = false;
             }
             return false;
@@ -128,6 +130,10 @@ namespace HydrateOrDiedrate.Wells.Patches
             {
                 BlockPos pos = entityItem.SidedPos.AsBlockPos;
                 Block block = world.BlockAccessor.GetBlock(pos);
+                if (!WellBlockUtils.IsOurWellwater(block))
+                {
+                    return true;
+                }
                 var spring = (block != null) ? WellBlockUtils.FindGoverningSpring(api, block, pos) : null;
                 if (spring == null)
                 {
@@ -156,7 +162,7 @@ namespace HydrateOrDiedrate.Wells.Patches
                                     int volumeToTake = (int)Math.Floor(transferLitres);
                                     if (volumeToTake > 0)
                                     {
-                                        int actuallyDrained = spring.TryDrainLiters(volumeToTake);
+                                        int actuallyDrained = spring.TryChangeVolume(volumeToTake);
                                         if (actuallyDrained > 0)
                                         {
                                             var contentStack = new ItemStack(item)
@@ -179,7 +185,7 @@ namespace HydrateOrDiedrate.Wells.Patches
                                             }
                                             else
                                             {
-                                                spring.TryDrainLiters(-actuallyDrained);
+                                                spring.TryChangeVolume(-actuallyDrained);
                                             }
                                         }
                                     }

@@ -194,7 +194,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
 
             if (spring != null && litersToExtract > 0)
             {
-                int actuallyDrained = spring.TryDrainLiters(litersToExtract);
+                int actuallyDrained = spring.TryChangeVolume(litersToExtract);
 
                 litersToExtract = actuallyDrained;
             }

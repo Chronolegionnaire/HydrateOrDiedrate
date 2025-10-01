@@ -270,17 +270,16 @@ namespace HydrateOrDiedrate
 
                 if (isBoiling) ApplyHeatDamage(player, ModConfig.Instance.Thirst.BoilingWaterDamage);
 
-                var block2 = _api.World.BlockAccessor.GetBlock(blockSel.Position);
-                if (block2?.Code?.Path?.StartsWith("wellwater") == true)
+                if (block?.Code?.Path?.StartsWith("wellwater") == true)
                 {
-                    var spring = WellBlockUtils.FindGoverningSpring(_api, block2, blockSel.Position);
+                    var spring = WellBlockUtils.FindGoverningSpring(_api, block, blockSel.Position);
                     if (spring == null)
                     {
                         StopDrinking(player, drinkData);
                         return;
                     }
 
-                    int drained = spring.TryDrainLiters(1);
+                    int drained = spring.TryChangeVolume(1);
                     if (drained <= 0 || spring.TotalLiters <= 0)
                     {
                         StopDrinking(player, drinkData);
