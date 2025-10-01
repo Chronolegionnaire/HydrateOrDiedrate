@@ -28,7 +28,7 @@
     "*-still-*": "BlockWater"
   },
   "entityClassByType": {
-    "*-natural-*": "BlockEntityWellWaterData"
+    "*-natural-*": "BlockEntityWellWaterSentinel"
   },
   "behaviors": [
     {
