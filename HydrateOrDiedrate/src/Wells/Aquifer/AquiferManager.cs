@@ -207,38 +207,36 @@ public static partial class AquiferManager
 
     public static List<WellspringInfo> GetWellspringsInChunk(IWorldChunk chunk)
     {
-        if (chunk is null || chunk.Disposed) return [];
-
-        var wellsData = chunk.GetModdata<WellspringData>("wellspringData", null);
-        if (wellsData is null || wellsData.Wellsprings is null) return [];
-
-        return wellsData.Wellsprings;
+        if (chunk is null || chunk.Disposed) return new();
+        if (!chunk.LiveModData.TryGetValue(WellspringModDataKey, out var obj) || obj is not WellspringData data)
+        {
+            data = new WellspringData();
+            chunk.LiveModData[WellspringModDataKey] = data;
+        }
+        return data.Wellsprings;
     }
 
-    //TODO This should probably not be stored in ModData as it is not persisent
     public static void RemoveWellSpringFromChunk(IWorldAccessor world, BlockPos blockPos)
     {
-        IWorldChunk chunk = world.BlockAccessor.GetChunkAtBlockPos(blockPos);
+        var chunk = world.BlockAccessor.GetChunkAtBlockPos(blockPos);
         if (chunk is null || chunk.Disposed) return;
-        
-        var wellsData = chunk.GetModdata<WellspringData>(WellspringModDataKey, null);
-        if (wellsData is null) return;
-
-        wellsData.Wellsprings.RemoveAll(ws => ws.Position.Equals(blockPos));
-        chunk.SetModdata(WellspringModDataKey, wellsData);
+        if (!chunk.LiveModData.TryGetValue(WellspringModDataKey, out var obj) || obj is not WellspringData data)
+        {
+            return;
+        }
+        data.Wellsprings?.RemoveAll(ws => ws.Position.Equals(blockPos));
     }
 
     public static void AddWellSpringToChunk(IWorldAccessor world, BlockPos blockPos)
     {
-        IWorldChunk chunk = world.BlockAccessor.GetChunkAtBlockPos(blockPos);
+        var chunk = world.BlockAccessor.GetChunkAtBlockPos(blockPos);
         if (chunk is null || chunk.Disposed) return;
-        //TODO use LiveModData
-        var wellsData = chunk.GetModdata<WellspringData>(WellspringModDataKey, null) ?? new();
-        
-        wellsData.Wellsprings ??= [];
-        if (wellsData.Wellsprings.Exists(ws => ws.Position.Equals(blockPos))) return;
-
-        wellsData.Wellsprings.Add(new WellspringInfo { Position = blockPos });
-        chunk.SetModdata(WellspringModDataKey, wellsData);
+        if (!chunk.LiveModData.TryGetValue(WellspringModDataKey, out var obj) || obj is not WellspringData data)
+        {
+            data = new WellspringData();
+            chunk.LiveModData[WellspringModDataKey] = data;
+        }
+        if (data.Wellsprings.Exists(ws => ws.Position.Equals(blockPos))) return;
+        data.Wellsprings.Add(new WellspringInfo { Position = blockPos });
     }
 }

@@ -6,6 +6,5 @@ namespace HydrateOrDiedrate.Wells.Aquifer.ModData;
 [ProtoContract]
 public class WellspringData
 {
-    [ProtoMember(1)]
-    public List<WellspringInfo> Wellsprings { get; set; }
+    [ProtoMember(1)] public List<WellspringInfo> Wellsprings { get; set; } = [];
 }
