@@ -188,15 +188,14 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         if(stack is null || !stack.Resolve(Api.World, nameof(BlockEntityWinch))) return null;
         if(filter is not null && stack.Code != filter) return null;
 
-        if (block?.Code?.Path.StartsWith("wellwater") == true)
+        if (WellBlockUtils.IsOurWellwater(block))
         {
             var spring = WellBlockUtils.FindGoverningSpring(Api, block, pos);
 
             if (spring != null && litersToExtract > 0)
             {
-                int actuallyDrained = spring.TryChangeVolume(litersToExtract);
-
-                litersToExtract = actuallyDrained;
+                int delta = spring.TryChangeVolume(-litersToExtract);
+                litersToExtract = -delta;
             }
             else
             {
