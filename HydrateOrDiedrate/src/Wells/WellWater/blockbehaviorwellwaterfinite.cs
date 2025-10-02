@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Security.Authentication.ExtendedProtection;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
@@ -36,11 +37,26 @@ namespace HydrateOrDiedrate.Wells.WellWater
 		}
 		public override bool DoPlaceBlock(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ItemStack byItemStack, ref EnumHandling handling)
 		{
+			if (world is IServerWorldAccessor serverWorld && byPlayer != null)
+			{
+				serverWorld.RegisterCallbackUnique(RemoveSentinelIfPresent, blockSel.Position, 1);
+			}
+
 			if (world is IServerWorldAccessor)
 			{
-				world.RegisterCallbackUnique(new Action<IWorldAccessor, BlockPos, float>(this.OnDelayedWaterUpdateCheck), blockSel.Position, this.spreadDelay);
+				world.RegisterCallbackUnique(OnDelayedWaterUpdateCheck, blockSel.Position, this.spreadDelay);
 			}
+
 			return base.DoPlaceBlock(world, byPlayer, blockSel, byItemStack, ref handling);
+		}
+
+		private void RemoveSentinelIfPresent(IWorldAccessor world, BlockPos pos, float dt)
+		{
+			var be = world.BlockAccessor.GetBlockEntity<BlockEntityWellWaterSentinel>(pos);
+			if (be != null)
+			{
+				world.BlockAccessor.RemoveBlockEntity(pos);
+			}
 		}
 		public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos, ref EnumHandling handled)
 		{
