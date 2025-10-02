@@ -165,6 +165,12 @@ namespace HydrateOrDiedrate.Wells.WellWater
             if (api.ModLoader.IsModEnabled("xskills"))
             {
                 slot.Itemstack.Attributes.SetInt("toolMode", toolMode);
+
+                SkillItem[] modes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
+                if (modes != null && toolMode >= 0 && toolMode < modes.Length)
+                {
+                    slot.Itemstack.Attributes.SetString("toolModeCode", modes[toolMode].Code.Path);
+                }
             }
             else
             {
@@ -214,16 +220,16 @@ namespace HydrateOrDiedrate.Wells.WellWater
             float dropQuantityMultiplier,
             ref EnumHandling bhHandling)
         {
-            if (blockSel == null || byEntity == null)
-                return false;
+            if (blockSel == null || byEntity == null) return false;
 
             string modeName = "";
             if (api.ModLoader.IsModEnabled("xskills"))
             {
+                string code = itemslot.Itemstack.Attributes.GetString("toolModeCode", null);
                 int modeIndex = itemslot.Itemstack.Attributes.GetInt("toolMode", 0);
                 SkillItem[] modes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
                 if (modes != null && modeIndex >= 0 && modeIndex < modes.Length)
-                {
+                { 
                     modeName = modes[modeIndex].Code.Path;
                 }
             }
