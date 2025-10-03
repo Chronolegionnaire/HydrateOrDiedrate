@@ -22,7 +22,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     public bool IsFresh => (LastWaterType?.StartsWith("fresh") ?? true);
     private bool didInitialReconcile = false;
     private const int reconcileIntervalMs = 5000;
-    public int TryChangeVolume(int change)
+    public int TryChangeVolume(int change, bool triggerSync = true)
     {
         if (change == 0) return 0;
 
@@ -35,8 +35,11 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         int applied = clamped - totalLiters;
         totalLiters = clamped;
 
-        SyncWaterColumn();
-        MarkDirty(true);
+        if (triggerSync)
+        {
+            SyncWaterColumn();
+            MarkDirty(true);
+        }
 
         return applied;
     }
@@ -172,67 +175,104 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         if(Api.Side == EnumAppSide.Server) AquiferManager.RemoveWellSpringFromChunk(Api.World, Pos);
     }
 
-    private void HandleShallowWell(double elapsedDays)
+    private bool HandleShallowWell(double elapsedDays)
     {
+        bool changed = false;
         var (nearbySalty, nearbyFresh) = Api.World.BlockAccessor.CheckForNearbyGameWater(Pos);
-        if (!nearbyFresh && !nearbySalty) return;
+        if (!nearbyFresh && !nearbySalty) return false;
 
-        LastWaterType = GetWaterType(nearbyFresh && !nearbySalty, "muddy");
+        string newType = GetWaterType(nearbyFresh && !nearbySalty, "muddy");
+        if (LastWaterType != newType)
+        {
+            LastWaterType = newType;
+            changed = true;
+        }
+
+        const string newPollution = "muddy";
+        if (currentPollution != newPollution)
+        {
+            currentPollution = newPollution;
+            changed = true;
+        }
+
         LastDailyLiters = ModConfig.Instance.GroundWater.ShallowWellLitersPerDay;
-        accumulatedWater += LastDailyLiters * elapsedDays * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
-        if (accumulatedWater < 1.0) return;
+        accumulatedWater += LastDailyLiters * elapsedDays *
+                            (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
 
-        int wholeLiters = (int)accumulatedWater;
-        accumulatedWater -= wholeLiters;
-        LastWaterType = GetWaterType(nearbyFresh && !nearbySalty, "muddy");
-        currentPollution = "muddy";
-        TryChangeVolume(wholeLiters);
+        if (accumulatedWater >= 1.0)
+        {
+            int wholeLiters = (int)accumulatedWater;
+            accumulatedWater -= wholeLiters;
+            int applied = TryChangeVolume(wholeLiters, triggerSync: false);
+            if (applied != 0) changed = true;
+        }
+
+        return changed;
     }
 
-    private void HandleAquiferWell(double elapsedDays)
+    private bool HandleAquiferWell(double elapsedDays)
     {
+        bool changed = false;
         var chunk = Api.World.BlockAccessor.GetChunkAtBlockPos(Pos);
 
-        if (AquiferManager.GetAquiferChunkData(chunk, Api.Logger)?.Data is not { AquiferRating: not 0 } aquiferData) return;
-        if (AquiferManager.GetWellspringsInChunk(chunk) is not { Count: not 0 } wellsprings) return;
+        var aquifer = AquiferManager.GetAquiferChunkData(chunk, Api.Logger)?.Data;
+        var wellsprings = AquiferManager.GetWellspringsInChunk(chunk);
+        if (aquifer is not { AquiferRating: not 0 } || wellsprings is not { Count: not 0 }) return false;
 
-        double remainingRating = (double)aquiferData.AquiferRating / wellsprings.Count;
-        var thisSpring = wellsprings.FirstOrDefault(ws => ws.Position.Equals(Pos));
-        if (thisSpring is null) return;
+        double remainingRating = (double)aquifer.AquiferRating / wellsprings.Count;
+        if (wellsprings.FirstOrDefault(ws => ws.Position.Equals(Pos)) is null) return false;
 
-        LastWaterType = GetWaterType(!aquiferData.IsSalty);
-        LastDailyLiters = Math.Max(0, remainingRating * AquiferRatingToLitersOutputRatio) * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
+        string newType = GetWaterType(!aquifer.IsSalty);
+        if (LastWaterType != newType)
+        {
+            LastWaterType = newType;
+            changed = true;
+        }
+
+        const string newPollution = "clean";
+        if (currentPollution != newPollution)
+        {
+            currentPollution = newPollution;
+            changed = true;
+        }
+
+        LastDailyLiters = Math.Max(0, remainingRating * AquiferRatingToLitersOutputRatio)
+                          * (double)ModConfig.Instance.GroundWater.WellSpringOutputMultiplier;
+
         accumulatedWater += LastDailyLiters * elapsedDays;
-        if (accumulatedWater < 1.0) return;
-        int wholeLiters = (int)Math.Floor(accumulatedWater);
-        accumulatedWater -= wholeLiters;
-        LastWaterType = GetWaterType(!aquiferData.IsSalty);
-        currentPollution = "clean";
-        TryChangeVolume(wholeLiters);
+
+        if (accumulatedWater >= 1.0)
+        {
+            int wholeLiters = (int)Math.Floor(accumulatedWater);
+            accumulatedWater -= wholeLiters;
+
+            int applied = TryChangeVolume(wholeLiters, triggerSync: false);
+            if (applied != 0) changed = true;
+        }
+
+        return changed;
     }
 
-    private void HandleWell(double elapsedDays)
+    private bool HandleWell(double elapsedDays)
     {
-        if(IsShallow) HandleShallowWell(elapsedDays);
-        else HandleAquiferWell(elapsedDays);
-        MarkDirty();
+        return IsShallow ? HandleShallowWell(elapsedDays) : HandleAquiferWell(elapsedDays);
     }
 
     private void OnServerTick(float dt)
     {
         double currentInGameDays = Api.World.Calendar.TotalDays;
-
-        RunContaminationChecks();
-        SyncWaterColumn();
-        MarkDirty();
-
+        bool changed = RunContaminationChecks();
         double elapsedDays = currentInGameDays - LastInGameDay;
-        if (elapsedDays <= 0.05) return;
-        LastInGameDay = currentInGameDays;
-
-        HandleWell(elapsedDays);
-        SyncWaterColumn();
-        MarkDirty();
+        if (elapsedDays > 0.05)
+        {
+            LastInGameDay = currentInGameDays;
+            changed |= HandleWell(elapsedDays);
+        }
+        if (changed)
+        {
+            SyncWaterColumn();
+            MarkDirty();
+        }
     }
 
 
@@ -493,19 +533,22 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         }
     }
 
-    private void RunContaminationChecks()
+    private bool RunContaminationChecks()
     {
-        if (currentPollution != "clean" && currentPollution != "muddy") return;
+        if (currentPollution != "clean" && currentPollution != "muddy") return false;
 
-        if (CheckDeadEntityContaminationColumn()) return;
-        if (CheckPoisonedItemContaminationColumn()) return;
-        if (CheckNeighborContaminationColumn()) return;
+        if (CheckDeadEntityContaminationColumn()) return true;
+        if (CheckPoisonedItemContaminationColumn()) return true;
+        if (CheckNeighborContaminationColumn()) return true;
+
+        return false;
     }
 
-    private void SetColumnPollution(string pollution)
+    private bool SetColumnPollution(string pollution)
     {
+        if (currentPollution == pollution) return false;
         currentPollution = pollution;
-        SyncWaterColumn();
+        return true;
     }
     private bool ForEachWaterLevel(System.Func<BlockPos, Block, bool> fn)
     {
@@ -560,8 +603,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
                     if (intersects && !agent.Alive)
                     {
-                        SetColumnPollution("tainted");
-                        return true;
+                        return SetColumnPollution("tainted");
                     }
                 }
             }
