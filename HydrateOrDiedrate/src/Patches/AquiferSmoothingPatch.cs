@@ -66,6 +66,8 @@ public static class AquiferSmoothingPatch
     {
         if(!chunk.NeighboursLoaded.Horizontals) return;
         if(!chunk.GetModdata<bool>(AquiferManager.NeedsSmoothingModDataKey)) return;
-        AquiferManager.TrySmoothChunk(chunkX, chunkZ);
+        if(!AquiferManager.TrySmoothChunk(chunkX, chunkZ)) return;
+
+        chunk.RemoveModdata(AquiferManager.NeedsSmoothingModDataKey);
     }
 }

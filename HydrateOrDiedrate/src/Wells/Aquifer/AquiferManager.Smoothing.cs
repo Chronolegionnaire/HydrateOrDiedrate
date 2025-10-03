@@ -53,7 +53,7 @@ public static partial class AquiferManager
         return true;
     }
 
-    public static void TrySmoothChunk(int chunkX, int chunkZ)
+    public static bool TrySmoothChunk(int chunkX, int chunkZ)
     {
         var provider = HydrateOrDiedrateModSystem._serverApi.World.BlockAccessor;
 
@@ -61,7 +61,7 @@ public static partial class AquiferManager
         var chunkYCount = provider.MapSizeY / GlobalConstants.ChunkSize;
         var chunkBuffer = new IWorldChunk[size, chunkYCount, size];
 
-        TrySmoothCrossChunkData(new Vec2i(chunkX, chunkZ), chunkYCount, chunkBuffer);
+        return TrySmoothCrossChunkData(new Vec2i(chunkX, chunkZ), chunkYCount, chunkBuffer);
     }
 
     internal static bool TrySmoothCrossChunkData(Vec2i vec2i, int chunkYCount, IWorldChunk[,,] chunkBuffer)

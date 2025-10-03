@@ -504,22 +504,20 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             maxVolume = muddyBlockCount * 9;
             reconcileTarget = Math.Clamp(totalLiters, minVolume, maxVolume);
         }
+        else if (partialHeight.HasValue)
+        {
+            int h = partialHeight.Value;
+            minVolume = fullVolumeNonMuddy + VolumeFromHeight(Math.Max(0, h - 1));
+            maxVolume = fullVolumeNonMuddy + VolumeFromHeight(Math.Min(7, h + 1));
+            reconcileTarget = fullVolumeNonMuddy + VolumeFromHeight(h);
+        }
         else
         {
-            if (partialHeight.HasValue)
-            {
-                int h = partialHeight.Value;
-                minVolume = fullVolumeNonMuddy + VolumeFromHeight(Math.Max(0, h - 1));
-                maxVolume = fullVolumeNonMuddy + VolumeFromHeight(Math.Min(7, h + 1));
-                reconcileTarget = fullVolumeNonMuddy + VolumeFromHeight(h);
-            }
-            else
-            {
-                minVolume = fullVolumeNonMuddy;
-                maxVolume = fullVolumeNonMuddy;
-                reconcileTarget = fullVolumeNonMuddy;
-            }
+            minVolume = fullVolumeNonMuddy - VolumeFromHeight(1);
+            maxVolume = fullVolumeNonMuddy;
+            reconcileTarget = fullVolumeNonMuddy;
         }
+
         if (totalLiters < minVolume || totalLiters > maxVolume)
         {
             totalLiters = reconcileTarget;
