@@ -1,4 +1,5 @@
 using System;
+using HydrateOrDiedrate.Wells.WellWater;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -28,4 +29,15 @@ public static class WellBlockUtils
         b?.Code != null
         && string.Equals(b.Code.Domain, "hydrateordiedrate", StringComparison.OrdinalIgnoreCase)
         && b.Code.Path.StartsWith("wellwater", StringComparison.Ordinal);
+    
+    public static BlockEntityWellSpring FindGoverningSpring(ICoreAPI api, Block blockAtPos, BlockPos pos)
+    {
+        if (api == null || pos == null) return null;
+        var ba = api.World.BlockAccessor;
+        var behavior = blockAtPos?.GetBehavior<BlockBehaviorWellWaterFinite>();
+        BlockPos probe = behavior?.FindNaturalSourceInLiquidChain(ba, pos) ?? pos;
+        var sentinel = ba.GetBlockEntity<BlockEntityWellWaterSentinel>(probe)
+                       ?? (probe.Equals(pos) ? null : ba.GetBlockEntity<BlockEntityWellWaterSentinel>(pos));
+        return sentinel?.TryGetGoverningSpring();
+    }
 }

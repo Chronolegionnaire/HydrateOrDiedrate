@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.Wells;
 using HydrateOrDiedrate.Wells.WellWater;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -269,25 +270,20 @@ namespace HydrateOrDiedrate
 
                 if (isBoiling) ApplyHeatDamage(player, ModConfig.Instance.Thirst.BoilingWaterDamage);
 
-                var block2 = _api.World.BlockAccessor.GetBlock(blockSel.Position);
-                if (block2.Code.Path.StartsWith("wellwater"))
+                if (block?.Code?.Path?.StartsWith("wellwater") == true)
                 {
-                    var blockBehavior = block2.GetBehavior<BlockBehaviorWellWaterFinite>();
-                    var naturalSourcePos =
-                        blockBehavior?.FindNaturalSourceInLiquidChain(_api.World.BlockAccessor, blockSel.Position);
-                    if (naturalSourcePos != null)
+                    var spring = WellBlockUtils.FindGoverningSpring(_api, block, blockSel.Position);
+                    if (spring == null)
                     {
-                        var blockEntity = _api.World.BlockAccessor.GetBlockEntity(naturalSourcePos);
-                        if (blockEntity is BlockEntityWellWaterData wellWaterData)
-                        {
-                            wellWaterData.Volume -= 1;
-                            int afterVolume = wellWaterData.Volume;
-                            if (afterVolume <= 0)
-                            {
-                                StopDrinking(player, drinkData);
-                                return;
-                            }
-                        }
+                        StopDrinking(player, drinkData);
+                        return;
+                    }
+
+                    int delta = spring.TryChangeVolume(-1);
+                    if (delta >= 0 || spring.totalLiters <= 0)
+                    {
+                        StopDrinking(player, drinkData);
+                        return;
                     }
                 }
 

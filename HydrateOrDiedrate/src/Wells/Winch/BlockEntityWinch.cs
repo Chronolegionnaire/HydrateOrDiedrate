@@ -188,24 +188,18 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         if(stack is null || !stack.Resolve(Api.World, nameof(BlockEntityWinch))) return null;
         if(filter is not null && stack.Code != filter) return null;
 
-        if (block.Code.Path.StartsWith("wellwater"))
+        if (WellBlockUtils.IsOurWellwater(block))
         {
-            if(Api.World.BlockAccessor.GetBlockEntity(pos) is not BlockEntityWellWaterData wellData)
+            var spring = WellBlockUtils.FindGoverningSpring(Api, block, pos);
+
+            if (spring != null && litersToExtract > 0)
             {
-                BlockPos naturalPos = FindNaturalSourceInLiquidChain(Api.World.BlockAccessor, pos);
-                if (naturalPos != null)
-                {
-                    wellData = Api.World.BlockAccessor.GetBlockEntity<BlockEntityWellWaterData>(naturalPos);
-                }
-                else wellData = null;
+                int delta = spring.TryChangeVolume(-litersToExtract);
+                litersToExtract = -delta;
             }
-
-            if(wellData is not null)
+            else
             {
-
-                litersToExtract = Math.Min(wellData.Volume, litersToExtract);
-                wellData.Volume -= litersToExtract;
-                wellData.MarkDirty(true);
+                litersToExtract = 0;
             }
         }
 
@@ -417,23 +411,6 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
     
     public virtual string DialogTitle => Lang.Get("hydrateordiedrate:Winch");
 
-    //TODO should be public and moved to wellspring instead
-    private long GetTotalShaftWaterVolume(BlockPos springPos)
-    {
-        long total = 0;
-        var pos = Pos.DownCopy();
-        while (pos.Y >= 0 && pos.Y != springPos.Y)
-        {
-            if (Api.World.BlockAccessor.GetBlockEntity(pos) is BlockEntityWellWaterData waterData)
-            {
-                total += waterData.Volume;
-            }
-
-            pos.Y--;
-        }
-        return total;
-    }
-
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
     {
         base.GetBlockInfo(forPlayer, dsc);
@@ -450,7 +427,7 @@ public class BlockEntityWinch : BlockEntityOpenableContainer
         dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.waterType", string.IsNullOrEmpty(foundSpring.LastWaterType) ? string.Empty : Lang.Get($"hydrateordiedrate:item-waterportion-{foundSpring.LastWaterType}")));
         dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.outputRate", foundSpring.LastDailyLiters));
         dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.retentionVolume", foundSpring.GetMaxTotalVolume()));
-        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.totalShaftVolume", GetTotalShaftWaterVolume(foundSpring.Pos)));
+        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.totalShaftVolume", foundSpring.totalLiters));
     }
 
     public override void Dispose()
