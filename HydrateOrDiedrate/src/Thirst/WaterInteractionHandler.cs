@@ -280,7 +280,7 @@ namespace HydrateOrDiedrate
                     }
 
                     int delta = spring.TryChangeVolume(-1);
-                    if (delta >= 0 || spring.TotalLiters <= 0)
+                    if (delta >= 0 || spring.totalLiters <= 0)
                     {
                         StopDrinking(player, drinkData);
                         return;

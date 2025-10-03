@@ -51,13 +51,13 @@ namespace HydrateOrDiedrate.Wells.Patches
             var spring = WellBlockUtils.FindGoverningSpring(api, block, pos);
             if (spring == null) return true;
 
-            if (spring.TotalLiters <= 0)
+            if (spring.totalLiters <= 0)
             {
                 __result = false;
                 return false;
             }
 
-            float availableLitres = spring.TotalLiters;
+            float availableLitres = spring.totalLiters;
             float currentLitres = __instance.GetCurrentLitres(itemslot.Itemstack);
             float containerCapacity = __instance.CapacityLitres - currentLitres;
 
@@ -162,9 +162,9 @@ namespace HydrateOrDiedrate.Wells.Patches
                         var item = world.GetItem(new AssetLocation(itemCode));
                         if (item != null)
                         {
-                            if (spring.TotalLiters > 0)
+                            if (spring.totalLiters > 0)
                             {
-                                float availableLitres = spring.TotalLiters;
+                                float availableLitres = spring.totalLiters;
                                 float currentLitres = __instance.GetCurrentLitres(entityItem.Itemstack);
                                 float containerCapacity = __instance.CapacityLitres - currentLitres;
 

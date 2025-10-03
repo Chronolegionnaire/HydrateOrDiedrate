@@ -42,7 +42,25 @@ public static partial class AquiferManager
         }
         WaterKindById = waterKindById;
     }
+    private static WellspringData GetOrCreateWellspringData(IWorldChunk chunk)
+    {
+        if (chunk is null || chunk.Disposed) return null;
 
+        if (!chunk.LiveModData.TryGetValue(WellspringModDataKey, out var obj) || obj is not WellspringData data)
+        {
+            data = new WellspringData();
+            chunk.LiveModData[WellspringModDataKey] = data;
+        }
+        return data;
+    }
+
+    private static WellspringData TryGetWellspringData(IWorldChunk chunk)
+    {
+        if (chunk is null || chunk.Disposed) return null;
+        return chunk.LiveModData.TryGetValue(WellspringModDataKey, out var obj) && obj is WellspringData data
+            ? data
+            : null;
+    }
     internal static void Unload()
     {
         WaterKindById = null;
@@ -208,34 +226,23 @@ public static partial class AquiferManager
     public static List<WellspringInfo> GetWellspringsInChunk(IWorldChunk chunk)
     {
         if (chunk is null || chunk.Disposed) return new();
-        if (!chunk.LiveModData.TryGetValue(WellspringModDataKey, out var obj) || obj is not WellspringData data)
-        {
-            data = new WellspringData();
-            chunk.LiveModData[WellspringModDataKey] = data;
-        }
-        return data.Wellsprings;
+        return GetOrCreateWellspringData(chunk).Wellsprings;
     }
+
 
     public static void RemoveWellSpringFromChunk(IWorldAccessor world, BlockPos blockPos)
     {
         var chunk = world.BlockAccessor.GetChunkAtBlockPos(blockPos);
-        if (chunk is null || chunk.Disposed) return;
-        if (!chunk.LiveModData.TryGetValue(WellspringModDataKey, out var obj) || obj is not WellspringData data)
-        {
-            return;
-        }
-        data.Wellsprings?.RemoveAll(ws => ws.Position.Equals(blockPos));
+        var data = TryGetWellspringData(chunk);
+        data?.Wellsprings?.RemoveAll(ws => ws.Position.Equals(blockPos));
     }
 
     public static void AddWellSpringToChunk(IWorldAccessor world, BlockPos blockPos)
     {
         var chunk = world.BlockAccessor.GetChunkAtBlockPos(blockPos);
-        if (chunk is null || chunk.Disposed) return;
-        if (!chunk.LiveModData.TryGetValue(WellspringModDataKey, out var obj) || obj is not WellspringData data)
-        {
-            data = new WellspringData();
-            chunk.LiveModData[WellspringModDataKey] = data;
-        }
+        var data = GetOrCreateWellspringData(chunk);
+        if (data is null) return;
+
         if (data.Wellsprings.Exists(ws => ws.Position.Equals(blockPos))) return;
         data.Wellsprings.Add(new WellspringInfo { Position = blockPos });
     }

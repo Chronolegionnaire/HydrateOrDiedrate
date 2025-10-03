@@ -17,10 +17,8 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     private const int updateIntervalMs = 500;
 
     private Block originBlock;
-    private int totalVolumeLiters = 0;
-    private string currentPollution = "clean";
-    public int TotalLiters => totalVolumeLiters;
-    public string CurrentPollution => currentPollution;
+    public int totalLiters { get; private set; } = 0;
+    public string currentPollution { get; private set; } = "clean";
     public bool IsFresh => (LastWaterType?.StartsWith("fresh") ?? true);
     private bool didInitialReconcile = false;
     private const int reconcileIntervalMs = 5000;
@@ -30,12 +28,12 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
         int perBlockMax = GetMaxVolumeForWaterType(LastWaterType ?? "fresh-well-clean");
         int capacity = GetRetentionDepth() * perBlockMax;
-        totalVolumeLiters = Math.Clamp(totalVolumeLiters, 0, capacity);
-        long proposed = (long)totalVolumeLiters + change;
+        totalLiters = Math.Clamp(totalLiters, 0, capacity);
+        long proposed = (long)totalLiters + change;
         int clamped = (int)Math.Clamp(proposed, 0, capacity);
 
-        int applied = clamped - totalVolumeLiters;
-        totalVolumeLiters = clamped;
+        int applied = clamped - totalLiters;
+        totalLiters = clamped;
 
         SyncWaterColumn();
         MarkDirty(true);
@@ -327,7 +325,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         int perBlockMax = GetMaxVolumeForWaterType(LastWaterType ?? "fresh-well-clean");
         int retentionDepth = GetRetentionDepth();
         var pos = Pos.Copy();
-        int neededBlocks = (int)Math.Ceiling(Math.Min(totalVolumeLiters, retentionDepth * perBlockMax) / (double)perBlockMax);
+        int neededBlocks = (int)Math.Ceiling(Math.Min(totalLiters, retentionDepth * perBlockMax) / (double)perBlockMax);
         for (int i = 0; i < retentionDepth; i++)
         {
             pos.Y++;
@@ -356,7 +354,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
                 }
             }
         }
-        int remaining = Math.Min(totalVolumeLiters, retentionDepth * perBlockMax);
+        int remaining = Math.Min(totalLiters, retentionDepth * perBlockMax);
         pos.Set(Pos);
         for (int i = 0; i < retentionDepth; i++)
         {
@@ -384,7 +382,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             }
         }
         int cappedMax = retentionDepth * perBlockMax;
-        if (totalVolumeLiters > cappedMax) totalVolumeLiters = cappedMax;
+        if (totalLiters > cappedMax) totalLiters = cappedMax;
         ClearExcessAboveRetention(baseCode, retentionDepth);
     }
 
@@ -403,13 +401,14 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
     private void ReconcileStoredVolumeWithWorld()
     {
-        int inWorld = 0;
-        bool? detectedFresh = null;
-        string detectedPollution = null;
-
         var ba = Api.World.BlockAccessor;
         var pos = Pos.Copy();
         int depth = GetRetentionDepth();
+        bool? detectedFresh = null;
+        string detectedPollution = null;
+        int fullVolumeNonMuddy = 0;
+        int? partialHeight = null;
+        int muddyBlockCount = 0;
 
         for (int i = 0; i < depth; i++)
         {
@@ -425,39 +424,71 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             }
 
             bool isMuddy = (fluid?.Variant?["pollution"]) == "muddy";
-            int perBlockMax = isMuddy ? 9 : 70;
-
-            var hStr = fluid?.Variant?["height"];
             if (isMuddy)
             {
-                inWorld += Math.Min(9, perBlockMax);
+                muddyBlockCount++;
+                continue;
             }
-            else if (hStr != null && int.TryParse(hStr, out int h) && h > 0)
+            var hStr = fluid?.Variant?["height"];
+            if (hStr == null)
             {
-                inWorld += Math.Min(VolumeFromHeight(h), perBlockMax);
+                fullVolumeNonMuddy += VolumeFromHeight(7);
+                continue;
+            }
+            if (int.TryParse(hStr, out int h) && h > 0)
+            {
+                if (h >= 7)
+                {
+                    fullVolumeNonMuddy += VolumeFromHeight(7);
+                }
+                else
+                {
+                    partialHeight = h;
+                    break;
+                }
             }
             else
             {
-                inWorld += perBlockMax;
+                fullVolumeNonMuddy += VolumeFromHeight(7);
             }
         }
-
         if (detectedFresh != null)
         {
             LastWaterType = GetWaterType(detectedFresh.Value, detectedPollution);
             currentPollution = detectedPollution;
         }
-
-        if (inWorld != totalVolumeLiters)
+        int minVolume, maxVolume, reconcileTarget;
+        if (detectedPollution == "muddy" && muddyBlockCount > 0)
         {
-            totalVolumeLiters = inWorld;
+            minVolume = (muddyBlockCount - 1) * 9 + 1;
+            maxVolume = muddyBlockCount * 9;
+            reconcileTarget = Math.Clamp(totalLiters, minVolume, maxVolume);
+        }
+        else
+        {
+            if (partialHeight.HasValue)
+            {
+                int h = partialHeight.Value;
+                minVolume = fullVolumeNonMuddy + VolumeFromHeight(Math.Max(0, h - 1));
+                maxVolume = fullVolumeNonMuddy + VolumeFromHeight(Math.Min(7, h + 1));
+                reconcileTarget = fullVolumeNonMuddy + VolumeFromHeight(h);
+            }
+            else
+            {
+                minVolume = fullVolumeNonMuddy;
+                maxVolume = fullVolumeNonMuddy;
+                reconcileTarget = fullVolumeNonMuddy;
+            }
+        }
+        if (totalLiters < minVolume || totalLiters > maxVolume)
+        {
+            totalLiters = reconcileTarget;
             MarkDirty(true);
         }
-
         int capacity = GetRetentionDepth() * GetMaxVolumeForWaterType(LastWaterType ?? "fresh-well-clean");
-        if (totalVolumeLiters > capacity)
+        if (totalLiters > capacity)
         {
-            totalVolumeLiters = capacity;
+            totalLiters = capacity;
             MarkDirty(true);
         }
     }
@@ -638,7 +669,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         tree.SetString("lastWaterType", LastWaterType ?? string.Empty);
         tree.SetInt("partialValidatedHeight", partialValidatedHeight);
         tree.SetDouble("lastInGameTime", LastInGameDay);
-        tree.SetInt("totalVolumeLiters", totalVolumeLiters);
+        tree.SetInt("totalVolumeLiters", totalLiters);
         tree.SetString("currentPollution", currentPollution);
         if (OriginBlock is not null) tree.SetInt("OriginBlockId", OriginBlock.Id);
     }
@@ -652,7 +683,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         partialValidatedHeight = tree.GetInt("partialValidatedHeight", partialValidatedHeight);
         LastWaterType = tree.GetString("lastWaterType", LastWaterType);
         LastInGameDay = tree.GetDouble("lastInGameTime", worldAccessForResolve.Calendar.TotalDays);
-        totalVolumeLiters = tree.GetInt("totalVolumeLiters", totalVolumeLiters);
+        totalLiters = tree.GetInt("totalVolumeLiters", totalLiters);
         currentPollution = tree.GetString("currentPollution", currentPollution);
 
         var originBlockId = tree.TryGetInt("OriginBlockId");
