@@ -20,6 +20,7 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     [DefaultValue(1.0d)]
     public float WellSpringOutputMultiplier { get; set; } = 1.0f;
 
+    //TODO fix these retention depth descriptions
     /// <summary>
     /// Max water retention depth (in blocks) for wells with normal shafts
     /// </summary>
