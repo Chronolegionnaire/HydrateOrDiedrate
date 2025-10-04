@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using Vintagestory.API.Datastructures;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using HydrateOrDiedrate.Pipes.Pipe;
 
 namespace HydrateOrDiedrate;
 
@@ -142,6 +143,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockBehaviorClass("BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
         api.RegisterBlockClass("BlockWellSpring", typeof(BlockWellSpring));
         api.RegisterBlockEntityClass("BlockEntityWellSpring", typeof(BlockEntityWellSpring));
+        api.RegisterBlockClass("BlockHoDPipe", typeof(BlockPipe));
+        api.RegisterBlockEntityClass("BlockEntityHoDPipe", typeof(BlockEntityPipe));
         
         api.RegisterBlockClass("BlockWinch", typeof(BlockWinch));
         api.RegisterBlockEntityClass("BlockEntityWinch", typeof(BlockEntityWinch));
