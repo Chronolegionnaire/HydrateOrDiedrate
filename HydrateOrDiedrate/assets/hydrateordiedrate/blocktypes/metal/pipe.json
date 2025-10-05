@@ -2,6 +2,7 @@
   "code": "pipe",
   "class": "BlockHoDPipe",
   "entityClass": "BlockEntityHoDPipe",
+  "entityBehaviors": [{ "name": "BEBehaviorPipe" }],
   "behaviors": [
   ],
   "attributes": {
