@@ -374,6 +374,11 @@ namespace HydrateOrDiedrate
                         HitPosition = hitPos
                     };
                 }
+                if (block.BlockMaterial != EnumBlockMaterial.Air 
+                    && block.BlockMaterial != EnumBlockMaterial.Plant)
+                {
+                    return null;
+                }
                 if (tMaxX < tMaxY)
                 {
                     if (tMaxX < tMaxZ)
