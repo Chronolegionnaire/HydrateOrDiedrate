@@ -20,7 +20,6 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     public int totalLiters { get; private set; } = 0;
     public string currentPollution { get; private set; } = "clean";
     public bool IsFresh => (LastWaterType?.StartsWith("fresh") ?? true);
-    private bool didInitialReconcile = false;
     private const int reconcileIntervalMs = 5000;
     public int TryChangeVolume(int change, bool triggerSync = true)
     {
@@ -134,8 +133,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         RegisterGameTickListener(OnServerTick, updateIntervalMs);
         RegisterGameTickListener(OnPeriodicShaftCheck, 30000);
 
-        ReconcileStoredVolumeWithWorld();
-        didInitialReconcile = true;
+        api.Event.EnqueueMainThreadTask(ReconcileStoredVolumeWithWorld, "well-spring-reconcile");
         RegisterGameTickListener(_ => ReconcileStoredVolumeWithWorld(), reconcileIntervalMs);
         OriginBlock ??= api.World.FindMostLikelyOriginBlockFromNeighbors(Pos) ?? api.World.GetBlock(new AssetLocation("game", "rock-granite"));
         OnPeriodicShaftCheck(0);
@@ -455,6 +453,11 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             pos.Y++;
             var fluid = ba.GetFluid(pos);
             if (!WellBlockUtils.IsOurWellwater(fluid)) break;
+
+            if (ba.GetBlockEntity(pos) is null)
+            {
+                ba.SpawnBlockEntity("BlockEntityWellWaterSentinel", pos);
+            }
 
             if (detectedFresh == null)
             {
