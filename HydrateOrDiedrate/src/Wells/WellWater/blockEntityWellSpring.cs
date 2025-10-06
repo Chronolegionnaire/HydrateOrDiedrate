@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using HydrateOrDiedrate.FluidNetwork;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -13,7 +12,7 @@ using Vintagestory.API.MathTools;
 
 namespace HydrateOrDiedrate.Wells.WellWater;
 
-public class BlockEntityWellSpring : BlockEntity, ITexPositionSource, FluidInterfaces.IFluidExternalProvider
+public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 {
     private const int updateIntervalMs = 500;
 
@@ -699,64 +698,6 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource, FluidInter
             ba.TriggerNeighbourBlockUpdate(pos);
             pos.Y++;
         }
-    }
-    
-    public bool CanProvide(out ItemStack fluidItem, out float availableLitres)
-    {
-        fluidItem = MakeWellWaterItem(Api, LastWaterType);
-        availableLitres = Math.Max(0, totalLiters);
-        return fluidItem != null && availableLitres > 0;
-    }
-
-    /// <summary>
-    /// Called by a pump/consumer: ask the well to provide up to 'litresRequested' into 'nw'.
-    /// - First, assign/retag the network to the well’s current item (if allowed).
-    /// - Then deduct from the well’s volume and return the actual litres granted.
-    /// </summary>
-    public float ProvideToNetwork(FluidNetwork.FluidNetwork nw, float litresRequested, ICoreAPI api)
-    {
-        if (nw == null || litresRequested <= 0) return 0f;
-
-        // Build the well's current water item
-        var item = MakeWellWaterItem(api, LastWaterType);
-        if (item == null) return 0f;
-
-        // If the network has no type yet, adopt the well’s type; otherwise, retag if both are well-water.
-        if (!nw.IsAssigned)
-        {
-            if (!nw.TryAssignFluidFrom(item, api)) return 0f;
-        }
-        else
-        {
-            // If assigned to something else, try well-water retag (only allowed if network carries well water already)
-            nw.TryRetagToWell(item, api);
-            // If that failed and it's a different non-well fluid, refuse to provide
-            if (!FluidNetwork.FluidNetwork.IsWellWaterCode(nw.FluidCodeShort))
-            {
-                return 0f;
-            }
-        }
-
-        // Grant litres from the well’s storage
-        float grant = Math.Min(litresRequested, Math.Max(0, totalLiters));
-        if (grant <= 0f) return 0f;
-
-        // Apply to well
-        int applied = TryChangeVolume(-(int)Math.Floor(grant + 1e-6), triggerSync: true);
-        if (applied == 0) return 0f;
-
-        // We grant the integer litres actually deducted (keeps your integral litre model)
-        return Math.Max(0, (float)applied);
-    }
-    
-    private static ItemStack MakeWellWaterItem(ICoreAPI api, string lastWaterType)
-    {
-        if (api?.World == null) return null;
-        // lastWaterType looks like "fresh-well-clean" or "salt-well-muddy"
-        if (string.IsNullOrEmpty(lastWaterType)) lastWaterType = "fresh-well-clean";
-        var code = new AssetLocation("hydrateordiedrate", $"waterportion-{lastWaterType}");
-        var item = api.World.GetItem(code);
-        return item != null ? new ItemStack(item) : null;
     }
     
     public override void ToTreeAttributes(ITreeAttribute tree)

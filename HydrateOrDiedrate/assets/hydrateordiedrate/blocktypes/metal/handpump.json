@@ -3,7 +3,7 @@
   "class": "BlockHandPump",
   "entityclass": "BlockEntityHandPump",
   "entityBehaviors": [
-    { "name": "BEBehaviorPipe" }
+    { "name": "BEBehaviorHandPump" }
   ],
   "behaviors": [
     {"name": "Container"},
@@ -15,6 +15,7 @@
     }
   ],
   "variantgroups": [
+    { "code": "metal", "states": ["copper", "lead"] },
     { "code":"side", "loadFromProperties": "abstract/horizontalorientation" }
   ],
   "shapeByType": {
@@ -27,9 +28,12 @@
     "mapColorCode": "settlement"
   },
   "creativeinventory": {
-    "general": [ "handpump-east" ],
-    "decorative": [ "handpump-east" ],
-    "mechanics": ["handpump-east"]
+    "general": [ "handpump-*-east" ],
+    "decorative": [ "handpump-*-east" ],
+    "mechanics": ["handpump-*-east"]
+  },
+  "textures": {
+    "metal": { "base": "game:block/metal/sheet-plain/{metal}4" }
   },
   "blockmaterial": "Metal",
   "replaceable": 900,

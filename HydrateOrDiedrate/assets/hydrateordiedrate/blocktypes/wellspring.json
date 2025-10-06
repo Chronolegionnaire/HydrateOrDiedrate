@@ -2,6 +2,9 @@
   "code": "wellspring",
   "class": "BlockWellSpring",
   "entityclass": "BlockEntityWellSpring",
+  "entityBehaviors": [
+    { "name": "BEBehaviorWellSpringNode" }
+  ],
   "storageFlags": 5,
   "attributes": {
     "handbook": {

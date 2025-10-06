@@ -1,4 +1,5 @@
-using HydrateOrDiedrate.FluidNetwork;  // <- important
+// HydrateOrDiedrate.Pipes.Pipe/BlockPipe.cs
+using HydrateOrDiedrate.FluidNetwork;  // for FluidInterfaces
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -14,15 +15,12 @@ namespace HydrateOrDiedrate.Pipes.Pipe
 
         // ===== IFluidBlock =====
 
-        // All 6 faces connect if the neighbor is also a fluid block / pipe
-        public bool HasFluidConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
-        {
-            // Optional: gate by shape/variant; default: all faces open.
-            return true;
-        }
+        // All faces are open by default (gate here if different models/variants need it)
+        public bool HasFluidConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face) => true;
 
         public void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {
+            // Refresh this block (and optionally its neighbor) after a network attach
             world.BlockAccessor.MarkBlockDirty(pos);
         }
 
@@ -31,15 +29,14 @@ namespace HydrateOrDiedrate.Pipes.Pipe
             var be = world.BlockAccessor.GetBlockEntity(pos);
             // Prefer the pipe behavior, but fall back to any fluid base behavior
             return be?.GetBehavior<BEBehaviorPipe>()?.Network
-                   ?? be?.GetBehavior<BEBehaviorFluidBase>()?.Network;
+                ?? be?.GetBehavior<BEBehaviorFluidBase>()?.Network;
         }
 
-        // ===== vanilla hooks (unchanged) =====
+        // ===== vanilla hooks =====
 
         public override void OnBlockPlaced(IWorldAccessor world, BlockPos pos, ItemStack byItemStack = null)
         {
             base.OnBlockPlaced(world, pos, byItemStack);
-
             var beh = world.BlockAccessor.GetBlockEntity(pos)?.GetBehavior<BEBehaviorPipe>();
             if (beh != null)
             {
@@ -47,10 +44,10 @@ namespace HydrateOrDiedrate.Pipes.Pipe
             }
         }
 
-
         public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos)
         {
             base.OnNeighbourBlockChange(world, pos, neibpos);
+
             var beh = world.BlockAccessor.GetBlockEntity(pos)?.GetBehavior<BEBehaviorPipe>();
             if (beh != null)
             {

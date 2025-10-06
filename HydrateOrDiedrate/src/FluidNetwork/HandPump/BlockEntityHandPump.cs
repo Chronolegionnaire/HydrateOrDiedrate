@@ -10,18 +10,18 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
 {
     public class BlockEntityHandPump : BlockEntityOpenableContainer
     {
-        // Tune these
-        public const float PumpRateLitresPerSec = 1.25f;   // demand rate while held
-        public const float IntakeLitresPerSec   = 8f;      // how fast we bottle arriving fluid from our node
-
+        // Rates
+        public const float PumpRateLitresPerSec = 1.25f; // draw rate from the node (creates deficit)
+        public const float IntakeLitresPerSec   = 8f;    // bottling rate into the container
+        private float bottleCarryLitres = 0f;
         public IPlayer PumpingPlayer { get; private set; }
 
-        public override string InventoryClassName => "handpump";
-        public override InventoryBase Inventory { get; }
+        public override string       InventoryClassName => "handpump";
+        public override InventoryBase Inventory         { get; }
 
         public ItemSlot ContainerSlot => Inventory[0];
 
-        // Shortcuts to embedded fluid behavior (attached via block JSON "entityBehaviors": [{ "name": "BEBehaviorPipe" }] or your fluid behavior name)
+        // Our embedded fluid behavior
         public BEBehaviorFluidBase Fluid { get; private set; }
 
         public BlockEntityHandPump()
@@ -32,12 +32,13 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
         public override void Initialize(ICoreAPI api)
         {
             base.Initialize(api);
-            Fluid = GetBehavior<BEBehaviorFluidBase>();
-            // Optional: smaller local capacity so this node doesn’t “store”, it just pulls and forwards
+
+            // Attach the hand-pump fluid behavior
+            Fluid = GetBehavior<BEBehaviorHandPump>();
             if (Fluid != null)
             {
-                Fluid.capacity     = 5f;
-                Fluid.conductance  = 1f;
+                Fluid.capacity    = 5f;
+                Fluid.conductance = 1f;
             }
 
             if (api.Side == EnumAppSide.Server)
@@ -49,19 +50,18 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
         public void TryAutoJoinNetwork()
         {
             if (Fluid == null) return;
-            foreach (var f in BlockFacing.ALLFACES)
-                Fluid.CreateJoinAndDiscoverNetwork(f);
+            // Only connect downward
+            Fluid.CreateJoinAndDiscoverNetwork(BlockFacing.DOWN);
         }
 
-
-        // Start on selectionboxindex 1
         public bool TryStartPumping(IPlayer player)
         {
             if (PumpingPlayer != null) return false;
-            if (ContainerSlot.Empty) return false;
+            if (ContainerSlot.Empty)   return false;
             if (ContainerSlot.Itemstack?.Collectible is not BlockLiquidContainerBase) return false;
 
             PumpingPlayer = player;
+            Fluid?.SetDemand(Fluid.capacity);   // start pulling immediately
             MarkDirty();
             return true;
         }
@@ -69,92 +69,98 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
         public void StopPumping()
         {
             PumpingPlayer = null;
+            Fluid?.SetDemand(0f);               // stop pulling
             MarkDirty();
         }
 
-        // Continuously called while right-click held
+
         public bool ContinuePumping(float dt)
         {
             if (PumpingPlayer == null || Fluid == null || ContainerSlot.Empty) return false;
 
-            // 1) Create network demand by making our node go negative unclamped
-            var draw = PumpRateLitresPerSec * dt;
-            if (Fluid is BEBehaviorFluidBase be)
-            {
-                be.RemoveFluid(draw, clamp: false); // go negative
-            }
-            else
-            {
-                Fluid.RemoveFluid(draw); // fallback (clamped)
-            }
+            // Pull toward a full local buffer while pumping
+            Fluid.SetDemand(Fluid.capacity);
 
-            // 2) Bottle any fluid currently available in this node (what arrived this tick)
+            // Give the network a little tug so the pump fills promptly
+            var burstLitres = Math.Max(0.1f, PumpRateLitresPerSec * dt);
+            Fluid.TryImmediatePullFromNeighbors(burstLitres);
+
+            // Bottle what actually arrived
             TryFillContainerFromNode(IntakeLitresPerSec * dt);
 
-            // stay in “use”
             return true;
         }
 
-        // Pull up to 'maxLitres' from our node into the container
+
         private void TryFillContainerFromNode(float maxLitres)
         {
+            if (maxLitres <= 0f) return;
             if (ContainerSlot.Empty || Fluid == null) return;
             if (ContainerSlot.Itemstack?.Collectible is not BlockLiquidContainerBase container) return;
 
-            // Ensure network type consistency: only fill if network is assigned and the container either empty or same type
-            var net = Fluid.Network;
-            if (net == null || net.FluidCodeShort == null) return;
+            // Require an existing content type to avoid guessing. (Otherwise bail.)
+            var contentStack = container.GetContent(ContainerSlot.Itemstack);
+            if (contentStack == null) return;
 
-            var contContent = container.GetContent(ContainerSlot.Itemstack);
-            if (contContent != null && contContent.Collectible?.Code?.ToShortString() != net.FluidCodeShort) return;
+            // Free space (litres) in the *target* stack
+            var currentLitres = container.GetCurrentLitres(ContainerSlot.Itemstack);
+            var freeLitres = Math.Max(0f, container.CapacityLitres - currentLitres);
+            if (freeLitres <= 0f) return;
 
-            if (maxLitres <= 0) return;
+            // Conversion ratio for THIS liquid
+            var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
+            float itemsPerLitre = (props != null && props.ItemsPerLitre > 0f) ? props.ItemsPerLitre : 100f;
 
-            // How much space is in the container?
-            var curL = container.GetCurrentLitres(ContainerSlot.Itemstack);
-            var free = Math.Max(0f, container.CapacityLitres - curL);
-            if (free <= 0f) return;
+            // Peek available litres at the node (don’t remove yet)
+            float availLitres = Math.Min(maxLitres, Math.Max(0f, Fluid.Volume));
+            if (availLitres <= 0f) return;
 
-            var toTake = Math.Min(free, maxLitres);
+            // Total litres we could turn into items this tick (including carry)
+            float totalLitres = bottleCarryLitres + availLitres;
 
-            // Remove *actual* litres from our node (clamped to what we have >=0 first)
-            // If our node is still negative (no arrival yet), skip—next tick it will be refilled by providers/peers.
-            if (Fluid.Volume <= 0f) return;
+            // How many items would that be?
+            int potentialItems = (int)Math.Floor(totalLitres * itemsPerLitre + 1e-6f);
+            if (potentialItems <= 0) return;
 
-            float got = Fluid.RemoveFluidToLitres(Math.Min(toTake, Fluid.Volume));
-            if (got <= 0f) return;
+            // But don’t overfill the container
+            // Compute max additional items we can fit: convert free litres to items
+            int freeItemsCapacity = (int)Math.Floor(freeLitres * itemsPerLitre + 1e-6f);
+            if (freeItemsCapacity <= 0) return;
 
-            // Convert litres to items sized by the network’s fluid props
-            var itemsPerL = net.FluidProps?.ItemsPerLitre ?? 100f;
-            int addItems = (int)Math.Floor(got * itemsPerL + 1e-6f);
-            if (addItems <= 0) return;
+            int itemsToAdd = Math.Min(potentialItems, freeItemsCapacity);
+            if (itemsToAdd <= 0) return;
 
-            var toStack = EnsureContainerItemType(container, ContainerSlot.Itemstack, net, Api);
-            if (toStack == null) return;
+            // Exact litres required for those items
+            float litresNeeded = itemsToAdd / itemsPerLitre;
 
-            toStack.StackSize += addItems;
-            container.SetContent(ContainerSlot.Itemstack, toStack);
+            // Remove exactly what we will bottle
+            float gotLitres = Fluid.RemoveFluidToLitres(litresNeeded);
+            if (gotLitres <= 0f) return;
+
+            // Recompute items from actual litres removed (safety against rounding)
+            itemsToAdd = (int)Math.Floor((bottleCarryLitres + gotLitres) * itemsPerLitre + 1e-6f);
+            if (itemsToAdd <= 0)
+            {
+                bottleCarryLitres += gotLitres;
+                return;
+            }
+
+            // Recompute litres actually consumed by those items, update carry
+            float litresConsumed = itemsToAdd / itemsPerLitre;
+            bottleCarryLitres = bottleCarryLitres + gotLitres - litresConsumed;
+            if (bottleCarryLitres < 1e-6f) bottleCarryLitres = 0f;
+
+            // Apply to the container
+            contentStack.StackSize += itemsToAdd;
+            container.SetContent(ContainerSlot.Itemstack, contentStack);
+
             ContainerSlot.MarkDirty();
             MarkDirty();
         }
 
-        private ItemStack EnsureContainerItemType(BlockLiquidContainerBase container, ItemStack containerStack, FluidNetwork net, ICoreAPI api)
-        {
-            var existing = container.GetContent(containerStack);
-            if (existing != null) return existing;
-
-            // Seed the container content stack for this network’s fluid
-            var item = api.World.GetItem(net.FluidCode);
-            if (item == null) return null;
-
-            var seed = new ItemStack(item, 0);
-            return seed;
-        }
-
         private void ServerTick(float dt)
         {
-            // If player stopped holding, nothing to do here.
-            // Could add ambient sounds or idle update if desired.
+            // Idle hook (sound, particles, etc.) — currently unused.
         }
 
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolve)
@@ -167,6 +173,8 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
                 Inventory.FromTreeAttributes(inv);
                 if (Api != null) Inventory.AfterBlocksLoaded(Api.World);
             }
+
+            bottleCarryLitres = tree.GetFloat("bottle-carry-l", bottleCarryLitres);
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
@@ -176,6 +184,8 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
             var invTree = new TreeAttribute();
             Inventory.ToTreeAttributes(invTree);
             tree["inventory"] = invTree;
+
+            tree.SetFloat("bottle-carry-l", bottleCarryLitres);
         }
 
         public override void OnBlockRemoved()

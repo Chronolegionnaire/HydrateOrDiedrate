@@ -1,6 +1,6 @@
+// HydrateOrDiedrate.Pipes.Pipe/BlockEntityPipe.cs
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.MathTools;
 
 namespace HydrateOrDiedrate.Pipes.Pipe
 {
@@ -13,10 +13,7 @@ namespace HydrateOrDiedrate.Pipes.Pipe
         {
             base.Initialize(api);
             capi = api as ICoreClientAPI;
-            if (capi != null)
-            {
-                pipeTess = new PipeTesselation(capi);
-            }
+            if (capi != null) pipeTess = new PipeTesselation(capi);
         }
 
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tess)
