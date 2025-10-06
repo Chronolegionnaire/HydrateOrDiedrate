@@ -1,47 +1,61 @@
 using System;
 using System.Linq;
-using HydrateorDiedrate.FluidNetwork;
-using HydrateOrDiedrate.FluidNetwork;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.GameContent;
+using Vintagestory.GameContent; // for BlockLiquidContainerBase.GetContainableProps
 
 namespace HydrateOrDiedrate.FluidNetwork
 {
     public abstract class BEBehaviorFluidBase : BlockEntityBehavior, FluidInterfaces.IFluidDevice
     {
         protected FluidModSystem manager;
-        protected HydrateOrDiedrate.FluidNetwork.FluidNetwork network;
+        protected FluidNetwork network;
 
         // Basic node state
         public float volume;
         public float capacity = 100f;   // override per block
         public float conductance = 1f;  // 0..1 per-face openness
-        const float NegativeFloor = -1f;
+
+        // New: target/set-point in litres (0..capacity). While volume < demand -> negative pressure (pull).
+        protected float demand = 0f;
 
         // IFluidNode
-        public float Volume   => volume;
-        public float Capacity => capacity;
-        public float Pressure => capacity > 0 ? volume / capacity : 0f;
+        public virtual float Volume   => volume;
+        public virtual float Capacity => capacity;
+
+        /// <summary>
+        /// Pressure relative to desired fill level. Negative => below target (pull), positive => above target (push).
+        /// Returned as an integer-valued float (litres) to stabilize directionality.
+        /// </summary>
+        public virtual float Pressure
+        {
+            get
+            {
+                var rawDeltaLitres = capacity > 0f ? (volume - demand) : 0f;
+                int intLitres = (int)MathF.Round(rawDeltaLitres);
+                return intLitres;
+            }
+        }
+
+        /// <summary>
+        /// How much this node can PROVIDE right now for the network step (in litres),
+        /// respecting conservation. Default: you can only give what you physically hold.
+        /// Providers (e.g., well-spring) should override to surface their external store.
+        /// </summary>
+        public virtual float ProvideCap => Math.Max(0f, Volume);
+
+        /// <summary>
+        /// How much this node can RECEIVE right now (in litres). Default: free local space.
+        /// Consumers with special buffering can override if needed.
+        /// </summary>
+        public virtual float ReceiveCap => Math.Max(0f, Capacity - Volume);
 
         public long NetworkId { get; protected set; }
-        public HydrateOrDiedrate.FluidNetwork.FluidNetwork Network => network;
+        public FluidNetwork Network => network;
 
         public virtual BlockFacing DefaultOutFacing => BlockFacing.NORTH;
-        protected const bool VerboseLogging = true; // flip to false to reduce noise
 
-        protected void Log(string msg)
-        {
-            if (Api == null) return;
-            Api.Logger.Notification($"[FluidNet] {Blockentity?.Pos} {msg}");
-        }
-
-        protected void VLog(string msg)
-        {
-            if (!VerboseLogging || Api == null) return;
-            Api.Logger.Notification($"[FluidNet][V] {Blockentity?.Pos} {msg}");
-        }
         public BEBehaviorFluidBase(BlockEntity be) : base(be) {}
 
         public override void Initialize(ICoreAPI api, JsonObject properties)
@@ -55,6 +69,33 @@ namespace HydrateOrDiedrate.FluidNetwork
                 api.World.RegisterCallback(_ => SafeDiscover(), 0);
             }
         }
+        
+        public override void ToTreeAttributes(ITreeAttribute tree)
+        {
+            base.ToTreeAttributes(tree);
+            tree.SetFloat("fluid-vol", volume);
+            tree.SetFloat("fluid-cap", capacity);
+            tree.SetFloat("fluid-cond", conductance);
+            tree.SetFloat("fluid-demand", demand);
+            tree.SetLong("fluid-netid", NetworkId);
+        }
+
+        public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldAccessForResolve)
+        {
+            base.FromTreeAttributes(tree, worldAccessForResolve);
+            volume      = tree.GetFloat("fluid-vol", volume);
+            capacity    = tree.GetFloat("fluid-cap", capacity);
+            conductance = tree.GetFloat("fluid-cond", conductance);
+            demand      = tree.GetFloat("fluid-demand", demand);
+            // Clamp demand in case capacity changed via config or block swap
+            demand = GameMath.Clamp(demand, 0f, Math.Max(0f, capacity));
+            // Also clamp volume to new capacity and non-negative
+            volume = GameMath.Clamp(volume, 0f, Math.Max(0f, capacity));
+            NetworkId   = tree.GetLong("fluid-netid", NetworkId);
+        }
+
+        // Change this so we actually sync to clients when state changed
+        protected void MarkDirty(bool send = true) => Blockentity?.MarkDirty(send);
 
         void SafeDiscover()
         {
@@ -62,310 +103,216 @@ namespace HydrateOrDiedrate.FluidNetwork
             {
                 CreateJoinAndDiscoverNetwork(DefaultOutFacing);
             }
-            catch (Exception) { /* ignore to avoid spam; can log if desired */ }
+            catch (Exception)
+            {
+                // Swallow to avoid log spam; optional: add logging here
+            }
         }
 
         public BlockPos GetPosition() => Blockentity.Pos;
 
         public virtual float GetConductance(BlockFacing towards) => conductance;
 
-        public void AddFluid(float amount)
+        public virtual void AddFluid(float amount)
         {
-            // Positive inflow; clamp to capacity
             if (amount <= 0f) return;
-            volume = Math.Min(capacity, volume + amount);
-            MarkDirty();
+            // Mass is conserved: never let volume go negative or exceed capacity
+            volume = Math.Min(capacity, Math.Max(0f, volume + amount));
+            MarkDirty(true);
         }
 
-        public void RemoveFluid(float amount)
+        public virtual void RemoveFluid(float amount)
         {
-            // Outflow/demand; allow negative down to -1
             if (amount <= 0f) return;
-            volume = Math.Max(NegativeFloor, volume - amount);
-            MarkDirty();
-        }
-
-        // Unclamped overloads (for “negative pull” behavior)
-        public void AddFluid(float amount, bool clamp)
-        {
-            if (clamp) volume = Math.Min(capacity, volume + amount);
-            else       volume = volume + amount;
-            MarkDirty();
-        }
-
-        public void RemoveFluid(float amount, bool clamp)
-        {
-            if (clamp) volume = Math.Max(0, volume - amount);
-            else       volume = volume - amount;
-            MarkDirty();
+            // Never sink below 0 now
+            volume = Math.Max(0f, volume - amount);
+            MarkDirty(true);
         }
 
         public virtual void OnAfterFlowStep(float damping)
         {
-            // hook for leakage / smoothing if needed later
+            // IMPORTANT: do not damp volume. That deleted mass and erased suction.
+            // If you want smoothing, you can optionally relax demand:
+            // demand *= damping;
+            // if (demand < 1e-4f) demand = 0f;    // (only if your nodes set demand dynamically)
         }
 
-        // ---- Networking ----
-        public virtual void JoinNetwork(HydrateOrDiedrate.FluidNetwork.FluidNetwork nw)
+        public virtual void JoinNetwork(FluidNetwork nw)
         {
             if (nw == null) return;
-            if (network != null && network != nw)
-            {
-                Log($"Switching net {network.networkId} -> {nw.networkId}");
-                LeaveNetwork();
-            }
-
+            if (network != null && network != nw) LeaveNetwork();
             if (network == null)
             {
                 network = nw;
                 nw.Join(this);
-                Log($"JOINED net {nw.networkId}");
-                // Opportunistically register adjacent providers (e.g., wells)
-                if (Api?.Side == EnumAppSide.Server)
-                {
-                    var ba = Api.World.BlockAccessor;
-                    foreach (var f in BlockFacing.ALLFACES)
-                    {
-                        var nbe = ba.GetBlockEntity(GetPosition().AddCopy(f));
-                        var prov = nbe as FluidInterfaces.IFluidExternalProvider
-                                   ?? (nbe?.Behaviors?.FirstOrDefault(b => b is FluidInterfaces.IFluidExternalProvider)
-                                       as FluidInterfaces.IFluidExternalProvider);
-                        if (prov != null) nw.RegisterProvider(prov);
-                    }
-                }
             }
-
             NetworkId = nw.networkId;
-            MarkDirty();
+            MarkDirty(true);
         }
 
         public virtual void LeaveNetwork()
         {
             if (network != null)
             {
-                Log($"LEAVING net {network.networkId}");
                 network.Leave(this);
                 network = null;
             }
             NetworkId = 0;
-            MarkDirty();
+            MarkDirty(true);
         }
 
         public override void OnBlockRemoved()
         {
             base.OnBlockRemoved();
-
-            var nw = network;
-            LeaveNetwork();
-
-            // Do not delete network here. Let remaining nodes keep it alive.
-            nw?.mod?.TestFullyLoaded(nw);
-            nw?.Rebuild(this);
+            LeaveNetwork(); // lean network: no rebuild/fullyLoaded bookkeeping
         }
 
         // ---- Connectivity policy ----
-        // We consider connected if neighbor block advertises a connector on our opposite face
+        // Consider connected if neighbor block advertises a connector on our opposite face,
+        // or if neighbor BE has a fluid behavior at all.
         public virtual bool IsConnectedTowards(BlockFacing towards)
         {
             var npos = GetPosition().AddCopy(towards);
             var ba   = Api.World.BlockAccessor;
 
-            // 1) If neighbor block advertises IFluidBlock, respect its face gate
             if (ba.GetBlock(npos) is FluidInterfaces.IFluidBlock ifb)
-            {
-                bool ok = ifb.HasFluidConnectorAt(Api.World, npos, towards.Opposite);
-                VLog($"Probe {towards.Code} -> {npos}: IFluidBlock={ok}");
-                return ok;
-            }
+                return ifb.HasFluidConnectorAt(Api.World, npos, towards.Opposite);
 
-            // 2) Otherwise, connect if neighbor BE has a fluid behavior at all
-            bool hasBeh = ba.GetBlockEntity(npos)?.GetBehavior<BEBehaviorFluidBase>() != null;
-            VLog($"Probe {towards.Code} -> {npos}: BEBehaviorFluidBase={hasBeh}");
-            return hasBeh;
+            return ba.GetBlockEntity(npos)?.GetBehavior<BEBehaviorFluidBase>() != null;
         }
-
 
         public virtual bool TryConnect(BlockFacing towards)
         {
             var npos = GetPosition().AddCopy(towards);
-            var ba = Api.World.BlockAccessor;
+            var ba   = Api.World.BlockAccessor;
 
-            FluidInterfaces.IFluidBlock ifb = ba.GetBlock(npos) as FluidInterfaces.IFluidBlock;
+            var ifb      = ba.GetBlock(npos) as FluidInterfaces.IFluidBlock;
             var nbeFluid = ba.GetBlockEntity(npos)?.GetBehavior<BEBehaviorFluidBase>();
 
-            // If neither IFluidBlock nor fluid BE exists, nothing to do
-            if (ifb == null && nbeFluid == null)
-            {
-                VLog($"TryConnect {towards.Code} -> {npos}: no fluid-capable neighbor");
-                return false;
-            }
+            // No fluid neighbor
+            if (ifb == null && nbeFluid == null) return false;
 
-            // If there is an IFluidBlock gate, honor its face rule
+            // Gate by IFluidBlock face if present
             if (ifb != null && !ifb.HasFluidConnectorAt(Api.World, npos, towards.Opposite))
-            {
-                VLog($"TryConnect {towards.Code} -> {npos}: neighbor face closed");
                 return false;
-            }
 
-            // 1) Try to adopt neighbor’s network (from IFluidBlock first)
-            FluidNetwork neighborNet = ifb?.GetNetwork(Api.World, npos) ?? nbeFluid?.Network;
-
+            // 1) Adopt neighbor network if available
+            var neighborNet = ifb?.GetNetwork(Api.World, npos) ?? nbeFluid?.Network;
             if (neighborNet != null)
             {
                 if (network != null && !FluidNetwork.FluidsCompatible(network, neighborNet))
-                {
-                    Log($"TryConnect {towards.Code}: INCOMPATIBLE fluids with net {neighborNet.networkId}");
                     return false;
-                }
 
-                Log($"TryConnect {towards.Code}: adopting neighbor net {neighborNet.networkId}");
                 JoinNetwork(neighborNet);
-
                 Vec3i _;
-                bool ok = JoinAndSpreadNetworkToNeighbours(Api, neighborNet, towards.Opposite, out _);
-                VLog($"Spread after adopt: {ok}");
-                return ok;
+                return JoinAndSpreadNetworkToNeighbours(Api, neighborNet, towards.Opposite, out _);
             }
 
-            // 2) If neighbor has a BE but no net yet, invite it to connect back into ours (or force-create ours)
+            // 2) If neighbor has a BE but no net yet, create ours and invite back
             if (network == null)
             {
                 var nw = manager.CreateNetwork(this);
                 JoinNetwork(nw);
-                Log($"TryConnect {towards.Code}: created net {nw.networkId} (no neighbor net yet)");
             }
 
             if (nbeFluid != null)
-            {
-                VLog($"TryConnect {towards.Code}: asking neighbor BE to join our net {network.networkId}");
-                // Call their TryConnect from the other side so they adopt our net
                 return nbeFluid.TryConnect(towards.Opposite);
-            }
 
             return false;
         }
-
 
         public FluidNetwork CreateJoinAndDiscoverNetwork(BlockFacing outward)
         {
             var ba = Api.World.BlockAccessor;
 
-            // 1) Look for ANY neighbor with a net (IFluidBlock first, then BE)
+            // Look for ANY neighbor with an existing network (IFluidBlock first, then BE)
             FluidNetwork neighborNet = null;
+
             foreach (var f in BlockFacing.ALLFACES)
             {
                 var npos = GetPosition().AddCopy(f);
 
-                // IFluidBlock path
                 if (ba.GetBlock(npos) is FluidInterfaces.IFluidBlock ifb)
                 {
                     var nnet = ifb.GetNetwork(Api.World, npos);
                     if (nnet != null) { neighborNet = nnet; break; }
                 }
 
-                // BE behavior path
                 var nbeFluid = ba.GetBlockEntity(npos)?.GetBehavior<BEBehaviorFluidBase>();
                 if (nbeFluid?.Network != null) { neighborNet = nbeFluid.Network; break; }
             }
 
-            // 2) Target: neighbor’s net or ours or create new
+            // Use neighbor’s net, ours, or create new
             var target = neighborNet ?? network ?? manager.CreateNetwork(this);
-            Log(neighborNet != null
-                ? $"Adopting neighbor net {target.networkId}"
-                : (network != null ? $"Reusing net {target.networkId}" : $"Created net {target.networkId}"));
-
             JoinNetwork(target);
 
-            // 3) Spread to all faces; missing chunks mark not-fully-loaded
+            // Fan out to all valid faces (lean: no chunk/fullyLoaded checks)
             foreach (var f in BlockFacing.ALLFACES)
             {
-                if (!IsConnectedTowards(f)) { VLog($"No connection on face {f.Code}"); continue; }
+                if (!IsConnectedTowards(f)) continue;
                 var exitPos = GetPosition().AddCopy(f);
-                if (!SpreadTo(Api, target, exitPos, f, out var missing))
-                {
-                    target.fullyLoaded = false;
-                    Log($"Spread {f.Code} -> {exitPos}: missing chunk {missing}");
-                }
-                else
-                {
-                    VLog($"Spread {f.Code} -> {exitPos}: ok");
-                }
+                SpreadTo(Api, target, exitPos, f, out _);
             }
 
             return target;
         }
 
-protected bool SpreadTo(ICoreAPI api, FluidNetwork nw, BlockPos exitPos, BlockFacing face, out Vec3i missingChunkPos)
-{
-    var ba   = api.World.BlockAccessor;
-    var be   = ba.GetBlockEntity(exitPos);
-    var next = be?.GetBehavior<BEBehaviorFluidBase>();
-    var nblk = ba.GetBlock(exitPos) as FluidInterfaces.IFluidBlock;
-
-    if (next != null || ba.GetChunkAtBlockPos(exitPos) != null)
-    {
-        if (next != null)
+        protected bool SpreadTo(ICoreAPI api, FluidNetwork nw, BlockPos exitPos, BlockFacing face, out Vec3i _)
         {
-            bool okFace = (nblk?.HasFluidConnectorAt(api.World, exitPos, face.Opposite)) ?? true;
-            if (!okFace) { VLog($"Spread blocked by face gate at {exitPos}"); missingChunkPos = null; return true; }
+            _ = null; // lean network: ignore missing chunk bookkeeping
 
-            var nextNet = next.Network;
-            if (nextNet != null && !FluidNetwork.FluidsCompatible(nw, nextNet))
+            var ba   = api.World.BlockAccessor;
+            var be   = ba.GetBlockEntity(exitPos);
+            var next = be?.GetBehavior<BEBehaviorFluidBase>();
+            var nblk = ba.GetBlock(exitPos) as FluidInterfaces.IFluidBlock;
+
+            // If we have a neighbor behavior, try to join/spread into it (respecting IFluidBlock gating)
+            if (next != null)
             {
-                VLog($"Spread blocked: incompatible fluids at {exitPos} (net {nextNet.networkId})");
-                missingChunkPos = null; return true;
+                bool okFace = (nblk?.HasFluidConnectorAt(api.World, exitPos, face.Opposite)) ?? true;
+                if (!okFace) return true;
+
+                var nextNet = next.Network;
+                if (nextNet != null && !FluidNetwork.FluidsCompatible(nw, nextNet))
+                    return true;
+
+                next.Api = api;
+                return next.JoinAndSpreadNetworkToNeighbours(api, nw, face.Opposite, out _);
             }
 
-            VLog($"Spread join -> {exitPos}");
-            next.Api = api;
-            return next.JoinAndSpreadNetworkToNeighbours(api, nw, face.Opposite, out missingChunkPos);
+            // If there’s no neighbor BE, nothing to do
+            return true;
         }
-        VLog($"Spread noop: chunk loaded at {exitPos} but no fluid BE");
-        missingChunkPos = null; return true;
-    }
-
-    if (!OutsideMap(ba, exitPos))
-    {
-        missingChunkPos = new Vec3i(exitPos.X / 32, exitPos.Y / 32, exitPos.Z / 32);
-        return false;
-    }
-
-    VLog($"Spread ignored: outside map at {exitPos}");
-    missingChunkPos = null;
-    return true;
-}
-
 
         public virtual bool JoinAndSpreadNetworkToNeighbours(
             ICoreAPI api,
-            HydrateOrDiedrate.FluidNetwork.FluidNetwork nw,
+            FluidNetwork nw,
             BlockFacing entryFrom,
             out Vec3i missingChunkPos)
         {
             missingChunkPos = null;
-
             if (nw == null) return true;
 
-            // Reject incompatible merges
+            // Reject incompatible merges (always true in lean network, but call remains)
             if (network != null && network.networkId != 0 && !FluidNetwork.FluidsCompatible(network, nw))
-                return true; // treat as boundary; don't error
+                return true;
 
             if (network?.networkId == nw.networkId) return true;
 
             JoinNetwork(nw);
 
-            // Let our block know we connected at this face
+            // Let the block know we connected on this face
             (Block as FluidInterfaces.IFluidBlock)?.DidConnectAt(api.World, GetPosition(), entryFrom);
 
             // Fan out to neighbors
             foreach (var f in BlockFacing.ALLFACES)
             {
                 if (!IsConnectedTowards(f)) continue;
-
                 var exitPos = GetPosition().AddCopy(f);
                 if (!SpreadTo(api, nw, exitPos, f, out missingChunkPos))
                 {
-                    return false; // a chunk missing, caller will handle
+                    // lean network: we never report missing chunks, just continue
+                    continue;
                 }
             }
 
@@ -375,9 +322,7 @@ protected bool SpreadTo(ICoreAPI api, FluidNetwork nw, BlockPos exitPos, BlockFa
         bool OutsideMap(IBlockAccessor ba, BlockPos p)
             => p.X < 0 || p.X >= ba.MapSizeX || p.Y < 0 || p.Y >= ba.MapSizeY || p.Z < 0 || p.Z >= ba.MapSizeZ;
 
-        protected void MarkDirty() => Blockentity?.MarkDirty(false);
-
-        // --------------- Item/Litre helpers (unchanged semantics) ---------------
+        // --------------- Item/Litre helpers (lean, no network typing) ---------------
         public bool AddFluidFromItem(ItemStack portion, float litresRequested, out float acceptedLitres)
         {
             acceptedLitres = 0f;
@@ -385,22 +330,14 @@ protected bool SpreadTo(ICoreAPI api, FluidNetwork nw, BlockPos exitPos, BlockFa
 
             EnsureNetwork();
 
-            if (network.FluidCodeShort == null)
-            {
-                if (!network.TryAssignFluidFrom(portion, Api)) return false;
-            }
-            else
-            {
-                var code = portion.Collectible?.Code?.ToShortString();
-                if (!network.FluidCodeShort.Equals(code, StringComparison.Ordinal)) return false;
-            }
-
             float free = Capacity - Volume;
             if (free <= 0) return false;
 
             acceptedLitres = Math.Min(free, Math.Max(0, litresRequested));
+            if (acceptedLitres <= 0f) return false;
+
             AddFluid(acceptedLitres);
-            return acceptedLitres > 0;
+            return true;
         }
 
         public bool AddItemsAsFluid(ItemStack portion, int items, out int acceptedItems)
@@ -410,24 +347,16 @@ protected bool SpreadTo(ICoreAPI api, FluidNetwork nw, BlockPos exitPos, BlockFa
 
             EnsureNetwork();
 
-            if (network.FluidCodeShort == null)
-            {
-                if (!network.TryAssignFluidFrom(portion, Api)) return false;
-            }
-            else
-            {
-                var code = portion.Collectible?.Code?.ToShortString();
-                if (!network.FluidCodeShort.Equals(code, StringComparison.Ordinal)) return false;
-            }
+            // Use item props if available; otherwise default 1 item = 1 litre
+            var props = BlockLiquidContainerBase.GetContainableProps(portion);
+            float litresPerItem = (props != null && props.ItemsPerLitre > 0f)
+                ? 1f / props.ItemsPerLitre
+                : 1f;
 
-            var props = network.FluidProps ?? BlockLiquidContainerBase.GetContainableProps(portion);
-            if (props == null) return false;
+            float freeLitres = Capacity - Volume;
+            if (freeLitres <= 0f) return false;
 
-            float litresPerItem = 1f / Math.Max(0.00001f, props.ItemsPerLitre);
-            float freeLitres    = Capacity - Volume;
-            if (freeLitres <= 0) return false;
-
-            int canAccept = (int)Math.Floor(freeLitres / litresPerItem + 1e-6f);
+            int canAccept = (int)Math.Floor(freeLitres / Math.Max(1e-6f, litresPerItem) + 1e-6f);
             acceptedItems = Math.Min(items, canAccept);
             if (acceptedItems <= 0) return false;
 
@@ -439,21 +368,22 @@ protected bool SpreadTo(ICoreAPI api, FluidNetwork nw, BlockPos exitPos, BlockFa
         {
             float give = Math.Min(Volume, Math.Max(0, litresRequested));
             RemoveFluid(give);
-            network?.ClearFluidIfEmpty();
             return give;
         }
 
         public int RemoveFluidToItems(int maxItems)
         {
-            if (network?.FluidProps == null || Volume <= 0 || maxItems <= 0) return 0;
+            if (Volume <= 0 || maxItems <= 0) return 0;
 
-            float litresPerItem = 1f / Math.Max(0.00001f, network.FluidProps.ItemsPerLitre);
-            int   maxByVolume   = (int)Math.Floor(Volume / litresPerItem + 1e-6f);
-            int   items         = Math.Min(maxItems, maxByVolume);
+            // Without network typing, assume 1 item = 1 litre here.
+            // If you need item-aware conversion, perform it at the caller using a known portion type.
+            float litresPerItem = 1f;
+
+            int maxByVolume = (int)Math.Floor(Volume / Math.Max(1e-6f, litresPerItem) + 1e-6f);
+            int items       = Math.Min(maxItems, maxByVolume);
 
             float litres = items * litresPerItem;
             RemoveFluid(litres);
-            network.ClearFluidIfEmpty();
             return items;
         }
 
@@ -474,5 +404,55 @@ protected bool SpreadTo(ICoreAPI api, FluidNetwork nw, BlockPos exitPos, BlockFa
             var nw = manager.CreateNetwork(this);
             JoinNetwork(nw);
         }
+
+        /// <summary>
+        /// Optional helper for pumps/consumers to tug one hop immediately.
+        /// Uses neighbors' ProvideCap (so providers like wells can give without local buffer).
+        /// </summary>
+        public void TryImmediatePullFromNeighbors(float maxLitres)
+        {
+            if (Network == null || maxLitres <= 0f) return;
+
+            // Need is how far we are below target (if at/above target, do nothing).
+            float shortfall = Math.Max(0f, demand - volume);
+            if (shortfall <= 0f) return;
+
+            float need = Math.Min(shortfall, maxLitres);
+
+            var myPos = GetPosition();
+            var ba    = Api.World.BlockAccessor;
+
+            foreach (var face in BlockFacing.ALLFACES)
+            {
+                if (need <= 0f) break;
+                if (!IsConnectedTowards(face)) continue;
+
+                var npos = myPos.AddCopy(face);
+                var nbe  = ba.GetBlockEntity(npos)?.GetBehavior<BEBehaviorFluidBase>();
+                if (nbe == null || !nbe.IsConnectedTowards(face.Opposite)) continue;
+
+                var key = new PosKey(npos);
+                if (!Network.nodes.TryGetValue(key, out var node)) continue;
+                if (ReferenceEquals(node, this)) continue;
+
+                // Respect neighbor's declared provide capacity (pipes: actual volume; wells: available store).
+                float giveCap = (node as BEBehaviorFluidBase)?.ProvideCap ?? Math.Max(0f, node.Volume);
+                if (giveCap <= 0f) continue;
+
+                float give = Math.Min(giveCap, need);
+                (node as BEBehaviorFluidBase)?.RemoveFluid(give);
+                AddFluid(give);
+                need -= give;
+            }
+        }
+
+        // ---- Convenience for pumps/consumers to set target fill (litres) ----
+        public virtual void SetDemand(float targetLitres)
+        {
+            demand = GameMath.Clamp(targetLitres, 0f, Math.Max(0f, capacity));
+            MarkDirty(true);
+        }
+
+        public virtual float GetDemand() => demand;
     }
 }

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using HydrateOrDiedrate.FluidNetwork;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -13,7 +12,7 @@ using Vintagestory.API.MathTools;
 
 namespace HydrateOrDiedrate.Wells.WellWater;
 
-public class BlockEntityWellSpring : BlockEntity, ITexPositionSource, FluidInterfaces.IFluidExternalProvider
+public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 {
     private const int updateIntervalMs = 500;
 
