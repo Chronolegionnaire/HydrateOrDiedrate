@@ -1,7 +1,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.FluidNetwork.HandPump
+namespace HydrateOrDiedrate.Piping.HandPump
 {
     public static class BlockHandPumpHelpers
     {

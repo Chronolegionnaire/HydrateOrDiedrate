@@ -1,8 +1,7 @@
-// HydrateOrDiedrate.Pipes.Pipe/BlockEntityPipe.cs
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 
-namespace HydrateOrDiedrate.Pipes.Pipe
+namespace HydrateOrDiedrate.Piping.Pipe
 {
     public class BlockEntityPipe : BlockEntity
     {
