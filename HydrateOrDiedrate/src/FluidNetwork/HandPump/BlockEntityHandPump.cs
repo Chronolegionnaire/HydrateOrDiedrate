@@ -1,3 +1,4 @@
+// HydrateOrDiedrate.FluidNetwork.HandPump/BlockEntityHandPump.cs
 using System;
 using System.Linq;
 using HydrateOrDiedrate.FluidNetwork;
@@ -73,7 +74,6 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
             MarkDirty();
         }
 
-
         public bool ContinuePumping(float dt)
         {
             if (PumpingPlayer == null || Fluid == null || ContainerSlot.Empty) return false;
@@ -91,49 +91,70 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
             return true;
         }
 
-
+        // HydrateOrDiedrate.FluidNetwork.HandPump/BlockEntityHandPump.cs
         private void TryFillContainerFromNode(float maxLitres)
         {
             if (maxLitres <= 0f) return;
             if (ContainerSlot.Empty || Fluid == null) return;
             if (ContainerSlot.Itemstack?.Collectible is not BlockLiquidContainerBase container) return;
 
-            // Require an existing content type to avoid guessing. (Otherwise bail.)
             var contentStack = container.GetContent(ContainerSlot.Itemstack);
-            if (contentStack == null) return;
 
-            // Free space (litres) in the *target* stack
+            // If empty, seed with the network's fluid code so type is known
+            if (contentStack == null)
+            {
+                var netCode = Fluid?.Network?.FluidCode;
+                if (string.IsNullOrWhiteSpace(netCode)) return; // require priming if net is untyped
+
+                var liq = Api.World.GetItem(new AssetLocation(netCode)) as CollectibleObject
+                          ?? Api.World.GetBlock(new AssetLocation(netCode)) as CollectibleObject;
+                if (liq == null) return;
+
+                var seed = new ItemStack(liq, 0);
+                if (BlockLiquidContainerBase.GetContainableProps(seed) == null) return;
+
+                container.SetContent(ContainerSlot.Itemstack, seed);
+                contentStack = seed;
+            }
+
+            // Free space (L) in the target stack
             var currentLitres = container.GetCurrentLitres(ContainerSlot.Itemstack);
             var freeLitres = Math.Max(0f, container.CapacityLitres - currentLitres);
             if (freeLitres <= 0f) return;
 
-            // Conversion ratio for THIS liquid
+            // Conversion for THIS liquid
             var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
             float itemsPerLitre = (props != null && props.ItemsPerLitre > 0f) ? props.ItemsPerLitre : 100f;
 
-            // Peek available litres at the node (don’t remove yet)
+            // Peek available, cap by our intake rate
             float availLitres = Math.Min(maxLitres, Math.Max(0f, Fluid.Volume));
-            if (availLitres <= 0f) return;
-
-            // Total litres we could turn into items this tick (including carry)
             float totalLitres = bottleCarryLitres + availLitres;
 
-            // How many items would that be?
+            // How many items could we mint with what we have *right now*?
             int potentialItems = (int)Math.Floor(totalLitres * itemsPerLitre + 1e-6f);
             if (potentialItems <= 0) return;
 
-            // But don’t overfill the container
-            // Compute max additional items we can fit: convert free litres to items
+            // Don’t overfill the container (convert free L -> free items)
             int freeItemsCapacity = (int)Math.Floor(freeLitres * itemsPerLitre + 1e-6f);
             if (freeItemsCapacity <= 0) return;
 
             int itemsToAdd = Math.Min(potentialItems, freeItemsCapacity);
             if (itemsToAdd <= 0) return;
 
-            // Exact litres required for those items
+            // EXACT litres required for those items
             float litresNeeded = itemsToAdd / itemsPerLitre;
 
-            // Remove exactly what we will bottle
+            // ---- NEW: actively pull the deficit from the network before removing ----
+            float missing = Math.Max(0f, litresNeeded - Fluid.Volume);
+            if (missing > 0f)
+            {
+                // keep suction on; we only have a 5L buffer so this will be clamped internally anyway
+                Fluid.SetDemand(Fluid.capacity);
+                Fluid.TryImmediatePullFromNeighbors(missing);
+            }
+            // -------------------------------------------------------------------------
+
+            // Remove exactly what we will bottle (debited from node/network)
             float gotLitres = Fluid.RemoveFluidToLitres(litresNeeded);
             if (gotLitres <= 0f) return;
 
@@ -145,12 +166,10 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
                 return;
             }
 
-            // Recompute litres actually consumed by those items, update carry
             float litresConsumed = itemsToAdd / itemsPerLitre;
             bottleCarryLitres = bottleCarryLitres + gotLitres - litresConsumed;
             if (bottleCarryLitres < 1e-6f) bottleCarryLitres = 0f;
 
-            // Apply to the container
             contentStack.StackSize += itemsToAdd;
             container.SetContent(ContainerSlot.Itemstack, contentStack);
 

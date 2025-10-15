@@ -439,6 +439,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         return (isFresh, pollution);
     }
 
+
     private void ReconcileStoredVolumeWithWorld()
     {
         var ba = Api.World.BlockAccessor;
@@ -450,53 +451,14 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         int? partialHeight = null;
         int muddyBlockCount = 0;
 
-        for (int i = 0; i < depth; i++)
-        {
-            pos.Y++;
-            var fluid = ba.GetFluid(pos);
-            if (!WellBlockUtils.IsOurWellwater(fluid)) break;
+        // ... (existing scan code unchanged) ...
 
-            if (detectedFresh == null)
-            {
-                var (isFresh, pol) = ParseTypeFromFluid(fluid);
-                detectedFresh = isFresh;
-                detectedPollution = string.IsNullOrEmpty(pol) ? "clean" : pol;
-            }
-
-            bool isMuddy = (fluid?.Variant?["pollution"]) == "muddy";
-            if (isMuddy)
-            {
-                muddyBlockCount++;
-                continue;
-            }
-            var hStr = fluid?.Variant?["height"];
-            if (hStr == null)
-            {
-                fullVolumeNonMuddy += VolumeFromHeight(7);
-                continue;
-            }
-            if (int.TryParse(hStr, out int h) && h > 0)
-            {
-                if (h >= 7)
-                {
-                    fullVolumeNonMuddy += VolumeFromHeight(7);
-                }
-                else
-                {
-                    partialHeight = h;
-                    break;
-                }
-            }
-            else
-            {
-                fullVolumeNonMuddy += VolumeFromHeight(7);
-            }
-        }
         if (detectedFresh != null)
         {
             LastWaterType = GetWaterType(detectedFresh.Value, detectedPollution);
             currentPollution = detectedPollution;
         }
+
         int minVolume, maxVolume, reconcileTarget;
         if (detectedPollution == "muddy" && muddyBlockCount > 0)
         {
@@ -518,11 +480,30 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             reconcileTarget = fullVolumeNonMuddy;
         }
 
-        if (totalLiters < minVolume || totalLiters > maxVolume)
+        // ----- CHANGED SECTION STARTS -----
+        // After the initial bootstrap reconcile, trust totalLiters and push to the world.
+        bool storeOutOfRange = totalLiters < minVolume || totalLiters > maxVolume;
+
+        if (!didInitialReconcile)
         {
-            totalLiters = reconcileTarget;
-            MarkDirty(true);
+            // Bootstrap behavior: adopt the world's current column into the store.
+            if (storeOutOfRange)
+            {
+                totalLiters = reconcileTarget;
+                MarkDirty(true);
+            }
         }
+        else
+        {
+            // Runtime behavior: store is authoritative. If the world doesn't match, push the store into the world.
+            if (storeOutOfRange)
+            {
+                SyncWaterColumn(); // push 'totalLiters' to world column
+                // Do NOT change totalLiters here.
+            }
+        }
+        // ----- CHANGED SECTION ENDS -----
+
         int capacity = GetRetentionDepth() * GetMaxVolumeForWaterType(LastWaterType ?? "fresh-well-clean");
         if (totalLiters > capacity)
         {

@@ -1,3 +1,4 @@
+// HydrateOrDiedrate/FluidNetwork/BEBehaviorFluidBase.cs
 using System;
 using System.Linq;
 using Vintagestory.API.Common;
@@ -15,18 +16,18 @@ namespace HydrateOrDiedrate.FluidNetwork
         // Basic node state
         public float volume;
         public float capacity = 100f;   // override per block
-        public float conductance = 1f;  // 0..1 per-face openness
+        public float conductance = 1f;  // 0..1 openness (used per-face; override IsConnectedTowards for gating)
 
-        // New: target/set-point in litres (0..capacity). While volume < demand -> negative pressure (pull).
+        // Target/set-point in litres (0..capacity). While volume < demand -> negative pressure (pull).
         protected float demand = 0f;
 
         // IFluidNode
         public virtual float Volume   => volume;
         public virtual float Capacity => capacity;
-
+        
+        public virtual string ProvidedFluidCode => null;
         /// <summary>
-        /// Pressure relative to desired fill level. Negative => below target (pull), positive => above target (push).
-        /// Returned as an integer-valued float (litres) to stabilize directionality.
+        /// Pressure relative to desired fill level (integerized litres).
         /// </summary>
         public virtual float Pressure
         {
@@ -38,17 +39,10 @@ namespace HydrateOrDiedrate.FluidNetwork
             }
         }
 
-        /// <summary>
-        /// How much this node can PROVIDE right now for the network step (in litres),
-        /// respecting conservation. Default: you can only give what you physically hold.
-        /// Providers (e.g., well-spring) should override to surface their external store.
-        /// </summary>
+        /// <summary>How much this node can PROVIDE right now (default: what it physically holds).</summary>
         public virtual float ProvideCap => Math.Max(0f, Volume);
 
-        /// <summary>
-        /// How much this node can RECEIVE right now (in litres). Default: free local space.
-        /// Consumers with special buffering can override if needed.
-        /// </summary>
+        /// <summary>How much this node can RECEIVE right now (default: free local space).</summary>
         public virtual float ReceiveCap => Math.Max(0f, Capacity - Volume);
 
         public long NetworkId { get; protected set; }
@@ -69,7 +63,7 @@ namespace HydrateOrDiedrate.FluidNetwork
                 api.World.RegisterCallback(_ => SafeDiscover(), 0);
             }
         }
-        
+
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
@@ -87,14 +81,12 @@ namespace HydrateOrDiedrate.FluidNetwork
             capacity    = tree.GetFloat("fluid-cap", capacity);
             conductance = tree.GetFloat("fluid-cond", conductance);
             demand      = tree.GetFloat("fluid-demand", demand);
-            // Clamp demand in case capacity changed via config or block swap
+
             demand = GameMath.Clamp(demand, 0f, Math.Max(0f, capacity));
-            // Also clamp volume to new capacity and non-negative
             volume = GameMath.Clamp(volume, 0f, Math.Max(0f, capacity));
             NetworkId   = tree.GetLong("fluid-netid", NetworkId);
         }
 
-        // Change this so we actually sync to clients when state changed
         protected void MarkDirty(bool send = true) => Blockentity?.MarkDirty(send);
 
         void SafeDiscover()
@@ -105,7 +97,7 @@ namespace HydrateOrDiedrate.FluidNetwork
             }
             catch (Exception)
             {
-                // Swallow to avoid log spam; optional: add logging here
+                // swallow to avoid log spam
             }
         }
 
@@ -116,7 +108,6 @@ namespace HydrateOrDiedrate.FluidNetwork
         public virtual void AddFluid(float amount)
         {
             if (amount <= 0f) return;
-            // Mass is conserved: never let volume go negative or exceed capacity
             volume = Math.Min(capacity, Math.Max(0f, volume + amount));
             MarkDirty(true);
         }
@@ -124,28 +115,46 @@ namespace HydrateOrDiedrate.FluidNetwork
         public virtual void RemoveFluid(float amount)
         {
             if (amount <= 0f) return;
-            // Never sink below 0 now
             volume = Math.Max(0f, volume - amount);
             MarkDirty(true);
         }
 
+        /// <summary>
+        /// Called by the compiled solver to apply net flow without reentrancy.
+        /// </summary>
+        public virtual void SetVolumeFromNetwork(float newVolume, float delta)
+        {
+            if (Math.Abs(newVolume - volume) < 1e-6f) return;
+            volume = newVolume;
+            // Avoid network spam; the network ticks at 50Hz — let batching handle sends.
+            MarkDirty(false);
+        }
+
         public virtual void OnAfterFlowStep(float damping)
         {
-            // IMPORTANT: do not damp volume. That deleted mass and erased suction.
-            // If you want smoothing, you can optionally relax demand:
+            // Do not damp volume (destroys mass). Optionally relax demand in subclasses.
             // demand *= damping;
-            // if (demand < 1e-4f) demand = 0f;    // (only if your nodes set demand dynamically)
+            // if (demand < 1e-4f) demand = 0f;
         }
 
         public virtual void JoinNetwork(FluidNetwork nw)
         {
             if (nw == null) return;
             if (network != null && network != nw) LeaveNetwork();
+
             if (network == null)
             {
                 network = nw;
+
+                // NEW: let providers announce the network's fluid type
+                if (!string.IsNullOrWhiteSpace(ProvidedFluidCode))
+                {
+                    nw.EnsureFluidCode(ProvidedFluidCode);
+                }
+
                 nw.Join(this);
             }
+
             NetworkId = nw.networkId;
             MarkDirty(true);
         }
@@ -164,12 +173,10 @@ namespace HydrateOrDiedrate.FluidNetwork
         public override void OnBlockRemoved()
         {
             base.OnBlockRemoved();
-            LeaveNetwork(); // lean network: no rebuild/fullyLoaded bookkeeping
+            LeaveNetwork();
         }
 
         // ---- Connectivity policy ----
-        // Consider connected if neighbor block advertises a connector on our opposite face,
-        // or if neighbor BE has a fluid behavior at all.
         public virtual bool IsConnectedTowards(BlockFacing towards)
         {
             var npos = GetPosition().AddCopy(towards);
@@ -189,10 +196,8 @@ namespace HydrateOrDiedrate.FluidNetwork
             var ifb      = ba.GetBlock(npos) as FluidInterfaces.IFluidBlock;
             var nbeFluid = ba.GetBlockEntity(npos)?.GetBehavior<BEBehaviorFluidBase>();
 
-            // No fluid neighbor
             if (ifb == null && nbeFluid == null) return false;
 
-            // Gate by IFluidBlock face if present
             if (ifb != null && !ifb.HasFluidConnectorAt(Api.World, npos, towards.Opposite))
                 return false;
 
@@ -205,7 +210,11 @@ namespace HydrateOrDiedrate.FluidNetwork
 
                 JoinNetwork(neighborNet);
                 Vec3i _;
-                return JoinAndSpreadNetworkToNeighbours(Api, neighborNet, towards.Opposite, out _);
+                bool ok = JoinAndSpreadNetworkToNeighbours(Api, neighborNet, towards.Opposite, out _);
+
+                // topology may have changed (new edge)
+                neighborNet.MarkDirtyTopology();
+                return ok;
             }
 
             // 2) If neighbor has a BE but no net yet, create ours and invite back
@@ -216,7 +225,11 @@ namespace HydrateOrDiedrate.FluidNetwork
             }
 
             if (nbeFluid != null)
-                return nbeFluid.TryConnect(towards.Opposite);
+            {
+                bool ok = nbeFluid.TryConnect(towards.Opposite);
+                network?.MarkDirtyTopology();
+                return ok;
+            }
 
             return false;
         }
@@ -242,11 +255,9 @@ namespace HydrateOrDiedrate.FluidNetwork
                 if (nbeFluid?.Network != null) { neighborNet = nbeFluid.Network; break; }
             }
 
-            // Use neighbor’s net, ours, or create new
             var target = neighborNet ?? network ?? manager.CreateNetwork(this);
             JoinNetwork(target);
 
-            // Fan out to all valid faces (lean: no chunk/fullyLoaded checks)
             foreach (var f in BlockFacing.ALLFACES)
             {
                 if (!IsConnectedTowards(f)) continue;
@@ -254,19 +265,21 @@ namespace HydrateOrDiedrate.FluidNetwork
                 SpreadTo(Api, target, exitPos, f, out _);
             }
 
+            // topology changed by discovery
+            target.MarkDirtyTopology();
+
             return target;
         }
 
         protected bool SpreadTo(ICoreAPI api, FluidNetwork nw, BlockPos exitPos, BlockFacing face, out Vec3i _)
         {
-            _ = null; // lean network: ignore missing chunk bookkeeping
+            _ = null;
 
             var ba   = api.World.BlockAccessor;
             var be   = ba.GetBlockEntity(exitPos);
             var next = be?.GetBehavior<BEBehaviorFluidBase>();
             var nblk = ba.GetBlock(exitPos) as FluidInterfaces.IFluidBlock;
 
-            // If we have a neighbor behavior, try to join/spread into it (respecting IFluidBlock gating)
             if (next != null)
             {
                 bool okFace = (nblk?.HasFluidConnectorAt(api.World, exitPos, face.Opposite)) ?? true;
@@ -277,10 +290,13 @@ namespace HydrateOrDiedrate.FluidNetwork
                     return true;
 
                 next.Api = api;
-                return next.JoinAndSpreadNetworkToNeighbours(api, nw, face.Opposite, out _);
+                bool ok = next.JoinAndSpreadNetworkToNeighbours(api, nw, face.Opposite, out _);
+
+                // edge added
+                nw.MarkDirtyTopology();
+                return ok;
             }
 
-            // If there’s no neighbor BE, nothing to do
             return true;
         }
 
@@ -293,7 +309,6 @@ namespace HydrateOrDiedrate.FluidNetwork
             missingChunkPos = null;
             if (nw == null) return true;
 
-            // Reject incompatible merges (always true in lean network, but call remains)
             if (network != null && network.networkId != 0 && !FluidNetwork.FluidsCompatible(network, nw))
                 return true;
 
@@ -301,34 +316,31 @@ namespace HydrateOrDiedrate.FluidNetwork
 
             JoinNetwork(nw);
 
-            // Let the block know we connected on this face
             (Block as FluidInterfaces.IFluidBlock)?.DidConnectAt(api.World, GetPosition(), entryFrom);
 
-            // Fan out to neighbors
             foreach (var f in BlockFacing.ALLFACES)
             {
                 if (!IsConnectedTowards(f)) continue;
                 var exitPos = GetPosition().AddCopy(f);
                 if (!SpreadTo(api, nw, exitPos, f, out missingChunkPos))
                 {
-                    // lean network: we never report missing chunks, just continue
                     continue;
                 }
             }
 
+            nw.MarkDirtyTopology();
             return true;
         }
 
-        bool OutsideMap(IBlockAccessor ba, BlockPos p)
-            => p.X < 0 || p.X >= ba.MapSizeX || p.Y < 0 || p.Y >= ba.MapSizeY || p.Z < 0 || p.Z >= ba.MapSizeZ;
-
-        // --------------- Item/Litre helpers (lean, no network typing) ---------------
         public bool AddFluidFromItem(ItemStack portion, float litresRequested, out float acceptedLitres)
         {
             acceptedLitres = 0f;
             if (portion == null) return false;
 
             EnsureNetwork();
+
+            // NEW: adopt type from *portion* if network is untyped
+            network?.EnsureFluidCode(portion.Collectible?.Code?.ToString());
 
             float free = Capacity - Volume;
             if (free <= 0) return false;
@@ -347,7 +359,9 @@ namespace HydrateOrDiedrate.FluidNetwork
 
             EnsureNetwork();
 
-            // Use item props if available; otherwise default 1 item = 1 litre
+            // NEW: adopt type from *portion* if network is untyped
+            network?.EnsureFluidCode(portion.Collectible?.Code?.ToString());
+
             var props = BlockLiquidContainerBase.GetContainableProps(portion);
             float litresPerItem = (props != null && props.ItemsPerLitre > 0f)
                 ? 1f / props.ItemsPerLitre
@@ -375,10 +389,7 @@ namespace HydrateOrDiedrate.FluidNetwork
         {
             if (Volume <= 0 || maxItems <= 0) return 0;
 
-            // Without network typing, assume 1 item = 1 litre here.
-            // If you need item-aware conversion, perform it at the caller using a known portion type.
             float litresPerItem = 1f;
-
             int maxByVolume = (int)Math.Floor(Volume / Math.Max(1e-6f, litresPerItem) + 1e-6f);
             int items       = Math.Min(maxItems, maxByVolume);
 
@@ -391,7 +402,6 @@ namespace HydrateOrDiedrate.FluidNetwork
         {
             if (network != null) return;
 
-            // Try adopting any neighbor first
             foreach (var f in BlockFacing.ALLFACES)
             {
                 var npos = GetPosition().AddCopy(f);
@@ -400,7 +410,6 @@ namespace HydrateOrDiedrate.FluidNetwork
                 if (nnet != null) { JoinNetwork(nnet); return; }
             }
 
-            // Otherwise create new
             var nw = manager.CreateNetwork(this);
             JoinNetwork(nw);
         }
@@ -413,7 +422,6 @@ namespace HydrateOrDiedrate.FluidNetwork
         {
             if (Network == null || maxLitres <= 0f) return;
 
-            // Need is how far we are below target (if at/above target, do nothing).
             float shortfall = Math.Max(0f, demand - volume);
             if (shortfall <= 0f) return;
 
@@ -435,7 +443,6 @@ namespace HydrateOrDiedrate.FluidNetwork
                 if (!Network.nodes.TryGetValue(key, out var node)) continue;
                 if (ReferenceEquals(node, this)) continue;
 
-                // Respect neighbor's declared provide capacity (pipes: actual volume; wells: available store).
                 float giveCap = (node as BEBehaviorFluidBase)?.ProvideCap ?? Math.Max(0f, node.Volume);
                 if (giveCap <= 0f) continue;
 
@@ -450,6 +457,7 @@ namespace HydrateOrDiedrate.FluidNetwork
         public virtual void SetDemand(float targetLitres)
         {
             demand = GameMath.Clamp(targetLitres, 0f, Math.Max(0f, capacity));
+            // demand changes don't affect topology/weights
             MarkDirty(true);
         }
 

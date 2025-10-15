@@ -1,5 +1,5 @@
 // HydrateOrDiedrate.Pipes.Pipe/BlockPipe.cs
-using HydrateOrDiedrate.FluidNetwork;  // for FluidInterfaces
+using HydrateOrDiedrate.FluidNetwork;  // for FluidInterfaces, BEBehaviorFluidBase
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -20,14 +20,14 @@ namespace HydrateOrDiedrate.Pipes.Pipe
 
         public void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {
-            // Refresh this block (and optionally its neighbor) after a network attach
             world.BlockAccessor.MarkBlockDirty(pos);
+            var beh = world.BlockAccessor.GetBlockEntity(pos)?.GetBehavior<BEBehaviorPipe>();
+            beh?.Network?.MarkDirtyTopology();
         }
 
         public FluidNetwork.FluidNetwork GetNetwork(IWorldAccessor world, BlockPos pos)
         {
             var be = world.BlockAccessor.GetBlockEntity(pos);
-            // Prefer the pipe behavior, but fall back to any fluid base behavior
             return be?.GetBehavior<BEBehaviorPipe>()?.Network
                 ?? be?.GetBehavior<BEBehaviorFluidBase>()?.Network;
         }
@@ -41,6 +41,7 @@ namespace HydrateOrDiedrate.Pipes.Pipe
             if (beh != null)
             {
                 foreach (var f in BlockFacing.ALLFACES) beh.TryConnect(f);
+                beh.Network?.MarkDirtyTopology();
             }
         }
 
@@ -52,6 +53,7 @@ namespace HydrateOrDiedrate.Pipes.Pipe
             if (beh != null)
             {
                 foreach (var f in BlockFacing.ALLFACES) beh.TryConnect(f);
+                beh.Network?.MarkDirtyTopology();
             }
             MarkSelfAndNeighborsDirty(world, pos);
         }
