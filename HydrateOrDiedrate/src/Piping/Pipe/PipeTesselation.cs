@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Text;
-using HydrateOrDiedrate.FluidNetwork;
+using HydrateOrDiedrate.Piping.FluidNetwork;
 using HydrateOrDiedrate.Wells.WellWater;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace HydrateOrDiedrate.Pipes.Pipe
+namespace HydrateOrDiedrate.Piping.Pipe
 {
     public class PipeTesselation
     {
@@ -26,11 +26,12 @@ namespace HydrateOrDiedrate.Pipes.Pipe
         {
             this.capi = capi;
         }
+
         public bool TryTesselate(Block block, BlockPos pos, ICoreAPI api, ITerrainMeshPool mesher, ITesselatorAPI tess)
         {
             if (capi == null || block == null || api == null) return false;
 
-            var (count, letters) = BuildKey(api, pos);
+            var (count, letters) = BuildKey(block, api, pos);
             string cacheKey = $"{count}-{letters}";
 
             MeshData mesh = GetOrCreateMesh(block, tess, count, letters, cacheKey);
@@ -43,20 +44,29 @@ namespace HydrateOrDiedrate.Pipes.Pipe
             return true;
         }
 
-        (int count, string letters) BuildKey(ICoreAPI api, BlockPos at)
+        (int count, string letters) BuildKey(Block selfBlock, ICoreAPI api, BlockPos at)
         {
+            var selfFluid = selfBlock as IFluidBlock;
             var set = new HashSet<char>();
             int count = 0;
 
             for (int i = 0; i < Faces.Length; i++)
             {
-                var face   = Faces[i];
-                var npos   = at.AddCopy(face);
+                var face = Faces[i];
+                var npos = at.AddCopy(face);
+                var nb = api.World.BlockAccessor.GetBlock(npos);
+                bool selfAllows = selfFluid?.HasFluidConnectorAt(api.World, at, face) ?? true;
+                if (!selfAllows) continue;
+                bool isWellBlock = nb is BlockWellSpring;
+                bool isWellBE    = api.World.BlockAccessor.GetBlockEntity(npos) is BlockEntityWellSpring;
 
-                // We need the neighbor to have a connector facing *back toward us*
-                var towardsUs = face.Opposite;
-
-                if (HasFluidConnectorAt(api, npos, towardsUs))
+                if (isWellBlock || isWellBE)
+                {
+                    set.Add(FaceLetters[i]);
+                    count++;
+                    continue;
+                }
+                if (nb is IFluidBlock nFluid && nFluid.HasFluidConnectorAt(api.World, npos, face.Opposite))
                 {
                     set.Add(FaceLetters[i]);
                     count++;
@@ -64,44 +74,11 @@ namespace HydrateOrDiedrate.Pipes.Pipe
             }
 
             const string order = "nsewud";
-            var sb = new StringBuilder();
+            var sb = new StringBuilder(order.Length);
             foreach (char c in order)
-            {
                 if (set.Contains(c)) sb.Append(c);
-            }
 
             return (count, sb.ToString());
-        }
-        static bool HasFluidConnectorAt(ICoreAPI api, BlockPos pos, BlockFacing faceTowardsUs)
-        {
-            var ba = api.World.BlockAccessor;
-
-            // 1) Block-level fluid interface
-            var nb = ba.GetBlock(pos);
-            if (nb is FluidInterfaces.IFluidBlock fblock)
-            {
-                if (fblock.HasFluidConnectorAt(api.World, pos, faceTowardsUs)) return true;
-            }
-
-            // 2) BlockEntity-level fluid interface (devices, tanks, pumps, etc.)
-            var be = ba.GetBlockEntity(pos);
-            if (be is FluidInterfaces.IFluidDevice fdev)
-            {
-                // Prefer a non-mutating check
-                if (fdev.IsConnectedTowards(faceTowardsUs)) return true;
-
-                // Fallback heuristic: if conductance is positive, treat as a connector
-                // (only if IsConnectedTowards isn't authoritative for your devices)
-                try
-                {
-                    if (fdev.GetConductance(faceTowardsUs) > 0) return true;
-                }
-                catch { /* ignore if not meaningful */ }
-            }
-
-            // 3) Legacy: treat neighboring pipes as connectable
-            // (If your BlockPipe already implements IFluidBlock, you can remove this.)
-            return nb is BlockPipe;
         }
 
         MeshData GetOrCreateMesh(Block block, ITesselatorAPI tess, int count, string letters, string cacheKey)
@@ -140,8 +117,8 @@ namespace HydrateOrDiedrate.Pipes.Pipe
         {
             char c = letters[0];
             return (c == 'n' || c == 's') ? "ns"
-                : (c == 'e' || c == 'w') ? "ew"
-                : "ud";
+                 : (c == 'e' || c == 'w') ? "ew"
+                 : "ud";
         }
     }
 }

@@ -1,57 +1,42 @@
-// HydrateOrDiedrate.FluidNetwork.HandPump/BlockHandPump.cs
-using HydrateOrDiedrate.FluidNetwork;
-using HydrateOrDiedrate.FluidNetwork.HandPump;
+using HydrateOrDiedrate.Piping.FluidNetwork;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace HydrateOrDiedrate.FluidNetwork.HandPump
+namespace HydrateOrDiedrate.Piping.HandPump
 {
-    public class BlockHandPump : Block, FluidInterfaces.IFluidBlock
+    public class BlockHandPump : Block, IFluidBlock   // <-- implement IFluidBlock
     {
-        // ----- IFluidBlock -----
+        // Only expose a connector on the DOWN face
+        public bool HasFluidConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face) =>
+            face == BlockFacing.DOWN;
+
         public void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {
-            var be = world.BlockAccessor.GetBlockEntity(pos);
-            be?.MarkDirty();
-            (be?.GetBehavior<BEBehaviorHandPump>()?.Network)?.MarkDirtyTopology();
+            world.BlockAccessor.GetBlockEntity(pos)?.MarkDirty();
         }
-
-        public bool HasFluidConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
-        {
-            // Pump only connects downward into a pipe/net
-            return face == BlockFacing.DOWN;
-        }
-
-        public FluidNetwork GetNetwork(IWorldAccessor world, BlockPos pos)
-        {
-            var be = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityHandPump;
-            return be?.Fluid?.Network;
-        }
-
-        // ----- vanilla hooks -----
 
         public override void OnBlockPlaced(IWorldAccessor world, BlockPos pos, ItemStack byItemStack = null)
         {
             base.OnBlockPlaced(world, pos, byItemStack);
-
-            var beh = world.BlockAccessor.GetBlockEntity(pos)?.GetBehavior<BEBehaviorHandPump>();
-            if (beh != null)
-            {
-                beh.TryConnect(BlockFacing.DOWN);
-                beh.Network?.MarkDirtyTopology();
-            }
+            // Nudge the block below (pipe) to re-tesselate immediately
+            world.BlockAccessor.MarkBlockDirty(pos);
+            world.BlockAccessor.MarkBlockDirty(pos.DownCopy());
         }
 
         public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos)
         {
             base.OnNeighbourBlockChange(world, pos, neibpos);
-            var beh = world.BlockAccessor.GetBlockEntity(pos)?.GetBehavior<BEBehaviorHandPump>();
-            if (beh != null)
-            {
-                beh.TryConnect(BlockFacing.DOWN);
-                beh.Network?.MarkDirtyTopology();
-            }
+
+            // Re-resolve the well path if something around us changed
+            if (world.BlockAccessor.GetBlockEntity(pos) is BlockEntityHandPump be) be.InvalidateCachedWell();
+
+            // Force nearby pipes to re-tesselate (helps client visuals be snappy)
+            world.BlockAccessor.MarkBlockDirty(pos);
+            world.BlockAccessor.MarkBlockDirty(pos.DownCopy());
         }
+
+
+        // ----- Interactions -----
 
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
         {
@@ -61,13 +46,15 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
             {
                 switch (blockSel.SelectionBoxIndex)
                 {
-                    case 0: // container slot UX (swap/transfer)
+                    case 0: // container slot UX (like winch)
                     {
                         var sourceSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
                         if (sourceSlot == null) break;
 
+                        // flip with BE slot if types match-ish
                         if ((sourceSlot.Empty != be.ContainerSlot.Empty) && sourceSlot.TryFlipWith(be.ContainerSlot)) return true;
 
+                        // try transfer liquid (winch helper reused)
                         if (BlockHandPumpHelpers.TryTransferLiquidInto(sourceSlot.Itemstack, be.ContainerSlot.Itemstack))
                         {
                             sourceSlot.MarkDirty();
@@ -77,6 +64,7 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
                             return true;
                         }
 
+                        // or try from BE to player’s container
                         if (BlockHandPumpHelpers.TryTransferLiquidInto(be.ContainerSlot.Itemstack, sourceSlot.Itemstack))
                         {
                             sourceSlot.MarkDirty();
@@ -102,8 +90,10 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
         {
             if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityHandPump be && be.PumpingPlayer == byPlayer)
             {
-                // keep demanding + filling
-                return be.ContinuePumping(0.1f);
+                // secondsUsed is cumulative since interaction start; we need its delta
+                float dt = secondsUsed - be.lastSecondsUsed;
+                be.lastSecondsUsed = secondsUsed;
+                return be.ContinuePumping(dt);
             }
             return base.OnBlockInteractStep(secondsUsed, world, byPlayer, blockSel);
         }

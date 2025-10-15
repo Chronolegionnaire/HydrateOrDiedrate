@@ -2,9 +2,6 @@
   "code": "handpump",
   "class": "BlockHandPump",
   "entityclass": "BlockEntityHandPump",
-  "entityBehaviors": [
-    { "name": "BEBehaviorHandPump" }
-  ],
   "behaviors": [
     {"name": "Container"},
     {
