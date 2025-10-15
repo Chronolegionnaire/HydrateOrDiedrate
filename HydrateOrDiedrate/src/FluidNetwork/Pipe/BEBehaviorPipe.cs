@@ -10,7 +10,7 @@ namespace HydrateOrDiedrate.Pipes.Pipe
     {
         public BEBehaviorPipe(BlockEntity be) : base(be)
         {
-            capacity    = 100f; // per-pipe capacity
+            capacity    = 1f; // per-pipe capacity
             conductance = 1f;   // wide open; tune per variant if desired
         }
 
@@ -22,7 +22,6 @@ namespace HydrateOrDiedrate.Pipes.Pipe
             var pos = GetPosition().AddCopy(towards);
             var ba  = Api.World.BlockAccessor;
 
-            // If neighbor implements IFluidBlock, respect its gating, otherwise allow if it has a fluid behavior
             if (ba.GetBlock(pos) is FluidInterfaces.IFluidBlock ifb)
                 return ifb.HasFluidConnectorAt(Api.World, pos, towards.Opposite);
 
@@ -36,8 +35,6 @@ namespace HydrateOrDiedrate.Pipes.Pipe
             base.GetBlockInfo(forPlayer, sb);
             sb.AppendLine($"Pipe   volume: {volume:G3}/{capacity:G3}");
             sb.AppendLine($"Pipe pressure: {Pressure:G3}");
-            // Optional (uncomment if you want to show target fill):
-            // sb.AppendLine($"Pipe  demand:  {GetDemand():G3}");
         }
     }
 }

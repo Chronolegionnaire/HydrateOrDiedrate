@@ -1,3 +1,4 @@
+// HydrateOrDiedrate.FluidNetwork.HandPump/BlockHandPump.cs
 using HydrateOrDiedrate.FluidNetwork;
 using HydrateOrDiedrate.FluidNetwork.HandPump;
 using Vintagestory.API.Common;
@@ -10,7 +11,9 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
         // ----- IFluidBlock -----
         public void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {
-            world.BlockAccessor.GetBlockEntity(pos)?.MarkDirty();
+            var be = world.BlockAccessor.GetBlockEntity(pos);
+            be?.MarkDirty();
+            (be?.GetBehavior<BEBehaviorHandPump>()?.Network)?.MarkDirtyTopology();
         }
 
         public bool HasFluidConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
@@ -35,6 +38,7 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
             if (beh != null)
             {
                 beh.TryConnect(BlockFacing.DOWN);
+                beh.Network?.MarkDirtyTopology();
             }
         }
 
@@ -45,6 +49,7 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
             if (beh != null)
             {
                 beh.TryConnect(BlockFacing.DOWN);
+                beh.Network?.MarkDirtyTopology();
             }
         }
 

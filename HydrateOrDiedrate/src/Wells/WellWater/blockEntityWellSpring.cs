@@ -463,6 +463,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         return (isFresh, pollution);
     }
 
+
     private void ReconcileStoredVolumeWithWorld()
     {
         var ba = Api.World.BlockAccessor;
@@ -520,6 +521,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             LastWaterType = GetWaterType(detectedFresh.Value, detectedPollution);
             currentPollution = detectedPollution;
         }
+
         int minVolume, maxVolume, reconcileTarget;
         if (detectedPollution == "muddy")
         {

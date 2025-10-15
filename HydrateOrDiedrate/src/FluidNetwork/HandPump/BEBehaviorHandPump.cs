@@ -1,5 +1,4 @@
 // HydrateOrDiedrate.FluidNetwork.HandPump/BEBehaviorHandPump.cs
-using System;
 using System.Text;
 using HydrateOrDiedrate.FluidNetwork;
 using Vintagestory.API.Common;
@@ -11,17 +10,28 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
     {
         public BEBehaviorHandPump(BlockEntity be) : base(be)
         {
-            capacity    = 5f;
+            capacity    = 1f;
             conductance = 1f;
+        }
+
+        // Only allow connection downward from the pump node itself
+        public override bool IsConnectedTowards(BlockFacing towards)
+        {
+            if (towards != BlockFacing.DOWN) return false;
+
+            var pos = GetPosition().AddCopy(towards);
+            var ba  = Api.World.BlockAccessor;
+
+            if (ba.GetBlock(pos) is FluidInterfaces.IFluidBlock ifb)
+                return ifb.HasFluidConnectorAt(Api.World, pos, BlockFacing.UP);
+
+            return ba.GetBlockEntity(pos)?.GetBehavior<BEBehaviorFluidBase>() != null;
         }
 
         public override float GetConductance(BlockFacing towards) => conductance;
 
         /// <summary>
         /// After each flow step, drive the node's demand based on whether it's being pumped.
-        /// - Pumping: set demand to our target (here: fill to capacity) and opportunistically
-        ///   do a one-hop pull to accelerate response.
-        /// - Idle: release demand (0) so we don't keep pulling.
         /// </summary>
         public override void OnAfterFlowStep(float damping)
         {
@@ -30,16 +40,12 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
 
             if (isPumping)
             {
-                // Target a full local buffer while actively pumping.
                 SetDemand(capacity);
-
-                // Optional: immediate one-hop pull to reduce latency (no negative volumes).
-                // You can tune this 'maxLitres' burst; using capacity is fine for a small pump.
+                // One-hop tug to reduce latency
                 TryImmediatePullFromNeighbors(capacity);
                 return;
             }
 
-            // Idle → no ongoing target; pressure returns to neutral as volume equals demand (0).
             SetDemand(0f);
         }
 
@@ -48,8 +54,6 @@ namespace HydrateOrDiedrate.FluidNetwork.HandPump
             base.GetBlockInfo(forPlayer, sb);
             sb.AppendLine($"Pump volume:   {volume:G3}/{capacity:G3}");
             sb.AppendLine($"Pump pressure: {Pressure:G3}");
-            // Optional:
-            // sb.AppendLine($"Pump demand:   {GetDemand():G3}");
         }
     }
 }
