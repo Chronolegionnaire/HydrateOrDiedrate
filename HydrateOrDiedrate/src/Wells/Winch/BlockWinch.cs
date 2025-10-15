@@ -68,7 +68,7 @@ public class BlockWinch : BlockMPBase
         var newContent = sourceContainer.GetContent(source);
         if(newContent is null || (existingContent is not null && existingContent.Collectible.Code != newContent.Collectible.Code)) return false;
 
-        var addedLiquid = sourceContainer.TryTakeLiquid(source, remainingSpace);
+        var addedLiquid = sourceContainer.TryTakeLiquid(source, GameMath.Min(remainingSpace, sourceContainer.GetCurrentLitres(source)));
         if(addedLiquid is null) return false;
         addedLiquid.StackSize /= target.StackSize;
         if(existingContent is not null) addedLiquid.StackSize += existingContent.StackSize;
