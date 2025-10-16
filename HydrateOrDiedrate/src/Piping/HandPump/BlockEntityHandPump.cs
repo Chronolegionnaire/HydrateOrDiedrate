@@ -36,7 +36,8 @@ namespace HydrateOrDiedrate.Piping.HandPump
         private int remainingPrimingStrokes;
         private readonly AssetLocation pumpSfx = new AssetLocation("hydrateordiedrate", "sounds/pump1.ogg");
         private float particleAcc;
-
+        private bool pumping;
+        private BEBehaviorHandPumpAnim AnimBh => this.GetBehavior<BEBehaviorHandPumpAnim>();
         public BlockEntityHandPump()
         {
             Inventory = new InventoryGeneric(1, null, null);
@@ -71,13 +72,15 @@ namespace HydrateOrDiedrate.Piping.HandPump
             return true;
         }
 
-
         public void StopPumping()
         {
             PumpingPlayer = null;
             strokeInProgress = false;
+
+            pumping = false;
             MarkDirty();
         }
+
 
         public bool ContinuePumping(float dt)
         {
@@ -234,16 +237,28 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 capi.World.SpawnParticles(p1);
             }, gravityDelayMs);
         }
-
+        
         private void StartStroke()
         {
             strokeInProgress = true;
-            Api.World.PlaySoundAt(pumpSfx, Pos.X + 0.5, Pos.Y + 0.5, Pos.Z + 0.5);
+            Api.World.PlaySoundAt(pumpSfx, Pos.X + 0.5, Pos.Y + 0.5, Pos.Z + 0.5, null, false);
+
+            if (Api.Side == EnumAppSide.Server)
+            {
+                pumping = true;       // <— was WatchedAttributes.SetBool(...)
+                MarkDirty();          // replicate to clients
+            }
         }
+
 
         private void CompleteStroke(BlockLiquidContainerBase cont)
         {
             strokeInProgress = false;
+            if (Api.Side == EnumAppSide.Server)
+            {
+                pumping = false;
+                MarkDirty();
+            }
             if (remainingPrimingStrokes > 0)
             {
                 remainingPrimingStrokes--;
@@ -336,13 +351,22 @@ namespace HydrateOrDiedrate.Piping.HandPump
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolve)
         {
             base.FromTreeAttributes(tree, worldForResolve);
+
             if (tree.HasAttribute("inventory"))
             {
                 var inv = tree.GetTreeAttribute("inventory");
                 Inventory.FromTreeAttributes(inv);
                 if (Api != null) Inventory.AfterBlocksLoaded(Api.World);
             }
+
             pendingDrawLitres = tree.GetFloat("pendingDrawLitres", pendingDrawLitres);
+            pumping = tree.GetBool("pumping", pumping); // keep local in sync
+
+            if (Api?.Side == EnumAppSide.Client && AnimBh != null)
+            {
+                if (pumping && !AnimBh.IsPumping) AnimBh.StartPumpAnim();
+                if (!pumping && AnimBh.IsPumping) AnimBh.StopPumpAnim();
+            }
         }
         
         private ItemStack BuildWellFillStack(BlockEntityWellSpring spring)
@@ -361,10 +385,13 @@ namespace HydrateOrDiedrate.Piping.HandPump
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
+
             var invTree = new TreeAttribute();
             Inventory.ToTreeAttributes(invTree);
             tree["inventory"] = invTree;
+
             tree.SetFloat("pendingDrawLitres", pendingDrawLitres);
+            tree.SetBool("pumping", pumping);   // <— add this
         }
 
         public override void OnBlockRemoved()
