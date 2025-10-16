@@ -1,12 +1,14 @@
-// HydrateOrDiedrate.FluidNetwork.HandPump/BlockEntityHandPump.cs
 using System;
 using System.Collections.Generic;
+using System.IO;
 using HydrateOrDiedrate.Piping.FluidNetwork;
+using HydrateOrDiedrate.Piping.Networking;
 using HydrateOrDiedrate.Wells.WellWater;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Piping.HandPump
@@ -14,7 +16,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
     public class BlockEntityHandPump : BlockEntityOpenableContainer
     {
         public const float PumpRateLitresPerSec = 1.25f;
-        public const float IntakeLitresPerSec   = 8f;
+        public const float IntakeLitresPerSec = 8f;
 
         public IPlayer PumpingPlayer { get; private set; }
         public override string InventoryClassName => "handpump";
@@ -30,12 +32,11 @@ namespace HydrateOrDiedrate.Piping.HandPump
         private const float LitresPerProductiveStroke = 2f;
         private bool strokeInProgress;
         private static bool SamePos(BlockPos a, BlockPos b) => a.X == b.X && a.Y == b.Y && a.Z == b.Z;
-        private float strokeTimer;               
-        private int remainingPrimingStrokes;      
+        private float strokeTimer;
+        private int remainingPrimingStrokes;
         private readonly AssetLocation pumpSfx = new AssetLocation("hydrateordiedrate", "sounds/pump1.ogg");
-        private static SimpleParticleProperties _pumpWaterParticles;
-        private static SimpleParticleProperties _pumpWhiteParticles;
         private float particleAcc;
+
         public BlockEntityHandPump()
         {
             Inventory = new InventoryGeneric(1, null, null);
@@ -44,23 +45,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
         public override void Initialize(ICoreAPI api)
         {
             base.Initialize(api);
-            if (_pumpWaterParticles == null)
-            {
-                _pumpWaterParticles = CreateParticleProps(
-                    ColorUtil.WhiteArgb,
-                    new Vec3f(-0.25f, 0.0f, -0.25f),
-                    new Vec3f(0.25f, 0.6f, 0.25f),
-                    "climateWaterTint"
-                );
-            }
-            if (_pumpWhiteParticles == null)
-            {
-                _pumpWhiteParticles = CreateParticleProps(
-                    ColorUtil.ColorFromRgba(255, 255, 255, 128),
-                    new Vec3f(-0.1f, 0.0f, -0.1f),
-                    new Vec3f(0.1f, 0.2f, 0.1f)
-                );
-            }
             if (api.Side == EnumAppSide.Server)
             {
                 RegisterGameTickListener(ServerTick, 200);
@@ -87,7 +71,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             return true;
         }
 
-        
+
         public void StopPumping()
         {
             PumpingPlayer = null;
@@ -108,6 +92,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 StartStroke();
                 strokeTimer = 0f;
             }
+
             if (strokeInProgress)
             {
                 particleAcc += 40f * Math.Max(0f, dt);
@@ -116,14 +101,42 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 {
                     particleAcc -= emit;
 
-                    // Build a representative stack so color derives from the actual liquid
-                    ItemStack tintStack = null;
-                    var repBlk = GetRepresentativeWellBlockForFilling(cachedWell);
-                    if (repBlk != null) tintStack = new ItemStack(repBlk, 1);
+                    var stack = BuildWellFillStack(cachedWell);
+                    if (stack != null)
+                    {
+                        GetSpout(out var spoutPos, out var spoutDir);
+                        byte[] stackBytes;
+                        using (var ms = new MemoryStream())
+                        using (var bw = new BinaryWriter(ms))
+                        {
+                            stack.ToBytes(bw);
+                            stackBytes = ms.ToArray();
+                        }
 
-                    EmitSpoutParticles(tintStack, Math.Min(emit, 8));
+                        var pkt = new PumpParticleBurstPacket
+                        {
+                            PosX = spoutPos.X, PosY = spoutPos.Y, PosZ = spoutPos.Z,
+                            DirX = spoutDir.X, DirY = 0f, DirZ = spoutDir.Z,
+
+                            Quantity = Math.Min(emit, 14),
+                            Radius = 0.08f,
+                            Scale = 0.23f,
+                            Speed = 0.3f,
+                            VelJitter = 0.0f,
+                            LifeMin = 0.25f,
+                            LifeMax = 0.45f,
+                            Gravity = 1.2f,
+
+                            StackBytes = stackBytes
+                        };
+
+                        ((ICoreServerAPI)Api).Network
+                            .GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID)
+                            .SendPacket(pkt, (IServerPlayer)PumpingPlayer);
+                    }
                 }
             }
+
             strokeTimer += Math.Max(0f, dt);
             if (strokeTimer >= StrokePeriodSec)
             {
@@ -133,6 +146,93 @@ namespace HydrateOrDiedrate.Piping.HandPump
             }
 
             return true;
+        }
+
+        private void GetSpout(out Vec3d pos, out Vec3f dir)
+        {
+            var block = Api.World.BlockAccessor.GetBlock(Pos);
+            string side = block?.Variant?["side"] ?? block?.Variant?["horizontalorientation"] ?? "north";
+            var face = BlockFacing.FromCode(side) ?? BlockFacing.NORTH;
+
+            var fwd = new Vec3f(face.Normali.X, 0f, face.Normali.Z);
+
+            const double baseY = 0.43;
+            const double upOffset = 0.08;
+            const double forwardOffset = 0.2;
+
+            pos = Pos.ToVec3d().Add(0.5, baseY + upOffset, 0.5);
+            pos.Add(fwd.X * forwardOffset, 0.0, fwd.Z * forwardOffset);
+
+            dir = fwd;
+        }
+
+        public static void PlayPumpParticleBurst(ICoreClientAPI capi, PumpParticleBurstPacket msg)
+        {
+            ItemStack stack = null;
+            if (msg.StackBytes != null && msg.StackBytes.Length > 0)
+            {
+                using var ms = new MemoryStream(msg.StackBytes);
+                using var br = new BinaryReader(ms);
+                stack = new ItemStack();
+                stack.FromBytes(br);
+                stack.ResolveBlockOrItem(capi.World);
+            }
+
+            if (stack == null || stack.Collectible == null) return;
+
+            var fwd = new Vec3f(msg.DirX, 0f, msg.DirZ);
+            var right = new Vec3f(-fwd.Z, 0f, fwd.X);
+
+            var vel = new Vec3f(
+                msg.DirX * (msg.Speed + 0.2f),
+                msg.DirY * (msg.Speed + 0.2f),
+                msg.DirZ * (msg.Speed + 0.2f)
+            );
+
+            float lateral = msg.VelJitter > 0f ? msg.VelJitter : 0.02f;
+            float axial = lateral * 0.3f;
+
+            var p0 = new PumpCubeParticles(
+                    collisionPos: new Vec3d(msg.PosX, msg.PosY, msg.PosZ),
+                    stack: stack,
+                    radius: msg.Radius,
+                    quantity: msg.Quantity,
+                    scale: msg.Scale,
+                    velocity: vel
+                )
+                .UseDirectional(lateral, axial)
+                .SetLifeRange(0.05f, 0.1f)
+                .SetGravity(0f);
+
+            capi.World.SpawnParticles(p0);
+
+            const int gravityDelayMs = 150;
+            const double rightNudge = 0.0;
+            const double fwdNudge = 0.1;
+            const double upNudge = 0.01;
+
+            var p1pos = new Vec3d(
+                msg.PosX + right.X * rightNudge + fwd.X * fwdNudge,
+                msg.PosY + upNudge,
+                msg.PosZ + right.Z * rightNudge + fwd.Z * fwdNudge
+            );
+
+            capi.Event.RegisterCallback(dt =>
+            {
+                var p1 = new PumpCubeParticles(
+                        collisionPos: p1pos,
+                        stack: stack,
+                        radius: msg.Radius,
+                        quantity: msg.Quantity,
+                        scale: msg.Scale,
+                        velocity: vel
+                    )
+                    .UseDirectional(lateral, axial)
+                    .SetLifeRange(msg.LifeMin, msg.LifeMax)
+                    .SetGravity(msg.Gravity);
+
+                capi.World.SpawnParticles(p1);
+            }, gravityDelayMs);
         }
 
         private void StartStroke()
@@ -167,7 +267,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
             int movedItems = (itemProps != null)
                 ? (int)Math.Round(itemProps.ItemsPerLitre * litresExtracted)
                 : stack.StackSize;
-            EmitSpoutParticles(stack, 3);
             if (existing != null) stack.StackSize += existing.StackSize;
 
             cont.SetContent(ContainerSlot.Itemstack, stack);
@@ -188,7 +287,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 var (cur, pipesSoFar) = open.Dequeue();
                 if (SamePos(cur, targetSpringPos))
                 {
-                    // one dry stroke per 3 pipes
                     return pipesSoFar / 3;
                 }
 
@@ -196,17 +294,13 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 {
                     var next = cur.AddCopy(face);
                     if (!seen.Add(next)) continue;
-
-                    // If the neighbor IS the wellspring, we’re done.
                     if (SamePos(next, targetSpringPos))
                     {
-                        return pipesSoFar / 5; // don't count the spring itself as a pipe
+                        return pipesSoFar / 5;
                     }
 
                     var nb = world.BlockAccessor.GetBlock(next);
                     if (nb is not IFluidBlock nFluid) continue;
-
-                    // both sides must expose connectors on touching faces
                     var curBlock = world.BlockAccessor.GetBlock(cur) as IFluidBlock;
                     bool selfAllows     = curBlock?.HasFluidConnectorAt(world, cur, face) ?? true;
                     bool neighborAllows = nFluid.HasFluidConnectorAt(world, next, face.Opposite);
@@ -217,12 +311,11 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 }
             }
 
-            return 0; // no path found -> treat as no priming
+            return 0; 
         }
 
         private BlockEntityWellSpring ResolveWellSpring()
         {
-            // Revalidate cache every ~2 in-game hours to survive pipe edits
             if (cachedWell != null && Api.World.Calendar.TotalDays < nextCacheCheckTotalDays)
                 return cachedWell;
 
@@ -239,10 +332,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
         private void ServerTick(float dt)
         {
-            // reserved
         }
-
-        // --- SAVE/LOAD (unchanged) ---
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolve)
         {
             base.FromTreeAttributes(tree, worldForResolve);
@@ -255,108 +345,17 @@ namespace HydrateOrDiedrate.Piping.HandPump
             pendingDrawLitres = tree.GetFloat("pendingDrawLitres", pendingDrawLitres);
         }
         
-        private void GetSpout(out Vec3d pos, out Vec3f dir)
+        private ItemStack BuildWellFillStack(BlockEntityWellSpring spring)
         {
-            var block = Api.World.BlockAccessor.GetBlock(Pos);
-            string side = block?.Variant?["side"] ?? block?.Variant?["horizontalorientation"];
-            BlockFacing face = BlockFacing.FromCode(side ?? "north") ?? BlockFacing.NORTH;
+            var fluidBlock = GetRepresentativeWellBlockForFilling(spring);
+            if (fluidBlock?.Attributes == null) return null;
 
-            // world position of the nozzle
-            pos = Pos.ToVec3d().Add(0.5, 1.0, 0.5);
-            pos.Add(face.Normali.X * 0.35, 0.10, face.Normali.Z * 0.35);
+            var props = fluidBlock.Attributes["waterTightContainerProps"].AsObject<WaterTightContainableProps>();
+            var stack = props?.WhenFilled?.Stack;
+            if (stack == null) return null;
+            if (!stack.Resolve(Api.World, nameof(BlockEntityHandPump))) return null;
 
-            // normalized direction the spout points
-            dir = new Vec3f(face.Normali.X, 0f, face.Normali.Z);
-        }
-        
-        private int ResolveLiquidColorFromStack(ItemStack stack)
-        {
-            if (stack == null) return _pumpWaterParticles?.Color ?? ColorUtil.WhiteArgb;
-
-            // Prefer item attributes
-            var attrs = stack.Collectible?.Attributes?["waterTightContainerProps"];
-            if (attrs != null && attrs.Exists)
-            {
-                // Try common keys modders use
-                int color = attrs["particleColor"].AsInt(-1);
-                if (color == -1) color = attrs["color"].AsInt(-1);
-                if (color != -1) return color;
-            }
-
-            // If the liquid is a block, also check the block's props
-            if (stack.Collectible is Block blk && blk.Attributes?["waterTightContainerProps"].Exists == true)
-            {
-                var battrs = blk.Attributes["waterTightContainerProps"];
-                int color = battrs["particleColor"].AsInt(-1);
-                if (color == -1) color = battrs["color"].AsInt(-1);
-                if (color != -1) return color;
-            }
-
-            // Fallback to the template color (may have climate tint if you keep it)
-            return _pumpWaterParticles?.Color ?? ColorUtil.WhiteArgb;
-        }
-
-        private void EmitSpoutParticles(ItemStack colorStack, int quantity)
-        {
-            if (quantity <= 0) return;
-
-            GetSpout(out var pos, out var dir);
-
-            var template = _pumpWaterParticles;
-            var p = new SimpleParticleProperties(
-                template.MinQuantity,
-                template.AddQuantity,
-                ResolveLiquidColorFromStack(colorStack),   // <<< only change: derive color from stack
-                new Vec3d(pos.X+0.2, pos.Y-0.48, pos.Z),
-                new Vec3d(pos.X, pos.Y, pos.Z),
-                template.MinVelocity, 
-                template.AddVelocity + 500,
-                template.MinSize,
-                template.MaxSize,
-                template.LifeLength,
-                template.GravityEffect,
-                template.ParticleModel
-            );
-
-            // Keep your existing spawn behavior exactly as-is
-            p.AddPos = new Vec3d(0.01, 0.005, 0.01);
-            p.MinVelocity = new Vec3f(dir.X * 0.2f, 0.05f, dir.Z * 0.2f);
-            p.AddVelocity = new Vec3f(0.05f, 0.05f, 0.05f);
-            p.MinQuantity = 1;
-            p.AddQuantity = 0;
-            p.MinSize = 0.15f;
-            p.MaxSize = 0.22f;
-            p.LifeLength = 0.6f;
-
-            // If you want the stack color to dominate, clear climate tinting
-            p.ClimateColorMap = null;
-
-            for (int i = 0; i < quantity; i++)
-            {
-                Api.World.SpawnParticles(p);
-            }
-        }
-
-        
-        private static SimpleParticleProperties CreateParticleProps(
-            int color, Vec3f minVelocity, Vec3f addVelocity, string climateColorMap = null)
-        {
-            var p = new SimpleParticleProperties(
-                1, 1, color,
-                new Vec3d(), new Vec3d(),
-                minVelocity, addVelocity,
-                0.1f, 0.1f, 0.5f, 1f,
-                EnumParticleModel.Cube
-            );
-            p.AddPos = new Vec3d(0.125 / 2, 2 / 16f, 0.125 / 2);
-            p.SizeEvolve = new EvolvingNatFloat(EnumTransformFunction.LINEAR, -0.5f);
-            p.AddQuantity = 1;
-            p.ShouldDieInLiquid = true;
-            p.ShouldSwimOnLiquid = true;
-            p.GravityEffect = 1.5f;
-            p.LifeLength = 2f;
-            if (climateColorMap != null) p.ClimateColorMap = climateColorMap;
-            return p;
+            return stack.ResolvedItemstack;
         }
 
         public override void ToTreeAttributes(ITreeAttribute tree)
@@ -376,10 +375,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
         }
 
         public override bool OnPlayerRightClick(IPlayer byPlayer, BlockSelection blockSel) => false;
-
-        // === NEW: Winch-compatible extraction path ===
-
-        // ExtractStackFromWell unchanged except: early-exit if fluid block lacks props
+        
         private ItemStack ExtractStackFromWell(BlockEntityWellSpring spring, int litresToExtract, AssetLocation filter, out int litresExtracted)
         {
             litresExtracted = 0;
@@ -403,15 +399,9 @@ namespace HydrateOrDiedrate.Piping.HandPump
             stack.ResolvedItemstack.StackSize = (int)Math.Round(itemProps.ItemsPerLitre * litresExtracted);
             return stack.ResolvedItemstack;
         }
-
-
-        // Hardened representative fluid block resolution
         private Block GetRepresentativeWellBlockForFilling(BlockEntityWellSpring spring)
         {
-            // baseCode is exactly how the wellspring emits blocks
             string baseCode = $"wellwater-{(spring.IsFresh ? "fresh" : "salt")}-{spring.currentPollution}";
-
-            // try common variants in order until we find one with attributes
             var candidates = new[]
             {
                 $"{baseCode}-natural-still-7",
@@ -427,6 +417,5 @@ namespace HydrateOrDiedrate.Piping.HandPump
             }
             return null;
         }
-
     }
 }

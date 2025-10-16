@@ -5,7 +5,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
 {
     public static class BlockHandPumpHelpers
     {
-        // From -> To, returns true if any amount moved
         public static bool TryTransferLiquidInto(ItemStack from, ItemStack to)
         {
             if (from?.Collectible is not BlockLiquidContainerBase src || to?.Collectible is not BlockLiquidContainerBase dst) return false;

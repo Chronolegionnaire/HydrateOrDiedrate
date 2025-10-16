@@ -20,10 +20,13 @@ using HydrateOrDiedrate.Config.Patching.PatchTypes;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Util;
 using System.Collections.Generic;
+using System.IO;
 using Vintagestory.API.Datastructures;
 using Newtonsoft.Json.Linq;
 using HydrateOrDiedrate.Piping.HandPump;
+using HydrateOrDiedrate.Piping.Networking;
 using HydrateOrDiedrate.Piping.Pipe;
+using Vintagestory.API.MathTools;
 
 namespace HydrateOrDiedrate;
 
@@ -150,6 +153,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockClass("BlockWinch", typeof(BlockWinch));
         api.RegisterBlockEntityClass("BlockEntityWinch", typeof(BlockEntityWinch));
 
+        api.ClassRegistry.RegisterParticlePropertyProvider(
+            "hydrateordiedrate:PumpCubeParticles",
+            typeof(Piping.HandPump.PumpCubeParticles)
+        );
+        
         if (ModConfig.Instance.LiquidEncumbrance.Enabled) api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
         if (ModConfig.Instance.Thirst.Enabled) api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
         if (ModConfig.Instance.HeatAndCooling.HarshHeat) api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot)); //TODO does this even do anything when thirst is disabled?
@@ -179,6 +187,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         var serverChannel = api.Network.RegisterChannel(NetworkChannelID)
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<WellSpringBlockPacket>()
+            .RegisterMessageType<PumpParticleBurstPacket>()
             .SetMessageHandler<WellSpringBlockPacket>(WellSpringBlockPacketReceived);
         
         _waterInteractionHandler.Initialize(serverChannel);
@@ -199,7 +208,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.Network.RegisterChannel(NetworkChannelID)
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<WellSpringBlockPacket>()
-            .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived);
+            .RegisterMessageType<PumpParticleBurstPacket>()
+            .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived)
+            .SetMessageHandler<PumpParticleBurstPacket>(msg =>
+            {
+                BlockEntityHandPump.PlayPumpParticleBurst(api, msg);
+            });
 
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
@@ -220,7 +234,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         if (hudOverlayRenderer is null) return;
         hudOverlayRenderer.ProcessDrinkProgress(msg.Progress, msg.IsDrinking, msg.IsDangerous);
     }
-
+    
 
     //TODO: there should be a better way to do this, no?
     private void CheckAndInitializeCustomHud(float dt)
