@@ -150,6 +150,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockEntityClass("BlockEntityHoDPipe", typeof(BlockEntityPipe));
         api.RegisterBlockClass("BlockHandPump", typeof(BlockHandPump));
         api.RegisterBlockEntityClass("BlockEntityHandPump", typeof(BlockEntityHandPump));
+        api.RegisterBlockEntityBehaviorClass("HandPumpAnim", typeof(BEBehaviorHandPumpAnim));
         api.RegisterBlockClass("BlockWinch", typeof(BlockWinch));
         api.RegisterBlockEntityClass("BlockEntityWinch", typeof(BlockEntityWinch));
 
