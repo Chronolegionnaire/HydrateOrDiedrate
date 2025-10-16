@@ -189,6 +189,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<WellSpringBlockPacket>()
             .RegisterMessageType<PumpParticleBurstPacket>()
+            .RegisterMessageType<PumpSfxPacket>()
             .SetMessageHandler<WellSpringBlockPacket>(WellSpringBlockPacketReceived);
         
         _waterInteractionHandler.Initialize(serverChannel);
@@ -210,10 +211,15 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<WellSpringBlockPacket>()
             .RegisterMessageType<PumpParticleBurstPacket>()
+            .RegisterMessageType<PumpSfxPacket>()
             .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived)
             .SetMessageHandler<PumpParticleBurstPacket>(msg =>
             {
                 BlockEntityHandPump.PlayPumpParticleBurst(api, msg);
+            })
+            .SetMessageHandler<PumpSfxPacket>(msg =>
+            {
+                BlockEntityHandPump.OnClientPumpSfx((ICoreClientAPI)api, msg);
             });
 
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);

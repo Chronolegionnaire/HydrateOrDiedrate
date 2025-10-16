@@ -1,6 +1,7 @@
 using HydrateOrDiedrate.Piping.FluidNetwork;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Piping.HandPump
 {
@@ -32,42 +33,60 @@ namespace HydrateOrDiedrate.Piping.HandPump
         {
             if (!world.Claims.TryAccess(byPlayer, blockSel.Position, EnumBlockAccessFlags.Use)) return false;
 
-            if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityHandPump be)
+            if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityHandPump bePump)
             {
                 switch (blockSel.SelectionBoxIndex)
                 {
                     case 0:
-                    {
                         var sourceSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
-                        if (sourceSlot == null) break;
-                        if ((sourceSlot.Empty != be.ContainerSlot.Empty) && sourceSlot.TryFlipWith(be.ContainerSlot)) return true;
-                        if (BlockHandPumpHelpers.TryTransferLiquidInto(sourceSlot.Itemstack, be.ContainerSlot.Itemstack))
+                        if (sourceSlot is not null)
                         {
-                            sourceSlot.MarkDirty();
-                            be.ContainerSlot.MarkDirty();
-                            world.PlaySoundAt(new AssetLocation("game", "sounds/effect/water-fill.ogg"),
-                                blockSel.Position.X + 0.5, blockSel.Position.Y + 0.5, blockSel.Position.Z + 0.5);
-                            return true;
-                        }
-                        if (BlockHandPumpHelpers.TryTransferLiquidInto(be.ContainerSlot.Itemstack, sourceSlot.Itemstack))
-                        {
-                            sourceSlot.MarkDirty();
-                            be.ContainerSlot.MarkDirty();
-                            world.PlaySoundAt(new AssetLocation("game", "sounds/effect/water-fill.ogg"),
-                                blockSel.Position.X + 0.5, blockSel.Position.Y + 0.5, blockSel.Position.Z + 0.5);
-                            return true;
-                        }
+                            if ((sourceSlot.Empty != bePump.ContainerSlot.Empty) && sourceSlot.TryFlipWith(bePump.ContainerSlot)) return true;
 
+                            if (TryTransferLiquid(bePump.ContainerSlot.Itemstack, sourceSlot.Itemstack))
+                            {
+                                sourceSlot.MarkDirty();
+                                bePump.ContainerSlot.MarkDirty();
+                                world.PlaySoundAt(
+                                    new AssetLocation("game", "sounds/effect/water-fill.ogg"),
+                                    blockSel.Position.X + 0.5,
+                                    blockSel.Position.Y + 0.5,
+                                    blockSel.Position.Z + 0.5
+                                );
+                                return true;
+                            }
+                        }
                         break;
-                    }
+                    
 
                     case 1:
-                        if (be.TryStartPumping(byPlayer)) return true;
+                        if (bePump.TryStartPumping(byPlayer)) return true;
                         break;
                 }
             }
 
             return base.OnBlockInteractStart(world, byPlayer, blockSel);
+        }
+        
+        public static bool TryTransferLiquid(ItemStack source, ItemStack target)
+        {
+            if(source?.Collectible is not BlockLiquidContainerBase sourceContainer || target?.Collectible is not BlockLiquidContainerBase targetContainer) return false;
+            var existingLiters = targetContainer.GetCurrentLitres(target);
+            var remainingSpace = targetContainer.CapacityLitres - existingLiters;
+            if(remainingSpace <= 0) return false;
+            remainingSpace *= target.StackSize;
+
+            var existingContent = targetContainer.GetContent(target);
+            var newContent = sourceContainer.GetContent(source);
+            if(newContent is null || (existingContent is not null && existingContent.Collectible.Code != newContent.Collectible.Code)) return false;
+
+            var addedLiquid = sourceContainer.TryTakeLiquid(source, GameMath.Min(remainingSpace, sourceContainer.GetCurrentLitres(source)));
+            if(addedLiquid is null) return false;
+            addedLiquid.StackSize /= target.StackSize;
+            if(existingContent is not null) addedLiquid.StackSize += existingContent.StackSize;
+
+            targetContainer.SetContent(target, addedLiquid);
+            return true;
         }
 
         public override bool OnBlockInteractStep(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)

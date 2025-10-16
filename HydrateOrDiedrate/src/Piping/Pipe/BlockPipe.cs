@@ -1,6 +1,7 @@
 using HydrateOrDiedrate.Piping.FluidNetwork;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Util;
 
 namespace HydrateOrDiedrate.Piping.Pipe
 {
@@ -29,6 +30,26 @@ namespace HydrateOrDiedrate.Piping.Pipe
         {
             world.BlockAccessor.MarkBlockDirty(pos);
             foreach (var f in Faces) world.BlockAccessor.MarkBlockDirty(pos.AddCopy(f));
+        }
+
+        static bool IsWrench(ItemSlot slot)
+        {
+            var code = slot?.Itemstack?.Collectible?.Code?.ToString();
+            return code != null && WildcardUtil.Match("game:wrench-*", code);
+        }
+
+        public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
+        {
+            if (IsWrench(byPlayer?.InventoryManager?.ActiveHotbarSlot))
+            {
+                if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityPipe be)
+                {
+                    be.TryOpenGui(byPlayer);
+                    return true;
+                }
+            }
+
+            return base.OnBlockInteractStart(world, byPlayer, blockSel);
         }
     }
 }
