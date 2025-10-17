@@ -98,7 +98,6 @@ namespace HydrateOrDiedrate.Piping.Pipe
 
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
-            base.GetBlockInfo(forPlayer, dsc);
             if (DisguiseSlot?.Itemstack?.Block != null)
             {
                 dsc.AppendLine(Lang.Get("Disguised as: {0}", DisguiseSlot.Itemstack.Block.GetPlacedBlockName(Api.World, Pos)));

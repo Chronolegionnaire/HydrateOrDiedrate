@@ -51,5 +51,24 @@ namespace HydrateOrDiedrate.Piping.Pipe
 
             return base.OnBlockInteractStart(world, byPlayer, blockSel);
         }
+        
+        public override Cuboidf[] GetCollisionBoxes(IBlockAccessor blockAccessor, BlockPos pos)
+        {
+            var be = blockAccessor.GetBlockEntity(pos) as BlockEntityPipe;
+            var disguise = be?.DisguiseSlot?.Itemstack?.Block;
+            if (disguise != null)
+                return disguise.GetCollisionBoxes(blockAccessor, pos);
+            return PipeCollision.BuildPipeBoxes(this, blockAccessor, pos);
+        }
+
+        public override Cuboidf[] GetSelectionBoxes(IBlockAccessor blockAccessor, BlockPos pos)
+        {
+            var be = blockAccessor.GetBlockEntity(pos) as BlockEntityPipe;
+            var disguise = be?.DisguiseSlot?.Itemstack?.Block;
+            if (disguise != null)
+                return disguise.GetSelectionBoxes(blockAccessor, pos);
+
+            return PipeCollision.BuildPipeBoxes(this, blockAccessor, pos);
+        }
     }
 }
