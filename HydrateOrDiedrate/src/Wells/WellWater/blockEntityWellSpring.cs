@@ -288,7 +288,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     private void OnPeriodicShaftCheck(float dt)
     {
         var pos = Pos.UpCopy();
-        cachedRingMaterial = CheckBaseRingMaterial(Api.World.BlockAccessor, pos);
+        cachedRingMaterial = CheckRingMaterial(Api.World.BlockAccessor, pos);
         partialValidatedHeight = CheckColumnForMaterial(Api.World.BlockAccessor, pos, cachedRingMaterial);
         MarkDirty();
     }
@@ -311,30 +311,58 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         return baseDepth;
     }
 
-    public static string GetRingMaterial(Block block)
+    private static bool IsGameBrick(Block block)
     {
-        //TODO make a better mechanism for this
-        if(block?.Code is null || block.Code.Domain != "game") return  "none";
-        if(block.Code.Path.StartsWith("brick")) return "brick";
-        if(block.Code.Path.StartsWith("stonebrick")) return "stonebrick";
-        return "none";
+        return block?.Code?.Domain == "game" && block.Code.Path.StartsWith("brick");
     }
 
-    private static string CheckBaseRingMaterial(IBlockAccessor blockAccessor, BlockPos blockPos)
+    private static bool IsGameStoneBrick(Block block)
     {
-        string result = null;
+        return block?.Code?.Domain == "game" && block.Code.Path.StartsWith("stonebrick");
+    }
+
+    private static bool IsAqueduct(Block block)
+    {
+        if (block?.Code is null) return false;
+        if (block.Code.Domain != "hardcorewater") return false;
+
+        var p = block.Code.Path;
+        return p.StartsWith("aqueduct-") || p.StartsWith("closedaqueduct-");
+    }
+
+    private static string CheckRingMaterial(IBlockAccessor blockAccessor, BlockPos blockPos)
+    {
+        bool allAllowedForBrick = true;
+        bool allAllowedForStone = true;
+        bool hasAtLeastOneBrick = false;
+        bool hasAtLeastOneStone = false;
+
         var pos = blockPos.Copy();
-        
         var sidesToCheck = BlockFacing.HORIZONTALS;
+
         for (int i = 0; i < sidesToCheck.Length; i++)
         {
             sidesToCheck[i].IterateThruFacingOffsets(pos);
-            var ringMaterial = GetRingMaterial(blockAccessor.GetBlock(pos));
-            result ??= ringMaterial;
-            if(ringMaterial == "none" || result != ringMaterial) return "none";
-        }
+            Block b = blockAccessor.GetBlock(pos);
 
-        return result;
+            bool isBrick = IsGameBrick(b);
+            bool isStone = IsGameStoneBrick(b);
+            bool isAquad = IsAqueduct(b);
+            if (!isBrick && !isStone && !isAquad)
+            {
+                return "none";
+            }
+            if (isBrick) hasAtLeastOneBrick = true;
+            if (isStone) hasAtLeastOneStone = true;
+            if (isBrick)
+            {
+                allAllowedForStone = false;
+            }
+        }
+        if (allAllowedForStone && hasAtLeastOneStone) return "stonebrick";
+        if (allAllowedForBrick && hasAtLeastOneBrick) return "brick";
+
+        return "none";
     }
 
     public static int MaxDepthForRingMaterial(string ringMaterial) => ringMaterial switch
@@ -353,7 +381,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         while (pos.Y < basePos.Y + maxCheck)
         {
             pos.Y++;
-            var ringMaterialAtPos = CheckBaseRingMaterial(blockAccessor, pos);
+            var ringMaterialAtPos = CheckRingMaterial(blockAccessor, pos);
             if(ringMaterialAtPos != ringMaterial) return pos.Y - basePos.Y - 1;
         }
 
