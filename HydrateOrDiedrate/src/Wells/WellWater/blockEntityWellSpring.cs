@@ -540,16 +540,31 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             maxVolume = fullVolumeNonMuddy;
             reconcileTarget = fullVolumeNonMuddy;
         }
+        bool changed = false;
 
         if (totalLiters < minVolume || totalLiters > maxVolume)
         {
             totalLiters = reconcileTarget;
-            MarkDirty(true);
+            changed = true;
         }
         int capacity = ColumnCapacityUpperBound();
         if (totalLiters > capacity)
         {
             totalLiters = capacity;
+            changed = true;
+        }
+        if (detectedPollution == "muddy")
+        {
+            const int muddyCap = 9;
+            if (totalLiters > muddyCap)
+            {
+                totalLiters = muddyCap;
+                changed = true;
+            }
+        }
+        if (changed)
+        {
+            SyncWaterColumn();
             MarkDirty(true);
         }
     }
