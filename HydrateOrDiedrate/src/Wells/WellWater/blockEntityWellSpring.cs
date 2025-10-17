@@ -169,8 +169,13 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
     public override void OnBlockRemoved()
     {
+        if (Api.Side == EnumAppSide.Server)
+        {
+            var posCopy = Pos.Copy();
+            AquiferManager.RemoveWellSpringFromChunk(Api.World, posCopy);
+        }
+
         base.OnBlockRemoved();
-        if(Api.Side == EnumAppSide.Server) AquiferManager.RemoveWellSpringFromChunk(Api.World, Pos);
     }
 
     private bool HandleShallowWell(double elapsedDays)
