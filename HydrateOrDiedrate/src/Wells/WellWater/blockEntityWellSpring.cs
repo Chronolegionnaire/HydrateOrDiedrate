@@ -338,30 +338,37 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         bool hasAtLeastOneStone = false;
 
         var pos = blockPos.Copy();
-        var sidesToCheck = BlockFacing.HORIZONTALS;
 
-        for (int i = 0; i < sidesToCheck.Length; i++)
+        foreach (var facing in BlockFacing.HORIZONTALS)
         {
-            sidesToCheck[i].IterateThruFacingOffsets(pos);
+            facing.IterateThruFacingOffsets(pos);
             Block b = blockAccessor.GetBlock(pos);
 
-            bool isBrick = IsGameBrick(b);
-            bool isStone = IsGameStoneBrick(b);
-            bool isAquad = IsAqueduct(b);
-            if (!isBrick && !isStone && !isAquad)
+            if (IsAqueduct(b))
+            {
+            }
+            else if (IsGameBrick(b))
+            {
+                hasAtLeastOneBrick = true;
+                allAllowedForStone = false;
+            }
+            else if (IsGameStoneBrick(b))
+            {
+                hasAtLeastOneStone = true;
+                allAllowedForBrick = false;
+            }
+            else
             {
                 return "none";
             }
-            if (isBrick) hasAtLeastOneBrick = true;
-            if (isStone) hasAtLeastOneStone = true;
-            if (isBrick)
+            if (!allAllowedForBrick && !allAllowedForStone)
             {
-                allAllowedForStone = false;
+                return "none";
             }
         }
+
         if (allAllowedForStone && hasAtLeastOneStone) return "stonebrick";
         if (allAllowedForBrick && hasAtLeastOneBrick) return "brick";
-
         return "none";
     }
 
