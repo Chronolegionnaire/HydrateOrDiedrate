@@ -87,4 +87,9 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="assets\hydrateordiedrate\shapes\block\pipesupport\" />
+    <Folder Include="assets\hydrateordiedrate\shapes\block\shutoffvalve\" />
+  </ItemGroup>
+
 </Project>
