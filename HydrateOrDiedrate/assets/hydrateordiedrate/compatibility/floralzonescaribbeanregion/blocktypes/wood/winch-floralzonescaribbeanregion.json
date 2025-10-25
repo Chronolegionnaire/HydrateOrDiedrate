@@ -1,0 +1,7 @@
+{
+	"inheritFrom": "hydrateordiedrate:blocktypes/wood/winch",
+	"variantgroups": [
+		{ "code": "wood", "loadFromProperties": "floralzonescaribbeanregion:block/wood" },
+		{ "code":"side", "loadFromProperties": "abstract/horizontalorientation" }
+	]
+}

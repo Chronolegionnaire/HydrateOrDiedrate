@@ -1,0 +1,12 @@
+{
+	"inheritFrom": "hydrateordiedrate:blocktypes/wood/winch",
+	"variantgroups": [
+		{ "code": "wood", "loadFromProperties": "wildcrafttree:block/wood" },
+		{ "code":"side", "loadFromProperties": "abstract/horizontalorientation" }
+	],
+	"textures": {
+		"spindle":  { "base": "game:block/wood/debarked/{wood}" },
+		"plank": { "base": "wildcrafttree:block/wood/planks/{wood}1" },
+		"rope": { "base": "game:entity/lore/erel/pristine/rope" }
+	}
+}
