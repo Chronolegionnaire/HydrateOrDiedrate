@@ -14,7 +14,7 @@
   "variantgroups": [
     { "code": "metal", "states": ["copper", "lead"] }
   ],
-  "shape": { "base": "hydrateordiedrate:block/shutoffvalve/valve-full"},
+  "shape": { "base": "hydrateordiedrate:block/shutoffvalve/valve-full", "rotateY": -90},
   "blockmaterial": "Metal",
   "materialDensity": 450,
   "textures": {
