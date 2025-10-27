@@ -47,9 +47,18 @@ namespace HydrateOrDiedrate.Piping.Pipe
         public bool TryOpen()
         {
             if (IsOpened()) return true;
+
+            capi.World.Player.InventoryManager.OpenInventory(inv);
+
             Compose();
             capi.Gui.RegisterDialog(this);
             return base.TryOpen();
+        }
+
+        public override bool TryClose()
+        {
+            capi.World.Player.InventoryManager.CloseInventory(inv);
+            return base.TryClose();
         }
     }
 }

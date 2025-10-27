@@ -1,4 +1,3 @@
-// HydrateOrDiedrate/FluidNetwork/FluidSearch.cs
 using System.Collections.Generic;
 using HydrateOrDiedrate.Wells.WellWater;
 using Vintagestory.API.Common;
@@ -8,53 +7,24 @@ namespace HydrateOrDiedrate.Piping.FluidNetwork
 {
     public static class FluidSearch
     {
-        public sealed class PosCmp : IEqualityComparer<BlockPos>
-        {
-            public bool Equals(BlockPos a, BlockPos b) => a.X == b.X && a.Y == b.Y && a.Z == b.Z;
-            public int GetHashCode(BlockPos p) => (p.X * 397) ^ (p.Y * 17) ^ p.Z;
-        }
-
-        public static bool TryFindWellSpring(IWorldAccessor world, BlockPos start, out BlockEntityWellSpring well, int maxVisited = 512)
+        public static bool TryFindWellSpring(IWorldAccessor world, BlockPos start, out Wells.WellWater.BlockEntityWellSpring well, int maxVisited = 2048)
         {
             well = null;
-
-            var open = new Queue<BlockPos>();
-            var seen = new HashSet<BlockPos>(new PosCmp());
-
             var first = start.DownCopy();
-            open.Enqueue(first);
-            seen.Add(first);
 
-            while (open.Count > 0 && seen.Count <= maxVisited)
+            bool found = PipeTraversal.TryFind(
+                world,
+                first,
+                BlockFacing.UP,
+                (w, p) => w.BlockAccessor.GetBlockEntity(p) is Wells.WellWater.BlockEntityWellSpring,
+                maxVisited);
+
+            if (!found) return false;
+            if (world.BlockAccessor.GetBlockEntity(first) is Wells.WellWater.BlockEntityWellSpring beHere)
             {
-                var cur = open.Dequeue();
-
-                if (world.BlockAccessor.GetBlockEntity(cur) is BlockEntityWellSpring beHere)
-                {
-                    well = beHere;
-                    return true;
-                }
-
-                foreach (var face in BlockFacing.ALLFACES)
-                {
-                    var next = cur.AddCopy(face);
-                    if (!seen.Add(next)) continue;
-
-                    var beNext = world.BlockAccessor.GetBlockEntity(next) as BlockEntityWellSpring;
-                    if (beNext != null)
-                    {
-                        well = beNext;
-                        return true;
-                    }
-
-                    var nb = world.BlockAccessor.GetBlock(next);
-                    if (nb is IFluidBlock nFluid && nFluid.HasFluidConnectorAt(world, next, face.Opposite))
-                    {
-                        open.Enqueue(next);
-                    }
-                }
+                well = beHere;
+                return true;
             }
-
             return false;
         }
     }

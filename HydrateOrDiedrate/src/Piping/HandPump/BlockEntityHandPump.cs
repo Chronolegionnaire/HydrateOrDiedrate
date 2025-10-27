@@ -435,42 +435,15 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
         private int ComputePrimingStrokes(IWorldAccessor world, BlockPos start, BlockPos targetSpringPos)
         {
-            var open = new Queue<(BlockPos pos, int pipeCount)>();
-            var seen = new HashSet<BlockPos>(new HydrateOrDiedrate.Piping.FluidNetwork.FluidSearch.PosCmp());
-            var first = start.DownCopy();
-            open.Enqueue((first, 0));
-            seen.Add(first);
+            int dist = PipeTraversal.Distance(
+                world,
+                start.DownCopy(),
+                BlockFacing.UP,
+                (w, p) => p.Equals(targetSpringPos),
+                maxVisited: 8192);
 
-            while (open.Count > 0)
-            {
-                var (cur, pipesSoFar) = open.Dequeue();
-                if (SamePos(cur, targetSpringPos))
-                {
-                    return pipesSoFar / 3;
-                }
-
-                foreach (var face in BlockFacing.ALLFACES)
-                {
-                    var next = cur.AddCopy(face);
-                    if (!seen.Add(next)) continue;
-                    if (SamePos(next, targetSpringPos))
-                    {
-                        return pipesSoFar / 5;
-                    }
-
-                    var nb = world.BlockAccessor.GetBlock(next);
-                    if (nb is not IFluidBlock nFluid) continue;
-                    var curBlock = world.BlockAccessor.GetBlock(cur) as IFluidBlock;
-                    bool selfAllows     = curBlock?.HasFluidConnectorAt(world, cur, face) ?? true;
-                    bool neighborAllows = nFluid.HasFluidConnectorAt(world, next, face.Opposite);
-                    if (!selfAllows || !neighborAllows) continue;
-
-                    int nextPipes = pipesSoFar + (nb is HydrateOrDiedrate.Piping.Pipe.BlockPipe ? 1 : 0);
-                    open.Enqueue((next, nextPipes));
-                }
-            }
-
-            return 0; 
+            if (dist < 0) return 0;
+            return Math.Max(0, dist / 3);
         }
 
         private BlockEntityWellSpring ResolveWellSpring()
@@ -480,14 +453,15 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
             cachedWell = null;
 
-            if (FluidSearch.TryFindWellSpring(Api.World, Pos, out var found))
+            if (PipeTraversal.TryFind(Api.World, Pos.DownCopy(), BlockFacing.UP,
+                    (w, p) => w.BlockAccessor.GetBlockEntity(p) is BlockEntityWellSpring found, maxVisited: 4096))
             {
-                cachedWell = found;
-                nextCacheCheckTotalDays = Api.World.Calendar.TotalDays + (2.0 / Api.World.Calendar.HoursPerDay);
             }
 
+            nextCacheCheckTotalDays = Api.World.Calendar.TotalDays + (2.0 / Api.World.Calendar.HoursPerDay);
             return cachedWell;
         }
+
 
         private void ServerTick(float dt)
         {

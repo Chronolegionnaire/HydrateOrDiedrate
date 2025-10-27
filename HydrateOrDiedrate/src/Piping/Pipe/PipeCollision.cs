@@ -27,9 +27,9 @@ namespace HydrateOrDiedrate.Piping.Pipe
         static readonly Cuboidf ArmU   = new Cuboidf(6*px, 10*px,  6*px, 10*px, 16*px, 10*px);
         static readonly Cuboidf ArmD   = new Cuboidf(6*px,  0*px,  6*px, 10*px,  6*px, 10*px);
 
-        public static Cuboidf[] BuildPipeBoxes(Block selfBlock, IBlockAccessor ba, BlockPos at)
+        public static Cuboidf[] BuildPipeBoxes(Block selfBlock, IWorldAccessor world, BlockPos at)
         {
-            var (count, letters) = BuildKey(selfBlock, ba, at);
+            var (count, letters) = BuildKey(selfBlock, world, at);
 
             if (count == 0)
             {
@@ -62,10 +62,10 @@ namespace HydrateOrDiedrate.Piping.Pipe
                 : (c == 'e' || c == 'w') ? "ew"
                 : "ud";
         }
-        public static (int count, string letters) BuildKey(Block selfBlock, IBlockAccessor ba, BlockPos at)
+        public static (int count, string letters) BuildKey(Block selfBlock, IWorldAccessor world, BlockPos at)
         {
-            var world = ba as IWorldAccessor;
             var selfFluid = selfBlock as IFluidBlock;
+            var ba = world.BlockAccessor;
 
             var set = new HashSet<char>();
             int count = 0;
@@ -75,7 +75,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
                 var face = Faces[i];
                 var npos = at.AddCopy(face);
                 var nb = ba.GetBlock(npos);
-                bool selfAllows = world != null ? (selfFluid?.HasFluidConnectorAt(world, at, face) ?? true) : true;
+                bool selfAllows = selfFluid?.HasFluidConnectorAt(world, at, face) ?? true;
                 if (!selfAllows) continue;
                 bool isWellBlock = nb is BlockWellSpring;
                 bool isWellBE    = ba.GetBlockEntity(npos) is BlockEntityWellSpring;
@@ -87,7 +87,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
                 }
                 if (nb is IFluidBlock nFluid)
                 {
-                    bool neighborAllows = world != null ? nFluid.HasFluidConnectorAt(world, npos, face.Opposite) : true;
+                    bool neighborAllows = nFluid.HasFluidConnectorAt(world, npos, face.Opposite);
                     if (neighborAllows)
                     {
                         set.Add(FaceLetters[i]); count++;

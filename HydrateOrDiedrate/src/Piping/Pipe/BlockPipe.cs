@@ -58,7 +58,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
             var disguise = be?.DisguiseSlot?.Itemstack?.Block;
             if (disguise != null)
                 return disguise.GetCollisionBoxes(blockAccessor, pos);
-            return PipeCollision.BuildPipeBoxes(this, blockAccessor, pos);
+            return PipeCollision.BuildPipeBoxes(this, api.World, pos);
         }
 
         public override Cuboidf[] GetSelectionBoxes(IBlockAccessor blockAccessor, BlockPos pos)
@@ -68,7 +68,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
             if (disguise != null)
                 return disguise.GetSelectionBoxes(blockAccessor, pos);
 
-            return PipeCollision.BuildPipeBoxes(this, blockAccessor, pos);
+            return PipeCollision.BuildPipeBoxes(this, api.World, pos);
         }
     }
 }

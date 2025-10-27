@@ -20,13 +20,12 @@ using HydrateOrDiedrate.Config.Patching.PatchTypes;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Util;
 using System.Collections.Generic;
-using System.IO;
 using Vintagestory.API.Datastructures;
 using Newtonsoft.Json.Linq;
 using HydrateOrDiedrate.Piping.HandPump;
 using HydrateOrDiedrate.Piping.Networking;
 using HydrateOrDiedrate.Piping.Pipe;
-using Vintagestory.API.MathTools;
+using HydrateOrDiedrate.Piping.ShutoffValve;
 
 namespace HydrateOrDiedrate;
 
@@ -148,6 +147,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterBlockEntityClass("BlockEntityWellSpring", typeof(BlockEntityWellSpring));
         api.RegisterBlockClass("BlockHoDPipe", typeof(BlockPipe));
         api.RegisterBlockEntityClass("BlockEntityHoDPipe", typeof(BlockEntityPipe));
+        api.RegisterBlockClass("BlockShutoffValve", typeof(BlockShutoffValve));
+        api.RegisterBlockEntityClass("BlockEntityShutoffValve", typeof(BlockEntityShutoffValve));
         api.RegisterBlockClass("BlockHandPump", typeof(BlockHandPump));
         api.RegisterBlockEntityClass("BlockEntityHandPump", typeof(BlockEntityHandPump));
         api.RegisterBlockEntityBehaviorClass("HandPumpAnim", typeof(BEBehaviorHandPumpAnim));
@@ -190,6 +191,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .RegisterMessageType<WellSpringBlockPacket>()
             .RegisterMessageType<PumpParticleBurstPacket>()
             .RegisterMessageType<PumpSfxPacket>()
+            .RegisterMessageType<ValveToggleEventPacket>()
             .SetMessageHandler<WellSpringBlockPacket>(WellSpringBlockPacketReceived);
         
         _waterInteractionHandler.Initialize(serverChannel);
@@ -212,15 +214,11 @@ public class HydrateOrDiedrateModSystem : ModSystem
             .RegisterMessageType<WellSpringBlockPacket>()
             .RegisterMessageType<PumpParticleBurstPacket>()
             .RegisterMessageType<PumpSfxPacket>()
+            .RegisterMessageType<ValveToggleEventPacket>()
             .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived)
-            .SetMessageHandler<PumpParticleBurstPacket>(msg =>
-            {
-                BlockEntityHandPump.PlayPumpParticleBurst(api, msg);
-            })
-            .SetMessageHandler<PumpSfxPacket>(msg =>
-            {
-                BlockEntityHandPump.OnClientPumpSfx((ICoreClientAPI)api, msg);
-            });
+            .SetMessageHandler<PumpParticleBurstPacket>(msg => BlockEntityHandPump.PlayPumpParticleBurst(api, msg))
+            .SetMessageHandler<PumpSfxPacket>(msg => BlockEntityHandPump.OnClientPumpSfx((ICoreClientAPI)api, msg))
+            .SetMessageHandler<ValveToggleEventPacket>(pkt => ValveHandleRenderer.OnClientValveToggleEvent((ICoreClientAPI)api, pkt));
 
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
