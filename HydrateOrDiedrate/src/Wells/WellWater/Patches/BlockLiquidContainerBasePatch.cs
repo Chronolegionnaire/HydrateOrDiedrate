@@ -28,10 +28,10 @@ namespace HydrateOrDiedrate.Wells.Patches
             ICoreAPI api = ApiField?.GetValue(__instance) as ICoreAPI;
             if (api == null) return true;
 
-            var block = api.World.BlockAccessor.GetBlock(pos);
-            if (block == null || block.Attributes == null) return true;
+            var fluid = api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
+            if (fluid == null || fluid.Attributes == null) return true;
 
-            var waterTightContainerProps = block.Attributes["waterTightContainerProps"];
+            var waterTightContainerProps = fluid.Attributes["waterTightContainerProps"];
             if (waterTightContainerProps == null || !waterTightContainerProps.Exists) return true;
 
             var whenFilledStack = waterTightContainerProps["whenFilled"]?["stack"];
@@ -43,12 +43,12 @@ namespace HydrateOrDiedrate.Wells.Patches
             var item = api.World.GetItem(new AssetLocation(itemCode));
             if (item == null) return true;
 
-            if (!WellBlockUtils.IsOurWellwater(block))
+            if (!WellBlockUtils.IsOurWellwater(fluid))
             {
                 return true;
             }
 
-            var spring = WellBlockUtils.FindGoverningSpring(api, block, pos);
+            var spring = WellBlockUtils.FindGoverningSpring(api, fluid, pos);
             if (spring == null) return true;
 
             if (spring.totalLiters <= 0)
@@ -138,22 +138,22 @@ namespace HydrateOrDiedrate.Wells.Patches
             if (entityItem.Swimming && world.Rand.NextDouble() < 0.03)
             {
                 BlockPos pos = entityItem.SidedPos.AsBlockPos;
-                Block block = world.BlockAccessor.GetBlock(pos);
+                var fluid = api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
 
-                if (!WellBlockUtils.IsOurWellwater(block))
+                if (!WellBlockUtils.IsOurWellwater(fluid))
                 {
                     return true;
                 }
 
-                var spring = (block != null) ? WellBlockUtils.FindGoverningSpring(api, block, pos) : null;
+                var spring = (fluid != null) ? WellBlockUtils.FindGoverningSpring(api, fluid, pos) : null;
                 if (spring == null)
                 {
                     return true;
                 }
 
-                if (block?.Attributes != null)
+                if (fluid?.Attributes != null)
                 {
-                    var waterTightContainerProps = block.Attributes["waterTightContainerProps"];
+                    var waterTightContainerProps = fluid.Attributes["waterTightContainerProps"];
                     var whenFilledStack = waterTightContainerProps?["whenFilled"]?["stack"];
                     string itemCode = whenFilledStack?["code"]?.AsString();
 

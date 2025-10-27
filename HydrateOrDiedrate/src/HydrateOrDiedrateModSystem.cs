@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using Vintagestory.API.Datastructures;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using Vintagestory.Common;
 
 namespace HydrateOrDiedrate;
 
@@ -55,6 +56,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
             harmony = new Harmony(HarmonyID);
             
             harmony.PatchAllUncategorized();
+            if (api.ModLoader.IsModEnabled("hardcorewater"))
+            {
+                harmony.PatchCategory("HydrateOrDiedrate.HardcoreWater");
+            }
             if (ModConfig.Instance.Advanced.IncreaseMarkDirtyThreshold)
             {
                 harmony.PatchCategory(PatchCategory_MarkDirtyThreshold);
