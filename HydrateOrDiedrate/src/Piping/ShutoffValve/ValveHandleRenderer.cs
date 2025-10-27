@@ -43,9 +43,9 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             var be  = capi.World.BlockAccessor.GetBlockEntity(pos) as BlockEntityShutoffValve;
             if (be?.Api?.Side != EnumAppSide.Client) return;
 
+            be.HandleRenderer?.AnimateToggle(pkt.Enabled);
             be.Enabled = pkt.Enabled;
             be.MarkDirty(true);
-            be.HandleRenderer?.AnimateToggle(pkt.Enabled);
         }
 
         void LoadMesh()
