@@ -1,44 +1,54 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
+using HardcoreWater.ModBlockEntity;
+using HardcoreWater.ModBlock;
 
 namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatchCategory("HydrateOrDiedrate.HardcoreWater")]
-    [HarmonyPatch]
+    [HarmonyPatch(typeof(BlockEntityAqueduct), "onServerTick1s", argumentTypes: new[] { typeof(float) })]
     public static class BlockEntityAqueductPatch
     {
-        private static readonly Type TAqueductEntity = AccessTools.TypeByName("HardcoreWater.ModBlockEntity.BlockEntityAqueduct");
-        private static readonly Type TIAqueduct      = AccessTools.TypeByName("HardcoreWater.ModBlock.IAqueduct");
-        private static readonly Type TBlockAqueduct  = AccessTools.TypeByName("HardcoreWater.ModBlock.BlockAqueduct");
+        private static readonly Type TIAqueduct = AccessTools.TypeByName("HardcoreWater.ModBlock.IAqueduct");
+        private static bool IsAqueductBlock(Block b)
+            => b != null && (
+                   (TIAqueduct != null && TIAqueduct.IsAssignableFrom(b.GetType()))
+                || (b is BlockAqueduct)
+                || b.GetType().Name.Contains("Aqueduct", StringComparison.OrdinalIgnoreCase)
+            );
 
-        private static readonly PropertyInfo PI_WaterLevel     = TAqueductEntity != null ? AccessTools.Property(TAqueductEntity, "WaterLevel")     : null;
-        private static readonly PropertyInfo PI_WaterSourcePos = TAqueductEntity != null ? AccessTools.Property(TAqueductEntity, "WaterSourcePos") : null;
-        private static readonly PropertyInfo PI_HasWaterSource = TAqueductEntity != null ? AccessTools.Property(TAqueductEntity, "HasWaterSource") : null;
+        private static string GetOrientationForSelfOrBlock(object injectedIAqueduct, Block block)
+        {
+            if (injectedIAqueduct != null)
+            {
+                var pi = AccessTools.Property(injectedIAqueduct.GetType(), "Orientation");
+                var v = pi?.GetValue(injectedIAqueduct);
+                if (v != null) return v.ToString();
+            }
 
-        private static int GetWaterLevel(object inst) => (int)PI_WaterLevel.GetValue(inst);
-        private static void SetWaterLevel(object inst, int v) => PI_WaterLevel.SetValue(inst, v);
-        private static BlockPos GetWaterSourcePos(object inst) => (BlockPos)PI_WaterSourcePos.GetValue(inst);
-        private static void SetWaterSourcePos(object inst, BlockPos v) => PI_WaterSourcePos.SetValue(inst, v);
-        private static bool GetHasWaterSource(object inst) => (bool)PI_HasWaterSource.GetValue(inst);
-        private static void SetHasWaterSource(object inst, bool v) => PI_HasWaterSource.SetValue(inst, v);
+            var p = AccessTools.Property(block.GetType(), "Orientation");
+            var val = p?.GetValue(block);
+            return val?.ToString();
+        }
 
-        [HarmonyPrepare]
-        static bool Prepare() => TAqueductEntity != null;
-
-        [HarmonyTargetMethod]
-        static MethodBase TargetMethod() => AccessTools.Method(TAqueductEntity, "onServerTick1s", new[] { typeof(float) });
+        private static bool GetAqueductIsEnclosed(Block b)
+        {
+            if (b == null) return false;
+            var pi = AccessTools.Property(b.GetType(), "IsEnclosed");
+            var v = pi?.GetValue(b);
+            return v is bool bv && bv;
+        }
 
         [HarmonyPrefix]
-        static bool Prefix(
-            object __instance,
+        private static bool Prefix(
+            BlockEntityAqueduct __instance,
             float dt,
             ref int ___WaterSourceReacquireTimeout,
-            object ___blockAqueduct
+            BlockAqueduct ___blockAqueduct
         )
         {
             var be = (BlockEntity)__instance;
@@ -73,10 +83,10 @@ namespace HydrateOrDiedrate.patches
                 yield return inlineA; yield return inlineB; yield return sideA; yield return sideB;
             }
 
-            if (GetHasWaterSource(__instance))
+            if (__instance.HasWaterSource)
             {
                 bool hasSource = false;
-                BlockPos srcPos = GetWaterSourcePos(__instance);
+                BlockPos srcPos = __instance.WaterSourcePos;
                 bool unloadedSource = (srcPos != null) && (ba.GetChunkAtBlockPos(srcPos) == null);
 
                 if (IsValidWaterSource(api, be.Pos, 7) || unloadedSource) hasSource = true;
@@ -89,8 +99,8 @@ namespace HydrateOrDiedrate.patches
                 if (!hasSource || HasInvalidSourceDependency(api, __instance))
                 {
                     ___WaterSourceReacquireTimeout = 4;
-                    SetHasWaterSource(__instance, false);
-                    SetWaterSourcePos(__instance, null);
+                    __instance.HasWaterSource = false;
+                    __instance.WaterSourcePos = null;
                     be.MarkDirty(true);
                 }
                 return false;
@@ -99,7 +109,7 @@ namespace HydrateOrDiedrate.patches
             if (___WaterSourceReacquireTimeout > 0)
             {
                 ___WaterSourceReacquireTimeout--;
-                SetWaterLevel(__instance, Math.Max(0, GetWaterLevel(__instance) - 1));
+                __instance.WaterLevel = Math.Max(0, __instance.WaterLevel - 1);
                 ba.TriggerNeighbourBlockUpdate(be.Pos);
                 be.MarkDirty(true);
                 return false;
@@ -110,13 +120,13 @@ namespace HydrateOrDiedrate.patches
 
             if (IsValidWaterSource(api, be.Pos, 7))
             {
-                SetWaterSourcePos(__instance, be.Pos); SetWaterLevel(__instance, 7);
-                SetHasWaterSource(__instance, true); acquired = true;
+                __instance.WaterSourcePos = be.Pos; __instance.WaterLevel = 7;
+                __instance.HasWaterSource = true; acquired = true;
             }
             else if (IsValidWaterSource(api, up) || IsValidWaterSourceOrWaterFall(api, up, 6) || IsValidFilledAqueduct(api, __instance, up, 6))
             {
-                SetWaterSourcePos(__instance, up); SetWaterLevel(__instance, 6);
-                SetHasWaterSource(__instance, true); acquired = true;
+                __instance.WaterSourcePos = up; __instance.WaterLevel = 6;
+                __instance.HasWaterSource = true; acquired = true;
             }
 
             if (!acquired)
@@ -128,8 +138,8 @@ namespace HydrateOrDiedrate.patches
                         (IsValidWaterSource(api, endPos, 5) && IsValidWaterSourceOrWaterFall(api, endPos.UpCopy(), 5) && DoesBlockBelowPosHaveUpSolidFaceOrAqueduct(api, endPos)) ||
                         IsValidFilledAqueduct(api, __instance, endPos, 6))
                     {
-                        SetWaterSourcePos(__instance, endPos); SetWaterLevel(__instance, 6);
-                        SetHasWaterSource(__instance, true); acquired = true;
+                        __instance.WaterSourcePos = endPos; __instance.WaterLevel = 6;
+                        __instance.HasWaterSource = true; acquired = true;
                         break;
                     }
                 }
@@ -139,51 +149,23 @@ namespace HydrateOrDiedrate.patches
             {
                 var ourFluid = ba.GetBlock(be.Pos, BlockLayersAccess.Fluid);
                 bool notIced = ourFluid == null || !ourFluid.Code.Path.Contains("ice");
-                if (notIced && (ourFluid == null || ourFluid.LiquidLevel < GetWaterLevel(__instance))
+                if (notIced && (ourFluid == null || ourFluid.LiquidLevel < __instance.WaterLevel)
                     && !HasInvalidSourceDependency(api, __instance))
                 {
-                    PlaceFluidForState(api, be, __instance, GetWaterLevel(__instance));
+                    PlaceFluidForState(api, be, __instance, __instance.WaterLevel);
                     var currentFluid = ba.GetBlock(be.Pos, BlockLayersAccess.Fluid);
-                    TrySpillFromEnd(api, inlineA, currentFluid, GetWaterLevel(__instance));
-                    TrySpillFromEnd(api, inlineB, currentFluid, GetWaterLevel(__instance));
+                    TrySpillFromEnd(api, inlineA, currentFluid, __instance.WaterLevel);
+                    TrySpillFromEnd(api, inlineB, currentFluid, __instance.WaterLevel);
                 }
             }
             else
             {
-                SetWaterLevel(__instance, Math.Max(0, GetWaterLevel(__instance) - 1));
+                __instance.WaterLevel = Math.Max(0, __instance.WaterLevel - 1);
                 ba.TriggerNeighbourBlockUpdate(be.Pos);
                 be.MarkDirty(true);
             }
 
             return false;
-        }
-
-        private static bool IsAqueductBlock(Block b)
-            => b != null && (
-                   (TIAqueduct != null && TIAqueduct.IsAssignableFrom(b.GetType()))
-                || (TBlockAqueduct != null && b.GetType() == TBlockAqueduct)
-                || b.GetType().Name.Contains("Aqueduct", StringComparison.OrdinalIgnoreCase)
-            );
-
-        private static string GetOrientationForSelfOrBlock(object injectedIAqueduct, Block block)
-        {
-            if (injectedIAqueduct != null)
-            {
-                var pi = AccessTools.Property(injectedIAqueduct.GetType(), "Orientation");
-                var v = pi?.GetValue(injectedIAqueduct);
-                if (v != null) return v.ToString();
-            }
-            var p = AccessTools.Property(block.GetType(), "Orientation");
-            var val = p?.GetValue(block);
-            return val?.ToString();
-        }
-
-        private static bool GetAqueductIsEnclosed(Block b)
-        {
-            if (b == null) return false;
-            var pi = AccessTools.Property(b.GetType(), "IsEnclosed");
-            var v = pi?.GetValue(b);
-            return v is bool bv && bv;
         }
 
         private static bool IsAirOrReplaceable(ICoreAPI api, BlockPos pos)
@@ -343,16 +325,14 @@ namespace HydrateOrDiedrate.patches
             return aNS != bNS;
         }
 
-        private static bool IsValidFilledAqueduct(ICoreAPI api, object self, BlockPos pos, int minLevel = 7)
+        private static bool IsValidFilledAqueduct(ICoreAPI api, BlockEntityAqueduct self, BlockPos pos, int minLevel = 7)
         {
             var ba = api.World.BlockAccessor;
             var neighborBlock = ba.GetBlock(pos);
             if (!IsAqueductBlock(neighborBlock)) return false;
 
-            var neighborBE = ba.GetBlockEntity(pos);
+            var neighborBE = ba.GetBlockEntity(pos) as BlockEntityAqueduct;
             if (neighborBE == null) return true;
-
-            if (neighborBE.GetType() != TAqueductEntity) return false;
 
             var selfPos = ((BlockEntity)self).Pos;
             var ourBlock = ba.GetBlock(selfPos);
@@ -361,9 +341,9 @@ namespace HydrateOrDiedrate.patches
             string theirO = GetOrientationForSelfOrBlock(null, neighborBlock);
             bool theirEnclosed = GetAqueductIsEnclosed(neighborBlock);
 
-            var adjWsp = GetWaterSourcePos(neighborBE);
-            bool neighborHasWater = GetHasWaterSource(neighborBE);
-            int neighborLevel = GetWaterLevel(neighborBE);
+            var adjWsp = neighborBE.WaterSourcePos;
+            bool neighborHasWater = neighborBE.HasWaterSource;
+            int neighborLevel = neighborBE.WaterLevel;
 
             if (adjWsp != null && adjWsp.Equals(selfPos)) return false;
 
@@ -371,7 +351,7 @@ namespace HydrateOrDiedrate.patches
             bool neighborFluidLooksFilled = neighborFluidLevel >= Math.Max(5, minLevel - 1);
             bool neighborLooksFilled = neighborHasWater || neighborLevel >= minLevel || neighborFluidLooksFilled;
 
-            var selfWsp = GetWaterSourcePos(self);
+            var selfWsp = self.WaterSourcePos;
             bool mutualDependency = adjWsp != null && selfWsp != null &&
                                     adjWsp.Equals(selfPos) && selfWsp.Equals(((BlockEntity)neighborBE).Pos);
 
@@ -388,30 +368,30 @@ namespace HydrateOrDiedrate.patches
             yield return p.WestCopy();
         }
 
-        private static bool HasInvalidSourceDependency(ICoreAPI api, object self)
+        private static bool HasInvalidSourceDependency(ICoreAPI api, BlockEntityAqueduct self)
         {
             var ba = api.World.BlockAccessor;
             var selfPos = ((BlockEntity)self).Pos;
-            var selfWsp = GetWaterSourcePos(self);
+            var selfWsp = self.WaterSourcePos;
 
             var neighborsUsingMe = AllHorizNeighbors(selfPos)
-                .Select(bp => ba.GetBlockEntity(bp))
-                .Where(be => be != null && be.GetType() == TAqueductEntity)
-                .Where(be => Equals(GetWaterSourcePos(be), selfPos))
+                .Select(bp => ba.GetBlockEntity(bp) as BlockEntityAqueduct)
+                .Where(be => be != null)
+                .Where(be => Equals(be.WaterSourcePos, selfPos))
                 .ToList();
 
             if (neighborsUsingMe.Count < 2) return false;
             return neighborsUsingMe.Any(be => Equals(selfWsp, ((BlockEntity)be).Pos));
         }
 
-        private static void PlaceFluidForState(ICoreAPI api, BlockEntity be, object aqueductInst, int waterLevel)
+        private static void PlaceFluidForState(ICoreAPI api, BlockEntity be, BlockEntityAqueduct aqueductInst, int waterLevel)
         {
             var ba = api.World.BlockAccessor;
             var pos = be.Pos;
 
             AssetLocation targetLoc = null;
 
-            BlockPos srcPos = GetWaterSourcePos(aqueductInst);
+            BlockPos srcPos = aqueductInst.WaterSourcePos;
             Block src = (srcPos != null) ? ba.GetBlock(srcPos, BlockLayersAccess.Fluid) : null;
 
             Block ourFluid = ba.GetBlock(pos, BlockLayersAccess.Fluid);
