@@ -96,8 +96,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             t = GameMath.Clamp(t, 0f, 1f);
             return t * t * (3f - 2f * t);
         }
-        
-        static int Mod4(int x) => (x % 4 + 4) % 4;
 
         static Matrixf ApplyToggleByCase(Matrixf m, ValveAxis pipeAxis, int rollSteps, float angle)
         {
