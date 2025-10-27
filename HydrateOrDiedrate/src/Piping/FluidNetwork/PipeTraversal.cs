@@ -24,6 +24,7 @@ namespace HydrateOrDiedrate.Piping.FluidNetwork
             public override bool Equals(object obj) => Equals(obj as EdgeState);
             public override int GetHashCode() => (Pos.X * 73856093) ^ (Pos.Y * 19349663) ^ (Pos.Z * 83492791) ^ CameFrom.Index;
         }
+
         public static bool TryFind(
             IWorldAccessor world,
             BlockPos startPos,
@@ -43,25 +44,39 @@ namespace HydrateOrDiedrate.Piping.FluidNetwork
             while (q.Count > 0 && seen.Count <= maxVisited)
             {
                 var cur = q.Dequeue();
-                var ba = world.BlockAccessor;
-                var curBlock = ba.GetBlock(cur.Pos);
-
                 if (match(world, cur.Pos)) return true;
                 foreach (var dir in BlockFacing.ALLFACES)
                 {
                     var nextPos = cur.Pos.AddCopy(dir);
                     if (!HasConnector(world, cur.Pos, dir)) continue;
-                    if (!HasConnector(world, nextPos, dir.Opposite)) continue;
                     if (!AllowsPassageThrough(world, cur.Pos, cur.CameFrom, dir)) continue;
+                    if (match(world, nextPos))
+                    {
+                        var nb = world.BlockAccessor.GetBlock(nextPos);
+                        if (nb is IFluidGate ngate)
+                        {
+                            if (!ngate.AllowsFluidPassage(world, nextPos, dir.Opposite, dir))
+                                continue;
+                        }
+
+                        return true;
+                    }
+                    if (!HasConnector(world, nextPos, dir.Opposite)) continue;
+                    var nb2 = world.BlockAccessor.GetBlock(nextPos);
+                    if (nb2 is IFluidGate entryGate)
+                    {
+                        if (!entryGate.AllowsFluidPassage(world, nextPos, dir.Opposite, dir)) continue;
+                    }
+
                     var next = new EdgeState(nextPos, dir.Opposite);
                     if (!seen.Add(next)) continue;
-
                     q.Enqueue(next);
                 }
             }
 
             return false;
         }
+
         public static int Distance(
             IWorldAccessor world,
             BlockPos startPos,

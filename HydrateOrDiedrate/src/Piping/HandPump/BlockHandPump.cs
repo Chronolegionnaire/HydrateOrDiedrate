@@ -25,7 +25,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
         public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos)
         {
             base.OnNeighbourBlockChange(world, pos, neibpos);
-            if (world.BlockAccessor.GetBlockEntity(pos) is BlockEntityHandPump be) be.InvalidateCachedWell();
             world.BlockAccessor.MarkBlockDirty(pos);
             world.BlockAccessor.MarkBlockDirty(pos.DownCopy());
         }

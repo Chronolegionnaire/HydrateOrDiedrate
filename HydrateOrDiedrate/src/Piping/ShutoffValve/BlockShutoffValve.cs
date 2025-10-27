@@ -50,8 +50,21 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
         {
             var be = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityShutoffValve;
             if (be == null) return false;
+            if (to != from.Opposite) return false;
+            bool alongAxis = be.Axis switch
+            {
+                ValveAxis.EW => (from == BlockFacing.EAST  && to == BlockFacing.WEST) ||
+                                (from == BlockFacing.WEST  && to == BlockFacing.EAST),
+                ValveAxis.NS => (from == BlockFacing.NORTH && to == BlockFacing.SOUTH) ||
+                                (from == BlockFacing.SOUTH && to == BlockFacing.NORTH),
+                ValveAxis.UD => (from == BlockFacing.UP    && to == BlockFacing.DOWN) ||
+                                (from == BlockFacing.DOWN  && to == BlockFacing.UP),
+                _ => false
+            };
+            if (!alongAxis) return false;
             return be.Enabled;
         }
+
 
         public void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {

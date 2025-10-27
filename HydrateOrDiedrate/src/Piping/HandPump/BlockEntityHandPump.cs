@@ -25,8 +25,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
         private float pendingDrawLitres;
         private float pendingIntakeLitres;
-        private BlockEntityWellSpring cachedWell;
-        private double nextCacheCheckTotalDays;
         public float lastSecondsUsed;
         private const float StrokePeriodSec = 2f;
         private const float LitresPerProductiveStroke = 2f;
@@ -72,8 +70,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
             }
         }
 
-        public void InvalidateCachedWell() => cachedWell = null;
-
         public bool TryStartPumping(IPlayer player)
         {
             if (PumpingPlayer != null) return false;
@@ -85,9 +81,8 @@ namespace HydrateOrDiedrate.Piping.HandPump
             strokeTimer = 0f;
             strokeInProgress = false;
             lastSecondsUsed = 0f;
-            cachedWell = ResolveWellSpring();
-            remainingPrimingStrokes = cachedWell != null ? ComputePrimingStrokes(Api.World, Pos, cachedWell.Pos) : 0;
-
+            var spring = FindWellViaNetwork(); 
+            remainingPrimingStrokes = spring != null ? ComputePrimingStrokes(Api.World, Pos, spring.Pos) : 0;
             MarkDirty();
             return true;
         }
@@ -114,9 +109,9 @@ namespace HydrateOrDiedrate.Piping.HandPump
             if (Api.Side != EnumAppSide.Server) return true;
             if (PumpingPlayer == null || ContainerSlot.Empty) return false;
             if (ContainerSlot.Itemstack?.Collectible is not BlockLiquidContainerTopOpened cont) return false;
-
-            ResolveWellSpring();
-            if (cachedWell == null) return true;
+            
+            var spring = FindWellViaNetwork();
+            if (spring == null) return true;
 
             if (!strokeInProgress)
             {
@@ -136,7 +131,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
                     {
                         particleAcc -= emit;
 
-                        var stack = BuildWellFillStack(cachedWell);
+                        var stack = BuildWellFillStack(spring);
                         if (stack != null)
                         {
                             GetSpout(out var spoutPos, out var spoutDir);
@@ -177,7 +172,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             if (strokeTimer >= StrokePeriodSec)
             {
                 strokeTimer -= StrokePeriodSec;
-                CompleteStroke(cont);
+                CompleteStroke(cont, spring);
                 StartStroke();
             }
 
@@ -198,28 +193,28 @@ namespace HydrateOrDiedrate.Piping.HandPump
             willEmitParticlesThisStroke = false;
             willExtractLitresThisStroke = 0;
 
-            if (remainingPrimingStrokes <= 0 && cachedWell != null)
+            if (remainingPrimingStrokes <= 0)
             {
-                int wholeLitresThisStroke = Math.Max(0, (int)Math.Floor(LitresPerProductiveStroke));
-                if (wholeLitresThisStroke > 0)
+                var spring = FindWellViaNetwork();
+                if (spring != null)
                 {
-                    var cont = ContainerSlot.Itemstack?.Collectible as BlockLiquidContainerBase;
-                    if (cont != null)
+                    int wholeLitresThisStroke = Math.Max(0, (int)Math.Floor(LitresPerProductiveStroke));
+                    if (wholeLitresThisStroke > 0)
                     {
-                        float curL = cont.GetCurrentLitres(ContainerSlot.Itemstack);
-                        int freeLitres = (int)Math.Floor(Math.Max(0f, cont.CapacityLitres - curL));
-
-                        var existing = cont.GetContent(ContainerSlot.Itemstack);
-                        var filter   = existing?.Collectible?.Code;
-
-                        var fillStack = BuildWellFillStack(cachedWell);
-                        bool canMatchFilter = filter == null || (fillStack != null && fillStack.Collectible?.Code == filter);
-
-                        bool wet = fillStack != null && (freeLitres <= 0 || canMatchFilter);
-                        if (wet)
+                        var cont = ContainerSlot.Itemstack?.Collectible as BlockLiquidContainerBase;
+                        if (cont != null)
                         {
-                            willEmitParticlesThisStroke = true;
-                            willExtractLitresThisStroke = wholeLitresThisStroke;
+                            float curL = cont.GetCurrentLitres(ContainerSlot.Itemstack);
+                            int freeLitres = (int)Math.Floor(Math.Max(0f, cont.CapacityLitres - curL));
+
+                            var existing = cont.GetContent(ContainerSlot.Itemstack);
+                            var filter   = existing?.Collectible?.Code;
+
+                            var fillStack = BuildWellFillStack(spring);
+                            bool canMatchFilter = filter == null || (fillStack != null && fillStack.Collectible?.Code == filter);
+                            willEmitParticlesThisStroke = (fillStack != null);
+                            bool canExtract = fillStack != null && canMatchFilter && freeLitres > 0;
+                            willExtractLitresThisStroke = canExtract ? wholeLitresThisStroke : 0;
                         }
                     }
                 }
@@ -232,7 +227,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             }
         }
 
-        private void CompleteStroke(BlockLiquidContainerBase cont)
+        private void CompleteStroke(BlockLiquidContainerBase cont, BlockEntityWellSpring spring)
         {
             strokeInProgress = false;
             if (Api.Side == EnumAppSide.Server)
@@ -266,7 +261,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             int requestTotal = Math.Min(willExtractLitresThisStroke, wholeLitresThisStroke);
             int toStore = 0;
 
-            var fillStack = BuildWellFillStack(cachedWell);
+            var fillStack = BuildWellFillStack(spring);
             bool filterOK = filter == null || (fillStack != null && fillStack.Collectible?.Code == filter);
             if (freeLitres > 0 && filterOK)
                 toStore = Math.Min(requestTotal, freeLitres);
@@ -275,7 +270,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
             if (toStore > 0)
             {
-                var stackStored = ExtractStackFromWell(cachedWell, toStore, filter, out int litresStored);
+                var stackStored = ExtractStackFromWell(spring, toStore, filter, out int litresStored);
                 if (stackStored != null && litresStored > 0)
                 {
                     var itemProps = stackStored.Collectible.Attributes?["waterTightContainerProps"].AsObject<WaterTightContainableProps>();
@@ -300,7 +295,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
             if (toWaste > 0)
             {
-                ExtractStackFromWell(cachedWell, toWaste, filter: null, out int _);
+                ExtractStackFromWell(spring, toWaste, filter: null, out int _);
             }
         }
 
@@ -432,37 +427,54 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 if (pumpSound.IsPlaying) pumpSound.Stop();
             }
         }
-
+        
         private int ComputePrimingStrokes(IWorldAccessor world, BlockPos start, BlockPos targetSpringPos)
         {
-            int dist = PipeTraversal.Distance(
-                world,
-                start.DownCopy(),
-                BlockFacing.UP,
-                (w, p) => p.Equals(targetSpringPos),
-                maxVisited: 8192);
+            var open = new Queue<(BlockPos pos, int pipeCount)>();
+            var seen = new HashSet<BlockPos>(new HydrateOrDiedrate.Piping.FluidNetwork.FluidSearch.PosCmp());
+            var first = start.DownCopy();
+            open.Enqueue((first, 0));
+            seen.Add(first);
 
-            if (dist < 0) return 0;
-            return Math.Max(0, dist / 3);
-        }
-
-        private BlockEntityWellSpring ResolveWellSpring()
-        {
-            if (cachedWell != null && Api.World.Calendar.TotalDays < nextCacheCheckTotalDays)
-                return cachedWell;
-
-            cachedWell = null;
-
-            if (PipeTraversal.TryFind(Api.World, Pos.DownCopy(), BlockFacing.UP,
-                    (w, p) => w.BlockAccessor.GetBlockEntity(p) is BlockEntityWellSpring found, maxVisited: 4096))
+            while (open.Count > 0)
             {
+                var (cur, pipesSoFar) = open.Dequeue();
+                if (SamePos(cur, targetSpringPos))
+                {
+                    return pipesSoFar / 3;
+                }
+
+                foreach (var face in BlockFacing.ALLFACES)
+                {
+                    var next = cur.AddCopy(face);
+                    if (!seen.Add(next)) continue;
+                    if (SamePos(next, targetSpringPos))
+                    {
+                        return pipesSoFar / 5;
+                    }
+
+                    var nb = world.BlockAccessor.GetBlock(next);
+                    if (nb is not IFluidBlock nFluid) continue;
+                    var curBlock = world.BlockAccessor.GetBlock(cur) as IFluidBlock;
+                    bool selfAllows     = curBlock?.HasFluidConnectorAt(world, cur, face) ?? true;
+                    bool neighborAllows = nFluid.HasFluidConnectorAt(world, next, face.Opposite);
+                    if (!selfAllows || !neighborAllows) continue;
+
+                    int nextPipes = pipesSoFar + (nb is HydrateOrDiedrate.Piping.Pipe.BlockPipe ? 1 : 0);
+                    open.Enqueue((next, nextPipes));
+                }
             }
 
-            nextCacheCheckTotalDays = Api.World.Calendar.TotalDays + (2.0 / Api.World.Calendar.HoursPerDay);
-            return cachedWell;
+            return 0; 
         }
-
-
+        
+        private BlockEntityWellSpring FindWellViaNetwork()
+        {
+            return FluidSearch.TryFindWellSpring(Api.World, Pos, out var found, maxVisited: 4096)
+                ? found
+                : null;
+        }
+        
         private void ServerTick(float dt)
         {
         }

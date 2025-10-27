@@ -7,25 +7,41 @@ namespace HydrateOrDiedrate.Piping.FluidNetwork
 {
     public static class FluidSearch
     {
-        public static bool TryFindWellSpring(IWorldAccessor world, BlockPos start, out Wells.WellWater.BlockEntityWellSpring well, int maxVisited = 2048)
+        public sealed class PosCmp : IEqualityComparer<BlockPos>
+        {
+            public bool Equals(BlockPos a, BlockPos b) => a.X == b.X && a.Y == b.Y && a.Z == b.Z;
+            public int GetHashCode(BlockPos p) => (p.X * 397) ^ (p.Y * 17) ^ p.Z;
+        }
+
+        public static bool TryFindWellSpring(
+            IWorldAccessor world,
+            BlockPos start,
+            out BlockEntityWellSpring well,
+            int maxVisited = 4096)
         {
             well = null;
-            var first = start.DownCopy();
+            BlockEntityWellSpring found = null;
 
-            bool found = PipeTraversal.TryFind(
+            bool ok = PipeTraversal.TryFind(
                 world,
-                first,
-                BlockFacing.UP,
-                (w, p) => w.BlockAccessor.GetBlockEntity(p) is Wells.WellWater.BlockEntityWellSpring,
-                maxVisited);
+                start,
+                BlockFacing.DOWN,
+                (w, p) =>
+                {
+                    var be = w.BlockAccessor.GetBlockEntity(p);
+                    if (be is BlockEntityWellSpring ws)
+                    {
+                        found = ws;
+                        return true;
+                    }
+                    return false;
+                },
+                maxVisited
+            );
 
-            if (!found) return false;
-            if (world.BlockAccessor.GetBlockEntity(first) is Wells.WellWater.BlockEntityWellSpring beHere)
-            {
-                well = beHere;
-                return true;
-            }
-            return false;
+            if (!ok || found == null) return false;
+            well = found;
+            return true;
         }
     }
 
