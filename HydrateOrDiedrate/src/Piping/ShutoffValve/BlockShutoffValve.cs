@@ -1,4 +1,3 @@
-// BlockShutoffValve.cs
 using System;
 using System.Collections.Generic;
 using HydrateOrDiedrate.Piping.FluidNetwork;
@@ -13,7 +12,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
 
     public class BlockShutoffValve : Block, IFluidBlock, IFluidGate
     {
-        // Order matters: we’ll scan in this order and pick the first connector we find.
         static readonly (ValveAxis axis, BlockFacing a, BlockFacing b)[] ScanOrder = new[]
         {
             (ValveAxis.EW, BlockFacing.EAST,  BlockFacing.WEST),
@@ -52,7 +50,7 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
         {
             var be = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityShutoffValve;
             if (be == null) return false;
-            return be.Enabled; // open when enabled, closed when disabled
+            return be.Enabled;
         }
 
         public void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
@@ -69,16 +67,11 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
 
             if (world.BlockAccessor.GetBlockEntity(pos) is BlockEntityShutoffValve be)
             {
-                // 1) pick the pipe axis from neighbors
                 be.Axis = ChooseAxisOnPlacement(world, pos);
                 be.AxisInitialized = true;
-
-                // 2) choose desired facing based on rule
                 var desiredFacing = IsConnectorFace(be.Axis, blockSel.Face)
-                    ? HorizontalFacingTowardPlayer(pos, byPlayer) // toward player when clicking a connector side
-                    : blockSel.Face.Opposite; // otherwise opposite of the face placed against
-
-                // 3) compute the roll (calibration + offset folded inside)
+                    ? HorizontalFacingTowardPlayer(pos, byPlayer)
+                    : blockSel.Face.Opposite;
                 be.RollSteps = RollFor(be.Axis, desiredFacing);
 
                 be.MarkDirty(true);
@@ -87,9 +80,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             MarkSelfAndNeighborsDirty(world, pos);
             return true;
         }
-
-        // --- Axis/facing helpers -----------------------------------------------------
-
         static bool IsConnectorFace(ValveAxis axis, BlockFacing face)
         {
             return axis switch
@@ -99,31 +89,20 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 _            => face == BlockFacing.UP || face == BlockFacing.DOWN
             };
         }
-
-        // Rotation orders per-axis AFTER calibration, so offsets can be applied uniformly.
         static readonly Dictionary<ValveAxis, BlockFacing[]> RotOrder = new()
         {
-            // UD rolls around Y: E -> S -> W -> N
             [ValveAxis.UD] = new[] { BlockFacing.EAST, BlockFacing.SOUTH, BlockFacing.WEST, BlockFacing.NORTH },
-
-            // NS rolls around Z: E -> Up -> W -> Down
             [ValveAxis.NS] = new[] { BlockFacing.EAST, BlockFacing.UP, BlockFacing.WEST, BlockFacing.DOWN },
-
-            // EW rolls around X: Up -> S -> Down -> N
             [ValveAxis.EW] = new[] { BlockFacing.UP, BlockFacing.SOUTH, BlockFacing.DOWN, BlockFacing.NORTH }
         };
-
-        // Axis-specific roll offsets
         static readonly int[] AxisRollOffsets = new int[3];
 
         static BlockShutoffValve()
         {
-            AxisRollOffsets[(int)ValveAxis.EW] = -1; // modulo 4
+            AxisRollOffsets[(int)ValveAxis.EW] = -1;
             AxisRollOffsets[(int)ValveAxis.NS] = +1;
             AxisRollOffsets[(int)ValveAxis.UD] = -1;
         }
-
-        // Single entry: calibration + indexing + offset
         static int RollFor(ValveAxis axis, BlockFacing desiredFacing)
         {
             var calibrated = CalibrateForAxis(axis, desiredFacing);
@@ -135,16 +114,12 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             int off = AxisRollOffsets[(int)axis] & 3;
             return (idx + off) & 3;
         }
-
-        // Same calibration as earlier logic
         static BlockFacing CalibrateForAxis(ValveAxis axis, BlockFacing facing)
         {
-            if (axis != ValveAxis.UD) return facing.Opposite;  // flip for EW + NS
-            if (facing == BlockFacing.NORTH || facing == BlockFacing.SOUTH) return facing.Opposite; // UD: flip N/S
-            return facing; // keep E/W
+            if (axis != ValveAxis.UD) return facing.Opposite;
+            if (facing == BlockFacing.NORTH || facing == BlockFacing.SOUTH) return facing.Opposite;
+            return facing;
         }
-
-        // Non-nullable; pick the dominant horizontal toward the player.
         static BlockFacing HorizontalFacingTowardPlayer(BlockPos pos, IPlayer byPlayer)
         {
             var agent = byPlayer.Entity as EntityAgent;
@@ -170,15 +145,12 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 be.AxisInitialized = true;
                 be.MarkDirty(true);
             }
-
-            // Make sure neighbors recompute their pipe boxes
             MarkSelfAndNeighborsDirty(world, pos);
         }
 
         public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos)
         {
             base.OnNeighbourBlockChange(world, pos, neibpos);
-            // Recompute us + neighbors (e.g., a pipe got placed/removed next to the valve)
             MarkSelfAndNeighborsDirty(world, pos);
         }
 
@@ -188,8 +160,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             if (be == null) return base.OnBlockInteractStart(world, byPlayer, blockSel);
 
             var held = byPlayer?.InventoryManager?.ActiveHotbarSlot;
-
-            // Wrench: rotate axis or roll (server authoritative)
             if (IsWrench(held))
             {
                 if (world.Side == EnumAppSide.Server)
@@ -207,8 +177,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 }
                 return true;
             }
-
-            // Toggle on server; packet drives anim+SFX on clients
             if (world.Side == EnumAppSide.Server)
             {
                 be.ServerToggleEnabled(byPlayer);
@@ -216,8 +184,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             }
             return true;
         }
-
-        // ---- Selection / collision boxes: fixed straight 2-way boxes matching axis ----
 
         const float px = 1f / 16f;
         static readonly Cuboidf Center = new Cuboidf(6*px,  6*px,  6*px, 10*px, 10*px, 10*px);
@@ -250,8 +216,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             return BoxesFor(be?.Axis ?? ValveAxis.UD);
         }
 
-        // ---- Helpers ----
-
         ValveAxis ChooseAxisOnPlacement(IWorldAccessor world, BlockPos pos)
         {
             foreach (var (axis, a, b) in ScanOrder)
@@ -259,18 +223,15 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 if (HasNeighborConnector(world, pos, a) || HasNeighborConnector(world, pos, b))
                     return axis;
             }
-            return ValveAxis.UD; // fallback
+            return ValveAxis.UD;
         }
 
         bool HasNeighborConnector(IWorldAccessor world, BlockPos pos, BlockFacing towards)
         {
             var npos = pos.AddCopy(towards);
             var nb   = world.BlockAccessor.GetBlock(npos);
-            // Treat wells as connectable (mirroring your pipe logic)
             if (nb is BlockWellSpring) return true;
             if (world.BlockAccessor.GetBlockEntity(npos) is BlockEntityWellSpring) return true;
-
-            // Fluid block that accepts a connector facing us
             if (nb is IFluidBlock nFluid)
                 return nFluid.HasFluidConnectorAt(world, npos, towards.Opposite);
 

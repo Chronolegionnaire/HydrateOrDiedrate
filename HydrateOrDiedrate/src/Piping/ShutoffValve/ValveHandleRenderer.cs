@@ -1,5 +1,5 @@
 using System;
-using HydrateOrDiedrate.Piping.Networking; // for ValveToggleEventPacket
+using HydrateOrDiedrate.Piping.Networking;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -33,13 +33,10 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
 
             capi.Event.EnqueueMainThreadTask(LoadMesh, "valve-handle-load");
             EnsureSfx();
-            // Initialize current pose
             animStartAngle  = animTargetAngle = AngleFor(be.Enabled);
             animT = 1f;
             lastMs = capi.InWorldEllapsedMilliseconds;
         }
-
-        // Packet hook (no reflection)
         public static void OnClientValveToggleEvent(ICoreClientAPI capi, ValveToggleEventPacket pkt)
         {
             var pos = new BlockPos(pkt.X, pkt.Y, pkt.Z);
@@ -74,11 +71,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             });
         }
 
-        public void OnOrientationChanged()
-        {
-            // Nothing persistent; we recompute transform every frame.
-        }
-
         public void AnimateToggle(bool toEnabled)
         {
             animStartAngle  = CurrentAngle();
@@ -97,8 +89,7 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
 
         float CurrentAngle() => animating ? GameMath.Lerp(animStartAngle, animTargetAngle, Ease(animT)) : AngleFor(be.Enabled);
 
-        // Set your open/closed angles here (in radians). These rotate the handle around the pipe axis.
-        static float AngleFor(bool enabled) => enabled ? 0f : GameMath.PIHALF; // 0 = open, 90° = closed
+        static float AngleFor(bool enabled) => enabled ? 0f : GameMath.PIHALF;
 
         static float Ease(float t)
         {
@@ -174,20 +165,14 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 out float detentRoll
             );
 
-            float angle = CurrentAngle(); // 0..PI/2
+            float angle = CurrentAngle();
 
             var m = model
                 .Identity()
                 .Translate(be.Pos.X - cam.X, be.Pos.Y - cam.Y, be.Pos.Z - cam.Z)
                 .Translate(0.5f, 0.5f, 0.5f)
-
-                // (1) Pre-rotate authored-Y to the placed pipe axis
                 .RotateX(preX).RotateY(preY).RotateZ(preZ)
-
-                // (2) Apply base detent roll
                 .RotateY(detentRoll);
-
-            // (3) Per-orientation & facing animation axis/handedness
             m = ApplyToggleByCase(m, be.Axis, be.RollSteps, angle);
 
             prog.ModelMatrix = m

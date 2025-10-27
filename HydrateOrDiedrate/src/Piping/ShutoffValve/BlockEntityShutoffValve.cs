@@ -11,17 +11,13 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
     {
         ICoreClientAPI capi;
 
-        // State
         public bool Enabled { get; set; } = true;
         public ValveAxis Axis { get; set; } = ValveAxis.UD;
         public bool AxisInitialized { get; set; } = false;
         public int RollSteps { get; set; } = 0;
 
-        // Client-only caches
-        MeshData pipeMeshAuthored;       // original authoring-space pipe mesh
-        MeshData pipeMeshWorldOriented;  // rotated for current axis+roll
-
-        // EXPOSED: renderer without reflection
+        MeshData pipeMeshAuthored;
+        MeshData pipeMeshWorldOriented;
         internal ValveHandleRenderer HandleRenderer { get; private set; }
 
         public override void Initialize(ICoreAPI api)
@@ -31,11 +27,8 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
 
             if (api.Side == EnumAppSide.Client)
             {
-                // Load authored pipe once
                 pipeMeshAuthored ??= LoadMesh("shapes/block/shutoffvalve/valve-pipe.json");
                 RebuildWorldOrientedPipeMesh();
-
-                // Create/refresh renderer for the handle
                 HandleRenderer?.Dispose();
                 HandleRenderer = new ValveHandleRenderer(capi, this);
                 capi.Event.RegisterRenderer(HandleRenderer, EnumRenderStage.Opaque, "valve-handle");
@@ -68,21 +61,15 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tess)
         {
             if (Api.Side != EnumAppSide.Client) return true;
-
-            // Always start from the authored mesh and orient it here so we’re never out of sync
             if (pipeMeshAuthored == null)
             {
                 pipeMeshAuthored = LoadMesh("shapes/block/shutoffvalve/valve-pipe.json");
                 if (pipeMeshAuthored == null) return true;
             }
-
-            // Fresh clone → apply orientation → push
             var mesh = pipeMeshAuthored.Clone();
             Orientation.ApplyPipe(mesh, Axis, RollSteps);
 
             mesher.AddMeshData(mesh);
-
-            // Handle is drawn by IRenderer
             return true;
         }
 
@@ -106,7 +93,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 {
                     RebuildWorldOrientedPipeMesh();
                     Api.World.BlockAccessor.MarkBlockDirty(Pos);
-                    HandleRenderer?.OnOrientationChanged(); // keep handle aligned
                 }
 
                 if (prevEnabled != Enabled)
@@ -153,22 +139,17 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             public static void ApplyPipe(MeshData mesh, ValveAxis axis, int rollSteps)
             {
                 var c = new Vec3f(0.5f, 0.5f, 0.5f);
-
-                // Map authored Y → target pipe axis
                 switch (axis)
                 {
-                    case ValveAxis.NS: mesh.Rotate(c, GameMath.PIHALF, 0f, 0f);       break; // +90° around X: Y→+Z
-                    case ValveAxis.EW: mesh.Rotate(c, 0f, 0f, -GameMath.PIHALF);      break; // -90° around Z: Y→+X
-                    // UD: no-op (Y stays Y)
+                    case ValveAxis.NS: mesh.Rotate(c, GameMath.PIHALF, 0f, 0f);       break;
+                    case ValveAxis.EW: mesh.Rotate(c, 0f, 0f, -GameMath.PIHALF);      break;
                 }
-
-                // Roll detents around pipe axis
                 float roll = (rollSteps & 3) * GameMath.PIHALF;
                 switch (axis)
                 {
-                    case ValveAxis.UD: mesh.Rotate(c, 0f, roll, 0f); break; // around Y
-                    case ValveAxis.NS: mesh.Rotate(c, 0f, 0f, roll); break; // around Z
-                    case ValveAxis.EW: mesh.Rotate(c, roll, 0f, 0f); break; // around X
+                    case ValveAxis.UD: mesh.Rotate(c, 0f, roll, 0f); break;
+                    case ValveAxis.NS: mesh.Rotate(c, 0f, 0f, roll); break;
+                    case ValveAxis.EW: mesh.Rotate(c, roll, 0f, 0f); break;
                 }
             }
 
@@ -176,10 +157,8 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 out float preX, out float preY, out float preZ, out float rollAroundAxis)
             {
                 preX = preY = preZ = 0f;
-
-                // Same mapping chain as the baked mesh
-                if (axis == ValveAxis.NS) preX = GameMath.PIHALF;   // Y→Z
-                if (axis == ValveAxis.EW) preZ = -GameMath.PIHALF;  // Y→X
+                if (axis == ValveAxis.NS) preX = GameMath.PIHALF;
+                if (axis == ValveAxis.EW) preZ = -GameMath.PIHALF;
 
                 rollAroundAxis = (rollSteps & 3) * GameMath.PIHALF;
             }
