@@ -10,7 +10,8 @@ using HardcoreWater.ModBlock;
 namespace HydrateOrDiedrate.patches
 {
     [HarmonyPatchCategory("HydrateOrDiedrate.HardcoreWater")]
-    [HarmonyPatch(typeof(BlockEntityAqueduct), "onServerTick1s", argumentTypes: new[] { typeof(float) })]
+    [HarmonyPatch("HardcoreWater.ModBlockEntity.BlockEntityAqueduct", "onServerTick1s")]
+    [HarmonyPatch(argumentTypes: [ typeof(float) ])]
     public static class BlockEntityAqueductPatch
     {
         private static readonly Type TIAqueduct = AccessTools.TypeByName("HardcoreWater.ModBlock.IAqueduct");
