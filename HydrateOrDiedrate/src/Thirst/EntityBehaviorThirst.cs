@@ -82,6 +82,8 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
     private float fastDelta;
 
     private long lastMoveMs;
+    
+    private float hydLossCarry;
 
     public override void OnGameTick(float deltaTime)
     {
@@ -138,9 +140,16 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
     private void UpdateHydrationLossDelay(float elapsedSeconds)
     {
         int currentDelay = HydrationLossDelay;
-        if(currentDelay <= 0) return;
+        if (currentDelay <= 0) return;
 
-        HydrationLossDelay = Math.Max(0, currentDelay - (int)(CalculateMultiplierPerGameSecond() * elapsedSeconds));
+        hydLossCarry += CalculateMultiplierPerGameSecond() * elapsedSeconds;
+
+        int whole = (int)hydLossCarry;
+        if (whole > 0)
+        {
+            HydrationLossDelay = Math.Max(0, currentDelay - whole);
+            hydLossCarry -= whole;
+        }
     }
 
     private void HandleAccumulatedThirstDecay(EntityPlayer player, float deltaTime)
