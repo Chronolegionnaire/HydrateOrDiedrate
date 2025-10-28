@@ -1,0 +1,41 @@
+[
+  {
+    "file": "hydrateordiedrate:itemtypes/liquid/waterportion",
+    "op": "addmerge",
+    "path": "/CombustiblePropsByType",
+    "value": {
+      "waterportion-fresh-*-clean": {
+        "SmeltingType": "Cook",
+        "RequiresContainer": true,
+        "SmeltedRatio": 1,
+        "MeltingPoint": 100,
+        "MaxTemperature": 200,
+        "MeltingDuration": 0.05,
+        "SmeltedStack": {
+          "type": "Item",
+          "code": "hydrateordiedrate:waterportion-boiled-natural-clean",
+          "codeByType": {
+            "*-rain-*": "hydrateordiedrate:waterportion-boiled-rain-clean"
+          }
+        }
+      }
+    }
+  },
+  {
+    "file": "game:itemtypes/liquid/waterportion",
+    "op": "addmerge",
+    "path": "/CombustibleProps",
+    "value": {
+      "SmeltingType": "Cook",
+      "RequiresContainer": true,
+      "SmeltedRatio": 1,
+      "MeltingPoint": 100,
+      "MaxTemperature": 200,
+      "MeltingDuration": 0.05,
+      "SmeltedStack": {
+        "type": "Item",
+        "code": "hydrateordiedrate:waterportion-boiled-natural-clean"
+      }
+    }
+  }
+]
