@@ -49,7 +49,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
-        ConfigManager.EnsureModConfigLoaded(api);
 
         if (!Harmony.HasAnyPatches(HarmonyID))
         {
@@ -208,7 +207,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
         }
-        if(api.ModLoader.IsModEnabled("configlib")) ConfigLibCompatibility.Init(api);
     }
 
     public RainHarvesterManager GetRainHarvesterManager()
@@ -291,7 +289,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _thirstHud?.Dispose();
         _hungerReductionHud?.Dispose();
 
-        ConfigManager.UnloadModConfig();
+        //ConfigManager.UnloadModConfig();
         harmony?.UnpatchAll(HarmonyID);
         UnloadStatics();
         base.Dispose();

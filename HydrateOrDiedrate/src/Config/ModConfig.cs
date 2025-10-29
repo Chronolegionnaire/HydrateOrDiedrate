@@ -1,4 +1,5 @@
 ﻿using HydrateOrDiedrate.Config.SubConfigs;
+using InsanityLib.Attributes.Auto.Config;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -15,6 +16,7 @@ public class ModConfig
 {
     public const string ConfigPath = "HydrateOrDiedrateConfig.json";
 
+    [AutoConfig(ConfigPath, ServerSync = true)]
     public static ModConfig Instance { get; internal set; }
 
     /// <summary>

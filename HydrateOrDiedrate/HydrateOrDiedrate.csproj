@@ -12,6 +12,10 @@
       <HintPath>lib\ACulinaryArtillery.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="InsanityLib">
+      <HintPath>lib\InsanityLib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="VintagestoryAPI">
       <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
       <Private>false</Private>

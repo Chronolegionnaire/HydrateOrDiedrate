@@ -10,6 +10,7 @@
     "description": "Adds a thirst and hot weather mechanic to the game.",
     "version": "2.2.25",
     "dependencies": {
-        "game": "*"
+      "game": "*",
+      "insanitylib": "*"
     }
 }
