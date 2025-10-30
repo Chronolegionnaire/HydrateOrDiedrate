@@ -68,6 +68,10 @@
       <HintPath>refDlls\xskills.dll</HintPath>
       <Private>False</Private>
     </Reference>
+	<Reference Include="HardcoreWater">
+      <HintPath>lib\HardcoreWater.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="OpenTK">
       <HintPath>$(VINTAGE_STORY)/Lib/OpenTK.dll</HintPath>
       <Private>False</Private>
@@ -85,10 +89,6 @@
     <Content Include="modinfo.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="assets\hydrateordiedrate\shapes\block\shutoffvalve\" />
   </ItemGroup>
 
 </Project>

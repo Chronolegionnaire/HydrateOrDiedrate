@@ -58,10 +58,26 @@ public class HydrateOrDiedrateModSystem : ModSystem
             harmony = new Harmony(HarmonyID);
             
             harmony.PatchAllUncategorized();
+            TryCompatibilityPatch(harmony, api, "hardcorewater", "HydrateOrDiedrate.HardcoreWater");
+            TryCompatibilityPatch(harmony, api, "aculinaryartillery", "HydrateOrDiedrate.ACulinaryArtillery");
+
             if (ModConfig.Instance.Advanced.IncreaseMarkDirtyThreshold)
             {
                 harmony.PatchCategory(PatchCategory_MarkDirtyThreshold);
             }
+        }
+    }
+
+    internal void TryCompatibilityPatch(Harmony harmony, ICoreAPI api, string modID, string category)
+    {
+        if(!api.ModLoader.IsModEnabled(modID)) return;
+        try
+        {
+            harmony.PatchCategory(category);
+        }
+        catch (Exception ex)
+        {
+            Mod.Logger.Error("Failed to apply compatibility patches ({0}) for mod {1}: {2}",category, modID, ex);
         }
     }
     
@@ -239,7 +255,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         if (hudOverlayRenderer is null) return;
         hudOverlayRenderer.ProcessDrinkProgress(msg.Progress, msg.IsDrinking, msg.IsDangerous);
     }
-    
+
 
     //TODO: there should be a better way to do this, no?
     private void CheckAndInitializeCustomHud(float dt)

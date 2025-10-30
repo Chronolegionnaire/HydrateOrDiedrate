@@ -1,7 +1,7 @@
 ﻿{
   "ingredientPattern": "PRP,PAP,PRP",
   "ingredients": {
-    "P": { "type": "item", "code": "floralzonesneozeylandricregion:plank-*", "name": "wood" },
+    "P": { "type": "item", "code": "floralzonesneozeylandicregion:plank-*", "name": "wood" },
     "R": { "type": "item", "code": "game:rope", "quantity": 10 },
     "A": { "type": "block", "code": "game:woodenaxle-*" }
   },
