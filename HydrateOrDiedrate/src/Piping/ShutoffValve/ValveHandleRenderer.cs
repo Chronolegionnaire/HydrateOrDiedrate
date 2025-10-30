@@ -97,44 +97,14 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             return t * t * (3f - 2f * t);
         }
 
-        static Matrixf ApplyToggleByCase(Matrixf m, ValveAxis pipeAxis, int rollSteps, float angle)
+        static Matrixf ApplyToggle(Matrixf m, ValveAxis axis, int rollSteps, float angle)
         {
             int f = ((rollSteps % 4) + 4) % 4;
+            int sign = axis == ValveAxis.UD
+                ? 1 - 2 * (f >> 1)
+                : 1 - 2 * (f & 1);
 
-            switch (pipeAxis)
-            {
-                case ValveAxis.NS:
-                    switch (f)
-                    {
-                        case 0: m.RotateZ(+angle); break;
-                        case 1: m.RotateZ(-angle); break;
-                        case 2: m.RotateZ(+angle); break;
-                        case 3: m.RotateZ(-angle); break;
-                    }
-                    break;
-
-                case ValveAxis.EW:
-                    switch (f)
-                    {
-                        case 0: m.RotateZ(+angle); break;
-                        case 1: m.RotateZ(-angle); break;
-                        case 2: m.RotateZ(+angle); break;
-                        case 3: m.RotateZ(-angle); break;
-                    }
-                    break;
-
-                case ValveAxis.UD:
-                    switch (f)
-                    {
-                        case 0: m.RotateZ(+angle); break;
-                        case 1: m.RotateZ(+angle); break;
-                        case 2: m.RotateZ(-angle); break;
-                        case 3: m.RotateZ(-angle); break;
-                    }
-                    break;
-            }
-
-            return m;
+            return m.RotateZ(sign * angle);
         }
 
 
@@ -171,7 +141,7 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 .Translate(0.5f, 0.5f, 0.5f)
                 .RotateX(preX).RotateY(preY).RotateZ(preZ)
                 .RotateY(detentRoll);
-            m = ApplyToggleByCase(m, be.Axis, be.RollSteps, angle);
+            m = ApplyToggle(m, be.Axis, be.RollSteps, angle);
 
             prog.ModelMatrix = m
                 .Translate(-0.5f, -0.5f, -0.5f)
