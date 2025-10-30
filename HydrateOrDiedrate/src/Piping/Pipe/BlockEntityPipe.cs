@@ -34,7 +34,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
 
         void OnSlotModified(int slotId)
         {
-            MarkDirty();
+            MarkDirty(true);
             Api?.World?.BlockAccessor?.MarkBlockDirty(Pos);
         }
 
@@ -80,7 +80,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
-            var invTree = new TreeAttribute();
+            TreeAttribute invTree = new();
             Inventory.ToTreeAttributes(invTree);
             tree["inventory"] = invTree;
         }
@@ -102,6 +102,11 @@ namespace HydrateOrDiedrate.Piping.Pipe
             {
                 dsc.AppendLine(Lang.Get("Disguised as: {0}", DisguiseSlot.Itemstack.Block.GetPlacedBlockName(Api.World, Pos)));
             }
+        }
+        public override void OnBlockBroken(IPlayer byPlayer = null)
+        {
+            if (Api.Side == EnumAppSide.Server) Inventory.DropAll(Pos.ToVec3d());
+            base.OnBlockBroken(byPlayer);
         }
     }
 }
