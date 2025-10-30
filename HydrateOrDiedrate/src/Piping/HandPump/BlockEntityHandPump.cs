@@ -15,14 +15,10 @@ namespace HydrateOrDiedrate.Piping.HandPump
 {
     public class BlockEntityHandPump : BlockEntityOpenableContainer
     {
-        public const float PumpRateLitresPerSec = 1.25f;
-        public const float IntakeLitresPerSec = 8f;
-
         public IPlayer PumpingPlayer { get; private set; }
         public override string InventoryClassName => "handpump";
         public override InventoryBase Inventory { get; }
         public ItemSlot ContainerSlot => Inventory[0];
-
         private float pendingDrawLitres;
         private float pendingIntakeLitres;
         public float lastSecondsUsed;
@@ -32,11 +28,13 @@ namespace HydrateOrDiedrate.Piping.HandPump
         private static bool SamePos(BlockPos a, BlockPos b) => a.X == b.X && a.Y == b.Y && a.Z == b.Z;
         private float strokeTimer;
         private int remainingPrimingStrokes;
-        private bool willEmitParticlesThisStroke;
+        private float primeLevel;
+        private double primeLastHours;
+        private const float PrimeHalfLifeHours = 12f;
+        private double nextDecayCheckHours;
         private int  willExtractLitresThisStroke;
         private ILoadedSound pumpSound;
         private readonly AssetLocation pumpSfx = new AssetLocation("hydrateordiedrate", "sounds/pump1.ogg");
-        private float particleAcc;
         private bool pumping;
         private HandPumpContainerRenderer containerRenderer;
         private BEBehaviorHandPumpAnim AnimBh => this.GetBehavior<BEBehaviorHandPumpAnim>();
@@ -69,7 +67,31 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 Inventory.SlotModified += _ => containerRenderer?.ScheduleMeshUpdate();
             }
         }
+        private void RefreshPrimeDecay()
+        {
+            if (Api?.World?.Calendar == null) return;
 
+            double nowHours = Api.World.Calendar.TotalHours;
+            double elapsed = nowHours - primeLastHours;
+            if (primeLastHours == 0)
+            {
+                primeLastHours = nowHours;
+                return;
+            }
+
+            if (elapsed <= 0 || primeLevel <= 0f) { primeLastHours = nowHours; return; }
+            double factor = Math.Pow(0.5, elapsed / Math.Max(0.001, PrimeHalfLifeHours));
+            float newPrime = (float)(primeLevel * factor);
+            if (newPrime < 0.001f) newPrime = 0f;
+
+            if (Math.Abs(newPrime - primeLevel) > 0.0001f)
+            {
+                primeLevel = newPrime;
+                MarkDirty();
+            }
+
+            primeLastHours = nowHours;
+        }
         public bool TryStartPumping(IPlayer player)
         {
             if (PumpingPlayer != null) return false;
@@ -81,8 +103,10 @@ namespace HydrateOrDiedrate.Piping.HandPump
             strokeTimer = 0f;
             strokeInProgress = false;
             lastSecondsUsed = 0f;
-            var spring = FindWellViaNetwork(); 
-            remainingPrimingStrokes = spring != null ? ComputePrimingStrokes(Api.World, Pos, spring.Pos) : 0;
+            var spring = FindWellViaNetwork();
+            RefreshPrimeDecay();
+            int required = spring != null ? ComputePrimingStrokes(Api.World, Pos, spring.Pos) : 0;
+            remainingPrimingStrokes = Math.Max(0, required - (int)Math.Floor(primeLevel));
             MarkDirty();
             return true;
         }
@@ -111,7 +135,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
             if (ContainerSlot.Itemstack?.Collectible is not BlockLiquidContainerTopOpened cont) return false;
             
             var spring = FindWellViaNetwork();
-            if (spring == null) return true;
 
             if (!strokeInProgress)
             {
@@ -122,50 +145,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
             if (strokeInProgress)
             {
                 float phase = strokeTimer / StrokePeriodSec;
-
-                if (phase >= 0.6f && willEmitParticlesThisStroke)
-                {
-                    particleAcc += 40f * Math.Max(0f, dt);
-                    int emit = (int)particleAcc;
-                    if (emit > 0)
-                    {
-                        particleAcc -= emit;
-
-                        var stack = BuildWellFillStack(spring);
-                        if (stack != null)
-                        {
-                            GetSpout(out var spoutPos, out var spoutDir);
-                            byte[] stackBytes;
-                            using (var ms = new MemoryStream())
-                            using (var bw = new BinaryWriter(ms))
-                            {
-                                stack.ToBytes(bw);
-                                stackBytes = ms.ToArray();
-                            }
-
-                            var pkt = new PumpParticleBurstPacket
-                            {
-                                PosX = spoutPos.X, PosY = spoutPos.Y, PosZ = spoutPos.Z,
-                                DirX = spoutDir.X, DirY = 0f, DirZ = spoutDir.Z,
-
-                                Quantity = Math.Min(emit, 14),
-                                Radius = 0.08f,
-                                Scale = 0.23f,
-                                Speed = 0.3f,
-                                VelJitter = 0.0f,
-                                LifeMin = 0.1f,
-                                LifeMax = 0.2f,
-                                Gravity = 1.2f,
-
-                                StackBytes = stackBytes
-                            };
-
-                            ((ICoreServerAPI)Api).Network
-                                .GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID)
-                                .BroadcastPacket(pkt);
-                        }
-                    }
-                }
             }
 
             strokeTimer += Math.Max(0f, dt);
@@ -189,8 +168,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
                     .GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID)
                     .BroadcastPacket(pkt);
             }
-
-            willEmitParticlesThisStroke = false;
             willExtractLitresThisStroke = 0;
 
             if (remainingPrimingStrokes <= 0)
@@ -212,7 +189,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
                             var fillStack = BuildWellFillStack(spring);
                             bool canMatchFilter = filter == null || (fillStack != null && fillStack.Collectible?.Code == filter);
-                            willEmitParticlesThisStroke = (fillStack != null);
                             bool canExtract = fillStack != null && canMatchFilter && freeLitres > 0;
                             willExtractLitresThisStroke = canExtract ? wholeLitresThisStroke : 0;
                         }
@@ -244,11 +220,22 @@ namespace HydrateOrDiedrate.Piping.HandPump
             if (remainingPrimingStrokes > 0)
             {
                 remainingPrimingStrokes--;
+                var springNow = spring ?? FindWellViaNetwork();
+                int requiredNow = springNow != null ? ComputePrimingStrokes(Api.World, Pos, springNow.Pos) : 0;
+                primeLevel = Math.Min(requiredNow, primeLevel + 1f);
+
+                if (Api?.World?.Calendar != null)
+                {
+                    primeLastHours = Api.World.Calendar.TotalHours;
+                }
+
+                MarkDirty();
                 return;
             }
 
             int wholeLitresThisStroke = Math.Max(0, (int)Math.Floor(LitresPerProductiveStroke));
             if (wholeLitresThisStroke <= 0) return;
+            if (spring == null) return;
 
             if (willExtractLitresThisStroke <= 0) return;
 
@@ -256,7 +243,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             int freeLitres = (int)Math.Floor(Math.Max(0f, cont.CapacityLitres - curL));
 
             var existing = cont.GetContent(ContainerSlot.Itemstack);
-            var filter   = existing?.Collectible?.Code;
+            var filter = existing?.Collectible?.Code;
 
             int requestTotal = Math.Min(willExtractLitresThisStroke, wholeLitresThisStroke);
             int toStore = 0;
@@ -268,12 +255,16 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
             int toWaste = requestTotal - toStore;
 
+            int litresStored = 0;
+            int litresWasted = 0;
+
             if (toStore > 0)
             {
-                var stackStored = ExtractStackFromWell(spring, toStore, filter, out int litresStored);
+                var stackStored = ExtractStackFromWell(spring, toStore, filter, out litresStored);
                 if (stackStored != null && litresStored > 0)
                 {
-                    var itemProps = stackStored.Collectible.Attributes?["waterTightContainerProps"].AsObject<WaterTightContainableProps>();
+                    var itemProps = stackStored.Collectible.Attributes?["waterTightContainerProps"]
+                        .AsObject<WaterTightContainableProps>();
                     int movedItems = (itemProps != null)
                         ? (int)Math.Round(itemProps.ItemsPerLitre * litresStored)
                         : stackStored.StackSize;
@@ -290,12 +281,32 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 else
                 {
                     toWaste += toStore;
+                    litresStored = 0;
                 }
             }
 
             if (toWaste > 0)
             {
-                ExtractStackFromWell(spring, toWaste, filter: null, out int _);
+                ExtractStackFromWell(spring, toWaste, filter: null, out litresWasted);
+            }
+
+            int totalExtracted = litresStored + litresWasted;
+            if (totalExtracted > 0)
+            {
+                var visStack = BuildWellFillStack(spring);
+                if (visStack != null)
+                {
+                    GetSpout(out var spoutPos, out var spoutDir);
+
+                    byte[] stackBytes;
+                    using (var ms = new MemoryStream())
+                    using (var bw = new BinaryWriter(ms))
+                    {
+                        visStack.ToBytes(bw);
+                        stackBytes = ms.ToArray();
+                    }
+                    EmitParticleSprayOverWindow(stackBytes, spoutPos, spoutDir, totalExtracted);
+                }
             }
         }
 
@@ -315,6 +326,47 @@ namespace HydrateOrDiedrate.Piping.HandPump
             pos.Add(fwd.X * forwardOffset, 0.0, fwd.Z * forwardOffset);
 
             dir = fwd;
+        }
+        private void EmitParticleSprayOverWindow(byte[] stackBytes, Vec3d spoutPos, Vec3f spoutDir, int totalLitres)
+        {
+            if (Api.Side != EnumAppSide.Server) return;
+            if (totalLitres <= 0) return;
+            int durationMs = (int)(StrokePeriodSec * 0.4f * 1000f);
+            int bursts = GameMath.Clamp(durationMs / 80, 5, 10);
+            int totalQty = GameMath.Clamp(totalLitres * 6, 4, 14 * bursts);
+            int basePerBurst = Math.Max(1, totalQty / bursts);
+            int remainder = Math.Max(0, totalQty - basePerBurst * bursts);
+
+            void BroadcastBurst(int qty)
+            {
+                var pkt = new PumpParticleBurstPacket
+                {
+                    PosX = (float)spoutPos.X, PosY = (float)spoutPos.Y, PosZ = (float)spoutPos.Z,
+                    DirX = spoutDir.X,        DirY = 0f,                DirZ = spoutDir.Z,
+
+                    Quantity = GameMath.Clamp(qty, 1, 14),
+                    Radius = 0.08f,
+                    Scale = 0.23f,
+                    Speed = 0.3f,
+                    VelJitter = 0.0f,
+                    LifeMin = 0.1f,
+                    LifeMax = 0.2f,
+                    Gravity = 1.2f,
+
+                    StackBytes = stackBytes
+                };
+
+                ((ICoreServerAPI)Api).Network
+                    .GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID)
+                    .BroadcastPacket(pkt);
+            }
+            for (int i = 0; i < bursts; i++)
+            {
+                int delay = (int)Math.Round(i * (durationMs / (double)bursts));
+                int qty = basePerBurst + (i < remainder ? 1 : 0);
+
+                ((ICoreServerAPI)Api).Event.RegisterCallback(_ => BroadcastBurst(qty), delay);
+            }
         }
 
         public static void PlayPumpParticleBurst(ICoreClientAPI capi, PumpParticleBurstPacket msg)
@@ -477,20 +529,29 @@ namespace HydrateOrDiedrate.Piping.HandPump
         
         private void ServerTick(float dt)
         {
+            if (Api?.World?.Calendar == null) return;
+            double nowHrs = Api.World.Calendar.TotalHours;
+            if (nowHrs >= nextDecayCheckHours)
+            {
+                float before = primeLevel;
+                RefreshPrimeDecay();
+                nextDecayCheckHours = nowHrs + (10.0 / 60.0);
+                if (Math.Abs(before - primeLevel) > 0.0001f) MarkDirty();
+            }
         }
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolve)
         {
             base.FromTreeAttributes(tree, worldForResolve);
-
             if (tree.HasAttribute("inventory"))
             {
                 var inv = tree.GetTreeAttribute("inventory");
                 Inventory.FromTreeAttributes(inv);
                 if (Api != null) Inventory.AfterBlocksLoaded(Api.World);
             }
-
             pendingDrawLitres = tree.GetFloat("pendingDrawLitres", pendingDrawLitres);
             pumping = tree.GetBool("pumping", pumping);
+            primeLevel = tree.GetFloat("primeLevel", primeLevel);
+            primeLastHours = tree.GetDouble("primeLastHours", primeLastHours);
 
             if (Api?.Side == EnumAppSide.Client)
             {
@@ -502,7 +563,17 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 containerRenderer?.ScheduleMeshUpdate();
             }
         }
-        
+        public override void ToTreeAttributes(ITreeAttribute tree)
+        {
+            base.ToTreeAttributes(tree);
+            var invTree = new TreeAttribute();
+            Inventory.ToTreeAttributes(invTree);
+            tree["inventory"] = invTree;
+            tree.SetFloat("pendingDrawLitres", pendingDrawLitres);
+            tree.SetBool("pumping", pumping);
+            tree.SetFloat("primeLevel", primeLevel);
+            tree.SetDouble("primeLastHours", primeLastHours);
+        }
         private ItemStack BuildWellFillStack(BlockEntityWellSpring spring)
         {
             var fluidBlock = GetRepresentativeWellBlockForFilling(spring);
@@ -515,19 +586,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
             return stack.ResolvedItemstack;
         }
-
-        public override void ToTreeAttributes(ITreeAttribute tree)
-        {
-            base.ToTreeAttributes(tree);
-
-            var invTree = new TreeAttribute();
-            Inventory.ToTreeAttributes(invTree);
-            tree["inventory"] = invTree;
-
-            tree.SetFloat("pendingDrawLitres", pendingDrawLitres);
-            tree.SetBool("pumping", pumping);
-        }
-
         public override void OnBlockRemoved()
         {
             if (Api.Side == EnumAppSide.Server)
