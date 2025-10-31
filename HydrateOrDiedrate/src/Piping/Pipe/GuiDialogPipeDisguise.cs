@@ -28,7 +28,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
             var dialogBounds = ElementStdBounds.AutosizedMainDialog.WithAlignment(EnumDialogArea.CenterMiddle);
             var compo = capi.Gui.CreateCompo($"pipe-disguise-{pos}", dialogBounds)
                 .AddShadedDialogBG(ElementBounds.Fill, true)
-                .AddDialogTitleBar(Lang.Get("hydrateordiedrate:Pipe disguise"), () => TryClose());
+                .AddDialogTitleBar(Lang.Get("hydrateordiedrate:pipedisguise"), () => TryClose());
 
             var content = ElementBounds.Fixed(0, 40, 180, 130).WithFixedPadding(10);
             compo.BeginChildElements(content);
@@ -36,12 +36,6 @@ namespace HydrateOrDiedrate.Piping.Pipe
             var slotBounds = ElementBounds.Fixed(0, 0, 80, 80).WithFixedPadding(8);
 
             compo.AddItemSlotGrid(inv, SendInvPacket, 1, slotBounds, "disguise-slots");
-
-            compo.AddStaticText(
-                Lang.Get("Place a block to hide the pipe"),
-                CairoFont.WhiteSmallText(),
-                ElementBounds.Fixed(0, 90, 170, 20)
-            );
 
             compo.EndChildElements();
             SingleComposer = compo.Compose();
