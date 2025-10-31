@@ -65,8 +65,8 @@ public class ModConfig
     /// <summary>
     /// Turns off the sway/distortion effect when the player is drunk
     /// </summary>
-    [DefaultValue(true)]
-    public bool DisableDrunkSway { get; set; } = true;
+    [DefaultValue(false)]
+    public bool DisableDrunkSway { get; set; } = false;
 
     /// <summary>
     /// Allows using the sprint key to initiate drinking instead of sneaking
