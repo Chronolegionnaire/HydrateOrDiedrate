@@ -1,4 +1,3 @@
-// BEBehaviorHandPumpAnim.cs
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -44,15 +43,15 @@ namespace HydrateOrDiedrate.Piping.HandPump
             IsPumping = true;
 
             float frames = 30f;
-            float fps = 30f;          // your default
-            float clipSeconds = frames / fps;   // 1.0
+            float fps = 30f;
+            float clipSeconds = frames / fps;
             float targetSeconds = 2f;
-            float animSpeed = clipSeconds / targetSeconds;  // 0.6666667
+            float animSpeed = clipSeconds / targetSeconds;
 
             animUtil.StartAnimation(new AnimationMetaData {
                 Code = "pump",
                 Animation = "pump",
-                AnimationSpeed = animSpeed,  // ≈ 0.6667
+                AnimationSpeed = animSpeed,
                 EaseInSpeed = 8,
                 EaseOutSpeed = 8
             });

@@ -35,15 +35,10 @@ namespace HydrateOrDiedrate.Piping.Networking
     [ProtoContract]
     public struct ValveToggleAnimPacket
     {
-        // Block position to find the BE client-side
         [ProtoMember(1)] public int X;
         [ProtoMember(2)] public int Y;
         [ProtoMember(3)] public int Z;
-
-        // The server-authoritative "Enabled" value we switched to
         [ProtoMember(4)] public bool Enabled;
-
-        // Optional: server time in ms so clients can line up easing if needed
         [ProtoMember(5)] public long ServerMs;
     }
     [ProtoContract]
