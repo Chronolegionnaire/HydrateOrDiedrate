@@ -7,7 +7,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
 {
     public class BlockEntityWellWaterSentinel : BlockEntity
     {
-        private BlockPos governingSpringPos;   // persisted
+        private BlockPos governingSpringPos;
         private long tickListenerId = -1;
 
         public override void Initialize(ICoreAPI api)
@@ -15,7 +15,6 @@ namespace HydrateOrDiedrate.Wells.WellWater
             base.Initialize(api);
             if (api.Side != EnumAppSide.Server) return;
 
-            // Resolve governing spring once, if not already known (e.g., from save)
             if (governingSpringPos == null)
             {
                 var be = FindNearestSpringBelow(Pos);
@@ -29,7 +28,6 @@ namespace HydrateOrDiedrate.Wells.WellWater
         {
             if (Api.Side != EnumAppSide.Server) return;
 
-            // If we never found a spring, try once more (handles load order)
             if (governingSpringPos == null)
             {
                 var be = FindNearestSpringBelow(Pos);
@@ -41,7 +39,6 @@ namespace HydrateOrDiedrate.Wells.WellWater
                 }
             }
 
-            // If we have a governing spring recorded, check exactly that spot
             if (governingSpringPos != null)
             {
                 var be = Api.World.BlockAccessor.GetBlockEntity<BlockEntityWellSpring>(governingSpringPos);
@@ -52,7 +49,6 @@ namespace HydrateOrDiedrate.Wells.WellWater
                 return;
             }
 
-            // Fallback: if we still don't know the spring, behave as before
             if (FindNearestSpringBelow(Pos) == null)
             {
                 DeleteSelf(keepFluid: true);
@@ -64,16 +60,13 @@ namespace HydrateOrDiedrate.Wells.WellWater
             var ba = Api.World.BlockAccessor;
             var scan = start.DownCopy();
 
-            // Only scan through "pass-through" cells; stop on any solid that blocks water.
             for (int i = 0; i < 64; i++)
             {
-                // Prefer checking the block type first; avoids stale BE references
                 var block = ba.GetBlock(scan);
                 if (block is BlockWellSpring)
                 {
                     var be = ba.GetBlockEntity<BlockEntityWellSpring>(scan);
                     if (be != null) return be;
-                    // if block says spring but BE not yet spawned, allow another tick cycle to resolve
                     break;
                 }
 
@@ -93,7 +86,6 @@ namespace HydrateOrDiedrate.Wells.WellWater
         {
             if (Api.Side != EnumAppSide.Server) return;
 
-            // stop ticking first
             if (tickListenerId >= 0)
             {
                 UnregisterGameTickListener(tickListenerId);
@@ -102,17 +94,14 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
             var ba = Api.World.BlockAccessor;
 
-            // Remove only the BE, keep the fluid/block as requested
             ba.RemoveBlockEntity(Pos);
 
-            // Optionally tidy fluids if requested
             if (!keepFluid)
             {
                 var fluid = ba.GetFluid(Pos);
                 ba.SetFluid(0, Pos);
             }
 
-            // Notify clients / neighbors that the BE changed
             ba.TriggerNeighbourBlockUpdate(Pos);
             MarkDirty();
         }
