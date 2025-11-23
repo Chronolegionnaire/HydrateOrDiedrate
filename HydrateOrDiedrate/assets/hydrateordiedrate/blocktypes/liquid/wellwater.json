@@ -43,6 +43,7 @@
     }
   ],
   "attributes": {
+    "freezable": false,
     "smothersFire": true,
     "pushVectorByType": {
       "*-n-*": { "x": 0, "y": 0, "z": -0.0015 },
