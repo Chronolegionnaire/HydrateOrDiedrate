@@ -98,6 +98,8 @@
   "hydrateordiedrate:incontainer-item-waterportion-boiled-rain-clean": "Boiled Rain Water",
   "hydrateordiedrate:block-keg-untapped": "Keg",
   "hydrateordiedrate:block-keg-tapped": "Tapped Keg",
+  "hydrateordiedrate:item-pipesection-copper": "Copper Pipe Section",
+  "hydrateordiedrate:item-pipesection-lead": "Lead Pipe Section",
   "hydrateordiedrate:item-kegtap": "Keg Tap",
   "hydrateordiedrate:block-tun*": "Tun",
   "hydrateordiedrate:block-pipe-copper": "Copper Pipe",
