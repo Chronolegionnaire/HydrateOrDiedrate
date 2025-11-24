@@ -106,7 +106,19 @@ public class WinchTopRenderer : IRenderer
                 break;
 
             case EWinchRotationMode.Player:
-                if(Winch.RotationPlayer is not null) AngleRad += deltaTime * 200f * GameMath.DEG2RAD * (Winch.IsRaising ? -1f : 1f);
+                if (Winch.RotationPlayer is not null)
+                {
+                    var controls = Winch.RotationPlayer.Entity?.Controls;
+                    if (controls == null || !controls.RightMouseDown)
+                    {
+                        Winch.StopTurning();
+                    }
+                    else
+                    {
+                        AngleRad += deltaTime * 200f * GameMath.DEG2RAD * (Winch.IsRaising ? -1f : 1f);
+                    }
+                }
+
                 break;
         }
     }
@@ -180,48 +192,64 @@ public class WinchTopRenderer : IRenderer
             rpi.RenderMultiTextureMesh(RopeKnotMeshRef, "tex", 0);
         }
 
-        if(RopeSegmentMeshRef is not null)
+        if (RopeKnotMeshRef is not null)
         {
-            //TODO think of a cleaner solution for segment not always aligning with knot
-            const float knotLocalY = 0.85f;
-            float stubY = -lastBucketDepth + knotLocalY;
-
             prog.ModelMatrix = ModelMat
                 .Identity()
-                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + stubY, Pos.Z - camPos.Z)
-                .Translate(0.5f, 0f, 0.5f)
+                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
+                .Translate(0.5f, 0.85f, 0.5f)
                 .RotateY(yRotation)
-                .Translate(-0.5001f, -.1f, -0.5001f)
+                .Translate(-0.5f, 0f, -0.5f)
                 .Values;
 
-            prog.ViewMatrix       = rpi.CameraMatrixOriginf;
+            prog.ViewMatrix = rpi.CameraMatrixOriginf;
+            prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+            rpi.RenderMultiTextureMesh(RopeKnotMeshRef, "tex", 0);
+        }
+
+        if (RopeSegmentMeshRef is not null)
+        {
+            const float knotLocalY = 0.85f;
+            const float ropeSegmentHeight = 0.125f;
+            float segmentSpacing = ropeSegmentHeight;
+            float knotY = -lastBucketDepth + knotLocalY;
+            
+            prog.ModelMatrix = ModelMat
+                .Identity()
+                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + knotY, Pos.Z - camPos.Z)
+                .Translate(0.5f, 0f, 0.5f)
+                .RotateY(yRotation)
+                .Translate(-0.5001f, -0.1f, -0.5001f)
+                .Values;
+
+            prog.ViewMatrix = rpi.CameraMatrixOriginf;
             prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
             rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
 
-            const float ropeSegmentHeight = 0.125f;
-            const float startOffset = -0.125f;
-            float segmentSpacing = ropeSegmentHeight;
-            
-            float effectiveLength = lastBucketDepth;
-            int segmentCount = Math.Max(0, (int)(effectiveLength / segmentSpacing));
-            
-            for (int i = 0; i < segmentCount - 2; i++)
-            {
-                //TODO perhaphs instanced mesh rendering could make this more performant
-                float yPos = startOffset - i * segmentSpacing;
-            
-                prog.ModelMatrix = ModelMat
-                    .Identity()
-                    .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + yPos, Pos.Z - camPos.Z)
-                    .Translate(0.5f, 0.5f, 0.5f)
-                    .RotateY(yRotation)
-                    .Translate(-0.5f, 0f, -0.5f)
-                    .Values;
-            
-                prog.ViewMatrix = rpi.CameraMatrixOriginf;
-                prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-                rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
+            const float ropeEntryLocalY = 0.65f;
+            float stubTopY = knotY + ropeSegmentHeight;
+            float availableLength = ropeEntryLocalY - stubTopY;
 
+            if (availableLength > 0f)
+            {
+                int extraSegments = Math.Max(0, (int)(availableLength / segmentSpacing));
+
+                for (int i = 0; i < extraSegments; i++)
+                {
+                    float yOffset = stubTopY + i * segmentSpacing;
+
+                    prog.ModelMatrix = ModelMat
+                        .Identity()
+                        .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + yOffset, Pos.Z - camPos.Z)
+                        .Translate(0.5f, 0f, 0.5f)
+                        .RotateY(yRotation)
+                        .Translate(-0.5001f, -0.1f, -0.5001f)
+                        .Values;
+
+                    prog.ViewMatrix = rpi.CameraMatrixOriginf;
+                    prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+                    rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
+                }
             }
         }
         prog.Stop();

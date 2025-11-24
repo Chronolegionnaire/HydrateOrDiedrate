@@ -19,6 +19,8 @@ namespace HydrateOrDiedrate.Wells.Winch
         public const float minBucketDepth = 0.5f;
         public const string WinchBaseMeshPath = "shapes/block/winch/base.json";
         private static readonly AssetLocation WaterFillSound = new AssetLocation("game", "sounds/effect/water-fill.ogg");
+        
+        private long? playerTurnTickListenerId;
 
         private WinchTopRenderer renderer;
         private BEBehaviorMPConsumer mpc;
@@ -258,6 +260,11 @@ namespace HydrateOrDiedrate.Wells.Winch
                 return false;
             }
 
+            if (Api.Side == EnumAppSide.Server && playerTurnTickListenerId is null)
+            {
+                playerTurnTickListenerId = RegisterGameTickListener(PlayerTurnSanityCheck, 50);
+            }
+
             MarkDirty();
             return true;
         }
@@ -265,11 +272,55 @@ namespace HydrateOrDiedrate.Wells.Winch
         public void StopTurning()
         {
             RotationPlayer = null;
+
+            if (playerTurnTickListenerId is not null)
+            {
+                UnregisterGameTickListener(playerTurnTickListenerId.Value);
+                playerTurnTickListenerId = null;
+            }
+
             MarkDirty();
         }
+        
+        private void PlayerTurnSanityCheck(float dt)
+        {
+            if (RotationMode != EWinchRotationMode.Player || RotationPlayer == null)
+            {
+                if (playerTurnTickListenerId is not null)
+                {
+                    UnregisterGameTickListener(playerTurnTickListenerId.Value);
+                    playerTurnTickListenerId = null;
+                }
+                return;
+            }
+
+            var entity   = RotationPlayer.Entity;
+            var controls = entity?.Controls;
+            if (controls == null || !controls.RightMouseDown)
+            {
+                StopTurning();
+                return;
+            }
+            var sel = RotationPlayer.CurrentBlockSelection;
+            if (sel == null || !sel.Position.Equals(Pos) || sel.SelectionBoxIndex != 1)
+            {
+                StopTurning();
+            }
+        }
+
 
         public bool ContinueTurning(float secondsPassed)
         {
+            if (RotationMode == EWinchRotationMode.Player)
+            {
+                var controls = RotationPlayer?.Entity?.Controls;
+                if (controls == null || !controls.RightMouseDown)
+                {
+                    StopTurning();
+                    return false;
+                }
+            }
+
             UpdateIsRaising();
             var speed = GetCurrentTurnSpeed();
             if (speed < minTurnpeed) return false;
@@ -374,6 +425,19 @@ namespace HydrateOrDiedrate.Wells.Winch
             return true;
         }
 
+        public override void ToTreeAttributes(ITreeAttribute tree)
+        {
+            base.ToTreeAttributes(tree);
+
+            tree.SetFloat("bucketDepth", BucketDepth);
+            tree.SetString("RotationPlayerId", RotationPlayer?.PlayerUID ?? "");
+
+            TreeAttribute invTree = new();
+            Inventory.ToTreeAttributes(invTree);
+            tree["inventory"] = invTree;
+        }
+
+        
         public override void FromTreeAttributes(ITreeAttribute tree, IWorldAccessor worldForResolving)
         {
             base.FromTreeAttributes(tree, worldForResolving);
@@ -386,21 +450,18 @@ namespace HydrateOrDiedrate.Wells.Winch
             }
 
             BucketDepth = tree.GetFloat("bucketDepth", minBucketDepth);
-            RotationPlayer = Api?.World.PlayerByUid(tree.GetString("RotationPlayerId"));
+
+            var playerId = tree.GetString("RotationPlayerId");
+            if (string.IsNullOrEmpty(playerId))
+            {
+                RotationPlayer = null;
+            }
+            else
+            {
+                RotationPlayer = Api?.World.PlayerByUid(playerId);
+            }
 
             renderer?.ScheduleMeshUpdate();
-        }
-
-        public override void ToTreeAttributes(ITreeAttribute tree)
-        {
-            base.ToTreeAttributes(tree);
-
-            tree.SetFloat("bucketDepth", BucketDepth);
-            if (RotationPlayer is not null) tree.SetString("RotationPlayerId", RotationPlayer.PlayerUID);
-
-            TreeAttribute invTree = new();
-            Inventory.ToTreeAttributes(invTree);
-            tree["inventory"] = invTree;
         }
 
         public override void OnBlockBroken(IPlayer byPlayer = null)
