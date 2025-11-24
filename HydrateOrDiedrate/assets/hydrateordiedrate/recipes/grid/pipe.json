@@ -1,0 +1,12 @@
+{
+  "ingredientPattern": "SP	IP",
+  "ingredients": {
+    "P": { "type": "item", "code": "hydrateordiedrate:pipesection-*", "name": "metal", "allowedVariants": ["copper", "lead"], "quantity": 1 },
+    "S": { "type": "item", "code": "game:solderingiron", "isTool": true, "toolDurabilityCost": 1 },
+    "I": { "type": "item", "code": "game:solderbar-*", "quantity": 2, "name": "mat", "allowedVariants": ["tin", "silver"]  }
+  },
+
+  "width": 2,
+  "height": 2,
+  "output": { "type": "block", "code": "hydrateordiedrate:pipe-{metal}", "quantity": 1 }
+}

@@ -5,12 +5,13 @@ using Vintagestory.API.MathTools;
 
 namespace HydrateOrDiedrate.Piping.Pipe
 {
-    public class GuiDialogPipeDisguise : GuiDialog
+    public class GuiDialogPipeDisguise : GuiDialogBlockEntity
     {
         readonly IInventory inv;
         readonly BlockPos pos;
 
-        public GuiDialogPipeDisguise(ICoreClientAPI capi, IInventory inv, BlockPos pos) : base(capi)
+        public GuiDialogPipeDisguise(ICoreClientAPI capi, IInventory inv, BlockPos pos)
+            : base("pipe-disguise", pos, capi)
         {
             this.inv = inv;
             this.pos = pos;
@@ -40,6 +41,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
             compo.EndChildElements();
             SingleComposer = compo.Compose();
         }
+        // TODO Make wrench able to switch rotational variant of disguise
 
         public bool TryOpen()
         {

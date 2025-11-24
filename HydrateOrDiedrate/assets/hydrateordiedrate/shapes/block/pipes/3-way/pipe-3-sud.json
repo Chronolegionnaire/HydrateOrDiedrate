@@ -1,4 +1,5 @@
 {
+	//TODO Delete inside faces and Simplify Shapes
 	"editor": {
 		"allAngles": false,
 		"entityTextureMode": false

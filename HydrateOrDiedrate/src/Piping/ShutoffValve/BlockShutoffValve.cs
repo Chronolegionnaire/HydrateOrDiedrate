@@ -8,42 +8,25 @@ using Vintagestory.API.Util;
 
 namespace HydrateOrDiedrate.Piping.ShutoffValve
 {
-    public enum ValveAxis { EW, NS, UD }
-
     public class BlockShutoffValve : Block, IFluidBlock, IFluidGate
     {
-        static readonly (ValveAxis axis, BlockFacing a, BlockFacing b)[] ScanOrder = new[]
+        static readonly (EValveAxis axis, BlockFacing a, BlockFacing b)[] ScanOrder = new[]
         {
-            (ValveAxis.EW, BlockFacing.EAST,  BlockFacing.WEST),
-            (ValveAxis.NS, BlockFacing.NORTH, BlockFacing.SOUTH),
-            (ValveAxis.UD, BlockFacing.UP,    BlockFacing.DOWN)
+            (EValveAxis.EW, BlockFacing.EAST,  BlockFacing.WEST),
+            (EValveAxis.NS, BlockFacing.NORTH, BlockFacing.SOUTH),
+            (EValveAxis.UD, BlockFacing.UP,    BlockFacing.DOWN)
         };
-        static readonly BlockFacing[] Faces =
-        {
-            BlockFacing.NORTH, BlockFacing.EAST, BlockFacing.SOUTH,
-            BlockFacing.WEST,  BlockFacing.UP,   BlockFacing.DOWN
-        };
-
-        void MarkSelfAndNeighborsDirty(IWorldAccessor world, BlockPos pos)
-        {
-            var ba = world.BlockAccessor;
-            ba.MarkBlockDirty(pos);
-            foreach (var f in Faces)
-            {
-                ba.MarkBlockDirty(pos.AddCopy(f));
-            }
-        }
 
         public bool HasFluidConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {
-            var be = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityShutoffValve;
-            if (be == null) return false;
-            switch (be.Axis)
+            if (world.BlockAccessor.GetBlockEntity(pos) is not BlockEntityShutoffValve be) return false;
+
+            return be.Axis switch
             {
-                case ValveAxis.EW: return face == BlockFacing.EAST || face == BlockFacing.WEST;
-                case ValveAxis.NS: return face == BlockFacing.NORTH || face == BlockFacing.SOUTH;
-                default:           return face == BlockFacing.UP   || face == BlockFacing.DOWN;
-            }
+                EValveAxis.EW => face == BlockFacing.EAST  || face == BlockFacing.WEST,
+                EValveAxis.NS => face == BlockFacing.NORTH || face == BlockFacing.SOUTH,
+                _             => face == BlockFacing.UP    || face == BlockFacing.DOWN,
+            };
         }
 
         public bool AllowsFluidPassage(IWorldAccessor world, BlockPos pos, BlockFacing from, BlockFacing to)
@@ -51,20 +34,18 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             var be = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityShutoffValve;
             if (be == null) return false;
             if (to != from.Opposite) return false;
+
             bool alongAxis = be.Axis switch
             {
-                ValveAxis.EW => (from == BlockFacing.EAST  && to == BlockFacing.WEST) ||
-                                (from == BlockFacing.WEST  && to == BlockFacing.EAST),
-                ValveAxis.NS => (from == BlockFacing.NORTH && to == BlockFacing.SOUTH) ||
-                                (from == BlockFacing.SOUTH && to == BlockFacing.NORTH),
-                ValveAxis.UD => (from == BlockFacing.UP    && to == BlockFacing.DOWN) ||
-                                (from == BlockFacing.DOWN  && to == BlockFacing.UP),
-                _ => false
+                EValveAxis.EW => to == BlockFacing.EAST  || to == BlockFacing.WEST,
+                EValveAxis.NS => to == BlockFacing.NORTH || to == BlockFacing.SOUTH,
+                EValveAxis.UD => to == BlockFacing.UP    || to == BlockFacing.DOWN,
+                _             => false
             };
             if (!alongAxis) return false;
+
             return be.Enabled;
         }
-
 
         public void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
         {
@@ -82,44 +63,49 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             {
                 be.Axis = ChooseAxisOnPlacement(world, pos);
                 be.AxisInitialized = true;
+
                 var desiredFacing = IsConnectorFace(be.Axis, blockSel.Face)
                     ? HorizontalFacingTowardPlayer(pos, byPlayer)
                     : blockSel.Face.Opposite;
+
                 be.RollSteps = RollFor(be.Axis, desiredFacing);
 
                 be.MarkDirty(true);
             }
-
-            MarkSelfAndNeighborsDirty(world, pos);
+            FluidNetworkState.InvalidateNetwork();
             return true;
         }
-        static bool IsConnectorFace(ValveAxis axis, BlockFacing face)
+
+        static bool IsConnectorFace(EValveAxis axis, BlockFacing face)
         {
             return axis switch
             {
-                ValveAxis.EW => face == BlockFacing.EAST || face == BlockFacing.WEST,
-                ValveAxis.NS => face == BlockFacing.NORTH || face == BlockFacing.SOUTH,
-                _            => face == BlockFacing.UP || face == BlockFacing.DOWN
+                EValveAxis.EW => face == BlockFacing.EAST  || face == BlockFacing.WEST,
+                EValveAxis.NS => face == BlockFacing.NORTH || face == BlockFacing.SOUTH,
+                _             => face == BlockFacing.UP    || face == BlockFacing.DOWN
             };
         }
-        static readonly Dictionary<ValveAxis, BlockFacing[]> RotOrder = new()
+
+        static readonly Dictionary<EValveAxis, BlockFacing[]> RotOrder = new()
         {
-            [ValveAxis.UD] = new[] { BlockFacing.EAST, BlockFacing.SOUTH, BlockFacing.WEST, BlockFacing.NORTH },
-            [ValveAxis.NS] = new[] { BlockFacing.EAST, BlockFacing.UP, BlockFacing.WEST, BlockFacing.DOWN },
-            [ValveAxis.EW] = new[] { BlockFacing.UP, BlockFacing.SOUTH, BlockFacing.DOWN, BlockFacing.NORTH }
+            [EValveAxis.UD] = new[] { BlockFacing.EAST,  BlockFacing.SOUTH, BlockFacing.WEST,  BlockFacing.NORTH },
+            [EValveAxis.NS] = new[] { BlockFacing.EAST,  BlockFacing.UP,    BlockFacing.WEST,  BlockFacing.DOWN  },
+            [EValveAxis.EW] = new[] { BlockFacing.UP,    BlockFacing.SOUTH, BlockFacing.DOWN,  BlockFacing.NORTH }
         };
+
         static readonly int[] AxisRollOffsets = new int[3];
 
         static BlockShutoffValve()
         {
-            AxisRollOffsets[(int)ValveAxis.EW] = -1;
-            AxisRollOffsets[(int)ValveAxis.NS] = +1;
-            AxisRollOffsets[(int)ValveAxis.UD] = -1;
+            AxisRollOffsets[(int)EValveAxis.EW] = -1;
+            AxisRollOffsets[(int)EValveAxis.NS] = +1;
+            AxisRollOffsets[(int)EValveAxis.UD] = -1;
         }
-        static int RollFor(ValveAxis axis, BlockFacing desiredFacing)
+
+        static int RollFor(EValveAxis axis, BlockFacing desiredFacing)
         {
             var calibrated = CalibrateForAxis(axis, desiredFacing);
-            var order = RotOrder[axis];
+            var order      = RotOrder[axis];
 
             int idx = Array.IndexOf(order, calibrated);
             if (idx < 0) idx = 0;
@@ -127,12 +113,14 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             int off = AxisRollOffsets[(int)axis] & 3;
             return (idx + off) & 3;
         }
-        static BlockFacing CalibrateForAxis(ValveAxis axis, BlockFacing facing)
+
+        static BlockFacing CalibrateForAxis(EValveAxis axis, BlockFacing facing)
         {
-            if (axis != ValveAxis.UD) return facing.Opposite;
+            if (axis != EValveAxis.UD) return facing.Opposite;
             if (facing == BlockFacing.NORTH || facing == BlockFacing.SOUTH) return facing.Opposite;
             return facing;
         }
+
         static BlockFacing HorizontalFacingTowardPlayer(BlockPos pos, IPlayer byPlayer)
         {
             var agent = byPlayer.Entity as EntityAgent;
@@ -158,13 +146,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 be.AxisInitialized = true;
                 be.MarkDirty(true);
             }
-            MarkSelfAndNeighborsDirty(world, pos);
-        }
-
-        public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos)
-        {
-            base.OnNeighbourBlockChange(world, pos, neibpos);
-            MarkSelfAndNeighborsDirty(world, pos);
         }
 
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
@@ -178,7 +159,10 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 if (world.Side == EnumAppSide.Server)
                 {
                     bool sprint = byPlayer?.Entity?.Controls?.Sprint == true;
-                    if (sprint) { be.RollSteps = (be.RollSteps + 1) & 3; }
+                    if (sprint)
+                    {
+                        be.RollSteps = (be.RollSteps + 1) & 3;
+                    }
                     else
                     {
                         be.Axis = NextAxis(be.Axis);
@@ -186,14 +170,14 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                         be.RollSteps &= 3;
                     }
                     be.MarkDirty(true);
-                    MarkSelfAndNeighborsDirty(world, blockSel.Position);
+                    FluidNetworkState.InvalidateNetwork();
                 }
                 return true;
             }
+
             if (world.Side == EnumAppSide.Server)
             {
                 be.ServerToggleEnabled(byPlayer);
-                MarkSelfAndNeighborsDirty(world, blockSel.Position);
             }
             return true;
         }
@@ -207,46 +191,50 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
         static readonly Cuboidf ArmU   = new Cuboidf(6*px, 10*px,  6*px, 10*px, 16*px, 10*px);
         static readonly Cuboidf ArmD   = new Cuboidf(6*px,  0*px,  6*px, 10*px,  6*px, 10*px);
 
-        static Cuboidf[] BoxesFor(ValveAxis axis)
+        static Cuboidf[] BoxesFor(EValveAxis axis)
         {
             return axis switch
             {
-                ValveAxis.EW => new[] { Center, ArmE, ArmW },
-                ValveAxis.NS => new[] { Center, ArmN, ArmS },
-                _            => new[] { Center, ArmU, ArmD }
+                EValveAxis.EW => new[] { Center, ArmE, ArmW },
+                EValveAxis.NS => new[] { Center, ArmN, ArmS },
+                _             => new[] { Center, ArmU, ArmD }
             };
         }
 
         public override Cuboidf[] GetCollisionBoxes(IBlockAccessor blockAccessor, BlockPos pos)
         {
             var be = blockAccessor.GetBlockEntity(pos) as BlockEntityShutoffValve;
-            return BoxesFor(be?.Axis ?? ValveAxis.UD);
+            return BoxesFor(be?.Axis ?? EValveAxis.UD);
         }
 
         public override Cuboidf[] GetSelectionBoxes(IBlockAccessor blockAccessor, BlockPos pos)
         {
             var be = blockAccessor.GetBlockEntity(pos) as BlockEntityShutoffValve;
-            return BoxesFor(be?.Axis ?? ValveAxis.UD);
+            return BoxesFor(be?.Axis ?? EValveAxis.UD);
         }
 
-        ValveAxis ChooseAxisOnPlacement(IWorldAccessor world, BlockPos pos)
+        EValveAxis ChooseAxisOnPlacement(IWorldAccessor world, BlockPos pos)
         {
             foreach (var (axis, a, b) in ScanOrder)
             {
                 if (HasNeighborConnector(world, pos, a) || HasNeighborConnector(world, pos, b))
                     return axis;
             }
-            return ValveAxis.UD;
+            return EValveAxis.UD;
         }
 
         bool HasNeighborConnector(IWorldAccessor world, BlockPos pos, BlockFacing towards)
         {
             var npos = pos.AddCopy(towards);
             var nb   = world.BlockAccessor.GetBlock(npos);
+
             if (nb is BlockWellSpring) return true;
             if (world.BlockAccessor.GetBlockEntity(npos) is BlockEntityWellSpring) return true;
+
             if (nb is IFluidBlock nFluid)
+            {
                 return nFluid.HasFluidConnectorAt(world, npos, towards.Opposite);
+            }
 
             return false;
         }
@@ -257,13 +245,13 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             return code != null && WildcardUtil.Match("game:wrench-*", code);
         }
 
-        static ValveAxis NextAxis(ValveAxis current)
+        static EValveAxis NextAxis(EValveAxis current)
         {
             return current switch
             {
-                ValveAxis.UD => ValveAxis.EW,
-                ValveAxis.EW => ValveAxis.NS,
-                _            => ValveAxis.UD
+                EValveAxis.UD => EValveAxis.EW,
+                EValveAxis.EW => EValveAxis.NS,
+                _             => EValveAxis.UD
             };
         }
     }

@@ -81,7 +81,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             if (clickSfx != null)
             {
                 clickSfx.SetPitch((float)(0.10 + capi.World.Rand.NextDouble() * 0.90));
-                clickSfx.SetPosition(be.Pos.ToVec3f().Add(0.5f, 0.5f, 0.5f));
                 if (clickSfx.IsPlaying) clickSfx.Stop();
                 clickSfx.Start();
             }
@@ -97,10 +96,10 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             return t * t * (3f - 2f * t);
         }
 
-        static Matrixf ApplyToggle(Matrixf m, ValveAxis axis, int rollSteps, float angle)
+        static Matrixf ApplyToggle(Matrixf m, EValveAxis axis, int rollSteps, float angle)
         {
             int f = ((rollSteps % 4) + 4) % 4;
-            int sign = axis == ValveAxis.UD
+            int sign = axis == EValveAxis.UD
                 ? 1 - 2 * (f >> 1)
                 : 1 - 2 * (f & 1);
 
@@ -127,11 +126,12 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             rpi.GlToggleBlend(true, EnumBlendMode.Standard);
             var prog = rpi.PreparedStandardShader(be.Pos.X, be.Pos.Y, be.Pos.Z);
 
-            BlockEntityShutoffValve.Orientation.GetRendererRotations(
+            PipeUtil.ValveOrientationUtil.GetRendererRotations(
                 be.Axis, be.RollSteps,
                 out float preX, out float preY, out float preZ,
                 out float detentRoll
             );
+
 
             float angle = CurrentAngle();
 

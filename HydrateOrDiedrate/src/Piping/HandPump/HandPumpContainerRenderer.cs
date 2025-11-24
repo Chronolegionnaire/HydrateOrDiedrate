@@ -75,7 +75,8 @@ namespace HydrateOrDiedrate.Piping.HandPump
             var prog = rpi.PreparedStandardShader(be.Pos.X, be.Pos.Y, be.Pos.Z);
             var cam = capi.World.Player.Entity.CameraPos;
 
-            string side = be.Block?.Variant?["side"] ?? be.Block?.Variant?["horizontalorientation"] ?? "north";
+            var variant = be.Block.Variant;
+            string side = be.Block.Variant["side"] ?? be.Block.Variant["horizontalorientation"] ?? "north";
             var face = BlockFacing.FromCode(side) ?? BlockFacing.NORTH;
 
 

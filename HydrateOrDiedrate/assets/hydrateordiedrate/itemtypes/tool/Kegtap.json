@@ -1,6 +1,6 @@
 ﻿{
   code: "kegtap",
-  class: "ItemKegTap",
+  class: "HoD:ItemKegTap",
   attributes: {
     heldItemPitchFollow: 1,
     alwaysPlayHeldReady: true,

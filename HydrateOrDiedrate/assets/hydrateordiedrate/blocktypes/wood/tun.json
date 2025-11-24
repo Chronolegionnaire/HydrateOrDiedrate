@@ -1,7 +1,7 @@
 ﻿{
   "code": "tun",
-  "class": "BlockTun",
-  "entityclass": "BlockEntityTun",
+  "class": "HoD:BlockTun",
+  "entityclass": "HoD:BlockEntityTun",
   "defaultType": "normal-generic",
   "types": ["normal-generic"],
   "behaviors": [

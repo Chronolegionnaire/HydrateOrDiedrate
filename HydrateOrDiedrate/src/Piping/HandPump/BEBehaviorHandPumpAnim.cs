@@ -8,7 +8,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
 {
     public class BEBehaviorHandPumpAnim : BEBehaviorAnimatable
     {
-        public bool IsPumping;
+        public bool IsPumping { get; protected set; }
 
         public BEBehaviorHandPumpAnim(BlockEntity be) : base(be) {}
 
@@ -18,14 +18,14 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
             if (Api.Side == EnumAppSide.Client)
             {
-                string side = Block?.Variant?["side"] ?? Block?.Variant?["horizontalorientation"] ?? "north";
+                string side = Block.Variant["side"] ?? Block.Variant["horizontalorientation"] ?? "north";
                 var face = BlockFacing.FromCode(side) ?? BlockFacing.NORTH;
-                string key = $"{Block?.Code}-{side}";
+                string key = $"{Block.Code}-{side}";
 
                 float yawDeg =
                     face == BlockFacing.NORTH ? 180f :
-                    face == BlockFacing.EAST  ? 90f :
-                    face == BlockFacing.SOUTH ? 0f :
+                    face == BlockFacing.EAST  ? 90f  :
+                    face == BlockFacing.SOUTH ? 0f   :
                     270f;
 
                 var rot = new Vec3f(0f, yawDeg, 0f);

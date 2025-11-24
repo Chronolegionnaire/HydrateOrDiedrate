@@ -2,16 +2,12 @@ using HydrateOrDiedrate.Piping.FluidNetwork;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Piping.Pipe
 {
     public class BlockPipe : Block, IFluidBlock
     {
-        static readonly BlockFacing[] Faces =
-        {
-            BlockFacing.NORTH, BlockFacing.EAST, BlockFacing.SOUTH,
-            BlockFacing.WEST,  BlockFacing.UP,   BlockFacing.DOWN
-        };
 
         public bool HasFluidConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face) => true;
 
@@ -19,28 +15,38 @@ namespace HydrateOrDiedrate.Piping.Pipe
         {
             world.BlockAccessor.MarkBlockDirty(pos);
         }
+        
+        public override void OnBlockPlaced(IWorldAccessor world, BlockPos pos, ItemStack byItemStack = null)
+        {
+            base.OnBlockPlaced(world, pos, byItemStack);
+            FluidNetworkState.InvalidateNetwork();
+            MarkSelfAndNeighborsDirty(world, pos);
+        }
+
+        public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos)
+        {
+            base.OnBlockRemoved(world, pos);
+            FluidNetworkState.InvalidateNetwork();
+            MarkSelfAndNeighborsDirty(world, pos);
+        }
+
 
         public override void OnNeighbourBlockChange(IWorldAccessor world, BlockPos pos, BlockPos neibpos)
         {
             base.OnNeighbourBlockChange(world, pos, neibpos);
+            FluidNetworkState.InvalidateNetwork();
             MarkSelfAndNeighborsDirty(world, pos);
         }
 
         void MarkSelfAndNeighborsDirty(IWorldAccessor world, BlockPos pos)
         {
             world.BlockAccessor.MarkBlockDirty(pos);
-            foreach (var f in Faces) world.BlockAccessor.MarkBlockDirty(pos.AddCopy(f));
-        }
-
-        static bool IsWrench(ItemSlot slot)
-        {
-            var code = slot?.Itemstack?.Collectible?.Code?.ToString();
-            return code != null && WildcardUtil.Match("game:wrench-*", code);
+            foreach (var f in BlockFacing.ALLFACES) world.BlockAccessor.MarkBlockDirty(pos.AddCopy(f));
         }
 
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
         {
-            if (IsWrench(byPlayer?.InventoryManager?.ActiveHotbarSlot))
+            if (byPlayer?.InventoryManager?.ActiveTool == EnumTool.Wrench)
             {
                 if (world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityPipe be)
                 {
@@ -56,8 +62,15 @@ namespace HydrateOrDiedrate.Piping.Pipe
         {
             var be = blockAccessor.GetBlockEntity(pos) as BlockEntityPipe;
             var disguise = be?.DisguiseSlot?.Itemstack?.Block;
-            if (disguise != null)
-                return disguise.GetCollisionBoxes(blockAccessor, pos);
+
+            if (disguise != null && disguise != this)
+            {
+                var boxes = disguise.GetCollisionBoxes(blockAccessor, pos);
+                if (boxes != null && boxes.Length > 0)
+                {
+                    return boxes;
+                }
+            }
             return PipeCollision.BuildPipeBoxes(this, api.World, pos);
         }
 
@@ -65,9 +78,15 @@ namespace HydrateOrDiedrate.Piping.Pipe
         {
             var be = blockAccessor.GetBlockEntity(pos) as BlockEntityPipe;
             var disguise = be?.DisguiseSlot?.Itemstack?.Block;
-            if (disguise != null)
-                return disguise.GetSelectionBoxes(blockAccessor, pos);
 
+            if (disguise != null && disguise != this)
+            {
+                var boxes = disguise.GetSelectionBoxes(blockAccessor, pos);
+                if (boxes != null && boxes.Length > 0)
+                {
+                    return boxes;
+                }
+            }
             return PipeCollision.BuildPipeBoxes(this, api.World, pos);
         }
     }

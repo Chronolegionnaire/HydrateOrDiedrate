@@ -26,8 +26,6 @@ namespace HydrateOrDiedrate.Piping.Pipe
         {
             base.Initialize(api);
 
-            Inventory.LateInitialize($"{InventoryClassName}-{Pos.X}/{Pos.Y}/{Pos.Z}", api);
-
             capi = api as ICoreClientAPI;
             if (capi != null) pipeTess = new PipeTesselation(capi);
         }
@@ -75,8 +73,6 @@ namespace HydrateOrDiedrate.Piping.Pipe
             dlg.TryOpen();
         }
 
-        void OnClose() { }
-
         public override void ToTreeAttributes(ITreeAttribute tree)
         {
             base.ToTreeAttributes(tree);
@@ -102,11 +98,6 @@ namespace HydrateOrDiedrate.Piping.Pipe
             {
                 dsc.AppendLine(Lang.Get("Disguised as: {0}", DisguiseSlot.Itemstack.Block.GetPlacedBlockName(Api.World, Pos)));
             }
-        }
-        public override void OnBlockBroken(IPlayer byPlayer = null)
-        {
-            if (Api.Side == EnumAppSide.Server) Inventory.DropAll(Pos.ToVec3d());
-            base.OnBlockBroken(byPlayer);
         }
     }
 }

@@ -1,4 +1,5 @@
 {
+	//TODO Delete inside faces
 	"editor": {
 		"collapsedPaths": "Root/Base/StemBase/Stem/TopBase/Handle,Root/Cube3,Root/Base/StemBase/Stem/TopBase/STop2/Spout2",
 		"allAngles": false,

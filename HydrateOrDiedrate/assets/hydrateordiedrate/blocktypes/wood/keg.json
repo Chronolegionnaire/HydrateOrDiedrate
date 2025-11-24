@@ -1,7 +1,7 @@
 {
 	"code": "keg",
-	"class": "BlockKeg",
-	"entityclass": "BlockEntityKeg",
+	"class": "HoD:BlockKeg",
+	"entityclass": "HoD:BlockEntityKeg",
 	"behaviors": [
 		{ "name": "UnstableFalling" },
 		{

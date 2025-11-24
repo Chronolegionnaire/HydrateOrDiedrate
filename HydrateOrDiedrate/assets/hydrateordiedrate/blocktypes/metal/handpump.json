@@ -1,8 +1,8 @@
 {
   "code": "handpump",
-  "class": "BlockHandPump",
-  "entityclass": "BlockEntityHandPump",
-  "entityBehaviors": [ { "name": "HandPumpAnim" } ],
+  "class": "HoD:BlockHandPump",
+  "entityclass": "HoD:BlockEntityHandPump",
+  "entityBehaviors": [ { "name": "HoD:HandPumpAnim" } ],
   "behaviors": [
     {"name": "Container"},
     {
@@ -23,6 +23,9 @@
     "*-south": { "base": "hydrateordiedrate:block/handpump/handpumpfull", "rotateY": 0 }
   },
   "attributes": {
+    "handbook": {
+      "groupBy": ["handpump-*"]
+    },
     "mapColorCode": "settlement"
   },
   "creativeinventory": {

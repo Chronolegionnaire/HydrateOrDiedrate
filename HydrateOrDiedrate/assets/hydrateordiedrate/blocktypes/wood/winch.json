@@ -1,7 +1,7 @@
 {
 	"code": "winch",
-	"class": "BlockWinch",
-	"entityclass": "BlockEntityWinch",
+	"class": "HoD:BlockWinch",
+	"entityclass": "HoD:BlockEntityWinch",
 	"entityBehaviors": [{ "name": "MPConsumer" }],
 	"behaviors": [
 		{"name": "Container"},

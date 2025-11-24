@@ -1,7 +1,7 @@
 {
   "code": "shutoffvalve",
-  "class": "BlockShutoffValve",
-  "entityClass": "BlockEntityShutoffValve",
+  "class": "HoD:BlockShutoffValve",
+  "entityClass": "HoD:BlockEntityShutoffValve",
   "attributes": {
     "handbook": {
       "groupBy": ["shutoffvalve-*"]
@@ -30,9 +30,6 @@
   "resistance": 3.5,
   "lightAbsorption": 0,
   "maxStackSize": 16,
-  "drops": [
-    { "type": "block", "code": "shutoffvalve-{metal}", "quantity": { "avg": 1 } }
-  ],
   "groundTransform": {
     "translation": { "x": 0, "y": 0, "z": 0 },
     "rotation": { "x": -90, "y": 0, "z": 0 },

@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using HydrateOrDiedrate.Piping;
+using HydrateOrDiedrate.Piping.FluidNetwork;
 using HydrateOrDiedrate.Piping.Networking;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace HydrateOrDiedrate.Piping.ShutoffValve
 {
@@ -12,12 +15,13 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
         ICoreClientAPI capi;
 
         public bool Enabled { get; set; } = true;
-        public ValveAxis Axis { get; set; } = ValveAxis.UD;
+        public EValveAxis Axis { get; set; } = EValveAxis.UD;
         public bool AxisInitialized { get; set; } = false;
         public int RollSteps { get; set; } = 0;
 
-        MeshData pipeMeshAuthored;
-        MeshData pipeMeshWorldOriented;
+        static MeshData pipeMeshAuthored;
+        static readonly Dictionary<(EValveAxis axis, int roll), MeshData> PipeMeshByOrientation = new();
+
         internal ValveHandleRenderer HandleRenderer { get; private set; }
 
         public override void Initialize(ICoreAPI api)
@@ -28,8 +32,7 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             if (api.Side == EnumAppSide.Client)
             {
                 pipeMeshAuthored ??= LoadMesh("shapes/block/shutoffvalve/valve-pipe.json");
-                RebuildWorldOrientedPipeMesh();
-                HandleRenderer?.Dispose();
+
                 HandleRenderer = new ValveHandleRenderer(capi, this);
                 capi.Event.RegisterRenderer(HandleRenderer, EnumRenderStage.Opaque, "valve-handle");
             }
@@ -38,18 +41,29 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
         MeshData LoadMesh(string path)
         {
             if (Api is not ICoreClientAPI cc) return null;
+
             Shape shape = Shape.TryGet(Api, new AssetLocation("hydrateordiedrate", path));
             if (shape == null) return null;
+
             cc.Tesselator.TesselateShape(Block, shape, out MeshData mesh);
             return mesh;
         }
-
-        void RebuildWorldOrientedPipeMesh()
+        MeshData GetOrientedMesh()
         {
-            if (pipeMeshAuthored == null || capi == null) return;
+            if (pipeMeshAuthored == null) return null;
 
-            pipeMeshWorldOriented = pipeMeshAuthored.Clone();
-            Orientation.ApplyPipe(pipeMeshWorldOriented, Axis, RollSteps);
+            int rollKey = RollSteps & 3;
+            var key = (Axis, rollKey);
+
+            if (PipeMeshByOrientation.TryGetValue(key, out var cached))
+            {
+                return cached;
+            }
+
+            var mesh = pipeMeshAuthored.Clone();
+            PipeUtil.ValveOrientationUtil.ApplyPipe(mesh, Axis, rollKey);
+            PipeMeshByOrientation[key] = mesh;
+            return mesh;
         }
 
         public void MarkDirty(bool redrawNow)
@@ -61,15 +75,16 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
         public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tess)
         {
             if (Api.Side != EnumAppSide.Client) return true;
+
             if (pipeMeshAuthored == null)
             {
                 pipeMeshAuthored = LoadMesh("shapes/block/shutoffvalve/valve-pipe.json");
                 if (pipeMeshAuthored == null) return true;
             }
-            var mesh = pipeMeshAuthored.Clone();
-            Orientation.ApplyPipe(mesh, Axis, RollSteps);
+            var oriented = GetOrientedMesh();
+            if (oriented == null) return true;
 
-            mesher.AddMeshData(mesh);
+            mesher.AddMeshData(oriented.Clone());
             return true;
         }
 
@@ -82,7 +97,7 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             int  prevRoll    = RollSteps;
 
             Enabled         = tree.GetBool("enabled", Enabled);
-            Axis            = (ValveAxis)tree.GetInt("axis", (int)Axis);
+            Axis            = (EValveAxis)tree.GetInt("axis", (int)Axis);
             AxisInitialized = tree.GetBool("axisInit", AxisInitialized);
             RollSteps       = tree.GetInt("roll", RollSteps);
 
@@ -91,7 +106,6 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 bool geomChanged = (prevAxis != Axis) || (prevRoll != RollSteps);
                 if (geomChanged)
                 {
-                    RebuildWorldOrientedPipeMesh();
                     Api.World.BlockAccessor.MarkBlockDirty(Pos);
                 }
 
@@ -118,49 +132,26 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             Enabled = !Enabled;
             MarkDirty(true);
 
-            var srv = (Vintagestory.API.Server.ICoreServerAPI)Api;
+            FluidNetworkState.InvalidateNetwork();
+
+            var srv = (ICoreServerAPI)Api;
             var pkt = new ValveToggleEventPacket { X = Pos.X, Y = Pos.Y, Z = Pos.Z, Enabled = Enabled };
             srv.Network.GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID).BroadcastPacket(pkt);
             return true;
         }
 
+
         public override void OnBlockRemoved()
         {
             base.OnBlockRemoved();
+            if (Api?.Side == EnumAppSide.Server)
+            {
+                FluidNetworkState.InvalidateNetwork();
+            }
             if (Api?.Side == EnumAppSide.Client)
             {
                 HandleRenderer?.Dispose();
                 HandleRenderer = null;
-            }
-        }
-
-        internal static class Orientation
-        {
-            public static void ApplyPipe(MeshData mesh, ValveAxis axis, int rollSteps)
-            {
-                var c = new Vec3f(0.5f, 0.5f, 0.5f);
-                switch (axis)
-                {
-                    case ValveAxis.NS: mesh.Rotate(c, GameMath.PIHALF, 0f, 0f);       break;
-                    case ValveAxis.EW: mesh.Rotate(c, 0f, 0f, -GameMath.PIHALF);      break;
-                }
-                float roll = (rollSteps & 3) * GameMath.PIHALF;
-                switch (axis)
-                {
-                    case ValveAxis.UD: mesh.Rotate(c, 0f, roll, 0f); break;
-                    case ValveAxis.NS: mesh.Rotate(c, 0f, 0f, roll); break;
-                    case ValveAxis.EW: mesh.Rotate(c, roll, 0f, 0f); break;
-                }
-            }
-
-            public static void GetRendererRotations(ValveAxis axis, int rollSteps,
-                out float preX, out float preY, out float preZ, out float rollAroundAxis)
-            {
-                preX = preY = preZ = 0f;
-                if (axis == ValveAxis.NS) preX = GameMath.PIHALF;
-                if (axis == ValveAxis.EW) preZ = -GameMath.PIHALF;
-
-                rollAroundAxis = (rollSteps & 3) * GameMath.PIHALF;
             }
         }
     }
