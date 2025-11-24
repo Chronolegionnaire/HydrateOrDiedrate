@@ -20,14 +20,12 @@ namespace HydrateOrDiedrate.Piping.Pipe
         {
             base.OnBlockPlaced(world, pos, byItemStack);
             FluidNetworkState.InvalidateNetwork();
-            MarkSelfAndNeighborsDirty(world, pos);
         }
 
         public override void OnBlockRemoved(IWorldAccessor world, BlockPos pos)
         {
             base.OnBlockRemoved(world, pos);
             FluidNetworkState.InvalidateNetwork();
-            MarkSelfAndNeighborsDirty(world, pos);
         }
 
 
@@ -35,13 +33,6 @@ namespace HydrateOrDiedrate.Piping.Pipe
         {
             base.OnNeighbourBlockChange(world, pos, neibpos);
             FluidNetworkState.InvalidateNetwork();
-            MarkSelfAndNeighborsDirty(world, pos);
-        }
-
-        void MarkSelfAndNeighborsDirty(IWorldAccessor world, BlockPos pos)
-        {
-            world.BlockAccessor.MarkBlockDirty(pos);
-            foreach (var f in BlockFacing.ALLFACES) world.BlockAccessor.MarkBlockDirty(pos.AddCopy(f));
         }
 
         public override bool OnBlockInteractStart(IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
