@@ -179,9 +179,29 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         {
             var posCopy = Pos.Copy();
             AquiferManager.RemoveWellSpringFromChunk(Api.World, posCopy);
+            CleanupWaterColumn();
         }
 
         base.OnBlockRemoved();
+    }
+
+    private void CleanupWaterColumn()
+    {
+        var ba = Api.World.BlockAccessor;
+        var pos = Pos.Copy();
+        for (int i = 0; i < 128; i++)
+        {
+            pos.Y++;
+            var fluid = ba.GetFluid(pos);
+
+            if (!WellBlockUtils.IsOurWellwater(fluid))
+                break;
+            var be = ba.GetBlockEntity<BlockEntityWellWaterSentinel>(pos);
+            if (be != null)
+                ba.RemoveBlockEntity(pos);
+            ba.SetFluid(0, pos);
+            ba.TriggerNeighbourBlockUpdate(pos);
+        }
     }
 
     private bool HandleShallowWell(double elapsedDays)
@@ -518,7 +538,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
             if (ba.GetBlockEntity(pos) is null)
             {
-                ba.SpawnBlockEntity("BlockEntityWellWaterSentinel", pos);
+                ba.SpawnBlockEntity("HoD:BlockEntityWellWaterSentinel", pos);
             }
 
             if (detectedFresh == null)
