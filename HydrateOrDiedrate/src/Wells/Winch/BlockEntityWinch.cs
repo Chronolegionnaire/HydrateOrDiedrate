@@ -307,6 +307,7 @@ namespace HydrateOrDiedrate.Wells.Winch
                 StopTurning();
             }
         }
+        // Hacky fix for infinite turning glitch
 
 
         public bool ContinueTurning(float secondsPassed)
