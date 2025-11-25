@@ -213,7 +213,7 @@ public class WinchTopRenderer : IRenderer
         prog.ViewMatrix = rpi.CameraMatrixOriginf;
         prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
         rpi.RenderMultiTextureMesh(containerMeshRef, "tex", 0);
-
+        
         if (RopeKnotMeshRef is not null)
         {
             prog.ModelMatrix = ModelMat
