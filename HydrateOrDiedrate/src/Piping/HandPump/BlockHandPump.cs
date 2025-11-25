@@ -1,4 +1,6 @@
 using HydrateOrDiedrate.Piping.FluidNetwork;
+using HydrateOrDiedrate.Wells.Winch;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -110,5 +112,28 @@ namespace HydrateOrDiedrate.Piping.HandPump
             }
             return base.OnBlockInteractCancel(secondsUsed, world, byPlayer, blockSel, cancelReason);
         }
+        
+        public override WorldInteraction[] GetPlacedBlockInteractionHelp(IWorldAccessor world, BlockSelection selection, IPlayer forPlayer) =>
+            selection.SelectionBoxIndex switch
+            {
+                0 => [
+                    new WorldInteraction
+                    {
+                        ActionLangCode = "hydrateordiedrate:blockhelp-pump-addremoveitems",
+                        MouseButton = EnumMouseButton.Right
+                    },
+                    ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
+                ],
+                1 => [
+                    new WorldInteraction
+                    {
+                        ActionLangCode = "hydrateordiedrate:blockhelp-pump",
+                        MouseButton = EnumMouseButton.Right,
+                        ShouldApply = (wi, bs, es) =>
+                            world.BlockAccessor.GetBlockEntity(bs.Position) is BlockEntityHandPump bePump &&
+                            !bePump.ContainerSlot.Empty
+                    },
+                ]
+            };
     }
 }

@@ -28,6 +28,10 @@ public class WinchTopRenderer : IRenderer
     private MultiTextureMeshRef containerMeshRef;
     private ItemStack lastContainerStack;
     
+    private float containerScale = 1f;
+    private readonly Vec3f containerOffset = new();
+    private readonly Vec3f containerRotRad = new(); 
+    
     public double RenderOrder => 0.5;
     public int RenderRange => 24;
     
@@ -65,24 +69,50 @@ public class WinchTopRenderer : IRenderer
 
     private void UpdateMesh()
     {
-        if(Disposed) return;
+        if (Disposed) return;
+
         var containerStack = Winch.InputSlot.Itemstack;
-        if(containerStack is null || containerStack.Collectible is not BlockLiquidContainerTopOpened container)
+        if (containerStack is null || containerStack.Collectible is not BlockLiquidContainerTopOpened container)
         {
             CleanupContainerData();
             return;
         }
 
-        if(lastContainerStack is not null)
+        if (lastContainerStack is not null)
         {
-            if(containerStack.Equals(Capi.World, lastContainerStack, GlobalConstants.IgnoredStackAttributes) && ((BlockLiquidContainerTopOpened)lastContainerStack.Collectible).GetCurrentLitres(lastContainerStack) == container.GetCurrentLitres(containerStack)) return;
+            if (containerStack.Equals(Capi.World, lastContainerStack, GlobalConstants.IgnoredStackAttributes) &&
+                ((BlockLiquidContainerTopOpened)lastContainerStack.Collectible).GetCurrentLitres(lastContainerStack) == container.GetCurrentLitres(containerStack))
+            {
+                return;
+            }
+
             CleanupContainerData();
         }
-        
+
         lastContainerStack = containerStack.Clone();
         var mesh = container.GenMesh(Capi, container.GetContent(lastContainerStack), null);
-        if(mesh is null) return;
-        
+        if (mesh is null) return;
+
+        bool isJug = lastContainerStack.Collectible.Code.Path.StartsWith("jug-", StringComparison.Ordinal);
+        if (isJug)
+        {
+            containerScale = 0.85f;
+
+            containerOffset.Set(0f, 0f, -0.075f);
+            containerRotRad.Set(
+                0f * GameMath.DEG2RAD,
+                0f,
+                -0.3f
+            );
+        }
+        else
+        {
+            containerScale = 1f;
+
+            containerOffset.Set(0f, 0f, 0f);
+            containerRotRad.Set(0f, 0f, 0f);
+        }
+
         containerMeshRef = Capi.Render.UploadMultiTextureMesh(mesh);
     }
 
@@ -170,28 +200,20 @@ public class WinchTopRenderer : IRenderer
             .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
             .Translate(0.5f, 0f, 0.5f)
             .RotateY(yRotation)
+            .Translate(containerOffset.X, containerOffset.Y, containerOffset.Z)
+            .Translate(0.5f, 0.5f, 0.5f)
+            .RotateX(containerRotRad.X)
+            .RotateY(containerRotRad.Y)
+            .RotateZ(containerRotRad.Z)
+            .Scale(containerScale, containerScale, containerScale)
+            .Translate(-0.5f, -0.5f, -0.5f)
             .Translate(-0.5f, 0f, -0.5f)
             .Values;
 
         prog.ViewMatrix = rpi.CameraMatrixOriginf;
         prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
         rpi.RenderMultiTextureMesh(containerMeshRef, "tex", 0);
-
-        if(RopeKnotMeshRef is not null)
-        {
-            prog.ModelMatrix = ModelMat
-                .Identity()
-                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
-                .Translate(0.5f, 0.85f, 0.5f)
-                .RotateY(yRotation)
-                .Translate(-0.5f, 0f, -0.5f)
-                .Values;
-
-            prog.ViewMatrix = rpi.CameraMatrixOriginf;
-            prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-            rpi.RenderMultiTextureMesh(RopeKnotMeshRef, "tex", 0);
-        }
-
+        
         if (RopeKnotMeshRef is not null)
         {
             prog.ModelMatrix = ModelMat
@@ -263,6 +285,10 @@ public class WinchTopRenderer : IRenderer
             containerMeshRef = null;
         }
         lastContainerStack = null;
+
+        containerScale = 1f;
+        containerOffset.Set(0f, 0f, 0f);
+        containerRotRad.Set(0f, 0f, 0f);
     }
 
     public bool Disposed { get; private set; }

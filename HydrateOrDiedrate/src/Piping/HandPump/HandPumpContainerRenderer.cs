@@ -20,6 +20,10 @@ namespace HydrateOrDiedrate.Piping.HandPump
         private const double SideNudge = 0.00;
         private const float   TiltDeg = 0f;
 
+        
+        private float containerScale = 1f;
+        private Vec3f containerOffset = new Vec3f();
+        
         public double RenderOrder => 0.5;
         public int RenderRange => 24;
         public bool Disposed { get; private set; }
@@ -61,6 +65,18 @@ namespace HydrateOrDiedrate.Piping.HandPump
             var mesh = cont.GenMesh(capi, content, null);
             if (mesh == null) return;
 
+            bool isJug = lastStack.Collectible.Code.Path.StartsWith("jug-");
+
+            if (isJug)
+            {
+                containerScale  = 0.85f;
+                containerOffset = new Vec3f(0f, 0f, -0.2f); 
+            }
+            else
+            {
+                containerScale  = 1f;
+                containerOffset = new Vec3f();
+            }
             containerMeshRef = capi.Render.UploadMultiTextureMesh(mesh);
         }
 
@@ -94,6 +110,8 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 .RotateY(yaw)
                 .Translate((float)SideNudge, 0f, (float)ForwardOffset)
                 .RotateX(tilt)
+                .Scale(containerScale, containerScale, containerScale)
+                .Translate(containerOffset.X, containerOffset.Y, containerOffset.Z)
                 .Translate(-0.5f, 0f, -0.5f)
                 .Values;
 

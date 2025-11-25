@@ -511,16 +511,53 @@ namespace HydrateOrDiedrate.Wells.Winch
 
             public ItemSlot InputSlot => ContainerSlot;
 
+            private static bool IsDisallowedWinchItem(ItemSlot slot)
+            {
+                var code = slot?.Itemstack?.Collectible?.Code;
+                return code != null
+                       && code.Domain == "game"
+                       && code.Path.StartsWith("bowl-");
+            }
+
+            protected override ItemSlot NewSlot(int i) =>
+                new WinchTopOpenedContainerSlot(this, () => winch.IsWinchItemAtTop());
+
+            public override bool CanContain(ItemSlot sinkSlot, ItemSlot sourceSlot)
+            {
+                if (IsDisallowedWinchItem(sourceSlot))
+                    return false;
+
+                return base.CanContain(sinkSlot, sourceSlot);
+            }
+
             public override float GetSuitability(ItemSlot sourceSlot, ItemSlot targetSlot, bool isMerge)
             {
+                if (targetSlot == InputSlot && IsDisallowedWinchItem(sourceSlot))
+                    return 0f;
+
                 if (targetSlot == InputSlot && sourceSlot.Itemstack?.Collectible is BlockBucket)
                 {
                     if (sourceSlot.Itemstack.StackSize > 1) return 0f;
-
                     if (!sourceSlot.Itemstack.Attributes.HasAttribute("contents")) return 4f;
                 }
 
                 return base.GetSuitability(sourceSlot, targetSlot, isMerge);
+            }
+        }
+        public class WinchTopOpenedContainerSlot : TopOpenedContainerSlot
+        {
+            public WinchTopOpenedContainerSlot(InventoryBase inventory, Func<bool> canTakePredicate = null)
+                : base(inventory, canTakePredicate)
+            {
+            }
+
+            public override bool CanHold(ItemSlot sourceSlot)
+            {
+                var code = sourceSlot?.Itemstack?.Collectible?.Code;
+                if (code != null && code.Domain == "game" && code.Path.StartsWith("bowl-"))
+                    return false;
+
+                return base.CanHold(sourceSlot);
             }
         }
     }
