@@ -54,6 +54,11 @@ public class ConfigLibCompatibility
     private const string settingEnableRainGathering = "hydrateordiedrate:Config.Setting.EnableRainGathering";
     private const string settingRainMultiplier = "hydrateordiedrate:Config.Setting.RainMultiplier";
     private const string settingEnableParticleTicking = "hydrateordiedrate:Config.Setting.EnableParticleTicking";
+    
+    //Pump Settings
+    private const string settingHandPumpEnablePriming = "hydrateordiedrate:Config.Setting.HandPumpEnablePriming";
+    private const string settingHandPumpOutputInfo = "hydrateordiedrate:Config.Setting.HandPumpOutputInfo";
+    private const string settingHandPumpPrimingBlocksPerStroke = "hydrateordiedrate:Config.Setting.HandPumpPrimingBlocksPerStroke";
 
     // Keg Settings
     private const string settingKegCapacityLitres = "hydrateordiedrate:Config.Setting.KegCapacityLitres";
@@ -202,6 +207,7 @@ public class ConfigLibCompatibility
         var heatAndCoolingConfig = config.HeatAndCooling;
         var xlibConfig = config.XLib;
         var rainConfig = config.Rain;
+        var pumpConfig = config.Pump;
         var containersConfig = config.Containers;
         var groundWaterConfig = config.GroundWater;
         ImGui.TextWrapped("HydrateOrDiedrate Settings");
@@ -367,6 +373,21 @@ public class ConfigLibCompatibility
         bool enableParticleTicking = rainConfig.EnableParticleTicking;
         ImGui.Checkbox(Lang.Get(settingEnableParticleTicking) + $"##enableParticleTicking-{id}", ref enableParticleTicking);
         rainConfig.EnableParticleTicking = enableParticleTicking;
+        
+        // Pump Settings
+        ImGui.SeparatorText("Pump Settings");
+        
+        bool handPumpEnablePriming = pumpConfig.HandPumpEnablePriming;
+        ImGui.Checkbox(Lang.Get(settingHandPumpEnablePriming) + $"##handPumpEnablePriming-{id}", ref handPumpEnablePriming);
+        pumpConfig.HandPumpEnablePriming = handPumpEnablePriming;
+        
+        bool handPumpOutputInfo = pumpConfig.HandPumpOutputInfo;
+        ImGui.Checkbox(Lang.Get(settingHandPumpOutputInfo) + $"##handPumpOutputInfo-{id}", ref handPumpOutputInfo);
+        pumpConfig.HandPumpOutputInfo = handPumpOutputInfo;
+        
+        int handPumpPrimingBlocksPerStroke = pumpConfig.HandPumpPrimingBlocksPerStroke;
+        ImGui.DragInt(Lang.Get(settingHandPumpPrimingBlocksPerStroke) + $"##handPumpPrimingBlocksPerStroke-{id}", ref handPumpPrimingBlocksPerStroke, 1, 1, 20);
+        pumpConfig.HandPumpPrimingBlocksPerStroke = handPumpPrimingBlocksPerStroke;
         
         // Keg Settings
         ImGui.SeparatorText("Keg Settings");

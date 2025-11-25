@@ -16,6 +16,7 @@
   ],
   "shape": { "base": "hydrateordiedrate:block/pipes/2-way/pipe-2-ud"},
   "blockmaterial": "Metal",
+  "replaceable": 500,
   "materialDensity": 450,
   "textures": {
     "metal": { "base": "game:block/metal/sheet/{metal}2" }

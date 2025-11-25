@@ -1,10 +1,13 @@
 using System;
 using System.IO;
+using System.Text;
+using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.Piping.FluidNetwork;
 using HydrateOrDiedrate.Piping.Networking;
 using HydrateOrDiedrate.Wells.WellWater;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
@@ -113,7 +116,8 @@ namespace HydrateOrDiedrate.Piping.HandPump
             RefreshPrimeDecay();
 
             int required = spring != null ? ComputePrimingStrokes(Api.World, Pos, spring.Pos) : 0;
-            remainingPrimingStrokes = Math.Max(0, required - (int)Math.Floor(primeLevel));
+            int effectivePrime = GetEffectivePrimeInt(required);
+            remainingPrimingStrokes = Math.Max(0, required - effectivePrime);
 
             MarkDirty();
             return true;
@@ -489,7 +493,13 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 maxVisited: 4096);
 
             if (distance <= 0) return 0;
-            return Math.Max(0, distance / 3);
+            if (!ModConfig.Instance.Pump.HandPumpEnablePriming) return 0;
+            int blocksPerStroke = ModConfig.Instance.Pump.HandPumpPrimingBlocksPerStroke;
+            if (blocksPerStroke <= 0)
+            {
+                blocksPerStroke = 3;
+            }
+            return Math.Max(0, distance / blocksPerStroke);
         }
 
         private BlockEntityWellSpring FindWellViaNetwork()
@@ -640,6 +650,64 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 if (blk?.Attributes?["waterTightContainerProps"].Exists == true) return blk;
             }
             return null;
+        }
+
+        public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
+        {
+            base.GetBlockInfo(forPlayer, dsc);
+            if (!ModConfig.Instance.Pump.HandPumpOutputInfo) return;
+            RefreshPrimeDecay();
+            var foundSpring = GetOrFindSpring();
+            if (foundSpring == null)
+            {
+                dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.noSpring"));
+                return;
+            }
+
+            dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.springDetected"));
+            dsc.Append("  ");
+            dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.waterType",
+                string.IsNullOrEmpty(foundSpring.LastWaterType)
+                    ? string.Empty
+                    : Lang.Get($"hydrateordiedrate:item-waterportion-{foundSpring.LastWaterType}")));
+
+            dsc.Append("  ");
+            dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.outputRate", foundSpring.LastDailyLiters));
+            dsc.Append("  ");
+            dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.retentionVolume", foundSpring.GetMaxTotalVolume()));
+            dsc.Append("  ");
+            dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.totalShaftVolume", foundSpring.totalLiters));
+
+            if (ModConfig.Instance.Pump.HandPumpEnablePriming)
+            {
+                int required = ComputePrimingStrokes(Api.World, Pos, foundSpring.Pos);
+
+                if (required > 0)
+                {
+                    int already = GetEffectivePrimeInt(required);
+                    int remaining = Math.Max(0, required - already);
+
+                    if (remaining > 0)
+                    {
+                        dsc.Append("  ");
+                        dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.primingRemaining", remaining));
+                    }
+                    else
+                    {
+                        dsc.Append("  ");
+                        dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.primed"));
+                    }
+                }
+            }
+        }
+        
+        private int GetEffectivePrimeInt(int required)
+        {
+            if (primeLevel <= 0f) return 0;
+            const float epsilon = 0.0001f;
+            int effective = (int)Math.Ceiling(primeLevel - epsilon);
+
+            return GameMath.Clamp(effective, 0, required);
         }
 
         public override void Dispose()

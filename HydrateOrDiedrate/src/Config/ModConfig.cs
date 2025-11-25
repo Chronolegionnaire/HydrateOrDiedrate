@@ -51,6 +51,11 @@ public class ModConfig
     /// The configuration for rain mechanics
     /// </summary>
     public RainConfig Rain { get; set; } = new();
+    
+    /// <summary>
+    /// The configuration for pump mechanics
+    /// </summary>
+    public PumpConfig Pump { get; set; } = new();
 
     /// <summary>
     /// The configuration for the containers

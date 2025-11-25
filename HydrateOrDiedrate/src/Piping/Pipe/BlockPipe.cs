@@ -1,4 +1,6 @@
+using System.Linq;
 using HydrateOrDiedrate.Piping.FluidNetwork;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
@@ -80,5 +82,23 @@ namespace HydrateOrDiedrate.Piping.Pipe
             }
             return PipeCollision.BuildPipeBoxes(this, api.World, pos);
         }
+        
+        public override WorldInteraction[] GetPlacedBlockInteractionHelp(IWorldAccessor world, BlockSelection selection, IPlayer forPlayer) =>
+        [
+            new WorldInteraction
+            {
+                ActionLangCode = "hydrateordiedrate:blockhelp-pipe-disguise",
+                MouseButton = EnumMouseButton.Right,
+                Itemstacks = ObjectCacheUtil.GetOrCreate(api, "hod-pipe-wrenchstacks", () =>
+                {
+                    return api.World.Collectibles
+                        .Where(c => c.Tool == EnumTool.Wrench)
+                        .Select(c => new ItemStack(c))
+                        .ToArray();
+                })
+            },
+
+            ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
+        ];
     }
 }
