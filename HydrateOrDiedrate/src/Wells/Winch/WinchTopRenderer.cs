@@ -38,6 +38,9 @@ public class WinchTopRenderer : IRenderer
     private float AngleRad;
     private float lastBucketDepth;
 
+    private float swayTime;
+    private const float BaseSwayAmplitudeDeg = 3f;
+    private const float BaseSwaySpeed = 1.2f;
     public WinchTopRenderer(ICoreClientAPI coreClientAPI, BlockEntityWinch winch, string direction)
     {
         Capi = coreClientAPI;
@@ -194,12 +197,22 @@ public class WinchTopRenderer : IRenderer
             prog.Stop();
             return;
         }
-
+        swayTime += deltaTime;
+        float depthFactor = GameMath.Clamp(lastBucketDepth / 3f, 0f, 1f);
+        float depthSwayMultiplier = 0.025f * depthFactor;
+        float baseAmplitudeRad = BaseSwayAmplitudeDeg * GameMath.DEG2RAD * depthSwayMultiplier;
+        float swayAngleX = GameMath.Sin(swayTime * BaseSwaySpeed * 0.73f + 0.8f) * baseAmplitudeRad;
+        float swayAngleZ = GameMath.Sin(swayTime * BaseSwaySpeed * 1.11f + 2.4f) * baseAmplitudeRad;
+        const float ropeEntryLocalY = 0.65f;
+        float bucketLocalY = -lastBucketDepth;
         prog.ModelMatrix = ModelMat
             .Identity()
-            .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
-            .Translate(0.5f, 0f, 0.5f)
+            .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+            .Translate(0.5f, ropeEntryLocalY, 0.5f)
             .RotateY(yRotation)
+            .RotateX(swayAngleX)
+            .RotateZ(swayAngleZ)
+            .Translate(0f, bucketLocalY - ropeEntryLocalY, 0f)
             .Translate(containerOffset.X, containerOffset.Y, containerOffset.Z)
             .Translate(0.5f, 0.5f, 0.5f)
             .RotateX(containerRotRad.X)
@@ -216,11 +229,17 @@ public class WinchTopRenderer : IRenderer
         
         if (RopeKnotMeshRef is not null)
         {
+            const float knotLocalY = 0.85f;
+            float knotY = -lastBucketDepth + knotLocalY;
+
             prog.ModelMatrix = ModelMat
                 .Identity()
-                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y - lastBucketDepth, Pos.Z - camPos.Z)
-                .Translate(0.5f, 0.85f, 0.5f)
+                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+                .Translate(0.5f, ropeEntryLocalY, 0.5f)
                 .RotateY(yRotation)
+                .RotateX(swayAngleX)
+                .RotateZ(swayAngleZ)
+                .Translate(0f, knotY - ropeEntryLocalY, 0f)
                 .Translate(-0.5f, 0f, -0.5f)
                 .Values;
 
@@ -234,13 +253,17 @@ public class WinchTopRenderer : IRenderer
             const float knotLocalY = 0.85f;
             const float ropeSegmentHeight = 0.125f;
             float segmentSpacing = ropeSegmentHeight;
+
             float knotY = -lastBucketDepth + knotLocalY;
-            
+
             prog.ModelMatrix = ModelMat
                 .Identity()
-                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + knotY, Pos.Z - camPos.Z)
-                .Translate(0.5f, 0f, 0.5f)
+                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+                .Translate(0.5f, ropeEntryLocalY, 0.5f)
                 .RotateY(yRotation)
+                .RotateX(swayAngleX)
+                .RotateZ(swayAngleZ)
+                .Translate(0f, knotY - ropeEntryLocalY, 0f)
                 .Translate(-0.5001f, -0.1f, -0.5001f)
                 .Values;
 
@@ -248,9 +271,9 @@ public class WinchTopRenderer : IRenderer
             prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
             rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
 
-            const float ropeEntryLocalY = 0.65f;
+            const float ropeEntryLocalY2 = ropeEntryLocalY;
             float stubTopY = knotY + ropeSegmentHeight;
-            float availableLength = ropeEntryLocalY - stubTopY;
+            float availableLength = ropeEntryLocalY2 - stubTopY;
 
             if (availableLength > 0f)
             {
@@ -262,9 +285,12 @@ public class WinchTopRenderer : IRenderer
 
                     prog.ModelMatrix = ModelMat
                         .Identity()
-                        .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y + yOffset, Pos.Z - camPos.Z)
-                        .Translate(0.5f, 0f, 0.5f)
+                        .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+                        .Translate(0.5f, ropeEntryLocalY, 0.5f)
                         .RotateY(yRotation)
+                        .RotateX(swayAngleX)
+                        .RotateZ(swayAngleZ)
+                        .Translate(0f, yOffset - ropeEntryLocalY, 0f)
                         .Translate(-0.5001f, -0.1f, -0.5001f)
                         .Values;
 
@@ -274,6 +300,7 @@ public class WinchTopRenderer : IRenderer
                 }
             }
         }
+
         prog.Stop();
     }
 
