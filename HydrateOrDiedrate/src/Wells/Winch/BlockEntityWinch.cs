@@ -91,6 +91,8 @@ namespace HydrateOrDiedrate.Wells.Winch
             renderer = new WinchTopRenderer(capi, this, Block.Variant["side"]);
 
             capi.Event.RegisterRenderer(renderer, EnumRenderStage.Opaque, "winch");
+            capi.Event.RegisterRenderer(renderer, EnumRenderStage.ShadowFar, "winch");
+            capi.Event.RegisterRenderer(renderer, EnumRenderStage.ShadowNear,"winch");
         }
 
         public override void CreateBehaviors(Block block, IWorldAccessor worldForResolve)

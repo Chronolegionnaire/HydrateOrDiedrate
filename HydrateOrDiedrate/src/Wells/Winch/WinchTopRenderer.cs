@@ -159,13 +159,10 @@ public class WinchTopRenderer : IRenderer
     public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
     {
         if (WinchTopMeshRef is null) return;
+
         var Pos = Winch.Pos;
-        
         IRenderAPI rpi = Capi.Render;
         Vec3d camPos = Capi.World.Player.Entity.CameraPos;
-        rpi.GlDisableCullFace();
-        rpi.GlToggleBlend(true, EnumBlendMode.Standard);
-        IStandardShaderProgram prog = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
 
         float yRotation = Direction switch
         {
@@ -174,64 +171,43 @@ public class WinchTopRenderer : IRenderer
             "west" => GameMath.PI + GameMath.PIHALF,
             _ => 0f
         };
-
-        UpdateAngleRad(deltaTime);
-
-        prog.ModelMatrix = ModelMat
-            .Identity()
-            .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
-            .Translate(0.5f, 0.5f, 0.5f)
-            .RotateY(yRotation)
-            .RotateX(AngleRad)
-            .Translate(-0.5f, 0.0f, -0.5f)
-            .Values;
-
-        prog.ViewMatrix = rpi.CameraMatrixOriginf;
-        prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-        rpi.RenderMultiTextureMesh(WinchTopMeshRef, "tex", 0);
-
-        lastBucketDepth = GameMath.Lerp(lastBucketDepth, Winch.BucketDepth, deltaTime * 10);
-
-        if (containerMeshRef is null)
+        if (stage == EnumRenderStage.Opaque)
         {
-            prog.Stop();
-            return;
-        }
-        swayTime += deltaTime;
-        float depthFactor = GameMath.Clamp(lastBucketDepth / 3f, 0f, 1f);
-        float depthSwayMultiplier = 0.025f * depthFactor;
-        float baseAmplitudeRad = BaseSwayAmplitudeDeg * GameMath.DEG2RAD * depthSwayMultiplier;
-        float swayAngleX = GameMath.Sin(swayTime * BaseSwaySpeed * 0.73f + 0.8f) * baseAmplitudeRad;
-        float swayAngleZ = GameMath.Sin(swayTime * BaseSwaySpeed * 1.11f + 2.4f) * baseAmplitudeRad;
-        const float ropeEntryLocalY = 0.65f;
-        float bucketLocalY = -lastBucketDepth;
-        prog.ModelMatrix = ModelMat
-            .Identity()
-            .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
-            .Translate(0.5f, ropeEntryLocalY, 0.5f)
-            .RotateY(yRotation)
-            .RotateX(swayAngleX)
-            .RotateZ(swayAngleZ)
-            .Translate(0f, bucketLocalY - ropeEntryLocalY, 0f)
-            .Translate(containerOffset.X, containerOffset.Y, containerOffset.Z)
-            .Translate(0.5f, 0.5f, 0.5f)
-            .RotateX(containerRotRad.X)
-            .RotateY(containerRotRad.Y)
-            .RotateZ(containerRotRad.Z)
-            .Scale(containerScale, containerScale, containerScale)
-            .Translate(-0.5f, -0.5f, -0.5f)
-            .Translate(-0.5f, 0f, -0.5f)
-            .Values;
+            rpi.GlDisableCullFace();
+            rpi.GlToggleBlend(true, EnumBlendMode.Standard);
+            IStandardShaderProgram prog = rpi.PreparedStandardShader(Pos.X, Pos.Y, Pos.Z);
 
-        prog.ViewMatrix = rpi.CameraMatrixOriginf;
-        prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-        rpi.RenderMultiTextureMesh(containerMeshRef, "tex", 0);
-        
-        if (RopeKnotMeshRef is not null)
-        {
-            const float knotLocalY = 0.85f;
-            float knotY = -lastBucketDepth + knotLocalY;
+            UpdateAngleRad(deltaTime);
 
+            prog.ModelMatrix = ModelMat
+                .Identity()
+                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+                .Translate(0.5f, 0.5f, 0.5f)
+                .RotateY(yRotation)
+                .RotateX(AngleRad)
+                .Translate(-0.5f, 0.0f, -0.5f)
+                .Values;
+
+            prog.ViewMatrix = rpi.CameraMatrixOriginf;
+            prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+            rpi.RenderMultiTextureMesh(WinchTopMeshRef, "tex", 0);
+
+            lastBucketDepth = GameMath.Lerp(lastBucketDepth, Winch.BucketDepth, deltaTime * 10);
+
+            if (containerMeshRef is null)
+            {
+                prog.Stop();
+                return;
+            }
+
+            swayTime += deltaTime;
+            float depthFactor = GameMath.Clamp(lastBucketDepth / 3f, 0f, 1f);
+            float depthSwayMultiplier = 0.025f * depthFactor;
+            float baseAmplitudeRad = BaseSwayAmplitudeDeg * GameMath.DEG2RAD * depthSwayMultiplier;
+            float swayAngleX = GameMath.Sin(swayTime * BaseSwaySpeed * 0.73f + 0.8f) * baseAmplitudeRad;
+            float swayAngleZ = GameMath.Sin(swayTime * BaseSwaySpeed * 1.11f + 2.4f) * baseAmplitudeRad;
+            const float ropeEntryLocalY = 0.65f;
+            float bucketLocalY = -lastBucketDepth;
             prog.ModelMatrix = ModelMat
                 .Identity()
                 .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
@@ -239,15 +215,176 @@ public class WinchTopRenderer : IRenderer
                 .RotateY(yRotation)
                 .RotateX(swayAngleX)
                 .RotateZ(swayAngleZ)
-                .Translate(0f, knotY - ropeEntryLocalY, 0f)
+                .Translate(0f, bucketLocalY - ropeEntryLocalY, 0f)
+                .Translate(containerOffset.X, containerOffset.Y, containerOffset.Z)
+                .Translate(0.5f, 0.5f, 0.5f)
+                .RotateX(containerRotRad.X)
+                .RotateY(containerRotRad.Y)
+                .RotateZ(containerRotRad.Z)
+                .Scale(containerScale, containerScale, containerScale)
+                .Translate(-0.5f, -0.5f, -0.5f)
                 .Translate(-0.5f, 0f, -0.5f)
                 .Values;
 
             prog.ViewMatrix = rpi.CameraMatrixOriginf;
             prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-            rpi.RenderMultiTextureMesh(RopeKnotMeshRef, "tex", 0);
+            rpi.RenderMultiTextureMesh(containerMeshRef, "tex", 0);
+            if (RopeKnotMeshRef is not null)
+            {
+                const float knotLocalY = 0.85f;
+                float knotY = -lastBucketDepth + knotLocalY;
+
+                prog.ModelMatrix = ModelMat
+                    .Identity()
+                    .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+                    .Translate(0.5f, ropeEntryLocalY, 0.5f)
+                    .RotateY(yRotation)
+                    .RotateX(swayAngleX)
+                    .RotateZ(swayAngleZ)
+                    .Translate(0f, knotY - ropeEntryLocalY, 0f)
+                    .Translate(-0.5f, 0f, -0.5f)
+                    .Values;
+
+                prog.ViewMatrix = rpi.CameraMatrixOriginf;
+                prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+                rpi.RenderMultiTextureMesh(RopeKnotMeshRef, "tex", 0);
+            }
+            if (RopeSegmentMeshRef is not null)
+            {
+                const float knotLocalY = 0.85f;
+                const float ropeSegmentHeight = 0.125f;
+                float segmentSpacing = ropeSegmentHeight;
+
+                float knotY = -lastBucketDepth + knotLocalY;
+                prog.ModelMatrix = ModelMat
+                    .Identity()
+                    .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+                    .Translate(0.5f, ropeEntryLocalY, 0.5f)
+                    .RotateY(yRotation)
+                    .RotateX(swayAngleX)
+                    .RotateZ(swayAngleZ)
+                    .Translate(0f, knotY - ropeEntryLocalY, 0f)
+                    .Translate(-0.5001f, -0.1f, -0.5001f)
+                    .Values;
+
+                prog.ViewMatrix = rpi.CameraMatrixOriginf;
+                prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+                rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
+
+                const float ropeEntryLocalY2 = ropeEntryLocalY;
+                float stubTopY = knotY + ropeSegmentHeight;
+                float availableLength = ropeEntryLocalY2 - stubTopY;
+
+                if (availableLength > 0f)
+                {
+                    int extraSegments = Math.Max(0, (int)(availableLength / segmentSpacing));
+
+                    for (int i = 0; i < extraSegments; i++)
+                    {
+                        float yOffset = stubTopY + i * segmentSpacing;
+
+                        prog.ModelMatrix = ModelMat
+                            .Identity()
+                            .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+                            .Translate(0.5f, ropeEntryLocalY, 0.5f)
+                            .RotateY(yRotation)
+                            .RotateX(swayAngleX)
+                            .RotateZ(swayAngleZ)
+                            .Translate(0f, yOffset - ropeEntryLocalY, 0f)
+                            .Translate(-0.5001f, -0.1f, -0.5001f)
+                            .Values;
+
+                        prog.ViewMatrix = rpi.CameraMatrixOriginf;
+                        prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
+                        rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
+                    }
+                }
+            }
+
+            prog.Stop();
+            return;
+        }
+        if (stage != EnumRenderStage.ShadowFar && stage != EnumRenderStage.ShadowNear)
+        {
+            return;
+        }
+        float depthFactorShadow = GameMath.Clamp(lastBucketDepth / 3f, 0f, 1f);
+        float depthSwayMultiplierShadow = 0.025f * depthFactorShadow;
+        float baseAmplitudeRadShadow = BaseSwayAmplitudeDeg * GameMath.DEG2RAD * depthSwayMultiplierShadow;
+        float swayAngleXShadow = GameMath.Sin(swayTime * BaseSwaySpeed * 0.73f + 0.8f) * baseAmplitudeRadShadow;
+        float swayAngleZShadow = GameMath.Sin(swayTime * BaseSwaySpeed * 1.11f + 2.4f) * baseAmplitudeRadShadow;
+        const float ropeEntryLocalYShadow = 0.65f;
+        float bucketLocalYShadow = -lastBucketDepth;
+        IShaderProgram prevShader = rpi.CurrentActiveShader;
+        if (prevShader != null)
+        {
+            prevShader.Stop();
         }
 
+        IShaderProgram shadowProg = rpi.GetEngineShader(EnumShaderProgram.Shadowmapentityanimated);
+        shadowProg.Use();
+
+        rpi.GLDepthMask(true);
+        rpi.GlDisableCullFace();
+
+        void DrawShadow(MultiTextureMeshRef meshRef, Matrixf mat)
+        {
+            if (meshRef is null) return;
+
+            float[] model = mat.Values;
+            float[] modelView = Mat4f.Mul(new float[16], rpi.CurrentModelviewMatrix, model);
+
+            shadowProg.UniformMatrix("modelViewMatrix", modelView);
+            shadowProg.UniformMatrix("projectionMatrix", rpi.CurrentProjectionMatrix);
+            rpi.RenderMultiTextureMesh(meshRef, "entityTex", 0);
+        }
+        Matrixf matTop = ModelMat
+            .Identity()
+            .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+            .Translate(0.5f, 0.5f, 0.5f)
+            .RotateY(yRotation)
+            .RotateX(AngleRad)
+            .Translate(-0.5f, 0.0f, -0.5f);
+
+        DrawShadow(WinchTopMeshRef, matTop);
+        if (containerMeshRef is not null)
+        {
+            Matrixf matBucket = ModelMat
+                .Identity()
+                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+                .Translate(0.5f, ropeEntryLocalYShadow, 0.5f)
+                .RotateY(yRotation)
+                .RotateX(swayAngleXShadow)
+                .RotateZ(swayAngleZShadow)
+                .Translate(0f, bucketLocalYShadow - ropeEntryLocalYShadow, 0f)
+                .Translate(containerOffset.X, containerOffset.Y, containerOffset.Z)
+                .Translate(0.5f, 0.5f, 0.5f)
+                .RotateX(containerRotRad.X)
+                .RotateY(containerRotRad.Y)
+                .RotateZ(containerRotRad.Z)
+                .Scale(containerScale, containerScale, containerScale)
+                .Translate(-0.5f, -0.5f, -0.5f)
+                .Translate(-0.5f, 0f, -0.5f);
+
+            DrawShadow(containerMeshRef, matBucket);
+        }
+        if (RopeKnotMeshRef is not null)
+        {
+            const float knotLocalY = 0.85f;
+            float knotY = -lastBucketDepth + knotLocalY;
+
+            Matrixf matKnot = ModelMat
+                .Identity()
+                .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
+                .Translate(0.5f, ropeEntryLocalYShadow, 0.5f)
+                .RotateY(yRotation)
+                .RotateX(swayAngleXShadow)
+                .RotateZ(swayAngleZShadow)
+                .Translate(0f, knotY - ropeEntryLocalYShadow, 0f)
+                .Translate(-0.5f, 0f, -0.5f);
+
+            DrawShadow(RopeKnotMeshRef, matKnot);
+        }
         if (RopeSegmentMeshRef is not null)
         {
             const float knotLocalY = 0.85f;
@@ -256,22 +393,19 @@ public class WinchTopRenderer : IRenderer
 
             float knotY = -lastBucketDepth + knotLocalY;
 
-            prog.ModelMatrix = ModelMat
+            Matrixf matStub = ModelMat
                 .Identity()
                 .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
-                .Translate(0.5f, ropeEntryLocalY, 0.5f)
+                .Translate(0.5f, ropeEntryLocalYShadow, 0.5f)
                 .RotateY(yRotation)
-                .RotateX(swayAngleX)
-                .RotateZ(swayAngleZ)
-                .Translate(0f, knotY - ropeEntryLocalY, 0f)
-                .Translate(-0.5001f, -0.1f, -0.5001f)
-                .Values;
+                .RotateX(swayAngleXShadow)
+                .RotateZ(swayAngleZShadow)
+                .Translate(0f, knotY - ropeEntryLocalYShadow, 0f)
+                .Translate(-0.5001f, -0.1f, -0.5001f);
 
-            prog.ViewMatrix = rpi.CameraMatrixOriginf;
-            prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-            rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
+            DrawShadow(RopeSegmentMeshRef, matStub);
 
-            const float ropeEntryLocalY2 = ropeEntryLocalY;
+            const float ropeEntryLocalY2 = ropeEntryLocalYShadow;
             float stubTopY = knotY + ropeSegmentHeight;
             float availableLength = ropeEntryLocalY2 - stubTopY;
 
@@ -283,25 +417,25 @@ public class WinchTopRenderer : IRenderer
                 {
                     float yOffset = stubTopY + i * segmentSpacing;
 
-                    prog.ModelMatrix = ModelMat
+                    Matrixf matSeg = ModelMat
                         .Identity()
                         .Translate(Pos.X - camPos.X, Pos.Y - camPos.Y, Pos.Z - camPos.Z)
-                        .Translate(0.5f, ropeEntryLocalY, 0.5f)
+                        .Translate(0.5f, ropeEntryLocalYShadow, 0.5f)
                         .RotateY(yRotation)
-                        .RotateX(swayAngleX)
-                        .RotateZ(swayAngleZ)
-                        .Translate(0f, yOffset - ropeEntryLocalY, 0f)
-                        .Translate(-0.5001f, -0.1f, -0.5001f)
-                        .Values;
+                        .RotateX(swayAngleXShadow)
+                        .RotateZ(swayAngleZShadow)
+                        .Translate(0f, yOffset - ropeEntryLocalYShadow, 0f)
+                        .Translate(-0.5001f, -0.1f, -0.5001f);
 
-                    prog.ViewMatrix = rpi.CameraMatrixOriginf;
-                    prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
-                    rpi.RenderMultiTextureMesh(RopeSegmentMeshRef, "tex", 0);
+                    DrawShadow(RopeSegmentMeshRef, matSeg);
                 }
             }
         }
-
-        prog.Stop();
+        shadowProg.Stop();
+        if (prevShader != null)
+        {
+            prevShader.Use();
+        }
     }
 
     private void CleanupContainerData()
@@ -321,24 +455,23 @@ public class WinchTopRenderer : IRenderer
     public bool Disposed { get; private set; }
     public void Dispose()
     {
+        if (Disposed) return;
         Disposed = true;
         Capi.Event.UnregisterRenderer(this, EnumRenderStage.Opaque);
-        
+        Capi.Event.UnregisterRenderer(this, EnumRenderStage.ShadowFar);
+        Capi.Event.UnregisterRenderer(this, EnumRenderStage.ShadowNear);
         CleanupContainerData();
-
-        if(WinchTopMeshRef is not null)
+        if (WinchTopMeshRef is not null)
         {
             WinchTopMeshRef.Dispose();
             WinchTopMeshRef = null;
         }
-
-        if(RopeKnotMeshRef is not null)
+        if (RopeKnotMeshRef is not null)
         {
             RopeKnotMeshRef.Dispose();
             RopeKnotMeshRef = null;
         }
-
-        if(RopeSegmentMeshRef is not null)
+        if (RopeSegmentMeshRef is not null)
         {
             RopeSegmentMeshRef.Dispose();
             RopeSegmentMeshRef = null;
