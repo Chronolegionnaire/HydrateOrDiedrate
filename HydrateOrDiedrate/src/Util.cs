@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
+using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate;
 
@@ -93,6 +95,47 @@ public static class Util
         catch
         {
             return false;
+        }
+    }
+    public static class LiquidTransferUtil
+    {
+        public static bool TryTransferLiquid(ItemStack source, ItemStack target)
+        {
+            if (source?.Collectible is not BlockLiquidContainerBase sourceContainer ||
+                target?.Collectible is not BlockLiquidContainerBase targetContainer)
+            {
+                return false;
+            }
+
+            var existingLiters = targetContainer.GetCurrentLitres(target);
+            var remainingSpace = targetContainer.CapacityLitres - existingLiters;
+            if (remainingSpace <= 0) return false;
+
+            remainingSpace *= target.StackSize;
+
+            var existingContent = targetContainer.GetContent(target);
+            var newContent      = sourceContainer.GetContent(source);
+
+            if (newContent is null ||
+                (existingContent is not null && existingContent.Collectible.Code != newContent.Collectible.Code))
+            {
+                return false;
+            }
+
+            var amountToMove = GameMath.Min(remainingSpace, sourceContainer.GetCurrentLitres(source));
+            var addedLiquid  = sourceContainer.TryTakeLiquid(source, amountToMove);
+            if (addedLiquid is null) return false;
+
+            // Split evenly across stacked containers
+            addedLiquid.StackSize /= target.StackSize;
+
+            if (existingContent is not null)
+            {
+                addedLiquid.StackSize += existingContent.StackSize;
+            }
+
+            targetContainer.SetContent(target, addedLiquid);
+            return true;
         }
     }
 }

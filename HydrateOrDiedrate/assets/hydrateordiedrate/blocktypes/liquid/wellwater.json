@@ -15,7 +15,7 @@
     },
     {
       "code": "flow",
-      "states": [ "n", "ne", "e", "se", "s", "sw", "w", "nw", "d", "still" ] //TODO: can natural even be anything other then still?
+      "states": [ "n", "ne", "e", "se", "s", "sw", "w", "nw", "d", "still" ]
     },
     {
       "code": "height",
@@ -28,11 +28,11 @@
     "*-still-*": "BlockWater"
   },
   "entityClassByType": {
-    "*-natural-*": "BlockEntityWellWaterSentinel"
+    "*-natural-*": "HoD:BlockEntityWellWaterSentinel"
   },
   "behaviors": [
     {
-      "name": "BlockBehaviorWellWaterFinite",
+      "name": "HoD:BlockBehaviorWellWaterFinite",
       "properties": {
         "spreadDelay": 125,
         "liquidCollisionSound": "sizzle",

@@ -39,6 +39,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             SyncWaterColumn();
             MarkDirty(true);
         }
+
         return applied;
     }
     private static int HeightFromVolume(int vol) => Math.Min(7, (vol + 9) / 10);
@@ -112,7 +113,6 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         return GetRetentionDepth() * PerBlockMax();
     }
 
-
     private double LastInGameDay = -1.0;
 
     private string cachedRingMaterial;
@@ -179,9 +179,29 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         {
             var posCopy = Pos.Copy();
             AquiferManager.RemoveWellSpringFromChunk(Api.World, posCopy);
+            CleanupWaterColumn();
         }
 
         base.OnBlockRemoved();
+    }
+
+    private void CleanupWaterColumn()
+    {
+        var ba = Api.World.BlockAccessor;
+        var pos = Pos.Copy();
+        for (int i = 0; i < 128; i++)
+        {
+            pos.Y++;
+            var fluid = ba.GetFluid(pos);
+
+            if (!WellBlockUtils.IsOurWellwater(fluid))
+                break;
+            var be = ba.GetBlockEntity<BlockEntityWellWaterSentinel>(pos);
+            if (be != null)
+                ba.RemoveBlockEntity(pos);
+            ba.SetFluid(0, pos);
+            ba.TriggerNeighbourBlockUpdate(pos);
+        }
     }
 
     private bool HandleShallowWell(double elapsedDays)
@@ -438,6 +458,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
                     var block = Api.World.GetBlock(
                         new AssetLocation("hydrateordiedrate", $"{baseCode}-natural-still-1"));
                     if (block == null) break;
+
                     ba.SetFluid(block.BlockId, pos);
                     ba.TriggerNeighbourBlockUpdate(pos);
                 }
@@ -517,7 +538,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
             if (ba.GetBlockEntity(pos) is null)
             {
-                ba.SpawnBlockEntity("BlockEntityWellWaterSentinel", pos);
+                ba.SpawnBlockEntity("HoD:BlockEntityWellWaterSentinel", pos);
             }
 
             if (detectedFresh == null)
@@ -555,6 +576,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             LastWaterType = GetWaterType(detectedFresh.Value, detectedPollution);
             currentPollution = detectedPollution;
         }
+
         int minVolume, maxVolume, reconcileTarget;
         if (detectedPollution == "muddy")
         {
@@ -796,7 +818,6 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         }
         return true;
     }
-    
     public override void ToTreeAttributes(ITreeAttribute tree)
     {
         base.ToTreeAttributes(tree);
@@ -831,7 +852,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
     public static int GetMaxVolumeForWaterType(string waterType) => waterType.Contains("muddy") ? 9 : 70;
 
-    public int GetMaxTotalVolume() => GetRetentionDepth() * PerBlockMax();
+    public int GetMaxTotalVolume() => GetRetentionDepth() * GetMaxVolumeForWaterType(LastWaterType);
 
     public int GetRetentionDepth() => DetermineMaxDepthBasedOnCached(cachedRingMaterial, partialValidatedHeight);
 }

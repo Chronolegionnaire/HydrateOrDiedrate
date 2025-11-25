@@ -1,0 +1,94 @@
+{
+  "code": "handpump",
+  "class": "HoD:BlockHandPump",
+  "entityclass": "HoD:BlockEntityHandPump",
+  "entityBehaviors": [ { "name": "HoD:HandPumpAnim" } ],
+  "behaviors": [
+    {"name": "Container"},
+    {
+      "name": "HorizontalOrientable",
+      "properties": {
+        "dropBlockFace": "east"
+      }
+    }
+  ],
+  "variantgroups": [
+    { "code": "metal", "states": ["copper", "lead"] },
+    { "code":"side", "loadFromProperties": "abstract/horizontalorientation" }
+  ],
+  "shapeByType": {
+    "*-north": { "base": "hydrateordiedrate:block/handpump/handpumpfull", "rotateY": 180 },
+    "*-east": { "base": "hydrateordiedrate:block/handpump/handpumpfull", "rotateY": 90 },
+    "*-west": { "base": "hydrateordiedrate:block/handpump/handpumpfull", "rotateY": 270 },
+    "*-south": { "base": "hydrateordiedrate:block/handpump/handpumpfull", "rotateY": 0 }
+  },
+  "attributes": {
+    "handbook": {
+      "groupBy": ["handpump-*"]
+    },
+    "mapColorCode": "settlement"
+  },
+  "creativeinventory": {
+    "general": [ "handpump-*-east" ],
+    "decorative": [ "handpump-*-east" ],
+    "mechanics": ["handpump-*-east"]
+  },
+  "textures": {
+    "metal": { "base": "game:block/metal/sheet-plain/{metal}4" }
+  },
+  "blockmaterial": "Metal",
+  "replaceable": 900,
+  "resistance": 1.5,
+  "lightAbsorption": 1,
+  "maxStackSize": 1,
+  "sounds": {
+    "hit": "game:block/metaldoor-place",
+    "break": "game:block/metaldoor-place",
+    "place": "game:block/metaldoor-place",
+    "walk": "game:block/metaldoor-place"
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "sideopaque": {
+    "all": false
+  },
+  "emitsideao": {
+    "all": false
+  },
+  "heldTpIdleAnimation": "holdbothhandslarge",
+  "heldTpUseAnimation": "twohandplaceblock",
+  "collisionSelectionBoxesByType": {
+    "*-north": [
+      { "x1": 0.3125, "y1": 0, "z1": 0.3125, "x2": 0.6875, "y2": 0.8125, "z2": 0.75 },
+      { "x1": 0.4375, "y1": 0.3125, "z1": 0.5, "x2": 0.5625, "y2": 1, "z2": 0.75 }
+    ],
+    "*-west": [
+      { "x1": 0.25, "y1": 0, "z1": 0.3125, "x2": 0.6875, "y2": 0.8125, "z2": 0.6875 },
+      { "x1": 0.5, "y1": 0.3125, "z1": 0.4375, "x2": 0.75, "y2": 1, "z2": 0.5625 }
+    ],
+    "*-east": [
+      { "x1": 0.3125, "y1": 0, "z1": 0.3125, "x2": 0.75, "y2": 0.8125, "z2": 0.6875 },
+      { "x1": 0.25, "y1": 0.3125, "z1": 0.4375, "x2": 0.5, "y2": 1, "z2": 0.5625 }
+    ],
+    "*-south": [
+      { "x1": 0.3125, "y1": 0, "z1": 0.3125, "x2": 0.6875, "y2": 0.8125, "z2": 0.75 },
+      { "x1": 0.4375, "y1": 0.3125, "z1": 0.25, "x2": 0.5625, "y2": 1, "z2": 0.5 }
+    ]
+  },
+  "tpHandTransform": {
+    "translation": { "x": -0.25, "y": -1, "z": 0 },
+    "rotation": { "x": 16, "y": 13, "z": -70 },
+    "origin": { "x": 0.48, "y": 0.55, "z": 0.24 },
+    "scale": 0.7
+  },
+  "groundTransform": {
+    "translation": { "x": 0, "y": 0, "z": 0 },
+    "rotation": { "x": 0, "y": 0, "z": 0 },
+    "origin": { "x": 0, "y": 0, "z": 0 },
+    "scale": 3.5
+  },
+  "guiTransform": {
+    "scale": 1.39
+  }
+}

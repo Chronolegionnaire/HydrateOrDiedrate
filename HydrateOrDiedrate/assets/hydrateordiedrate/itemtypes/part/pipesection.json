@@ -1,0 +1,47 @@
+{
+  "code": "pipesection",
+  "variantgroups": [
+    { "code": "material", "states": ["copper", "lead" ] }
+  ],
+  "behaviors": [
+    { "name": "GroundStorable", "properties": { "layout": "SingleCenter", "collisionBox": { "x1": 0.25, "y1": 0, "z1": 0.25, "x2": 0.75, "y2": 0.5, "z2": 0.75 } } }
+  ],
+  "shape": { "base": "block/pipes/2-way/pipesection" },
+  "textures": {
+    "metal": { "base": "game:block/metal/sheet/{material}1" }
+  },
+  "attributes": {
+    "groundStorageTransform": {
+      "translation": { "x": 0, "y": -0.31, "z": 0 }
+    },
+    "onTongTransform": {
+      "translation": { "x": -1.15, "y": -0.97, "z": -0.53 },
+      "rotation": { "x": 22, "y": 11, "z": -17 },
+      "scale": 0.8
+    }
+  },
+  "creativeinventory": { "general": ["*"], "items": ["*"], "mechanics": ["*"] },
+  "maxstacksize": 64,
+  "materialDensity": 9000,
+  "guiTransform": {
+    "rotation": { "x": -17, "y": -60, "z": -48 },
+    "origin": { "x": 0.5, "y": 0.5, "z": 0.5 },
+    "scale": 1.64
+  },
+  "fpHandTransform": {
+    "translation": { "x": 0, "y": -0.25, "z": 0 },
+    "rotation": { "x": -2, "y": 120, "z": 90 },
+    "scale": 1.7
+  },
+  "tpHandTransform": {
+    "translation": { "x": -1.12, "y": -1.27, "z": -1 },
+    "rotation": { "x": -8, "y": -11, "z": -18 },
+    "scale": 0.48
+  },
+  "groundTransform": {
+    "translation": { "x": 0, "y": 0, "z": 0 },
+    "rotation": { "x": 0, "y": 0, "z": 0 },
+    "origin": { "x": 0.43, "y": 0.25, "z": 1 },
+    "scale": 3
+  }
+}

@@ -3,7 +3,7 @@
     "op": "addmerge",
     "path": "/behaviors",
     "value":[{
-      "name": "BehaviorPickaxeWellMode"
+      "name": "HoD:BehaviorPickaxeWellMode"
     }],
     "file": "game:itemtypes/tool/pickaxe.json",
     "side": "Server"

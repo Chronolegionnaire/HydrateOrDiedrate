@@ -22,8 +22,10 @@ using Vintagestory.API.Util;
 using System.Collections.Generic;
 using Vintagestory.API.Datastructures;
 using Newtonsoft.Json.Linq;
-using System.Linq;
-using Vintagestory.Common;
+using HydrateOrDiedrate.Piping.HandPump;
+using HydrateOrDiedrate.Piping.Networking;
+using HydrateOrDiedrate.Piping.Pipe;
+using HydrateOrDiedrate.Piping.ShutoffValve;
 
 namespace HydrateOrDiedrate;
 
@@ -106,9 +108,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
         var HoDbehaviors = new List<JsonObject>(3);
 
         //Forcibly insert behaviors to ensure they are present //TODO most of these are only really needed for th server but some are on client as well for now for accessibility
-        if (ModConfig.Instance.LiquidEncumbrance.Enabled) HoDbehaviors.Add(new(new JObject { ["code"] =  "liquidencumbrance" }));
-        if (ModConfig.Instance.Thirst.Enabled) HoDbehaviors.Add(new(new JObject { ["code"] =  "thirst" }));
-        if (ModConfig.Instance.HeatAndCooling.HarshHeat) HoDbehaviors.Add(new(new JObject { ["code"] =  "bodytemperaturehot" }));
+        if (ModConfig.Instance.LiquidEncumbrance.Enabled) HoDbehaviors.Add(new(new JObject { ["code"] =  "HoD:liquidencumbrance" }));
+        if (ModConfig.Instance.Thirst.Enabled) HoDbehaviors.Add(new(new JObject { ["code"] =  "HoD:thirst" }));
+        if (ModConfig.Instance.HeatAndCooling.HarshHeat) HoDbehaviors.Add(new(new JObject { ["code"] =  "HoD:bodytemperaturehot" }));
 
         playerEntity.Server.BehaviorsAsJsonObj = [
             ..playerEntity.Server.BehaviorsAsJsonObj,
@@ -145,27 +147,38 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         base.Start(api);
         
-        api.RegisterBlockClass("BlockKeg", typeof(BlockKeg));
-        api.RegisterBlockEntityClass("BlockEntityKeg", typeof(BlockEntityKeg));
-        api.RegisterItemClass("ItemKegTap", typeof(ItemKegTap));
+        api.RegisterBlockClass("HoD:BlockKeg", typeof(BlockKeg));
+        api.RegisterBlockEntityClass("HoD:BlockEntityKeg", typeof(BlockEntityKeg));
+        api.RegisterItemClass("HoD:ItemKegTap", typeof(ItemKegTap));
         
-        api.RegisterBlockClass("BlockTun", typeof(BlockTun));
-        api.RegisterBlockEntityClass("BlockEntityTun", typeof(BlockEntityTun));
+        api.RegisterBlockClass("HoD:BlockTun", typeof(BlockTun));
+        api.RegisterBlockEntityClass("HoD:BlockEntityTun", typeof(BlockEntityTun));
         
-        api.RegisterCollectibleBehaviorClass("BehaviorPickaxeWellMode", typeof(BehaviorPickaxeWellMode));
-        api.RegisterCollectibleBehaviorClass("BehaviorShovelWellMode", typeof(BehaviorShovelWellMode));
+        api.RegisterCollectibleBehaviorClass("HoD:BehaviorPickaxeWellMode", typeof(BehaviorPickaxeWellMode));
+        api.RegisterCollectibleBehaviorClass("HoD:BehaviorShovelWellMode", typeof(BehaviorShovelWellMode));
 
-        api.RegisterBlockEntityClass("BlockEntityWellWaterSentinel", typeof(BlockEntityWellWaterSentinel));
-        api.RegisterBlockBehaviorClass("BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
-        api.RegisterBlockClass("BlockWellSpring", typeof(BlockWellSpring));
-        api.RegisterBlockEntityClass("BlockEntityWellSpring", typeof(BlockEntityWellSpring));
-        
-        api.RegisterBlockClass("BlockWinch", typeof(BlockWinch));
-        api.RegisterBlockEntityClass("BlockEntityWinch", typeof(BlockEntityWinch));
+        api.RegisterBlockEntityClass("HoD:BlockEntityWellWaterSentinel", typeof(BlockEntityWellWaterSentinel));
+        api.RegisterBlockBehaviorClass("HoD:BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
+        api.RegisterBlockClass("HoD:BlockWellSpring", typeof(BlockWellSpring));
+        api.RegisterBlockEntityClass("HoD:BlockEntityWellSpring", typeof(BlockEntityWellSpring));
+        api.RegisterBlockClass("HoD:BlockHoDPipe", typeof(BlockPipe));
+        api.RegisterBlockEntityClass("HoD:BlockEntityHoDPipe", typeof(BlockEntityPipe));
+        api.RegisterBlockClass("HoD:BlockShutoffValve", typeof(BlockShutoffValve));
+        api.RegisterBlockEntityClass("HoD:BlockEntityShutoffValve", typeof(BlockEntityShutoffValve));
+        api.RegisterBlockClass("HoD:BlockHandPump", typeof(BlockHandPump));
+        api.RegisterBlockEntityClass("HoD:BlockEntityHandPump", typeof(BlockEntityHandPump));
+        api.RegisterBlockEntityBehaviorClass("HoD:HandPumpAnim", typeof(BEBehaviorHandPumpAnim));
+        api.RegisterBlockClass("HoD:BlockWinch", typeof(BlockWinch));
+        api.RegisterBlockEntityClass("HoD:BlockEntityWinch", typeof(BlockEntityWinch));
 
-        if (ModConfig.Instance.LiquidEncumbrance.Enabled) api.RegisterEntityBehaviorClass("liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
-        if (ModConfig.Instance.Thirst.Enabled) api.RegisterEntityBehaviorClass("thirst", typeof(EntityBehaviorThirst));
-        if (ModConfig.Instance.HeatAndCooling.HarshHeat) api.RegisterEntityBehaviorClass("bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot)); //TODO does this even do anything when thirst is disabled?
+        api.ClassRegistry.RegisterParticlePropertyProvider(
+            "HoD:PumpCubeParticles",
+            typeof(Piping.HandPump.PumpCubeParticles)
+        );
+        
+        if (ModConfig.Instance.LiquidEncumbrance.Enabled) api.RegisterEntityBehaviorClass("HoD:liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
+        if (ModConfig.Instance.Thirst.Enabled) api.RegisterEntityBehaviorClass("HoD:thirst", typeof(EntityBehaviorThirst));
+        if (ModConfig.Instance.HeatAndCooling.HarshHeat) api.RegisterEntityBehaviorClass("HoD:bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot)); //TODO does this even do anything when thirst is disabled?
 
         _waterInteractionHandler = new WaterInteractionHandler(api);
 
@@ -192,6 +205,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
         var serverChannel = api.Network.RegisterChannel(NetworkChannelID)
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<WellSpringBlockPacket>()
+            .RegisterMessageType<PumpParticleBurstPacket>()
+            .RegisterMessageType<PumpSfxPacket>()
+            .RegisterMessageType<ValveToggleEventPacket>()
             .SetMessageHandler<WellSpringBlockPacket>(WellSpringBlockPacketReceived);
         
         _waterInteractionHandler.Initialize(serverChannel);
@@ -212,7 +228,13 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.Network.RegisterChannel(NetworkChannelID)
             .RegisterMessageType<DrinkProgressPacket>()
             .RegisterMessageType<WellSpringBlockPacket>()
-            .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived);
+            .RegisterMessageType<PumpParticleBurstPacket>()
+            .RegisterMessageType<PumpSfxPacket>()
+            .RegisterMessageType<ValveToggleEventPacket>()
+            .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived)
+            .SetMessageHandler<PumpParticleBurstPacket>(msg => BlockEntityHandPump.PlayPumpParticleBurst(api, msg))
+            .SetMessageHandler<PumpSfxPacket>(msg => BlockEntityHandPump.OnClientPumpSfx((ICoreClientAPI)api, msg))
+            .SetMessageHandler<ValveToggleEventPacket>(pkt => ValveHandleRenderer.OnClientValveToggleEvent((ICoreClientAPI)api, pkt));
 
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");

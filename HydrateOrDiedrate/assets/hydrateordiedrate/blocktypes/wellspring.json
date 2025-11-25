@@ -1,7 +1,7 @@
 ﻿{
   "code": "wellspring",
-  "class": "BlockWellSpring",
-  "entityclass": "BlockEntityWellSpring",
+  "class": "HoD:BlockWellSpring",
+  "entityclass": "HoD:BlockEntityWellSpring",
   "storageFlags": 5,
   "attributes": {
     "handbook": {

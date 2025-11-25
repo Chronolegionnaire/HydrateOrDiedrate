@@ -1,0 +1,11 @@
+{
+  "ingredientPattern": "IL_,IP_,_P_",
+  "ingredients": {
+    "I": { "type": "item", "code": "game:ingot-*", "name": "metal", "allowedVariants": ["copper", "lead"], "quantity": 1 },
+    "L": { "type": "item", "code": "game:metalplate-*", "name": "metal", "allowedVariants": ["copper", "lead"], "quantity": 1 },
+    "P": { "type": "block", "code": "hydrateordiedrate:pipe-*", "name": "metal", "allowedVariants": ["copper", "lead"], "quantity": 1 }
+  },
+  "width": 3,
+  "height": 3,
+  "output": { "type": "block", "code": "hydrateordiedrate:handpump-{metal}-east" }
+}
