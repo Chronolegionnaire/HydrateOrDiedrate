@@ -56,6 +56,11 @@ public class ModConfig
     /// The configuration for pump mechanics
     /// </summary>
     public PumpConfig Pump { get; set; } = new();
+    
+    /// <summary>
+    /// The configuration for world gen settings
+    /// </summary>
+    public WorldGenConfig WorldGen { get; set; } = new();
 
     /// <summary>
     /// The configuration for the containers
