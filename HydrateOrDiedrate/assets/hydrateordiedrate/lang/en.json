@@ -63,6 +63,7 @@
   "hydrateordiedrate:Config.Setting.HandPumpEnablePriming": "Enable Hand Pump Priming",
   "hydrateordiedrate:Config.Setting.HandPumpOutputInfo": "Show On Hover output info when looking at hand pump. Displays the connected wellspring's output and priming state.",
   "hydrateordiedrate:Config.Setting.HandPumpPrimingBlocksPerStroke": "Hand Pump priming efficiency: blocks of pipe primed per stroke",
+  "hydrateordiedrate:Config.Setting.PondChance": "Pond generation multiplier",
   "hydrateordiedrate:Config.Setting.AquiferRandomMultiplierChance": "Random Multiplier Chance for Aquifers: Increase this value to raise the chance of random aquifers appearing away from water sources.",
   "hydrateordiedrate:Config.Setting.AquiferStep": "Aquifer Step: Defines the distance between chunks that will be checked for neighboring aquifers. Changing this may have a significant performance impact.",
   "hydrateordiedrate:Config.Setting.AquiferWaterBlockMultiplier": "Water Block Multiplier: Increases the aquifer rating based on the number of nearby water blocks.",

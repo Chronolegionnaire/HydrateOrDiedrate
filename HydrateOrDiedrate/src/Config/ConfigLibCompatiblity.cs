@@ -59,7 +59,10 @@ public class ConfigLibCompatibility
     private const string settingHandPumpEnablePriming = "hydrateordiedrate:Config.Setting.HandPumpEnablePriming";
     private const string settingHandPumpOutputInfo = "hydrateordiedrate:Config.Setting.HandPumpOutputInfo";
     private const string settingHandPumpPrimingBlocksPerStroke = "hydrateordiedrate:Config.Setting.HandPumpPrimingBlocksPerStroke";
-
+    
+    // World Gen Settings
+    private const string settingPondChance = "hydrateordiedrate:Config.Setting.PondChance";
+    
     // Keg Settings
     private const string settingKegCapacityLitres = "hydrateordiedrate:Config.Setting.KegCapacityLitres";
     private const string settingSpoilRateUntapped = "hydrateordiedrate:Config.Setting.SpoilRateUntapped";
@@ -208,6 +211,7 @@ public class ConfigLibCompatibility
         var xlibConfig = config.XLib;
         var rainConfig = config.Rain;
         var pumpConfig = config.Pump;
+        var worldGenConfig = config.WorldGen;
         var containersConfig = config.Containers;
         var groundWaterConfig = config.GroundWater;
         ImGui.TextWrapped("HydrateOrDiedrate Settings");
@@ -388,6 +392,13 @@ public class ConfigLibCompatibility
         int handPumpPrimingBlocksPerStroke = pumpConfig.HandPumpPrimingBlocksPerStroke;
         ImGui.DragInt(Lang.Get(settingHandPumpPrimingBlocksPerStroke) + $"##handPumpPrimingBlocksPerStroke-{id}", ref handPumpPrimingBlocksPerStroke, 1, 1, 20);
         pumpConfig.HandPumpPrimingBlocksPerStroke = handPumpPrimingBlocksPerStroke;
+        
+        // World Gen Settings
+        ImGui.SeparatorText("World Gen Settings");
+
+        float pondChance = worldGenConfig.PondChance;
+        ImGui.DragFloat(Lang.Get(settingPondChance) + $"##pondChance-{id}", ref pondChance, 0.05f, 0.0f, 10.0f);
+        worldGenConfig.PondChance = pondChance;
         
         // Keg Settings
         ImGui.SeparatorText("Keg Settings");
