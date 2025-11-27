@@ -134,7 +134,7 @@ namespace HydrateOrDiedrate.encumbrance
 
         private void UpdateWalkSpeed()
         {
-            entity.Stats.Set("walkspeed", "liquidEncumbrancePenalty", -_currentPenaltyAmount, true);
+            entity.Stats.Set("walkspeed", "liquidEncumbrancePenalty", -_currentPenaltyAmount, false);
         }
 
         public override string PropertyName() => "liquidencumbrance";
