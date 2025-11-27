@@ -133,7 +133,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
                             {
                                 IBlockAccessor accessor = world.GetBlockAccessor(true, true, true);
                                 accessor.ExchangeBlock(wellSpringBlock.BlockId, blockSel.Position);
-                                accessor.SpawnBlockEntity("BlockEntityWellSpring", blockSel.Position, null);
+                                accessor.SpawnBlockEntity("HoD:BlockEntityWellSpring", blockSel.Position, null);
                                 if (api.Side == EnumAppSide.Client)
                                 {
                                     WellSpringBlockPacket packet = new WellSpringBlockPacket

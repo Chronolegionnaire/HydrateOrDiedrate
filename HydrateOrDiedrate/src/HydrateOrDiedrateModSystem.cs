@@ -317,7 +317,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         if (_serverApi?.World is null) return;
         IBlockAccessor accessor = _serverApi.World.GetBlockAccessor(true, true, false);
         accessor.ExchangeBlock(packet.BlockId, packet.Position);
-        accessor.SpawnBlockEntity("BlockEntityWellSpring", packet.Position, null);
+        accessor.SpawnBlockEntity("HoD:BlockEntityWellSpring", packet.Position, null);
     }
 
     public override void Dispose()
