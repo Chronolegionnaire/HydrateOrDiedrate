@@ -59,6 +59,7 @@ public partial class EntityBehaviorThirst
         }
     }
 
+    [Obsolete("Use NutritionDeficitAmount instead")] public float HungerReductionAmount { get => NutritionDeficitAmount; set => NutritionDeficitAmount = value; }
     public float NutritionDeficitAmount
     {
         get => ThirstTree.GetFloat("nutritionDeficitAmount");
