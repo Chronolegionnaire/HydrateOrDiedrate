@@ -59,11 +59,13 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
 
             float tempOffsetPerCooling = config.CoolingTempOffsetPerPoint;
             float effectiveTempDiff = rawTempDiff - (Cooling * tempOffsetPerCooling);
-            if (effectiveTempDiff < 0f) effectiveTempDiff = 0f;
 
+            if (effectiveTempDiff <= 0f)
+            {
+                return currentModifier;
+            }
             float expArgument = config.HarshHeatExponentialGainMultiplier * effectiveTempDiff;
-
-            float heatIncrease = config.ThirstIncreasePerDegreeMultiplier * (float)Math.Exp(expArgument);
+            float heatIncrease = config.ThirstIncreasePerDegreeMultiplier * ((float)Math.Exp(expArgument) - 1f);
             heatIncrease = Util.GuardFinite(heatIncrease);
 
             currentModifier += heatIncrease;
