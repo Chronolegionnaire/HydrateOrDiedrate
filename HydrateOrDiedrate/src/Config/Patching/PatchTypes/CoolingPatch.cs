@@ -26,6 +26,10 @@ public class CoolingPatch : PatchBase
         Priority = 5,
         Patches =
         [
+            // =====================================================================
+            // VANILLA CLOTHES - UPPER BODY
+            // =====================================================================
+
             new(){ Code = "game:clothes-upperbody-tattered-crimson-tunic", Value = 1.5f },
             new(){ Code = "game:clothes-upperbody-tattered-linen-shirt", Value = 2f },
             new(){ Code = "game:clothes-upperbody-peasent-shirt", Value = 1.5f },
@@ -69,6 +73,12 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-upperbody-deep", Value = 1f },
             new(){ Code = "game:clothes-upperbody-survivor", Value = 1.5f },
             new(){ Code = "game:clothes-upperbody-scribe", Value = 2f },
+            new(){ Code = "game:clothes-upperbody-hunters-green", Value = 1.5f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - UPPER BODY OVER
+            // =====================================================================
+
             new(){ Code = "game:clothes-upperbodyover-great-steppe-mantle", Value = 1.5f },
             new(){ Code = "game:clothes-upperbodyover-cerise-embroidered-reindeer-herder-coat", Value = 1f },
             new(){ Code = "game:clothes-upperbodyover-commoner-coat", Value = 1.5f },
@@ -91,6 +101,11 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-upperbodyover-surgeon", Value = 1.5f },
             new(){ Code = "game:clothes-upperbodyover-miner", Value = 1.5f },
             new(){ Code = "game:clothes-upperbodyover-forgotten", Value = 1f },
+
+            // =====================================================================
+            // NADIYA - UPPER BODY / UPPER BODY OVER
+            // =====================================================================
+
             new(){ Code = "game:clothes-nadiya-upperbodyover-winter2", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-upperbodyover-winter1", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-upperbodyover-tailor", Value = 1f },
@@ -103,6 +118,7 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-nadiya-upperbodyover-coat-short", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-upperbodyover-coat-long", Value = 2f },
             new(){ Code = "game:clothes-nadiya-upperbodyover-alchemist", Value = 4f },
+
             new(){ Code = "game:clothes-nadiya-upperbody-winter2", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-upperbody-winter1", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-upperbody-tailor", Value = 1f },
@@ -122,6 +138,11 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-nadiya-upperbody-peasant2", Value = 3f },
             new(){ Code = "game:clothes-nadiya-upperbody-peasant3", Value = 4f },
             new(){ Code = "game:clothes-nadiya-upperbody-peasant4", Value = 3f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - WAIST
+            // =====================================================================
+
             new(){ Code = "game:clothes-waist-aristocrat-belt", Value = 0.5f },
             new(){ Code = "game:clothes-waist-cerise-embroidered-reindeer-herder-waistband", Value = 0.5f },
             new(){ Code = "game:clothes-waist-fancy-royal-belt", Value = 0.3f },
@@ -152,9 +173,15 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-waist-miner", Value = 0.3f },
             new(){ Code = "game:clothes-waist-alchemist", Value = 0.3f },
             new(){ Code = "game:clothes-waist-scribe", Value = 0.3f },
+            new(){ Code = "game:clothes-waist-jambiya-belt", Value = 0.3f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - SHOULDER
+            // =====================================================================
+
             new(){ Code = "game:clothes-shoulder-aristocrat-mantle", Value = 1.5f },
             new(){ Code = "game:clothes-shoulder-artisans-scarf", Value = 1f },
-            new(){ Code = "game:clothes-shoulder-blacksmith-apron", Value = 1f },
+            new(){ Code = "game:clothes-shoulder-blacksmith-apron", Value = 4f },
             new(){ Code = "game:clothes-shoulder-embroidered-collar", Value = 1f },
             new(){ Code = "game:clothes-shoulder-embroidered-tartarean-scarf", Value = 1f },
             new(){ Code = "game:clothes-shoulder-hooded-cape", Value = 0.5f },
@@ -180,18 +207,29 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-shoulder-alchemist", Value = 1f },
             new(){ Code = "game:clothes-shoulder-survivor", Value = 1f },
             new(){ Code = "game:clothes-shoulder-scribe", Value = 1f },
+
+            // =====================================================================
+            // NADIYA - SHOULDER
+            // =====================================================================
+
             new(){ Code = "game:clothes-nadiya-shoulder-winter1", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-shoulder-barber", Value = 2f },
-            new(){ Code = "game:clothes-nadiya-shoulder-blacksmith", Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-shoulder-blacksmith", Value = 2f },
             new(){ Code = "game:clothes-nadiya-shoulder-innkeeper", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-shoulder-hunter", Value = 2f },
             new(){ Code = "game:clothes-nadiya-shoulder-musician", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-shoulder-shepherd", Value = 2f },
             new(){ Code = "game:clothes-nadiya-shoulder-fisher", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-shoulder-guard", Value = 0.2f },
-            new(){ Code = "game:clothes-nadiya-shoulder-peasant1", Value = 0.2f },
-            new(){ Code = "game:clothes-nadiya-shoulder-peasant2", Value = 0.2f },
-            new(){ Code = "game:clothes-nadiya-shoulder-peasant3", Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-shoulder-peasant1", Value = 2f },
+            new(){ Code = "game:clothes-nadiya-shoulder-peasant2", Value = 2f },
+            new(){ Code = "game:clothes-nadiya-shoulder-peasant3", Value = 2f },
+            new(){ Code = "game:clothes-nadiya-shoulder-alchemist", Value = 4f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - LOWER BODY
+            // =====================================================================
+
             new(){ Code = "game:clothes-lowerbody-aristocrat-leggings", Value = 1.5f },
             new(){ Code = "game:clothes-lowerbody-dirty-linen-trousers", Value = 2f },
             new(){ Code = "game:clothes-lowerbody-fine-trousers", Value = 1.5f },
@@ -233,6 +271,12 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-lowerbody-deep", Value = 1f },
             new(){ Code = "game:clothes-lowerbody-survivor", Value = 1.5f },
             new(){ Code = "game:clothes-lowerbody-scribe", Value = 1.5f },
+            new(){ Code = "game:clothes-lowerbody-skirt", Value = 3f },
+
+            // =====================================================================
+            // NADIYA - LOWER BODY
+            // =====================================================================
+
             new(){ Code = "game:clothes-nadiya-lowerbody-winter2", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-lowerbody-winter1", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-lowerbody-tailor", Value = 1f },
@@ -250,10 +294,15 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-nadiya-lowerbody-hunter", Value = 2f },
             new(){ Code = "game:clothes-nadiya-lowerbody-guard", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-lowerbody-fisher", Value = 0.2f },
-            new(){ Code = "game:clothes-nadiya-lowerbody-blacksmith", Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-lowerbody-blacksmith", Value = 2f },
             new(){ Code = "game:clothes-nadiya-lowerbody-beekeeper", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-lowerbody-barber", Value = 2f },
             new(){ Code = "game:clothes-nadiya-lowerbody-alchemist", Value = 4f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - HEAD
+            // =====================================================================
+
             new(){ Code = "game:clothes-head-embroidered-coif", Value = 2f },
             new(){ Code = "game:clothes-head-fancy-head-dress", Value = 2f },
             new(){ Code = "game:clothes-head-fortune-tellers-scarf", Value = 2f },
@@ -282,6 +331,12 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-head-rottenking", Value = 1f },
             new(){ Code = "game:clothes-head-surgeon", Value = 2f },
             new(){ Code = "game:clothes-head-alchemist", Value = 2f },
+            new(){ Code = "game:clothes-head-crown-byzantine", Value = 1f },
+
+            // =====================================================================
+            // NADIYA - HEAD
+            // =====================================================================
+
             new(){ Code = "game:clothes-nadiya-head-winter2", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-head-winter1", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-head-tailor", Value = 1f },
@@ -298,10 +353,15 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-nadiya-head-hunter", Value = 2f },
             new(){ Code = "game:clothes-nadiya-head-guard", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-head-fisher", Value = 0.2f },
-            new(){ Code = "game:clothes-nadiya-head-blacksmith", Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-head-blacksmith", Value = 2f },
             new(){ Code = "game:clothes-nadiya-head-beekeeper", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-head-barber", Value = 2f },
             new(){ Code = "game:clothes-nadiya-head-alchemist", Value = 4f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - HAND
+            // =====================================================================
+
             new(){ Code = "game:clothes-hand-fur-gloves", Value = 0.1f },
             new(){ Code = "game:clothes-hand-heavy-leather-gloves", Value = 0.2f },
             new(){ Code = "game:clothes-hand-laced-handsome-gloves", Value = 0.2f },
@@ -323,6 +383,11 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-hand-deep", Value = 0.2f },
             new(){ Code = "game:clothes-hand-survivor", Value = 0.2f },
             new(){ Code = "game:clothes-hand-scribe", Value = 0.2f },
+
+            // =====================================================================
+            // NADIYA - HAND
+            // =====================================================================
+
             new(){ Code = "game:clothes-nadiya-hand-winter2", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-hand-winter1", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-hand-shepherd", Value = 2f },
@@ -333,10 +398,15 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-nadiya-hand-hunter", Value = 2f },
             new(){ Code = "game:clothes-nadiya-hand-gloves", Value = 1f },
             new(){ Code = "game:clothes-nadiya-hand-fisher", Value = 0.2f },
-            new(){ Code = "game:clothes-nadiya-hand-blacksmith", Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-hand-blacksmith", Value = 2f },
             new(){ Code = "game:clothes-nadiya-hand-beekeeper", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-hand-barber", Value = 2f },
             new(){ Code = "game:clothes-nadiya-hand-alchemist", Value = 4f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - FOOT
+            // =====================================================================
+
             new(){ Code = "game:clothes-foot-aristocrat-shoes", Value = 0.5f },
             new(){ Code = "game:clothes-foot-great-steppe-boots", Value = 0.5f },
             new(){ Code = "game:clothes-foot-fur-lined-reindeer-herder-shoes", Value = 0.1f },
@@ -378,6 +448,12 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-foot-forgotten", Value = 0.5f },
             new(){ Code = "game:clothes-foot-survivor", Value = 0.5f },
             new(){ Code = "game:clothes-foot-scribe", Value = 0.5f },
+            new(){ Code = "game:clothes-foot-rusty-ankle-manacles", Value = 0.1f },
+
+            // =====================================================================
+            // NADIYA - FOOT
+            // =====================================================================
+
             new(){ Code = "game:clothes-nadiya-foot-winter2", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-foot-winter1", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-foot-tailor", Value = 1f },
@@ -393,15 +469,79 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-nadiya-foot-hunter", Value = 2f },
             new(){ Code = "game:clothes-nadiya-foot-guard", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-foot-fisher", Value = 0.2f },
-            new(){ Code = "game:clothes-nadiya-foot-blacksmith", Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-foot-blacksmith", Value = 2f },
             new(){ Code = "game:clothes-nadiya-foot-beekeeper", Value = 0.2f },
             new(){ Code = "game:clothes-nadiya-foot-barber", Value = 2f },
             new(){ Code = "game:clothes-nadiya-foot-alchemist", Value = 4f },
+
+            // =====================================================================
+            // NADIYA - ARM ACCESSORIES
+            // =====================================================================
+
+            new(){ Code = "game:clothes-nadiya-arm-armlet-teeth", Value = 2f },
+            new(){ Code = "game:clothes-nadiya-arm-barber-pouch", Value = 1f },
+            new(){ Code = "game:clothes-nadiya-arm-guard-bracers", Value = 2f },
+            new(){ Code = "game:clothes-nadiya-arm-seashell-bracelet", Value = 2f },
+            new(){ Code = "game:clothes-nadiya-arm-peasant-bracersbrown", Value = 2f },
+            new(){ Code = "game:clothes-nadiya-arm-peasant-bracerswhite", Value = 2f },
+            new(){ Code = "game:clothes-nadiya-arm-musician-bangles", Value = 2f },
             new(){ Code = "game:clothes-nadiya-arm-copper-armlet", Value = 5f },
             new(){ Code = "game:clothes-nadiya-arm-copper-lapis-bracelet", Value = 5f },
             new(){ Code = "game:clothes-nadiya-arm-bronze-lapis-bracelet", Value = 4f },
             new(){ Code = "game:clothes-nadiya-arm-copper-lapis-bracelet", Value = 5f },
-            new(){ Code = "game:clothes-nadiya-neck-copper-lapis-necklace", Value = 4f },
+            new(){ Code = "game:clothes-nadiya-arm-coral-bracelet", Value = 0.4f },
+
+            // =====================================================================
+            // NADIYA - NECK ACCESSORIES
+            // =====================================================================
+
+            new(){ Code = "game:clothes-nadiya-neck-acacia-amulet",         Value = 0.4f },
+            new(){ Code = "game:clothes-nadiya-neck-bamboo-seed-amulet",    Value = 0.4f },
+            new(){ Code = "game:clothes-nadiya-neck-birch-amulet",          Value = 0.4f },
+            new(){ Code = "game:clothes-nadiya-neck-cattail-root-amulet",   Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-neck-copper-lapis-necklace", Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-neck-ebony-amulet",          Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-neck-feather-amulet",        Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-neck-flint-amulet",          Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-neck-fur-shawl",             Value = 0.1f },
+            new(){ Code = "game:clothes-nadiya-neck-kapok-amulet",          Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-neck-lapis-necklace",        Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-neck-maple-amulet",          Value = 0.4f },
+            new(){ Code = "game:clothes-nadiya-neck-maple-red-amulet",      Value = 0.4f },
+            new(){ Code = "game:clothes-nadiya-neck-necklace-coral",        Value = 0.4f },
+            new(){ Code = "game:clothes-nadiya-neck-necklace-musician",     Value = 0.4f },
+            new(){ Code = "game:clothes-nadiya-neck-necklace-seashells",    Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-neck-necklace-teeth",        Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-neck-papyrus-root-amulet",   Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-neck-purpleheart-amulet",    Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-neck-tule-root-amulet",      Value = 0.5f },
+
+            // =====================================================================
+            // NADIYA - WAIST ACCESSORIES
+            // =====================================================================
+
+            new(){ Code = "game:clothes-nadiya-waist-alchemist",            Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-waist-barber",               Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-waist-beekeeper",            Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-waist-fisher",               Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-waist-guard",                Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-waist-hunter",               Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-waist-innkeeper",            Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-waist-innkeeper-accessories",Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-waist-miner",                Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-waist-miner-accessories",    Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-waist-musician",             Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-waist-peasant1",             Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-waist-peasant2",             Value = 0.3f },
+            new(){ Code = "game:clothes-nadiya-waist-shepherd",             Value = 0.5f },
+            new(){ Code = "game:clothes-nadiya-waist-tailor",               Value = 0.4f },
+            new(){ Code = "game:clothes-nadiya-waist-winter1",              Value = 0.2f },
+            new(){ Code = "game:clothes-nadiya-waist-winter2",              Value = 0.2f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - FACE
+            // =====================================================================
+
             new(){ Code = "game:clothes-face-leather-reinforced-mask", Value = 2f },
             new(){ Code = "game:clothes-face-hunter-mask", Value = 2f },
             new(){ Code = "game:clothes-face-malefactor-mask", Value = 0.2f },
@@ -423,19 +563,383 @@ public class CoolingPatch : PatchBase
             new(){ Code = "game:clothes-face-forgotten", Value = 0.2f },
             new(){ Code = "game:clothes-face-survivor", Value = 2f },
             new(){ Code = "game:clothes-face-snow-goggles", Value = 0.4f },
-            new(){ Code = "game:clothes-nadiya-face-alchemist", Value = 0.2f },
-            new(){ Code = "game:clothes-nadiya-face-barber", Value = 0.2f },
-            new(){ Code = "game:clothes-nadiya-face-blacksmith", Value = 2f },
+            new(){ Code = "game:clothes-face-glasses-clockmaker", Value = 0.3f },
+
+            // =====================================================================
+            // NADIYA - FACE
+            // =====================================================================
+
+            new(){ Code = "game:clothes-nadiya-face-alchemist", Value = 4f },
+            new(){ Code = "game:clothes-nadiya-face-barber", Value = 4f },
+            new(){ Code = "game:clothes-nadiya-face-blacksmith", Value = 4f },
             new(){ Code = "game:clothes-nadiya-face-hunter", Value = 2f },
-            new(){ Code = "game:clothes-nadiya-face-miner", Value = 2f },
+            new(){ Code = "game:clothes-nadiya-face-miner", Value = 4f },
             new(){ Code = "game:clothes-nadiya-face-grain", Value = 2f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - NECK
+            // =====================================================================
+
             new(){ Code = "game:clothes-neck-gear-amulet-temporal", Value = 5f },
             new(){ Code = "game:clothes-neck-forlorn-talisman", Value = 3f },
             new(){ Code = "game:clothes-neck-copper-torc", Value = 4f },
-            new(){ Code = "game:clothes-arm-copper-bracelet", Value = 5f },
-            new(){ Code = "game:clothes-arm-bronze-bracelet", Value = 4f },
-            new(){ Code = "game:clothes-arm-bronze-armlet", Value = 4f },
             new(){ Code = "game:clothes-neck-bronze-gem-necklace", Value = 3f },
+            new(){ Code = "game:clothes-neck-fancy-royal-collar",      Value = 0.2f },
+            new(){ Code = "game:clothes-neck-golden-necklace",         Value = 0.2f },
+            new(){ Code = "game:clothes-neck-merchant-amulet",         Value = 0.3f },
+            new(){ Code = "game:clothes-neck-noble-necklace",          Value = 0.3f },
+            new(){ Code = "game:clothes-neck-pearl-necklace",          Value = 0.4f },
+            new(){ Code = "game:clothes-neck-acorn-amulet",            Value = 0.5f },
+            new(){ Code = "game:clothes-neck-cypress-seed-amulet",     Value = 0.5f },
+            new(){ Code = "game:clothes-neck-larch-seed-amulet",       Value = 0.5f },
+            new(){ Code = "game:clothes-neck-pinecone-amulet",         Value = 0.5f },
+            new(){ Code = "game:clothes-neck-redwood-amulet",          Value = 0.5f },
+            new(){ Code = "game:clothes-neck-walnut-amulet",           Value = 0.5f },
+            new(){ Code = "game:clothes-neck-marketeer",               Value = 0.3f },
+            new(){ Code = "game:clothes-neck-rottenking",              Value = 0.1f },
+            new(){ Code = "game:clothes-neck-king",                    Value = 0.2f },
+            new(){ Code = "game:clothes-neck-forgotten",               Value = 0.2f },
+            new(){ Code = "game:clothes-neck-deep",                    Value = 0.1f },
+            new(){ Code = "game:clothes-neck-malefactor-pendant",      Value = 0.2f },
+            new(){ Code = "game:clothes-neck-gear-amulet-rusty",       Value = 0.1f },
+            new(){ Code = "game:clothes-neck-nazar1",                  Value = 0.3f },
+            new(){ Code = "game:clothes-neck-nazar2",                  Value = 0.4f },
+            new(){ Code = "game:clothes-neck-nazar3",                  Value = 0.5f },
+            new(){ Code = "game:clothes-neck-necklace-seashell1",      Value = 0.4f },
+            new(){ Code = "game:clothes-neck-simple-cross",            Value = 0.2f },
+            new(){ Code = "game:clothes-neck-teardrop-amulet",         Value = 0.3f },
+            new(){ Code = "game:clothes-neck-fancy-cross",             Value = 0.3f },
+            new(){ Code = "game:clothes-neck-gear-amulet-gold",        Value = 0.3f },
+            new(){ Code = "game:clothes-neck-gorget",                  Value = 0.1f },
+            new(){ Code = "game:clothes-neck-gorget-vulture",          Value = 0.1f },
+            new(){ Code = "game:clothes-neck-jade-amulet",             Value = 0.5f },
+            new(){ Code = "game:clothes-neck-japamala",                Value = 0.3f },
+            new(){ Code = "game:clothes-neck-pillory",                 Value = 0.1f },
+            new(){ Code = "game:clothes-neck-lunula",                  Value = 0.3f },
+
+            // =====================================================================
+            // VANILLA CLOTHES - ARM
+            // =====================================================================
+
+            new(){ Code = "game:clothes-arm-copper-bracelet",     Value = 5f },
+            new(){ Code = "game:clothes-arm-bronze-bracelet",     Value = 4f },
+            new(){ Code = "game:clothes-arm-bronze-armlet",       Value = 4f },
+            new(){ Code = "game:clothes-arm-gem-studded-bracelet",   Value = 0.3f },
+            new(){ Code = "game:clothes-arm-japamala",               Value = 0.2f },
+            new(){ Code = "game:clothes-arm-large-silver-bracelets", Value = 0.3f },
+            new(){ Code = "game:clothes-arm-leather-bracers",        Value = 0.1f },
+            new(){ Code = "game:clothes-arm-long-gem-studded-bracelet", Value = 0.3f },
+            new(){ Code = "game:clothes-arm-merchant-bracelet",      Value = 0.3f },
+            new(){ Code = "game:clothes-arm-prisoner-binds",         Value = 0.1f },
+            new(){ Code = "game:clothes-arm-rosary",                 Value = 0.1f },
+            new(){ Code = "game:clothes-arm-rusty-wrist-manacles",   Value = 0.1f },
+            new(){ Code = "game:clothes-arm-silver-bracelet",        Value = 0.3f },
+            new(){ Code = "game:clothes-arm-silver-chain",           Value = 0.3f },
+            new(){ Code = "game:clothes-arm-squire-bracers",         Value = 0.2f },
+            new(){ Code = "game:clothes-arm-tailor-needlepuff",      Value = 0.1f },
+
+            // =====================================================================
+            // EMBLEMS
+            // =====================================================================
+
+            new(){ Code = "game:clothes-emblem-blue-seal",        Value = 0.2f },
+            new(){ Code = "game:clothes-emblem-brass-ruby-brooch", Value = 1.0f },
+            new(){ Code = "game:clothes-emblem-messenger-pin",    Value = 0.3f },
+            new(){ Code = "game:clothes-emblem-royal-pin",        Value = 0.5f },
+            new(){ Code = "game:clothes-emblem-silver-pin",       Value = 0.5f },
+            new(){ Code = "game:clothes-emblem-silver-star",      Value = 0.5f },
+            new(){ Code = "game:clothes-emblem-squire-emblem",    Value = 0.2f },
+            new(){ Code = "game:clothes-emblem-blackguard-pin",   Value = 0.2f },
+            new(){ Code = "game:clothes-emblem-fibula",           Value = 0.3f },
+            new(){ Code = "game:clothes-emblem-lily",             Value = 0.2f },
+            new(){ Code = "game:clothes-emblem-silver-brooch",    Value = 0.5f },
+            new(){ Code = "game:clothes-emblem-falcon",           Value = 0.5f },
+
+            // =====================================================================
+            // BUTTERFLY PINS
+            // =====================================================================
+
+            new(){ Code = "game:clothes-butterflypin-acadianhairstreak",      Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-alchemical",             Value = 4.0f },
+            new(){ Code = "game:clothes-butterflypin-bandedpeacock",          Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-bluekallima",            Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-bluemorpho",             Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-bluepansy",              Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-bogcopper",              Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-bronzecopper",           Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-cabbagewhite",           Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-clipper",                Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-coloradohairstreak",     Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-comma",                  Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-commonbrimstone",        Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-darkbluepansy",          Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-desertorangetip",        Value = 2.0f },
+            new(){ Code = "game:clothes-butterflypin-easterntigerswallowtail",Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-godartsnumberwing",      Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-goldbandedforester",     Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-greatpurplehairstreak",  Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-greencharaxes",          Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-largewhite",             Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-littlemetalmark",        Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-littlewoodsatyr",        Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-malachite",              Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-marbledwhite",           Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-milbertstortoiseshell",  Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-mourningcloak",          Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-oakblue",                Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-paintedbeauty",          Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-pallidnawab",            Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-peacock",                Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-pipevineswallowtail",    Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-purpleemperor",          Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-redadmiral",             Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-redglider",              Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-redpostman",             Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-resplendantforester",    Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-ringlet",                Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-rot",                    Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-rust",                   Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-rustytippedpage",        Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-silveryblue",            Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-smallheath",             Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-speckledwood",           Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-temporal",               Value = 4.0f },
+            new(){ Code = "game:clothes-butterflypin-whiteadmiral",           Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-whitepeacock",           Value = 0.3f },
+            new(){ Code = "game:clothes-butterflypin-zebraheliconan",         Value = 0.4f },
+            new(){ Code = "game:clothes-butterflypin-zebraswallowtail",       Value = 0.5f },
+            new(){ Code = "game:clothes-butterflypin-zeredaskipper",          Value = 0.5f },
+            
+            // =====================================================================
+            // VANILLA ARMOR -
+            // =====================================================================
+
+            // BODY
+            new(){ Code = "game:armor-body-antique-blackguard-broken",   Value = -8f },
+            new(){ Code = "game:armor-body-antique-blackguard-damaged",  Value = -8f },
+            new(){ Code = "game:armor-body-antique-blackguard-pristine", Value = -8f },
+            new(){ Code = "game:armor-body-antique-forlorn-broken",      Value = -8f },
+            new(){ Code = "game:armor-body-antique-forlorn-damaged",     Value = -8f },
+            new(){ Code = "game:armor-body-antique-forlorn-pristine",    Value = -8f },
+
+            new(){ Code = "game:armor-body-brigandine-bismuthbronze", Value = -7f },
+            new(){ Code = "game:armor-body-brigandine-blackbronze",   Value = -7f },
+            new(){ Code = "game:armor-body-brigandine-copper",        Value = -7f },
+            new(){ Code = "game:armor-body-brigandine-iron",          Value = -7f },
+            new(){ Code = "game:armor-body-brigandine-meteoriciron",  Value = -7f },
+            new(){ Code = "game:armor-body-brigandine-steel",         Value = -7f },
+            new(){ Code = "game:armor-body-brigandine-tinbronze",     Value = -7f },
+
+            new(){ Code = "game:armor-body-chain-bismuthbronze", Value = -6f },
+            new(){ Code = "game:armor-body-chain-blackbronze",   Value = -6f },
+            new(){ Code = "game:armor-body-chain-copper",        Value = -6f },
+            new(){ Code = "game:armor-body-chain-gold",          Value = -6f },
+            new(){ Code = "game:armor-body-chain-iron",          Value = -6f },
+            new(){ Code = "game:armor-body-chain-meteoriciron",  Value = -6f },
+            new(){ Code = "game:armor-body-chain-silver",        Value = -6f },
+            new(){ Code = "game:armor-body-chain-steel",         Value = -6f },
+            new(){ Code = "game:armor-body-chain-tinbronze",     Value = -6f },
+
+            new(){ Code = "game:armor-body-hide-bear-black", Value = -6f },
+            new(){ Code = "game:armor-body-hide-bear-brown", Value = -6f },
+            new(){ Code = "game:armor-body-hide-bear-panda", Value = -6f },
+            new(){ Code = "game:armor-body-hide-bear-polar", Value = -6f },
+            new(){ Code = "game:armor-body-hide-bear-sun",   Value = -6f },
+
+            new(){ Code = "game:armor-body-improvised-wood", Value = -3f },
+
+            new(){ Code = "game:armor-body-jerkin-leather", Value = -5f },
+
+            new(){ Code = "game:armor-body-lamellar-bismuthbronze", Value = -7f },
+            new(){ Code = "game:armor-body-lamellar-blackbronze",   Value = -7f },
+            new(){ Code = "game:armor-body-lamellar-copper",        Value = -7f },
+            new(){ Code = "game:armor-body-lamellar-tinbronze",     Value = -7f },
+            new(){ Code = "game:armor-body-lamellar-wood",          Value = -7f },
+
+            new(){ Code = "game:armor-body-plate-bismuthbronze", Value = -8f },
+            new(){ Code = "game:armor-body-plate-blackbronze",   Value = -8f },
+            new(){ Code = "game:armor-body-plate-copper",        Value = -8f },
+            new(){ Code = "game:armor-body-plate-gold",          Value = -8f },
+            new(){ Code = "game:armor-body-plate-iron",          Value = -8f },
+            new(){ Code = "game:armor-body-plate-meteoriciron",  Value = -8f },
+            new(){ Code = "game:armor-body-plate-silver",        Value = -8f },
+            new(){ Code = "game:armor-body-plate-steel",         Value = -8f },
+            new(){ Code = "game:armor-body-plate-tinbronze",     Value = -8f },
+
+            new(){ Code = "game:armor-body-scale-bismuthbronze", Value = -7f },
+            new(){ Code = "game:armor-body-scale-blackbronze",   Value = -7f },
+            new(){ Code = "game:armor-body-scale-copper",        Value = -7f },
+            new(){ Code = "game:armor-body-scale-iron",          Value = -7f },
+            new(){ Code = "game:armor-body-scale-meteoriciron",  Value = -7f },
+            new(){ Code = "game:armor-body-scale-steel",         Value = -7f },
+            new(){ Code = "game:armor-body-scale-tinbronze",     Value = -7f },
+
+            new(){ Code = "game:armor-body-sewn-leather", Value = -5f },
+            new(){ Code = "game:armor-body-sewn-linen",  Value = -4f },
+
+            new(){ Code = "game:armor-body-tailored-black-linen",  Value = -4f },
+            new(){ Code = "game:armor-body-tailored-blue-linen",   Value = -4f },
+            new(){ Code = "game:armor-body-tailored-brown-linen",  Value = -4f },
+            new(){ Code = "game:armor-body-tailored-gray-linen",   Value = -4f },
+            new(){ Code = "game:armor-body-tailored-green-linen",  Value = -4f },
+            new(){ Code = "game:armor-body-tailored-orange-linen", Value = -4f },
+            new(){ Code = "game:armor-body-tailored-pink-linen",   Value = -4f },
+            new(){ Code = "game:armor-body-tailored-plain-linen",  Value = -4f },
+            new(){ Code = "game:armor-body-tailored-purple-linen", Value = -4f },
+            new(){ Code = "game:armor-body-tailored-red-linen",    Value = -4f },
+            new(){ Code = "game:armor-body-tailored-white-linen",  Value = -4f },
+            new(){ Code = "game:armor-body-tailored-yellow-linen", Value = -4f },
+
+            // HEAD
+            new(){ Code = "game:armor-head-antique-blackguard-broken",   Value = -8f },
+            new(){ Code = "game:armor-head-antique-blackguard-damaged",  Value = -8f },
+            new(){ Code = "game:armor-head-antique-blackguard-pristine", Value = -8f },
+            new(){ Code = "game:armor-head-antique-forlorn-broken",      Value = -8f },
+            new(){ Code = "game:armor-head-antique-forlorn-damaged",     Value = -8f },
+            new(){ Code = "game:armor-head-antique-forlorn-pristine",    Value = -8f },
+
+            new(){ Code = "game:armor-head-brigandine-bismuthbronze", Value = -7f },
+            new(){ Code = "game:armor-head-brigandine-blackbronze",   Value = -7f },
+            new(){ Code = "game:armor-head-brigandine-copper",        Value = -7f },
+            new(){ Code = "game:armor-head-brigandine-iron",          Value = -7f },
+            new(){ Code = "game:armor-head-brigandine-meteoriciron",  Value = -7f },
+            new(){ Code = "game:armor-head-brigandine-steel",         Value = -7f },
+            new(){ Code = "game:armor-head-brigandine-tinbronze",     Value = -7f },
+
+            new(){ Code = "game:armor-head-chain-bismuthbronze", Value = -6f },
+            new(){ Code = "game:armor-head-chain-blackbronze",   Value = -6f },
+            new(){ Code = "game:armor-head-chain-copper",        Value = -6f },
+            new(){ Code = "game:armor-head-chain-gold",          Value = -6f },
+            new(){ Code = "game:armor-head-chain-iron",          Value = -6f },
+            new(){ Code = "game:armor-head-chain-meteoriciron",  Value = -6f },
+            new(){ Code = "game:armor-head-chain-silver",        Value = -6f },
+            new(){ Code = "game:armor-head-chain-steel",         Value = -6f },
+            new(){ Code = "game:armor-head-chain-tinbronze",     Value = -6f },
+
+            new(){ Code = "game:armor-head-hide-bear-black", Value = -6f },
+            new(){ Code = "game:armor-head-hide-bear-brown", Value = -6f },
+            new(){ Code = "game:armor-head-hide-bear-panda", Value = -6f },
+            new(){ Code = "game:armor-head-hide-bear-polar", Value = -6f },
+            new(){ Code = "game:armor-head-hide-bear-sun",   Value = -6f },
+
+            new(){ Code = "game:armor-head-lamellar-bismuthbronze", Value = -7f },
+            new(){ Code = "game:armor-head-lamellar-blackbronze",   Value = -7f },
+            new(){ Code = "game:armor-head-lamellar-copper",        Value = -7f },
+            new(){ Code = "game:armor-head-lamellar-tinbronze",     Value = -7f },
+            new(){ Code = "game:armor-head-lamellar-wood",          Value = -7f },
+
+            new(){ Code = "game:armor-head-plate-bismuthbronze", Value = -8f },
+            new(){ Code = "game:armor-head-plate-blackbronze",   Value = -8f },
+            new(){ Code = "game:armor-head-plate-copper",        Value = -8f },
+            new(){ Code = "game:armor-head-plate-gold",          Value = -8f },
+            new(){ Code = "game:armor-head-plate-iron",          Value = -8f },
+            new(){ Code = "game:armor-head-plate-meteoriciron",  Value = -8f },
+            new(){ Code = "game:armor-head-plate-silver",        Value = -8f },
+            new(){ Code = "game:armor-head-plate-steel",         Value = -8f },
+            new(){ Code = "game:armor-head-plate-tinbronze",     Value = -8f },
+
+            new(){ Code = "game:armor-head-scale-bismuthbronze", Value = -7f },
+            new(){ Code = "game:armor-head-scale-blackbronze",   Value = -7f },
+            new(){ Code = "game:armor-head-scale-copper",        Value = -7f },
+            new(){ Code = "game:armor-head-scale-iron",          Value = -7f },
+            new(){ Code = "game:armor-head-scale-meteoriciron",  Value = -7f },
+            new(){ Code = "game:armor-head-scale-steel",         Value = -7f },
+            new(){ Code = "game:armor-head-scale-tinbronze",     Value = -7f },
+
+            new(){ Code = "game:armor-head-sewn-leather", Value = -5f },
+            new(){ Code = "game:armor-head-sewn-linen",  Value = -4f },
+
+            new(){ Code = "game:armor-head-tailored-black-linen",  Value = -4f },
+            new(){ Code = "game:armor-head-tailored-blue-linen",   Value = -4f },
+            new(){ Code = "game:armor-head-tailored-brown-linen",  Value = -4f },
+            new(){ Code = "game:armor-head-tailored-gray-linen",   Value = -4f },
+            new(){ Code = "game:armor-head-tailored-green-linen",  Value = -4f },
+            new(){ Code = "game:armor-head-tailored-orange-linen", Value = -4f },
+            new(){ Code = "game:armor-head-tailored-pink-linen",   Value = -4f },
+            new(){ Code = "game:armor-head-tailored-plain-linen",  Value = -4f },
+            new(){ Code = "game:armor-head-tailored-purple-linen", Value = -4f },
+            new(){ Code = "game:armor-head-tailored-red-linen",    Value = -4f },
+            new(){ Code = "game:armor-head-tailored-white-linen",  Value = -4f },
+            new(){ Code = "game:armor-head-tailored-yellow-linen", Value = -4f },
+
+            // LEGS
+            new(){ Code = "game:armor-legs-antique-blackguard-broken",   Value = -8f },
+            new(){ Code = "game:armor-legs-antique-blackguard-damaged",  Value = -8f },
+            new(){ Code = "game:armor-legs-antique-blackguard-pristine", Value = -8f },
+            new(){ Code = "game:armor-legs-antique-forlorn-broken",      Value = -8f },
+            new(){ Code = "game:armor-legs-antique-forlorn-damaged",     Value = -8f },
+            new(){ Code = "game:armor-legs-antique-forlorn-pristine",    Value = -8f },
+
+            new(){ Code = "game:armor-legs-brigandine-bismuthbronze", Value = -7f },
+            new(){ Code = "game:armor-legs-brigandine-blackbronze",   Value = -7f },
+            new(){ Code = "game:armor-legs-brigandine-copper",        Value = -7f },
+            new(){ Code = "game:armor-legs-brigandine-iron",          Value = -7f },
+            new(){ Code = "game:armor-legs-brigandine-meteoriciron",  Value = -7f },
+            new(){ Code = "game:armor-legs-brigandine-steel",         Value = -7f },
+            new(){ Code = "game:armor-legs-brigandine-tinbronze",     Value = -7f },
+
+            new(){ Code = "game:armor-legs-chain-bismuthbronze", Value = -6f },
+            new(){ Code = "game:armor-legs-chain-blackbronze",   Value = -6f },
+            new(){ Code = "game:armor-legs-chain-copper",        Value = -6f },
+            new(){ Code = "game:armor-legs-chain-gold",          Value = -6f },
+            new(){ Code = "game:armor-legs-chain-iron",          Value = -6f },
+            new(){ Code = "game:armor-legs-chain-meteoriciron",  Value = -6f },
+            new(){ Code = "game:armor-legs-chain-silver",        Value = -6f },
+            new(){ Code = "game:armor-legs-chain-steel",         Value = -6f },
+            new(){ Code = "game:armor-legs-chain-tinbronze",     Value = -6f },
+
+            new(){ Code = "game:armor-legs-hide-bear-black", Value = -6f },
+            new(){ Code = "game:armor-legs-hide-bear-brown", Value = -6f },
+            new(){ Code = "game:armor-legs-hide-bear-panda", Value = -6f },
+            new(){ Code = "game:armor-legs-hide-bear-polar", Value = -6f },
+            new(){ Code = "game:armor-legs-hide-bear-sun",   Value = -6f },
+
+            new(){ Code = "game:armor-legs-jerkin-leather", Value = -5f },
+
+            new(){ Code = "game:armor-legs-lamellar-bismuthbronze", Value = -7f },
+            new(){ Code = "game:armor-legs-lamellar-blackbronze",   Value = -7f },
+            new(){ Code = "game:armor-legs-lamellar-copper",        Value = -7f },
+            new(){ Code = "game:armor-legs-lamellar-tinbronze",     Value = -7f },
+            new(){ Code = "game:armor-legs-lamellar-wood",          Value = -7f },
+
+            new(){ Code = "game:armor-legs-plate-bismuthbronze", Value = -8f },
+            new(){ Code = "game:armor-legs-plate-blackbronze",   Value = -8f },
+            new(){ Code = "game:armor-legs-plate-copper",        Value = -8f },
+            new(){ Code = "game:armor-legs-plate-gold",          Value = -8f },
+            new(){ Code = "game:armor-legs-plate-iron",          Value = -8f },
+            new(){ Code = "game:armor-legs-plate-meteoriciron",  Value = -8f },
+            new(){ Code = "game:armor-legs-plate-silver",        Value = -8f },
+            new(){ Code = "game:armor-legs-plate-steel",         Value = -8f },
+            new(){ Code = "game:armor-legs-plate-tinbronze",     Value = -8f },
+
+            new(){ Code = "game:armor-legs-scale-bismuthbronze", Value = -7f },
+            new(){ Code = "game:armor-legs-scale-blackbronze",   Value = -7f },
+            new(){ Code = "game:armor-legs-scale-copper",        Value = -7f },
+            new(){ Code = "game:armor-legs-scale-iron",          Value = -7f },
+            new(){ Code = "game:armor-legs-scale-meteoriciron",  Value = -7f },
+            new(){ Code = "game:armor-legs-scale-steel",         Value = -7f },
+            new(){ Code = "game:armor-legs-scale-tinbronze",     Value = -7f },
+
+            new(){ Code = "game:armor-legs-sewn-leather", Value = -5f },
+            new(){ Code = "game:armor-legs-sewn-linen",  Value = -4f },
+
+            new(){ Code = "game:armor-legs-tailored-black-linen",  Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-blue-linen",   Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-brown-linen",  Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-gray-linen",   Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-green-linen",  Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-orange-linen", Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-pink-linen",   Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-plain-linen",  Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-purple-linen", Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-red-linen",    Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-white-linen",  Value = -4f },
+            new(){ Code = "game:armor-legs-tailored-yellow-linen", Value = -4f },
+
+            // =====================================================================
+            // MOD: HIDE & FABRIC / SIMPLECLOTH / DRESSEDTOKILL / AMERICANFRONTIERSMAN
+            // =====================================================================
+
             new(){ Code = "eldritchcuteclothing:clothes-upperbody-kosovorotka-*", Value = 2f },
             new(){ Code = "eldritchcuteclothing:clothes-lowerbody-*", Value = 0.5f },
             new(){ Code = "hideandfabric:clothes-upperbodyover-*", Value = 0.5f },
@@ -463,6 +967,7 @@ public class CoolingPatch : PatchBase
             new(){ Code = "simplecloth:clothes-upperbody-exomis-*", Value = 2f },
             new(){ Code = "simplecloth:clothes-upperbodyover-*", Value = 1.5f },
             new(){ Code = "simplecloth:clothes-waist-*", Value = 0.3f },
+
             new(){ Code = "dressedtokill:clothes-foot-reed-sandals", Value = 4f },
             new(){ Code = "dressedtokill:clothes-foot-leather-moccasins", Value = 4f },
             new(){ Code = "dressedtokill:clothes-foot-leather-slipper-boots", Value = 0.2f },
@@ -495,6 +1000,7 @@ public class CoolingPatch : PatchBase
             new(){ Code = "dressedtokill:clothes-upperbody-blackguard-shirt-repaired", Value = 0.2f },
             new(){ Code = "dressedtokill:clothes-upperbodyover-leather-vest", Value = 1f },
             new(){ Code = "dressedtokill:clothes-upperbodyover-sweater", Value = 0.2f },
+
             new(){ Code = "americanfrontiersman:clothes-face-cigar", Value = 1f },
             new(){ Code = "americanfrontiersman:clothes-face-cigarette", Value = 1f },
             new(){ Code = "americanfrontiersman:clothes-face-cigarillo", Value = 1f },

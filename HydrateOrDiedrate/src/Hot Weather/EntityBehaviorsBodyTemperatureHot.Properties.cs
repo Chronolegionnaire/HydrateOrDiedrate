@@ -13,6 +13,21 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
 
     public float CoolingMultiplier { get; internal set; } = 1f;
 
+    public float GearCooling
+    {
+        get => TempTree?.GetFloat("gearCooling") ?? 0f;
+        set
+        {
+            var tree = TempTree;
+            if (tree is null) return;
+
+            var safeValue = GameMath.Clamp(value.GuardFinite(), -100f, 100f);
+            if (safeValue == GearCooling) return;
+
+            tree.SetFloat("gearCooling", safeValue);
+            entity.WatchedAttributes.MarkPathDirty(tempTreePath);
+        }
+    }
     public float Cooling
     {
         get => TempTree?.GetFloat("cooling") ?? 0f;
@@ -21,7 +36,7 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
             var tree = TempTree;
             if(tree is null) return;
 
-            var safeValue = GameMath.Clamp(value.GuardFinite(), 0, float.MaxValue);
+            var safeValue = GameMath.Clamp(value.GuardFinite(), -100f, 100f);
             if(safeValue == Cooling) return;
 
             tree.SetFloat("cooling", safeValue);
@@ -47,6 +62,6 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
     {
         var newCoolingModifier = 1f;
         if(XLibSkills.Enabled) newCoolingModifier *= XLibSkills.GetEquatidianModifier(entity.Api, (entity as EntityPlayer)?.Player);
-        Cooling = newCoolingModifier;
+        CoolingMultiplier = newCoolingModifier;
     }
 }

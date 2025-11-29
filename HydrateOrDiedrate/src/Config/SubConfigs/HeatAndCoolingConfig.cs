@@ -14,8 +14,8 @@ public class HeatAndCoolingConfig
     /// <summary>
     /// Ambient temperature above which thirst decay starts ramping up
     /// </summary>
-    [DefaultValue(27.0d)]
-    public float TemperatureThreshold { get; set; } = 27.0f;
+    [DefaultValue(25.0d)]
+    public float TemperatureThreshold { get; set; } = 25.0f;
 
     /// <summary>
     /// Additional thirst units per degree above the threshold each second
@@ -26,8 +26,8 @@ public class HeatAndCoolingConfig
     /// <summary>
     /// Exponential scaling factor for thirst gain in extreme heat
     /// </summary>
-    [DefaultValue(0.2d)]
-    public float HarshHeatExponentialGainMultiplier { get; set; } = 0.2f;
+    [DefaultValue(0.25d)]
+    public float HarshHeatExponentialGainMultiplier { get; set; } = 0.25f;
 
     /// <summary>
     /// Cooling bonus for each empty armor/clothing slot
@@ -39,29 +39,52 @@ public class HeatAndCoolingConfig
     /// Cooling effect of being wet
     /// </summary>
     [DefaultValue(1.5d)]
-    public float WetnessCoolingFactor { get; set; } = 1.5f;
+    public float WetnessCoolingBonus { get; set; } = 8f;
 
     /// <summary>
     /// Cooling bonus when in a room
     /// </summary>
     [DefaultValue(1.5d)]
-    public float ShelterCoolingFactor { get; set; } = 1.5f;
+    public float RoomCoolingBonus { get; set; } = 8f;
+    
+    /// <summary>
+    /// How much cooling being in shade provides
+    /// </summary>
+    [DefaultValue(6d)]
+    public float ShadeCoolingBonus { get; set; } = 8f;
+    
+    /// <summary>
+    /// How many degrees of effective temperature are reduced per 1 point of Cooling.
+    /// This directly shifts the temperature used by the harsh-heat equation,
+    /// allowing cooling to matter across the entire heat range.
+    /// </summary>
+    [DefaultValue(0.5d)]
+    public float CoolingTempOffsetPerPoint { get; set; } = 0.5f;
+    
+    /// <summary>
+    /// Additional thirst multiplier per point of negative cooling (cooling < 0).
+    /// For example, 0.1 means each point of negative cooling increases thirst rate by +10%.
+    /// </summary>
+    [DefaultValue(0.1d)]
+    public float NegativeCoolingThirstLinearPerPoint { get; set; } = 0.1f;
 
     /// <summary>
-    /// Cooling effect in shade
+    /// Maximum allowed multiplier applied from negative cooling.
+    /// Prevents extreme cooling values from causing runaway thirst rates.
     /// </summary>
-    [DefaultValue(1.0d)]
-    public float SunlightCoolingFactor { get; set; } = 1.0f;
+    [DefaultValue(3.0d)]
+    public float NegativeCoolingThirstMaxMultiplier { get; set; } = 5.0f;
+    
+    /// <summary>
+    /// Sunlight level (0-22). Below this, we start giving a cooling bonus.
+    /// </summary>
+    [DefaultValue(16)]
+    public int LowSunlightThreshold { get; set; } = 16;
 
     /// <summary>
-    /// Temperature swing between day and night in degrees Celsius
+    /// Max extra cooling bonus when sunlight level is 0.
+    /// This is a flat additive cooling value (like gear cooling).
     /// </summary>
-    [DefaultValue(18.0d)]
-    public float DiurnalVariationAmplitude { get; set; } = 18f;
-
-    /// <summary>
-    /// Reduction provided by refrigeration blocks (if supported mod is installed) 
-    /// </summary>
-    [DefaultValue(20.0d)]
-    public float RefrigerationCooling { get; set; } = 20.0f;
+    [DefaultValue(8.0d)]
+    public float LowSunlightCoolingBonus { get; set; } = 8f;
 }
