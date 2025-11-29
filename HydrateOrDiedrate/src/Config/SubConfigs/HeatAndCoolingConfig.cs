@@ -38,7 +38,7 @@ public class HeatAndCoolingConfig
     /// <summary>
     /// Cooling effect of being wet
     /// </summary>
-    [DefaultValue(1.5d)]
+    [DefaultValue(8d)]
     public float WetnessCoolingBonus { get; set; } = 8f;
 
     /// <summary>
