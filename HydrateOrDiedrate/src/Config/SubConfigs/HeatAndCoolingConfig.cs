@@ -50,7 +50,7 @@ public class HeatAndCoolingConfig
     /// <summary>
     /// How much cooling being in shade provides
     /// </summary>
-    [DefaultValue(6d)]
+    [DefaultValue(8d)]
     public float ShadeCoolingBonus { get; set; } = 8f;
     
     /// <summary>
