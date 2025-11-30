@@ -198,29 +198,29 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         BlockSelection blockSel = null;
         EntitySelection entitySel = null;
 
-        BlockFilter sunBlockFilter = (BlockPos pos, Block block) =>
-        {
-            if (block == null) return false;
-            if (block.BlockMaterial == EnumBlockMaterial.Glass ||
-                block.BlockMaterial == EnumBlockMaterial.Liquid ||
-                block.BlockMaterial == EnumBlockMaterial.Ice)
-            {
-                return false;
-            }
-            if (block.BlockMaterial == EnumBlockMaterial.Leaves)
-                return true;
-            return block.LightAbsorption > 0;
-        };
-
         world.RayTraceForSelection(
             fromPos,
             toPos,
             ref blockSel,
             ref entitySel,
-            sunBlockFilter,
+            SunBlockFilter,
             null
         );
         return blockSel == null;
+    }
+    
+    private static bool SunBlockFilter(BlockPos pos, Block block)
+    {
+        if (block == null) return false;
+        if (block.BlockMaterial == EnumBlockMaterial.Glass ||
+            block.BlockMaterial == EnumBlockMaterial.Liquid ||
+            block.BlockMaterial == EnumBlockMaterial.Ice)
+        {
+            return false;
+        }
+        if (block.BlockMaterial == EnumBlockMaterial.Leaves)
+            return true;
+        return block.LightAbsorption > 0;
     }
 
     private bool inEnclosedRoom;
