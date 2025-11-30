@@ -122,7 +122,7 @@ public class ThirstConfig
     public float ThirstRateAtStoryLocations { get; set; } = 1.00f;
     
     /// <summary>
-    /// How much thirst is effected in story locations.
+    /// Multiplier on nutrition penalty from drinking water, set this to 0 to disable it entirely.
     /// </summary>
     [Category("Penalty")]
     [DisplayFormat(DataFormatString = "P")]
