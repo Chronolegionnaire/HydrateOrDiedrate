@@ -12,7 +12,7 @@ public class AdvancedConfig
     /// add more mark dirty calls.
     /// </summary>
     [Category("Advanced")]
-    [DefaultValue(false)]
+    [DefaultValue(true)]
     public bool IncreaseMarkDirtyThreshold { get; set; } = true;
     
     /// <summary>The threshold value used by the Harmony patch. Higher numbers can adversely affect performance start at 10
