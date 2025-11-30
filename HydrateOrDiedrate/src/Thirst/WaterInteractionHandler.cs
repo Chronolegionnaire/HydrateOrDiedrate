@@ -221,7 +221,7 @@ namespace HydrateOrDiedrate
 
             float hydrationValue = HydrationManager.GetBlockHydration(player.Entity.Api, block);
             bool isBoiling = HydrationManager.IsBoiling(player.Entity.Api, block);
-            int hungerReduction = HydrationManager.GetHungerReduction(player.Entity.Api, block);
+            int nutritionDeficit = HydrationManager.GetNutritionDeficit(player.Entity.Api, block);
             int healthEffect = HydrationManager.GetHealing(player.Entity.Api, block);
 
             bool isDangerous = hydrationValue < 0 || isBoiling;
@@ -245,16 +245,24 @@ namespace HydrateOrDiedrate
 
                 if (hungerBehavior != null)
                 {
-                    if (hungerBehavior.Saturation >= hungerReduction)
+                    float deficitMul = ModConfig.Instance.Thirst.NutritionDeficitMultiplier;
+                    if (!float.IsFinite(deficitMul) || deficitMul <= 0f)
                     {
-                        hungerBehavior.Saturation -= hungerReduction;
-                        thirstBehavior.HungerReductionAmount += hungerReduction;
+                        deficitMul = 1f;
+                    }
+
+                    float deficitToAdd = nutritionDeficit * deficitMul;
+                    if (hungerBehavior.Saturation >= nutritionDeficit)
+                    {
+                        hungerBehavior.Saturation -= nutritionDeficit;
+                        thirstBehavior.NutritionDeficitAmount += deficitToAdd;
                     }
                     else
                     {
-                        thirstBehavior.HungerReductionAmount += hungerReduction;
+                        thirstBehavior.NutritionDeficitAmount += deficitToAdd;
                     }
                 }
+
 
                 if (healthEffect != 0)
                 {

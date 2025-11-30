@@ -43,11 +43,20 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
 
     public override void OnEntityReceiveDamage(DamageSource damageSource, ref float damage)
     {
-        //On respawn, reset thirst to a percentage of max thirst
         if (damageSource.Source == EnumDamageSource.Revive && damageSource.Type == EnumDamageType.Heal)
         {
-            CurrentThirst = ModConfig.Instance.Thirst.ThirstPercentageOnRespawn * MaxThirst;
-            HungerReductionAmount = 0;
+            if (ModConfig.Instance.Thirst.AntiThirstScumming)
+            {
+                if (CurrentThirst <= 0f)
+                {
+                    CurrentThirst = 0.1f * MaxThirst;
+                }
+            }
+            else
+            {
+                CurrentThirst = ModConfig.Instance.Thirst.ThirstPercentageOnRespawn * MaxThirst;
+                NutritionDeficitAmount = 0;
+            }
         }
     }
 
@@ -172,21 +181,31 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
             thirstDecayRate *= config.SprintThirstMultiplier;
         }
 
-        foreach(var modifier in player.SidedProperties.Behaviors.OfType<IThirstRateModifier>())
+        foreach (var modifier in player.SidedProperties.Behaviors.OfType<IThirstRateModifier>())
         {
             var newThirstDecayRate = modifier.OnThirstRateCalculate(thirstDecayRate);
-            
+
             if (float.IsFinite(newThirstDecayRate)) thirstDecayRate = newThirstDecayRate;
         }
 
         thirstDecayRate = Math.Min(thirstDecayRate, config.ThirstDecayRate * config.ThirstDecayRateMax);
 
-        if(storySys?.GetStoryStructureAt(entity.SidedPos.AsBlockPos) is not null)
+        if (storySys?.GetStoryStructureAt(entity.SidedPos.AsBlockPos) is not null)
         {
             thirstDecayRate *= GameMath.Clamp(ModConfig.Instance.Thirst.ThirstRateAtStoryLocations, 0, 2);
         }
 
-        if (entity.World.ElapsedMilliseconds - lastMoveMs > 3000L) thirstDecayRate *= config.IdleThirstModifier;
+        if (entity.World.ElapsedMilliseconds - lastMoveMs > 3000L)
+        {
+            thirstDecayRate *= config.IdleThirstModifier;
+        }
+        float thirstRateMul = entity.Stats.GetBlended(HoDStats.ThirstRateMul);
+        
+        if (!float.IsFinite(thirstRateMul))
+        {
+            thirstRateMul = 1f;
+        }
+        thirstDecayRate *= GameMath.Clamp(thirstRateMul, 0f, 1000f);
 
         return thirstDecayRate.GuardFinite(config.ThirstDecayRate);
     }

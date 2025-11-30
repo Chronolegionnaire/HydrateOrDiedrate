@@ -1,0 +1,16 @@
+[
+  {
+    "op": "addmerge",
+    "path": "/attributes/warmth",
+    "value": 0.01,
+    "file": "game:itemtypes/wearable/seraph/armor.json",
+    "side": "Server"
+  },
+  {
+    "op": "addmerge",
+    "path": "/attributes/warmth",
+    "value": 0.01,
+    "file": "game:itemtypes/wearable/seraph/armor-hide.json",
+    "side": "Server"
+  }
+]

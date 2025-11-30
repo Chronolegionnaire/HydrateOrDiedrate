@@ -1,6 +1,7 @@
 ﻿using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Hot_Weather;
@@ -9,15 +10,20 @@ public static class CustomItemWearableExtensions
 {
     public static float GetCooling(ItemSlot inslot, ICoreAPI api)
     {
-        if(inslot.Empty) return 0f;
+        if (inslot.Empty) return 0f;
         EnsureConditionExists(inslot, api);
 
         ItemStack itemStack = inslot.Itemstack;
 
         float maxCooling = CoolingManager.GetMaxCooling(itemStack).GuardFinite();
+        if (maxCooling < 0f)
+        {
+            return Util.GuardFinite(maxCooling);
+        }
         float condition = itemStack.Attributes.GetFloat("condition", 1f).GuardFinite(1f);
+        float factor = GameMath.Clamp(condition * 2f, 0f, 1f);
 
-        return Math.Min(maxCooling, Util.GuardFinite(condition * 2f * maxCooling));
+        return Util.GuardFinite(maxCooling * factor);
     }
 
     //TODO look at this method

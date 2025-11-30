@@ -59,15 +59,16 @@ public partial class EntityBehaviorThirst
         }
     }
 
-    public float HungerReductionAmount
+    [Obsolete("Use NutritionDeficitAmount instead")] public float HungerReductionAmount { get => NutritionDeficitAmount; set => NutritionDeficitAmount = value; }
+    public float NutritionDeficitAmount
     {
-        get => ThirstTree.GetFloat("hungerReductionAmount");
+        get => ThirstTree.GetFloat("nutritionDeficitAmount");
         set
         {
             var safeValue = Math.Max((float)Math.Ceiling(value.GuardFinite()), 0f);
-            if(safeValue == HungerReductionAmount) return;
+            if(safeValue == NutritionDeficitAmount) return;
             
-            ThirstTree.SetFloat("hungerReductionAmount", safeValue);
+            ThirstTree.SetFloat("nutritionDeficitAmount", safeValue);
             entity.WatchedAttributes.MarkPathDirty(thirstTreePath);
         }
     }
@@ -118,10 +119,10 @@ public partial class EntityBehaviorThirst
             ThirstRate = attr.GetFloat("thirstRate");
             attr.RemoveAttribute("thirstRate");
         }
-        if(attr.HasAttribute("hungerReductionAmount"))
+        if(attr.HasAttribute("nutritionDeficitAmount"))
         {
-            HungerReductionAmount = attr.GetFloat("hungerReductionAmount");
-            attr.RemoveAttribute("hungerReductionAmount");
+            NutritionDeficitAmount = attr.GetFloat("nutritionDeficitAmount");
+            attr.RemoveAttribute("nutritionDeficitAmount");
         }
         if(attr.HasAttribute("hydrationLossDelay"))
         {

@@ -5,7 +5,7 @@ using Vintagestory.API.Datastructures;
 
 namespace HydrateOrDiedrate.HUD
 {
-    public class HudElementHungerReductionBar : HudElement
+    public class HudElementNutritionDeficitBar : HudElement
     {
         private GuiElementCustomStatbar _statbar;
         private bool isFlashing;
@@ -14,7 +14,7 @@ namespace HydrateOrDiedrate.HUD
         public override double InputOrder => 1.05;
         
         private readonly EntityBehaviorThirst thirstBehavior;
-        public HudElementHungerReductionBar(ICoreClientAPI capi) : base(capi)
+        public HudElementNutritionDeficitBar(ICoreClientAPI capi) : base(capi)
         {
             thirstBehavior = capi.World.Player.Entity.GetBehavior<EntityBehaviorThirst>();
             ComposeGuis();
@@ -25,7 +25,7 @@ namespace HydrateOrDiedrate.HUD
         {
             ITreeAttribute hungerTree = capi.World.Player.Entity.WatchedAttributes.GetTreeAttribute("hunger");
             if (hungerTree == null) return;
-            UpdateHungerReduction(capi.World.Player.Entity, hungerTree);
+            UpdateNutritionDeficit(capi.World.Player.Entity, hungerTree);
             flashTimer += dt;
             if (flashTimer >= 2.5f)
             {
@@ -38,9 +38,9 @@ namespace HydrateOrDiedrate.HUD
         {
             if (_statbar == null) return;
 
-            float hungerReductionAmount = thirstBehavior.HungerReductionAmount;
+            float nutritionDeficitAmount = thirstBehavior.NutritionDeficitAmount;
             float currentSaturation = hungerTree.GetFloat("currentsaturation");
-            float displayValue = Math.Min(hungerReductionAmount, currentSaturation);
+            float displayValue = Math.Min(nutritionDeficitAmount, currentSaturation);
             if (displayValue > currentSaturation * 0.2f)
             {
                 isFlashing = !isFlashing;
@@ -52,14 +52,14 @@ namespace HydrateOrDiedrate.HUD
             }
         }
 
-        private void UpdateHungerReduction(EntityPlayer player, ITreeAttribute hungerTree)
+        private void UpdateNutritionDeficit(EntityPlayer player, ITreeAttribute hungerTree)
         {
             if (_statbar == null) return;
 
-            float hungerReductionAmount = thirstBehavior.HungerReductionAmount;
+            float nutritionDeficitAmount = thirstBehavior.NutritionDeficitAmount;
             float currentSaturation = hungerTree.GetFloat("currentsaturation");
             float maxSaturation = hungerTree.GetFloat("maxsaturation");
-            float displayValue = Math.Min(hungerReductionAmount, currentSaturation);
+            float displayValue = Math.Min(nutritionDeficitAmount, currentSaturation);
             _statbar.SetCustomValues(displayValue, 0.0f, maxSaturation);
         }
 
@@ -67,7 +67,7 @@ namespace HydrateOrDiedrate.HUD
         {
             const float statsBarParentWidth = 850f;
             const float statsBarWidth = statsBarParentWidth * 0.41f;
-            double[] hungerReductionBarColor = { 1.0, 0.5, 0.0, 0.7 };
+            double[] nutritionDeficitBarColor = { 1.0, 0.5, 0.0, 0.7 };
 
             var statsBarBounds = new ElementBounds()
             {
@@ -79,23 +79,23 @@ namespace HydrateOrDiedrate.HUD
 
             var isRight = true;
             var alignmentOffsetX = isRight ? -2.0 : 1.0;
-            var hungerReductionBarBounds = ElementStdBounds.Statbar(isRight ? EnumDialogArea.RightTop : EnumDialogArea.LeftTop, statsBarWidth)
+            var nutritionDeficitBarBounds = ElementStdBounds.Statbar(isRight ? EnumDialogArea.RightTop : EnumDialogArea.LeftTop, statsBarWidth)
                 .WithFixedAlignmentOffset(alignmentOffsetX, 5)
                 .WithFixedHeight(10);
 
-            var hungerReductionBarParentBounds = statsBarBounds.FlatCopy().FixedGrow(0.0, 20.0);
-            var composer = capi.Gui.CreateCompo("hungerReductionStatbar", hungerReductionBarParentBounds);
+            var nutritionDeficitBarParentBounds = statsBarBounds.FlatCopy().FixedGrow(0.0, 20.0);
+            var composer = capi.Gui.CreateCompo("nutritionDeficitStatbar", nutritionDeficitBarParentBounds);
 
-            _statbar = new GuiElementCustomStatbar(composer.Api, hungerReductionBarBounds, hungerReductionBarColor, isRight, false);
+            _statbar = new GuiElementCustomStatbar(composer.Api, nutritionDeficitBarBounds, nutritionDeficitBarColor, isRight, false);
             _statbar.SetCustomLineInterval(100f);
 
             composer
                 .BeginChildElements(statsBarBounds)
-                .AddInteractiveElement(_statbar, "hungerReductionStatbar")
+                .AddInteractiveElement(_statbar, "nutritionDeficitStatbar")
                 .EndChildElements()
                 .Compose();
 
-            Composers["hungerReductionBar"] = composer;
+            Composers["nutritionDeficitBar"] = composer;
             TryOpen();
         }
 
@@ -107,7 +107,7 @@ namespace HydrateOrDiedrate.HUD
                 ITreeAttribute hungerTree = player.WatchedAttributes.GetTreeAttribute("hunger");
                 if (hungerTree is not null)
                 {
-                    UpdateHungerReduction(player, hungerTree);
+                    UpdateNutritionDeficit(player, hungerTree);
                 }
             }
         }

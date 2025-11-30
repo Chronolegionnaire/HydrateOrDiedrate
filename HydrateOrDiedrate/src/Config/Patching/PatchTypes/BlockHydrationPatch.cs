@@ -11,8 +11,8 @@ public class BlockHydrationPatch : HydrationPatchBase
     [JsonProperty(Attributes.IsBoiling)]
     public bool IsBoiling { get; set; }
 
-    [JsonProperty(Attributes.HungerReduction)]
-    public int HungerReduction { get; set; }
+    [JsonProperty(Attributes.NutritionDeficit)]
+    public int NutritionDeficit { get; set; }
 
     [JsonProperty(Attributes.Healing)]
     public int Healing { get; set; }
@@ -21,7 +21,7 @@ public class BlockHydrationPatch : HydrationPatchBase
     {
         collectible.Attributes.Token["hydration"] = value;
         collectible.Attributes.Token[Attributes.IsBoiling] = IsBoiling;
-        collectible.Attributes.Token[Attributes.HungerReduction] = HungerReduction;
+        collectible.Attributes.Token[Attributes.NutritionDeficit] = NutritionDeficit;
         collectible.Attributes.Token[Attributes.Healing] = Healing;
     }
 

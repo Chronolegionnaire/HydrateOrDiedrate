@@ -19,10 +19,14 @@ public class ConfigLibCompatibility
     private const string settingThirstDecayRate = "hydrateordiedrate:Config.Setting.ThirstDecayRate";
     private const string settingThirstDecayRateMax = "hydrateordiedrate:Config.Setting.ThirstDecayRateMax";
     private const string settingHydrationLossDelayMultiplierNormalized = "hydrateordiedrate:Config.Setting.HydrationLossDelayMultiplierNormalized";
-    
+    private const string settingIdleThirstModifier = "hydrateordiedrate:Config.Setting.IdleThirstModifier";
     private const string settingSprintThirstMultiplier = "hydrateordiedrate:Config.Setting.SprintThirstMultiplier";
     private const string settingBoilingWaterDamage = "hydrateordiedrate:Config.Setting.BoilingWaterDamage";
-
+    private const string settingThirstRateAtStoryLocations = "hydrateordiedrate:Config.Setting.ThirstRateAtStoryLocations";
+    private const string settingThirstPercentageOnRespawn = "hydrateordiedrate:Config.Setting.ThirstPercentageOnRespawn";
+    private const string settingAntiThirstScumming = "hydrateordiedrate:Config.Setting.AntiThirstScumming";
+    private const string settingNutritionDeficitMultiplier = "hydrateordiedrate:Config.Setting.NutritionDeficitMultiplier";
+    
     // Movement Speed Penalty Settings
     private const string settingMaxMovementSpeedPenalty = "hydrateordiedrate:Config.Setting.MaxMovementSpeedPenalty";
     private const string settingMovementSpeedPenaltyThreshold = "hydrateordiedrate:Config.Setting.MovementSpeedPenaltyThreshold";
@@ -40,11 +44,13 @@ public class ConfigLibCompatibility
 
     // Cooling Factors
     private const string settingUnequippedSlotCooling = "hydrateordiedrate:Config.Setting.UnequippedSlotCooling";
-    private const string settingWetnessCoolingFactor = "hydrateordiedrate:Config.Setting.WetnessCoolingFactor";
-    private const string settingShelterCoolingFactor = "hydrateordiedrate:Config.Setting.ShelterCoolingFactor";
-    private const string settingSunlightCoolingFactor = "hydrateordiedrate:Config.Setting.SunlightCoolingFactor";
-    private const string settingDiurnalVariationAmplitude = "hydrateordiedrate:Config.Setting.DiurnalVariationAmplitude";
-    private const string settingRefrigerationCooling = "hydrateordiedrate:Config.Setting.RefrigerationCooling";
+    private const string settingWetnessCoolingBonus = "hydrateordiedrate:Config.Setting.WetnessCoolingBonus";
+    private const string settingRoomCoolingBonus = "hydrateordiedrate:Config.Setting.RoomCoolingBonus";
+    private const string settingShadeCoolingBonus = "hydrateordiedrate:Config.Setting.ShadeCoolingBonus";
+    private const string settingCoolingTempOffsetPerPoint = "hydrateordiedrate:Config.Setting.CoolingTempOffsetPerPoint";
+    private const string settingLowSunlightThreshold = "hydrateordiedrate:Config.Setting.LowSunlightThreshold";
+    private const string settingLowSunlightCoolingBonus = "hydrateordiedrate:Config.Setting.LowSunlightCoolingBonus";
+
 
     // XLib Skills Settings
     private const string settingDromedaryMultiplierPerLevel = "hydrateordiedrate:Config.Setting.DromedaryMultiplierPerLevel";
@@ -265,6 +271,27 @@ public class ConfigLibCompatibility
         ImGui.DragFloat(Lang.Get(settingBoilingWaterDamage) + $"##boilingWaterDamage-{id}", ref boilingWaterDamage, 0.1f, 0.0f, 25.0f);
         thirstConfig.BoilingWaterDamage = boilingWaterDamage;
 
+        float idleThirstModifier = thirstConfig.IdleThirstModifier;
+        ImGui.DragFloat(Lang.Get(settingIdleThirstModifier) + $"##idleThirstModifier-{id}", ref idleThirstModifier, 0.01f, 0.01f, 1.0f);
+        thirstConfig.IdleThirstModifier = idleThirstModifier;
+
+        float thirstRateAtStoryLocations = thirstConfig.ThirstRateAtStoryLocations;
+        ImGui.DragFloat(Lang.Get(settingThirstRateAtStoryLocations) + $"##thirstRateAtStoryLocations-{id}", ref thirstRateAtStoryLocations, 0.01f, 0.0f, 2.0f);
+        thirstConfig.ThirstRateAtStoryLocations = thirstRateAtStoryLocations;
+
+        float nutritionDeficitMultiplier = thirstConfig.NutritionDeficitMultiplier;
+        ImGui.DragFloat(Lang.Get(settingNutritionDeficitMultiplier) + $"##nutritionDeficitMultiplier-{id}", ref nutritionDeficitMultiplier, 0.1f, 0.0f, 10.0f);
+        thirstConfig.NutritionDeficitMultiplier = nutritionDeficitMultiplier;
+
+        float thirstPercentageOnRespawn = thirstConfig.ThirstPercentageOnRespawn;
+        ImGui.DragFloat(Lang.Get(settingThirstPercentageOnRespawn) + $"##thirstPercentageOnRespawn-{id}", ref thirstPercentageOnRespawn, 0.01f, 0.0f, 1.0f);
+        thirstConfig.ThirstPercentageOnRespawn = thirstPercentageOnRespawn;
+
+        bool antiThirstScumming = thirstConfig.AntiThirstScumming;
+        ImGui.Checkbox(Lang.Get(settingAntiThirstScumming) + $"##antiThirstScumming-{id}", ref antiThirstScumming);
+        thirstConfig.AntiThirstScumming = antiThirstScumming;
+
+
 
         // Movement Speed Penalty Settings
         ImGui.SeparatorText("Movement Speed Penalty Settings");
@@ -321,26 +348,29 @@ public class ConfigLibCompatibility
         ImGui.DragFloat(Lang.Get(settingUnequippedSlotCooling) + $"##unequippedSlotCooling-{id}", ref unequippedSlotCooling, 0.1f, 0.0f, 5.0f);
         heatAndCoolingConfig.UnequippedSlotCooling = unequippedSlotCooling;
 
-        float wetnessCoolingFactor = heatAndCoolingConfig.WetnessCoolingFactor;
-        ImGui.DragFloat(Lang.Get(settingWetnessCoolingFactor) + $"##wetnessCoolingFactor-{id}", ref wetnessCoolingFactor, 0.1f, 0.0f, 5.0f);
-        heatAndCoolingConfig.WetnessCoolingFactor = wetnessCoolingFactor;
+        float wetnessCoolingBonus = heatAndCoolingConfig.WetnessCoolingBonus;
+        ImGui.DragFloat(Lang.Get(settingWetnessCoolingBonus) + $"##wetnessCoolingBonus-{id}", ref wetnessCoolingBonus, 0.1f, 0.0f, 5.0f);
+        heatAndCoolingConfig.WetnessCoolingBonus = wetnessCoolingBonus;
 
-        float shelterCoolingFactor = heatAndCoolingConfig.ShelterCoolingFactor;
-        ImGui.DragFloat(Lang.Get(settingShelterCoolingFactor) + $"##shelterCoolingFactor-{id}", ref shelterCoolingFactor, 0.1f, 0.0f, 5.0f);
-        heatAndCoolingConfig.ShelterCoolingFactor = shelterCoolingFactor;
+        float roomCoolingBonus = heatAndCoolingConfig.RoomCoolingBonus;
+        ImGui.DragFloat(Lang.Get(settingRoomCoolingBonus) + $"##roomCoolingBonus-{id}", ref roomCoolingBonus, 0.1f, 0.0f, 5.0f);
+        heatAndCoolingConfig.RoomCoolingBonus = roomCoolingBonus;
 
-        float sunlightCoolingFactor = heatAndCoolingConfig.SunlightCoolingFactor;
-        ImGui.DragFloat(Lang.Get(settingSunlightCoolingFactor) + $"##sunlightCoolingFactor-{id}", ref sunlightCoolingFactor, 0.1f, 0.0f, 5.0f);
-        heatAndCoolingConfig.SunlightCoolingFactor = sunlightCoolingFactor;
+        float shadeCoolingBonus = heatAndCoolingConfig.ShadeCoolingBonus;
+        ImGui.DragFloat(Lang.Get(settingShadeCoolingBonus) + $"##shadeCoolingBonus-{id}", ref shadeCoolingBonus, 0.1f, 0.0f, 10.0f);
+        heatAndCoolingConfig.ShadeCoolingBonus = shadeCoolingBonus;
 
-        float diurnalVariationAmplitude = heatAndCoolingConfig.DiurnalVariationAmplitude;
-        ImGui.DragFloat(Lang.Get(settingDiurnalVariationAmplitude) + $"##diurnalVariationAmplitude-{id}", ref diurnalVariationAmplitude, 1.0f, 0.0f, 50.0f);
-        heatAndCoolingConfig.DiurnalVariationAmplitude = diurnalVariationAmplitude;
+        float coolingTempOffsetPerPoint = heatAndCoolingConfig.CoolingTempOffsetPerPoint;
+        ImGui.DragFloat(Lang.Get(settingCoolingTempOffsetPerPoint) + $"##coolingTempOffsetPerPoint-{id}", ref coolingTempOffsetPerPoint, 0.01f, 0.0f, 5.0f);
+        heatAndCoolingConfig.CoolingTempOffsetPerPoint = coolingTempOffsetPerPoint;
 
-        float refrigerationCooling = heatAndCoolingConfig.RefrigerationCooling;
-        ImGui.DragFloat(Lang.Get(settingRefrigerationCooling) + $"##refrigerationCooling-{id}", ref refrigerationCooling, 0.1f, 0.0f, 50.0f);
-        heatAndCoolingConfig.RefrigerationCooling = refrigerationCooling;
+        int lowSunlightThreshold = heatAndCoolingConfig.LowSunlightThreshold;
+        ImGui.DragInt(Lang.Get(settingLowSunlightThreshold) + $"##lowSunlightThreshold-{id}", ref lowSunlightThreshold, 1, 0, 22);
+        heatAndCoolingConfig.LowSunlightThreshold = lowSunlightThreshold;
 
+        float lowSunlightCoolingBonus = heatAndCoolingConfig.LowSunlightCoolingBonus;
+        ImGui.DragFloat(Lang.Get(settingLowSunlightCoolingBonus) + $"##lowSunlightCoolingBonus-{id}", ref lowSunlightCoolingBonus, 0.1f, 0.0f, 20.0f);
+        heatAndCoolingConfig.LowSunlightCoolingBonus = lowSunlightCoolingBonus;
 
         // XLib Skills Settings
         ImGui.SeparatorText("XLib Skills Settings");
