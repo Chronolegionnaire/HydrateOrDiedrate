@@ -19,14 +19,20 @@ namespace HydrateOrDiedrate.WateringTrough
 			if (blockSel != null)
 			{
 				BlockPos pos = blockSel.Position;
-				BlockEntityTrough betr = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityTrough;
-				if (betr != null)
+				BlockEntityWateringTrough be = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityWateringTrough;
+				if (be != null)
 				{
-					bool flag = betr.OnInteract(byPlayer, blockSel);
+					bool flag = be.OnInteractWithLiquid(byPlayer, blockSel);
+					if (!flag)
+					{
+						flag = be.OnInteract(byPlayer, blockSel);
+					}
+
 					if (flag && world.Side == EnumAppSide.Client)
 					{
 						(byPlayer as IClientPlayer).TriggerFpAnimation(EnumHandInteract.HeldItemInteract);
 					}
+
 					return flag;
 				}
 			}
@@ -57,11 +63,12 @@ namespace HydrateOrDiedrate.WateringTrough
 				BlockFacing facing = BlockFacing.FromCode(base.LastCodePart(0)).Opposite;
 				pos = pos.AddCopy(facing);
 			}
-			BlockEntityTrough betr = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityTrough;
-			if (betr != null)
+			BlockEntityWateringTrough be = world.BlockAccessor.GetBlockEntity(pos) as BlockEntityWateringTrough;
+			if (be != null)
 			{
 				StringBuilder dsc = new StringBuilder();
-				betr.GetBlockInfo(forPlayer, dsc);
+				dsc.AppendLine(string.Format("Water: {0:0.#}/{1:0.#} L", be.WaterLitres, be.MaxWaterLitres));
+				be.GetBlockInfo(forPlayer, dsc);
 				return dsc.ToString();
 			}
 			return base.GetPlacedBlockInfo(world, pos, forPlayer);

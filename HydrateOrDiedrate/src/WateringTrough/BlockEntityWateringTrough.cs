@@ -19,7 +19,7 @@ namespace HydrateOrDiedrate.WateringTrough
 		private ITexPositionSource blockTexPosSource;
 		private MeshData currentMesh;
 		private string contentCode = "";
-		private DoubleTroughPoiDummy dummypoi;
+		private DoubleWateringTroughPoiDummy dummypoi;
 		
 		public float WaterLitres;
 		public float MaxWaterLitres = 40f;
@@ -106,7 +106,7 @@ namespace HydrateOrDiedrate.WateringTrough
 
 		public BlockEntityWateringTrough()
 		{
-			this.inventory = new InventoryGeneric(4, null, null, (int id, InventoryGeneric inv) => new ItemSlotTrough(this, inv));
+			this.inventory = new InventoryGeneric(4, null, null, (int id, InventoryGeneric inv) => new ItemSlotWateringTrough(this, inv));
 			this.inventory.OnGetAutoPushIntoSlot = delegate(BlockFacing face, ItemSlot slot)
 			{
 				if (this.IsFull)
@@ -244,29 +244,15 @@ namespace HydrateOrDiedrate.WateringTrough
 		{
 			ItemSlot handSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
 			if (handSlot.Empty) return false;
-
 			ItemStack stack = handSlot.Itemstack;
+			var liquidSource = stack.Collectible as ILiquidSource;
+			if (liquidSource == null) return false;
+			int canAccept = (int)Math.Floor(MaxWaterLitres - WaterLitres);
+			if (canAccept <= 0) return false;
+			ItemStack taken = liquidSource.TryTakeContent(stack, canAccept);
+			if (taken == null || taken.StackSize <= 0) return false;
+			WaterLitres += taken.StackSize;
 
-			// Pseudocode – adapt to your actual liquid container system
-			var liquidCont = stack.Collectible as ILiquidSource;  // whatever interface you use
-			if (liquidCont == null) return false;
-
-			// e.g. get how much water is inside the container
-			float available = liquidCont.GetLiquidLitres(stack, "water");
-			if (available <= 0) return false;
-
-			float couldTake = MaxWaterLitres - WaterLitres;
-			if (couldTake <= 0) return false;
-
-			float toTransfer = GameMath.Min(available, couldTake);
-
-			if (toTransfer <= 0) return false;
-
-			// drain from container
-			float actuallyTaken = liquidCont.TryTakeLiquid(stack, "water", toTransfer);
-			if (actuallyTaken <= 0) return false;
-
-			WaterLitres += actuallyTaken;
 			MarkDirty(true, null);
 			handSlot.MarkDirty();
 
@@ -288,10 +274,10 @@ namespace HydrateOrDiedrate.WateringTrough
 			else
 			{
 				this.Api.ModLoader.GetModSystem<POIRegistry>(true).AddPOI(this);
-				BlockTroughDoubleBlock doubleblock = base.Block as BlockTroughDoubleBlock;
+				BlockWateringTroughDoubleBlock doubleblock = base.Block as BlockWateringTroughDoubleBlock;
 				if (doubleblock != null)
 				{
-					this.dummypoi = new DoubleTroughPoiDummy(this)
+					this.dummypoi = new DoubleWateringTroughPoiDummy(this)
 					{
 						Position = doubleblock.OtherPartPos(this.Pos).ToVec3d().Add(0.5, 0.5, 0.5)
 					};
@@ -382,7 +368,7 @@ namespace HydrateOrDiedrate.WateringTrough
 			Shape shape = Shape.TryGet(this.Api, "shapes/" + shapeLoc + ".json");
 			MeshData meshbase;
 			capi.Tesselator.TesselateShape("betroughcontentsleft", shape, out meshbase, this, rotation, 0, 0, 0, null, null);
-			BlockTroughDoubleBlock doubleblock = base.Block as BlockTroughDoubleBlock;
+			BlockWateringTroughDoubleBlock doubleblock = base.Block as BlockWateringTroughDoubleBlock;
 			if (doubleblock != null)
 			{
 				MeshData meshadd;
@@ -459,17 +445,15 @@ namespace HydrateOrDiedrate.WateringTrough
 
 		public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
 		{
+			dsc.AppendLine(string.Format("Water: {0:0.#}/{1:0.#} L", WaterLitres, MaxWaterLitres));
 			ItemStack firstStack = this.inventory[0].Itemstack;
-			if (this.contentConfigs == null)
-			{
-				return;
-			}
+			if (this.contentConfigs == null) return;
 			ContentConfig config = this.contentConfigs.FirstOrDefault((ContentConfig c) => c.Code == this.contentCode);
 			if (config == null && firstStack != null)
 			{
-				dsc.AppendLine(firstStack.StackSize.ToString() + "x " + firstStack.GetName());
+				dsc.AppendLine(firstStack.StackSize + "x " + firstStack.GetName());
 			}
-			if (config == null || firstStack == null)
+			if (config == null || firstStack == null) return;
 			{
 				return;
 			}
