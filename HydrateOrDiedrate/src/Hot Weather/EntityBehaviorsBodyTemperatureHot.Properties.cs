@@ -10,8 +10,31 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
 {
     private ITreeAttribute TempTree => entity.WatchedAttributes.GetTreeAttribute(tempTreePath);
     public const string tempTreePath = "bodyTemp";
+    
+    public bool HasWetnessCoolingBonus    { get; private set; }
+    public bool HasRoomCoolingBonus       { get; private set; }
+    public bool HasLowSunlightCoolingBonus{ get; private set; }
+    public bool HasShadeCoolingBonus      { get; private set; }
 
     public float CoolingMultiplier { get; internal set; } = 1f;
+    
+    private void SyncCoolingToWatchedAttributes()
+    {
+        var root = entity.WatchedAttributes;
+        var hodCooling = root.GetTreeAttribute("hodCooling") as TreeAttribute;
+        if (hodCooling == null)
+        {
+            hodCooling = new TreeAttribute();
+            root["hodCooling"] = hodCooling;
+        }
+        hodCooling.SetFloat("gearCooling", GearCooling);
+        hodCooling.SetFloat("totalCooling", Cooling);
+        hodCooling.SetInt("wetBonus",      HasWetnessCoolingBonus     ? 1 : 0);
+        hodCooling.SetInt("roomBonus",     HasRoomCoolingBonus        ? 1 : 0);
+        hodCooling.SetInt("lowSunBonus",   HasLowSunlightCoolingBonus ? 1 : 0);
+        hodCooling.SetInt("shadeBonus",    HasShadeCoolingBonus       ? 1 : 0);
+        entity.WatchedAttributes.MarkPathDirty("hodCooling");
+    }
 
     public float GearCooling
     {

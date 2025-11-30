@@ -12,33 +12,11 @@ namespace HydrateOrDiedrate.Hot_Weather;
 public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBehavior(entity), IThirstRateModifier
 {
     public override string PropertyName() => "bodytemperaturehot";
-    
-    public bool HasWetnessCoolingBonus    { get; private set; }
-    public bool HasRoomCoolingBonus       { get; private set; }
-    public bool HasLowSunlightCoolingBonus{ get; private set; }
-    public bool HasShadeCoolingBonus      { get; private set; }
 
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
         base.Initialize(properties, attributes);
         InitBodyHeatAttributes();
-    }
-    private void SyncCoolingToWatchedAttributes()
-    {
-        var root = entity.WatchedAttributes;
-        var hodCooling = root.GetTreeAttribute("hodCooling") as TreeAttribute;
-        if (hodCooling == null)
-        {
-            hodCooling = new TreeAttribute();
-            root["hodCooling"] = hodCooling;
-        }
-        hodCooling.SetFloat("gearCooling", GearCooling);
-        hodCooling.SetFloat("totalCooling", Cooling);
-        hodCooling.SetInt("wetBonus",      HasWetnessCoolingBonus     ? 1 : 0);
-        hodCooling.SetInt("roomBonus",     HasRoomCoolingBonus        ? 1 : 0);
-        hodCooling.SetInt("lowSunBonus",   HasLowSunlightCoolingBonus ? 1 : 0);
-        hodCooling.SetInt("shadeBonus",    HasShadeCoolingBonus       ? 1 : 0);
-        entity.WatchedAttributes.MarkPathDirty("hodCooling");
     }
 
     public float OnThirstRateCalculate(float currentModifier)
