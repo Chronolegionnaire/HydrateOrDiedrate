@@ -38,7 +38,7 @@ public class HeatAndCoolingConfig
     /// <summary>
     /// Cooling effect of being wet
     /// </summary>
-    [DefaultValue(1.5d)]
+    [DefaultValue(8d)]
     public float WetnessCoolingBonus { get; set; } = 8f;
 
     /// <summary>
@@ -50,7 +50,7 @@ public class HeatAndCoolingConfig
     /// <summary>
     /// How much cooling being in shade provides
     /// </summary>
-    [DefaultValue(6d)]
+    [DefaultValue(8d)]
     public float ShadeCoolingBonus { get; set; } = 8f;
     
     /// <summary>
