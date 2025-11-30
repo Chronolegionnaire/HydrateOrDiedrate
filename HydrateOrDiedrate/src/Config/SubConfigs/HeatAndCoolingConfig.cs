@@ -62,20 +62,6 @@ public class HeatAndCoolingConfig
     public float CoolingTempOffsetPerPoint { get; set; } = 0.5f;
     
     /// <summary>
-    /// Additional thirst multiplier per point of negative cooling (cooling < 0).
-    /// For example, 0.1 means each point of negative cooling increases thirst rate by +10%.
-    /// </summary>
-    [DefaultValue(0.1d)]
-    public float NegativeCoolingThirstLinearPerPoint { get; set; } = 0.1f;
-
-    /// <summary>
-    /// Maximum allowed multiplier applied from negative cooling.
-    /// Prevents extreme cooling values from causing runaway thirst rates.
-    /// </summary>
-    [DefaultValue(5.0d)]
-    public float NegativeCoolingThirstMaxMultiplier { get; set; } = 5.0f;
-    
-    /// <summary>
     /// Sunlight level (0-22). Below this, we start giving a cooling bonus.
     /// </summary>
     [DefaultValue(16)]

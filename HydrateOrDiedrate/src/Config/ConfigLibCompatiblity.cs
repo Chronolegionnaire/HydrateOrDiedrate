@@ -48,8 +48,6 @@ public class ConfigLibCompatibility
     private const string settingRoomCoolingBonus = "hydrateordiedrate:Config.Setting.RoomCoolingBonus";
     private const string settingShadeCoolingBonus = "hydrateordiedrate:Config.Setting.ShadeCoolingBonus";
     private const string settingCoolingTempOffsetPerPoint = "hydrateordiedrate:Config.Setting.CoolingTempOffsetPerPoint";
-    private const string settingNegativeCoolingThirstLinearPerPoint = "hydrateordiedrate:Config.Setting.NegativeCoolingThirstLinearPerPoint";
-    private const string settingNegativeCoolingThirstMaxMultiplier = "hydrateordiedrate:Config.Setting.NegativeCoolingThirstMaxMultiplier";
     private const string settingLowSunlightThreshold = "hydrateordiedrate:Config.Setting.LowSunlightThreshold";
     private const string settingLowSunlightCoolingBonus = "hydrateordiedrate:Config.Setting.LowSunlightCoolingBonus";
 
@@ -365,14 +363,6 @@ public class ConfigLibCompatibility
         float coolingTempOffsetPerPoint = heatAndCoolingConfig.CoolingTempOffsetPerPoint;
         ImGui.DragFloat(Lang.Get(settingCoolingTempOffsetPerPoint) + $"##coolingTempOffsetPerPoint-{id}", ref coolingTempOffsetPerPoint, 0.01f, 0.0f, 5.0f);
         heatAndCoolingConfig.CoolingTempOffsetPerPoint = coolingTempOffsetPerPoint;
-
-        float negativeCoolingThirstLinearPerPoint = heatAndCoolingConfig.NegativeCoolingThirstLinearPerPoint;
-        ImGui.DragFloat(Lang.Get(settingNegativeCoolingThirstLinearPerPoint) + $"##negativeCoolingThirstLinearPerPoint-{id}", ref negativeCoolingThirstLinearPerPoint, 0.01f, 0.0f, 1.0f);
-        heatAndCoolingConfig.NegativeCoolingThirstLinearPerPoint = negativeCoolingThirstLinearPerPoint;
-
-        float negativeCoolingThirstMaxMultiplier = heatAndCoolingConfig.NegativeCoolingThirstMaxMultiplier;
-        ImGui.DragFloat(Lang.Get(settingNegativeCoolingThirstMaxMultiplier) + $"##negativeCoolingThirstMaxMultiplier-{id}", ref negativeCoolingThirstMaxMultiplier, 0.01f, 1.0f, 10.0f);
-        heatAndCoolingConfig.NegativeCoolingThirstMaxMultiplier = negativeCoolingThirstMaxMultiplier;
 
         int lowSunlightThreshold = heatAndCoolingConfig.LowSunlightThreshold;
         ImGui.DragInt(Lang.Get(settingLowSunlightThreshold) + $"##lowSunlightThreshold-{id}", ref lowSunlightThreshold, 1, 0, 22);

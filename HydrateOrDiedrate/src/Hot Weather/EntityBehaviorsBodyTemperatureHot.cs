@@ -31,28 +31,21 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
             .Temperature.GuardFinite() ?? 0f;
 
         float threshold = config.TemperatureThreshold;
-        if (temperature > threshold)
+        float tempOffsetPerCooling = config.CoolingTempOffsetPerPoint;
+        float effectiveTemperature = temperature - Cooling * tempOffsetPerCooling;
+        effectiveTemperature = Util.GuardFinite(effectiveTemperature);
+
+        float effectiveTempDiff = effectiveTemperature - threshold;
+        effectiveTempDiff = Util.GuardFinite(effectiveTempDiff);
+        if (effectiveTempDiff > 0f)
         {
-            float rawTempDiff = temperature - threshold;
-
-            float tempOffsetPerCooling = config.CoolingTempOffsetPerPoint;
-            float effectiveTempDiff = rawTempDiff - (Cooling * tempOffsetPerCooling);
-
-            if (effectiveTempDiff <= 0f)
-            {
-                return currentModifier;
-            }
             float expArgument = config.HarshHeatExponentialGainMultiplier * effectiveTempDiff;
             float heatIncrease = config.ThirstIncreasePerDegreeMultiplier * ((float)Math.Exp(expArgument) - 1f);
             heatIncrease = Util.GuardFinite(heatIncrease);
 
             currentModifier += heatIncrease;
         }
-        if (Cooling < 0f)
-        {
-            float negCoolingMult = GetNegativeCoolingThirstMultiplier();
-            currentModifier *= negCoolingMult;
-        }
+
         float minThirst = ModConfig.Instance.Thirst.ThirstDecayRate;
         if (currentModifier < minThirst)
         {
@@ -177,21 +170,6 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         if (factor <= 0f || value == 0f) return value;
         if (value > 0f) return value * factor;
         return value / factor;
-    }
-    
-    private float GetNegativeCoolingThirstMultiplier()
-    {
-        if (Cooling >= 0f) return 1f;
-
-        var config = ModConfig.Instance.HeatAndCooling;
-        float magnitude = -Cooling;
-        float linearPerPoint = config.NegativeCoolingThirstLinearPerPoint;
-        float maxMult       = config.NegativeCoolingThirstMaxMultiplier; 
-
-        float mult = 1f + magnitude * linearPerPoint;
-        mult = GameMath.Clamp(Util.GuardFinite(mult), 1f, maxMult);
-
-        return mult;
     }
     
     private bool HasDirectSunlight()
