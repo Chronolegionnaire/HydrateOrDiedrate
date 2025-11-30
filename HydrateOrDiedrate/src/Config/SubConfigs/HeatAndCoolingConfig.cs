@@ -44,7 +44,7 @@ public class HeatAndCoolingConfig
     /// <summary>
     /// Cooling bonus when in a room
     /// </summary>
-    [DefaultValue(1.5d)]
+    [DefaultValue(8d)]
     public float RoomCoolingBonus { get; set; } = 8f;
     
     /// <summary>
@@ -72,7 +72,7 @@ public class HeatAndCoolingConfig
     /// Maximum allowed multiplier applied from negative cooling.
     /// Prevents extreme cooling values from causing runaway thirst rates.
     /// </summary>
-    [DefaultValue(3.0d)]
+    [DefaultValue(5.0d)]
     public float NegativeCoolingThirstMaxMultiplier { get; set; } = 5.0f;
     
     /// <summary>
