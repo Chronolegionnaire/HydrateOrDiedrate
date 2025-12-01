@@ -110,7 +110,7 @@ namespace HydrateOrDiedrate.Commands
             if (thirstBehavior == null)
                 return TextCommandResult.Error(Lang.Get("hydrateordiedrate:cmd.thirstnotfound"));
 
-            thirstBehavior.HungerReductionAmount = nutriDeficitValue;
+            thirstBehavior.NutritionDeficitAmount = nutriDeficitValue;
 
             return TextCommandResult.Success(Lang.Get("hydrateordiedrate:cmd.nutridefset", nutriDeficitValue, targetPlayer.PlayerName));
         }
@@ -195,7 +195,7 @@ namespace HydrateOrDiedrate.Commands
             if (thirstBehavior == null)
                 return TextCommandResult.Error(Lang.Get("hydrateordiedrate:cmd.thirstnotfound"));
 
-            float nutriDeficitValue = thirstBehavior.HungerReductionAmount;
+            float nutriDeficitValue = thirstBehavior.NutritionDeficitAmount;
 
             return TextCommandResult.Success(Lang.Get("hydrateordiedrate:cmd.getnutridef", nutriDeficitValue, targetPlayer.PlayerName));
         }

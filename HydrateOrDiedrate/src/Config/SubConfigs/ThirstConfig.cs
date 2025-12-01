@@ -120,4 +120,20 @@ public class ThirstConfig
     [Range(0d, 2d)]
     [DefaultValue(1.00f)]
     public float ThirstRateAtStoryLocations { get; set; } = 1.00f;
+    
+    /// <summary>
+    /// Multiplier on nutrition penalty from drinking water, set this to 0 to disable it entirely.
+    /// </summary>
+    [Category("Penalty")]
+    [DisplayFormat(DataFormatString = "P")]
+    [Range(0d, 10d)]
+    [DefaultValue(3.00f)]
+    public float NutritionDeficitMultiplier { get; set; } = 3.00f;
+
+    /// <summary>
+    /// Toggle for turning on anti thirst scumming. If on players will spawn with the same thirst as when they died,
+    /// unless it is 0 in which case they will spawn with 0.005% satiety.
+    /// </summary>
+    [DefaultValue(false)]
+    public bool AntiThirstScumming { get; set; } = false;
 }

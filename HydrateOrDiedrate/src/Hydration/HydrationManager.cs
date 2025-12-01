@@ -66,11 +66,12 @@ public static class HydrationManager
         return collectible.Attributes?.Token.Value<int>(Attributes.Healing) ?? 0;
     }
 
-    public static int GetHungerReduction(ICoreAPI api, CollectibleObject collectible)
+    [Obsolete("Use GetNutritionDeficit instead")] public static int GetHungerReduction(ICoreAPI api, CollectibleObject collectible) => GetNutritionDeficit(api, collectible);
+    public static int GetNutritionDeficit(ICoreAPI api, CollectibleObject collectible)
     {
         var resultFromProps = GetProps(api, collectible)?.NutritionPropsPerLitre?.Satiety;
         if(resultFromProps is not null) return (int) (resultFromProps.Value < 0 ? -resultFromProps.Value : 0);
-        return collectible.Attributes?.Token.Value<int>(Attributes.HungerReduction) ?? 0;
+        return collectible.Attributes?.Token.Value<int>(Attributes.NutritionDeficit) ?? 0;
     }
 
     private static WaterTightContainableProps GetProps(ICoreAPI api, CollectibleObject collectible)

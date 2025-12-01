@@ -84,10 +84,10 @@ namespace HydrateOrDiedrate.patches
                         hydLossDelay = (calculatedHydration / 2) * effectiveMultiplier * blendedValue;
                     }
 
-                    float hungerReduction = 0;
+                    float nutritionDeficit = 0;
                     if (nutriProps.Satiety < 0)
                     {
-                        hungerReduction = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
+                        nutritionDeficit = nutriProps.Satiety * GlobalConstants.FoodSpoilageSatLossMul(0, slot.Itemstack, byEntity);
                     }
                     hydLossDelay = Math.Min(hydLossDelay, maxDelay);
                     __state = new PatchState
@@ -95,7 +95,7 @@ namespace HydrateOrDiedrate.patches
                         Player = player,
                         HydrationAmount = calculatedHydration,
                         HydLossDelay = hydLossDelay,
-                        HungerReduction = hungerReduction
+                        NutritionDeficit = nutritionDeficit
                     };
                 }
             }
@@ -118,16 +118,22 @@ namespace HydrateOrDiedrate.patches
             var thirstBehavior = __state.Player.GetBehavior<EntityBehaviorThirst>();
             if (thirstBehavior != null)
             {
-                if (thirstBehavior.HungerReductionAmount < 0)
+                if (thirstBehavior.NutritionDeficitAmount < 0)
                 {
-                    thirstBehavior.HungerReductionAmount = 0;
+                    thirstBehavior.NutritionDeficitAmount = 0;
                 }
 
                 thirstBehavior.ModifyThirst(__state.HydrationAmount, __state.HydLossDelay);
 
-                if (__state.HungerReduction > 0)
+                if (__state.NutritionDeficit > 0)
                 {
-                    thirstBehavior.HungerReductionAmount += __state.HungerReduction;
+                    float deficitMul = ModConfig.Instance.Thirst.NutritionDeficitMultiplier;
+                    if (!float.IsFinite(deficitMul) || deficitMul <= 0f)
+                    {
+                        deficitMul = 1f;
+                    }
+
+                    thirstBehavior.NutritionDeficitAmount += __state.NutritionDeficit * deficitMul;
                 }
             }
         }
@@ -137,7 +143,7 @@ namespace HydrateOrDiedrate.patches
             public EntityPlayer Player;
             public float HydrationAmount;
             public float HydLossDelay;
-            public float HungerReduction;
+            public float NutritionDeficit;
         }
     }
 }

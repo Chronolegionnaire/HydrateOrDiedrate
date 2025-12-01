@@ -38,7 +38,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     internal static ICoreClientAPI _clientApi { get; private set; }
 
     private HudElementThirstBar _thirstHud;
-    private HudElementHungerReductionBar _hungerReductionHud;
+    private HudElementNutritionDeficitBar nutritionDeficitHud;
     private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
 
@@ -269,9 +269,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
             _clientApi.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
             _clientApi.Gui.RegisterDialog(_thirstHud);
 
-            _hungerReductionHud = new HudElementHungerReductionBar(_clientApi);
-            _clientApi.Event.RegisterGameTickListener(_hungerReductionHud.OnGameTick, 1000);
-            _clientApi.Gui.RegisterDialog(_hungerReductionHud);
+            nutritionDeficitHud = new HudElementNutritionDeficitBar(_clientApi);
+            _clientApi.Event.RegisterGameTickListener(nutritionDeficitHud.OnGameTick, 1000);
+            _clientApi.Gui.RegisterDialog(nutritionDeficitHud);
 
             _clientApi.Event.UnregisterGameTickListener(customHudListenerId);
         }
@@ -323,7 +323,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void Dispose()
     {
         _thirstHud?.Dispose();
-        _hungerReductionHud?.Dispose();
+        nutritionDeficitHud?.Dispose();
 
         ConfigManager.UnloadModConfig();
         harmony?.UnpatchAll(HarmonyID);

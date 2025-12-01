@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
 using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.Hot_Weather;
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
@@ -21,8 +20,9 @@ public static class CharacterExtraDialogsPatch
         public GuiElementDynamicText thirstDynamicText;
         public GuiElementDynamicText thirstRateDynamicText;
         public GuiElementDynamicText nutritionDeficitDynamicText;
-        public GuiElementDynamicText currentCoolingDynamicText;
+        public GuiElementDynamicText coolingDynamicText;
         public GuiElementDynamicText hydrationDelayDynamicText;
+        public GuiElementRichtext coolingBonusesRichText;
     }
 
     private static bool ShouldSkipPatch() => !ModConfig.Instance.Thirst.Enabled; //TODO use patch category instead
@@ -142,48 +142,19 @@ public static class CharacterExtraDialogsPatch
                 nutritionDeficitRightBounds,
                 "nutritionDeficit"
             );
-
-        const float currentCoolingVerticalOffset = -10.0f;
-        const float currentCoolingXOffset = 0.0f;
-        
-        ElementBounds currentCoolingLeftBounds = nutritionDeficitLeftBounds.BelowCopy(currentCoolingVerticalOffset)
-            .WithFixedPosition(
-                nutritionDeficitLeftBounds.fixedX + currentCoolingXOffset,
-                nutritionDeficitLeftBounds.fixedY + nutritionDeficitLeftBounds.fixedHeight + currentCoolingVerticalOffset
-            );
-        ElementBounds currentCoolingRightBounds = currentCoolingLeftBounds.FlatCopy()
-            .WithFixedPosition(
-                currentCoolingLeftBounds.fixedX + rightColumnHorizontalOffset,
-                currentCoolingLeftBounds.fixedY
-            );
-        
-        composer
-            .AddStaticText(
-                Lang.Get("hydrateordiedrate:characterextradialogs-currentcooling"),
-                CairoFont.WhiteDetailText(),
-                currentCoolingLeftBounds,
-                "currentCoolingHotStaticText"
-            )
-            .AddDynamicText(
-                "0",
-                CairoFont.WhiteDetailText(),
-                currentCoolingRightBounds,
-                "currentCoolingHot"
-            );
-        
         const float hydrationDelayVerticalOffset = -10.0f;
-        
-        ElementBounds hydrationDelayLeftBounds = currentCoolingLeftBounds.BelowCopy(hydrationDelayVerticalOffset)
+
+        ElementBounds hydrationDelayLeftBounds = nutritionDeficitLeftBounds.BelowCopy(hydrationDelayVerticalOffset)
             .WithFixedPosition(
-                currentCoolingLeftBounds.fixedX,
-                currentCoolingLeftBounds.fixedY + currentCoolingLeftBounds.fixedHeight + hydrationDelayVerticalOffset
+                nutritionDeficitLeftBounds.fixedX,
+                nutritionDeficitLeftBounds.fixedY + nutritionDeficitLeftBounds.fixedHeight + hydrationDelayVerticalOffset
             );
         ElementBounds hydrationDelayRightBounds = hydrationDelayLeftBounds.FlatCopy()
             .WithFixedPosition(
                 hydrationDelayLeftBounds.fixedX + rightColumnHorizontalOffset,
                 hydrationDelayLeftBounds.fixedY
             );
-        
+
         composer
             .AddStaticText(
                 Lang.Get("hydrateordiedrate:characterextradialogs-hydrationdelay"),
@@ -197,6 +168,52 @@ public static class CharacterExtraDialogsPatch
                 hydrationDelayRightBounds,
                 "hydrateordiedrate_delay"
             );
+        const float coolingVerticalOffset = -10.0f;
+        ElementBounds coolingLeftBounds = hydrationDelayLeftBounds.BelowCopy(coolingVerticalOffset)
+            .WithFixedPosition(
+                hydrationDelayLeftBounds.fixedX,
+                hydrationDelayLeftBounds.fixedY + hydrationDelayLeftBounds.fixedHeight + coolingVerticalOffset
+            );
+        ElementBounds coolingRightBounds = coolingLeftBounds.FlatCopy()
+            .WithFixedPosition(
+                coolingLeftBounds.fixedX + rightColumnHorizontalOffset,
+                coolingLeftBounds.fixedY
+            );
+
+        var coolingLabelFont = CairoFont.WhiteDetailText().Clone();
+        coolingLabelFont.UnscaledFontsize *= 0.95f;
+
+        composer
+            .AddStaticText(
+                Lang.Get("hydrateordiedrate:characterextradialogs-cooling"),
+                coolingLabelFont,
+                coolingLeftBounds,
+                "coolingStaticText"
+            )
+            .AddDynamicText(
+                "0 | 0",
+                CairoFont.WhiteDetailText(),
+                coolingRightBounds,
+                "cooling"
+            );
+
+        const float bonusesVerticalOffset = -16.0f;
+
+        ElementBounds bonusesBounds = coolingLeftBounds.BelowCopy(bonusesVerticalOffset)
+            .WithFixedPosition(
+                coolingLeftBounds.fixedX + 10, 
+                coolingLeftBounds.fixedY + 1 + coolingLeftBounds.fixedHeight + bonusesVerticalOffset
+            )
+            .WithFixedWidth(160.0)
+            .WithFixedHeight(26.0);
+
+        composer.AddRichtext(
+            "",
+            CairoFont.WhiteDetailText(),
+            bonusesBounds,
+            "hydrateordiedrate_coolingBonuses"
+        );
+
         
         CachedUIElements cached = new CachedUIElements
         {
@@ -204,8 +221,9 @@ public static class CharacterExtraDialogsPatch
             thirstDynamicText = composer.GetDynamicText("hydrateordiedrate_thirst"),
             thirstRateDynamicText = composer.GetDynamicText("hydrateordiedrate_thirstrate"),
             nutritionDeficitDynamicText = composer.GetDynamicText("nutritionDeficit"),
-            currentCoolingDynamicText = composer.GetDynamicText("currentCoolingHot"),
-            hydrationDelayDynamicText = composer.GetDynamicText("hydrateordiedrate_delay")
+            coolingDynamicText = composer.GetDynamicText("cooling"),
+            hydrationDelayDynamicText = composer.GetDynamicText("hydrateordiedrate_delay"),
+            coolingBonusesRichText = composer.GetRichtext("hydrateordiedrate_coolingBonuses")
         };
         
         cachedUIElements[__instance] = cached; //TODO check if this is propperly disposed
@@ -228,7 +246,9 @@ public static class CharacterExtraDialogsPatch
                 thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst"),
                 thirstRateDynamicText = compo.GetDynamicText("hydrateordiedrate_thirstrate"),
                 nutritionDeficitDynamicText = compo.GetDynamicText("nutritionDeficit"),
-                currentCoolingDynamicText = compo.GetDynamicText("currentCoolingHot")
+                coolingDynamicText = compo.GetDynamicText("cooling"),
+                hydrationDelayDynamicText = compo.GetDynamicText("hydrateordiedrate_delay"),
+                coolingBonusesRichText = compo.GetRichtext("hydrateordiedrate_coolingBonuses")
             };
             cachedUIElements[__instance] = cached;
         }
@@ -241,27 +261,76 @@ public static class CharacterExtraDialogsPatch
         var entity = capi.World.Player.Entity;
         var thirstBehavior = entity.GetBehavior<EntityBehaviorThirst>();
 
-        if(thirstBehavior is not null)
+        if (thirstBehavior is not null)
         {
-            cached.thirstDynamicText?.SetNewText($"{(int)thirstBehavior.CurrentThirst} / {(int)thirstBehavior.MaxThirst}", false, false, false);
+            cached.thirstDynamicText?.SetNewText(
+                $"{(int)thirstBehavior.CurrentThirst} / {(int)thirstBehavior.MaxThirst}",
+                false, false, false
+            );
 
-            float thirstRatePercentage = Math.Max(0, (thirstBehavior.ThirstRate / ModConfig.Instance.Thirst.ThirstDecayRate) * 100);
+            float thirstRatePercentage = Math.Max(
+                0,
+                (thirstBehavior.ThirstRate / ModConfig.Instance.Thirst.ThirstDecayRate) * 100
+            );
             cached.thirstRateDynamicText?.SetNewText($"{(int)thirstRatePercentage}%", false, false, false);
 
-            cached.nutritionDeficitDynamicText?.SetNewText($"{thirstBehavior.HungerReductionAmount}", false, false, false);
+            cached.nutritionDeficitDynamicText?.SetNewText(
+                $"{thirstBehavior.NutritionDeficitAmount}",
+                false, false, false
+            );
         }
 
-        var tempBehavior = entity.GetBehavior<EntityBehaviorBodyTemperatureHot>();
-        
-        if(tempBehavior is not null)
+        var hodCooling = entity.WatchedAttributes.GetTreeAttribute("hodCooling");
+        if (hodCooling != null)
         {
-            cached.currentCoolingDynamicText?.SetNewText($"{tempBehavior.Cooling:0.##}", false, false, false);
-        }
+            float gearCooling = hodCooling.GetFloat("gearCooling", 0f);
+            float totalCooling = hodCooling.GetFloat("totalCooling", 0f);
+            cached.coolingDynamicText?.SetNewText(
+                $"{gearCooling:0.##} | {totalCooling:0.##}",
+                false, false, false
+            );
 
-        if(thirstBehavior is not null)
+            int wetBonus    = hodCooling.GetInt("wetBonus", 0);
+            int roomBonus   = hodCooling.GetInt("roomBonus", 0);
+            int lowSunBonus = hodCooling.GetInt("lowSunBonus", 0);
+            int shadeBonus  = hodCooling.GetInt("shadeBonus", 0);
+            var line1Parts = new List<string>();
+            if (wetBonus != 0)
+                line1Parts.Add(Lang.Get("hydrateordiedrate:coolingbonus-wet"));
+            if (roomBonus != 0)
+                line1Parts.Add(Lang.Get("hydrateordiedrate:coolingbonus-room"));
+            var line2Parts = new List<string>();
+            if (lowSunBonus != 0)
+                line2Parts.Add(Lang.Get("hydrateordiedrate:coolingbonus-lowsun"));
+            if (shadeBonus != 0)
+                line2Parts.Add(Lang.Get("hydrateordiedrate:coolingbonus-shade"));
+            var lines = new List<string>();
+            if (line1Parts.Count > 0)
+                lines.Add(string.Join(" ", line1Parts));
+            if (line2Parts.Count > 0)
+                lines.Add(string.Join(" ", line2Parts));
+
+            string vtml = "";
+            if (lines.Count > 0)
+            {
+                string text = string.Join("<br>", lines);
+                vtml = $"<font color=\"#1097b4\" size=\"9\">{text}</font>";
+            }
+
+            cached.coolingBonusesRichText?.SetNewText(
+                vtml,
+                CairoFont.WhiteDetailText()
+            );
+        }
+        if (thirstBehavior is not null)
         {
-            TimeSpan delayTime = TimeSpan.FromSeconds(thirstBehavior.HydrationLossDelay);
-            cached.hydrationDelayDynamicText?.SetNewText(delayTime.ToString(@"hh\:mm\:ss"), false, false, false);
+            var seconds = Math.Max(0, thirstBehavior.HydrationLossDelay);
+            TimeSpan delayTime = TimeSpan.FromSeconds(seconds);
+
+            cached.hydrationDelayDynamicText?.SetNewText(
+                delayTime.ToString(@"hh\:mm\:ss"),
+                false, false, false
+            );
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using HarmonyLib;
+using HydrateOrDiedrate.Config;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
@@ -18,14 +19,14 @@ namespace HydrateOrDiedrate.patches
 
                 if (thirstBehavior != null)
                 {
-                    float hungerReductionAmount = thirstBehavior.HungerReductionAmount;
+                    float nutritionDeficitAmount = thirstBehavior.NutritionDeficitAmount;
 
                     if (saturation > 0f)
                     {
 
-                        thirstBehavior.HungerReductionAmount = Math.Max(0f, hungerReductionAmount - saturation);
+                        thirstBehavior.NutritionDeficitAmount = Math.Max(0f, nutritionDeficitAmount - saturation);
 
-                        if (hungerReductionAmount > 0f)
+                        if (nutritionDeficitAmount > 0f)
                         {
 
                             applyNutrition = false;
@@ -38,8 +39,13 @@ namespace HydrateOrDiedrate.patches
                     }
                     else if (saturation < 0f)
                     {
+                        float deficitMul = ModConfig.Instance.Thirst.NutritionDeficitMultiplier;
+                        if (!float.IsFinite(deficitMul) || deficitMul <= 0f)
+                        {
+                            deficitMul = 1f;
+                        }
 
-                        thirstBehavior.HungerReductionAmount += Math.Abs(saturation);
+                        thirstBehavior.NutritionDeficitAmount += Math.Abs(saturation) * deficitMul;
 
                         applyNutrition = false;
                     }

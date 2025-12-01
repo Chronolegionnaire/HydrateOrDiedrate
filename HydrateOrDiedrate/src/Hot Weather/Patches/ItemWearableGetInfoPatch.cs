@@ -31,33 +31,23 @@ namespace HydrateOrDiedrate.patches
                     condition = 0f;
                 }
                 float maxWarmth = inSlot.Itemstack.ItemAttributes["warmth"].AsFloat(0f);
-                if (float.IsNaN(maxWarmth))
-                {
-                    maxWarmth = 0f;
-                }
-                float actualWarmth = Math.Min(maxWarmth, condition * 2f * maxWarmth);
-                if (float.IsNaN(actualWarmth))
-                {
-                    actualWarmth = 0f;
-                }
+                if (float.IsNaN(maxWarmth)) maxWarmth = 0f;
+
                 float maxCooling = CoolingManager.GetMaxCooling(itemStack);
-                if (float.IsNaN(maxCooling))
-                {
-                    maxCooling = 0f;
-                }
-                float actualCooling = Math.Min(maxCooling, condition * 2f * maxCooling);
-                if (float.IsNaN(actualCooling))
-                {
-                    actualCooling = 0f;
-                }
+                if (float.IsNaN(maxCooling)) maxCooling = 0f;
+
+                float factor = GameMath.Clamp(condition * 2f, 0f, 1f);
+                float actualWarmth = Util.GuardFinite(maxWarmth * factor);
+                float coolingFactor = maxCooling < 0f ? 1f : factor;
+                float actualCooling = Util.GuardFinite(maxCooling * coolingFactor);
 
                 string existingText = dsc.ToString();
-                if (maxWarmth > 0 || maxCooling > 0)
+                if (maxWarmth > 0 || maxCooling != 0)
                 {
-                    string updatedWarmthLine = $"Warmth:<font color=\"#ff8444\"> +{actualWarmth:0.#}°C</font>";
+                    string updatedWarmthLine = $"Warmth:<font color=\"#ff8444\"> {actualWarmth:+0.#;-0.#}°C</font>";
                     if (actualCooling != 0)
                     {
-                        updatedWarmthLine += $", Cooling:<font color=\"#84dfff\"> +{actualCooling:0.#}°C</font>";
+                        updatedWarmthLine += $", Cooling:<font color=\"#84dfff\"> {actualCooling:+0.#;-0.#}°C</font>";
                     }
                     if (!existingText.Contains(updatedWarmthLine))
                     {
