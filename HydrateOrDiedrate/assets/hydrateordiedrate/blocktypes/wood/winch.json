@@ -28,7 +28,10 @@
 		"rope": { "base": "game:entity/lore/erel/pristine/rope" }
 	},
 	"attributes": {
-		"mapColorCode": "settlement"
+		"mapColorCode": "settlement",
+		"handbook": { 
+			"groupBy": ["winch-*"]
+		}
 	},
 	"creativeinventory": {
 		"general": [ "winch-*-east" ],
