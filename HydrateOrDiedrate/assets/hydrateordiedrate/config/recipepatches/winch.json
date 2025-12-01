@@ -1,7 +1,9 @@
 ﻿[
   {
-    "type": "replace",
-    "conditions": [{ "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }],
+    "type": "CopyReplaceIngredients",
+    "conditions": [
+      { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
+    ],
     "outputCode": "hydrateordiedrate:winch-*",
     "ingredients": [
       {
@@ -11,7 +13,7 @@
     ]
   },
   {
-    "type": "Replace",
+    "type": "CopyReplaceIngredients",
     "conditions": [
       { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
     ],
@@ -26,12 +28,13 @@
       },
       {
         "ingredientCode": "game:plank-*",
-        "Code": "floralzonescaperegion:plank-*"
+        "Code": "floralzonescaperegion:plank-*",
+        "Name": "wood"
       }
     ]
   },
   {
-    "type": "Replace",
+    "type": "CopyReplaceIngredients",
     "conditions": [
       { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
     ],
@@ -46,12 +49,13 @@
       },
       {
         "ingredientCode": "game:plank-*",
-        "Code": "floralzonescaribbeanregion:plank-*"
+        "Code": "floralzonescaribbeanregion:plank-*",
+        "Name": "wood"
       }
     ]
   },
   {
-    "type": "Replace",
+    "type": "CopyReplaceIngredients",
     "conditions": [
       { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
     ],
@@ -66,12 +70,13 @@
       },
       {
         "ingredientCode": "game:plank-*",
-        "Code": "floralzonescentralaustralianregion:plank-*"
+        "Code": "floralzonescentralaustralianregion:plank-*",
+        "Name": "wood"
       }
     ]
   },
   {
-    "type": "Replace",
+    "type": "CopyReplaceIngredients",
     "conditions": [
       { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
     ],
@@ -86,12 +91,13 @@
       },
       {
         "ingredientCode": "game:plank-*",
-        "Code": "floralzonesmediterraneanregion:plank-*"
+        "Code": "floralzonesmediterraneanregion:plank-*",
+        "Name": "wood"
       }
     ]
   },
   {
-    "type": "Replace",
+    "type": "CopyReplaceIngredients",
     "conditions": [
       { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
     ],
@@ -106,12 +112,13 @@
       },
       {
         "ingredientCode": "game:plank-*",
-        "Code": "floralzonesneozeylandricregion:plank-*"
+        "Code": "floralzonesneozeylandricregion:plank-*",
+        "Name": "wood"
       }
     ]
   },
   {
-    "type": "Replace",
+    "type": "CopyReplaceIngredients",
     "conditions": [
       { "when": "VanillaVariants_MechanicalAxle_Enabled", "isValue": "true" }
     ],
@@ -126,7 +133,8 @@
       },
       {
         "ingredientCode": "game:plank-*",
-        "Code": "wildcrafttree:plank-*"
+        "Code": "wildcrafttree:plank-*",
+        "Name": "wood"
       }
     ]
   }
