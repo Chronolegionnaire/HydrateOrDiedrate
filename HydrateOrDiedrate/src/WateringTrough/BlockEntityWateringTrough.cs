@@ -21,10 +21,21 @@ namespace HydrateOrDiedrate.WateringTrough
 		private string contentCode = "";
 		private DoubleWateringTroughPoiDummy dummypoi;
 		
-		public float WaterLitres;
 		public float MaxWaterLitres = 40f;
 		public float LitresPerPortion = 1f;
-		
+		public float WaterLitres
+		{
+			get
+			{
+				ItemStack stack = inventory[0].Itemstack;
+				if (stack == null) return 0f;
+
+				var props = BlockLiquidContainerBase.GetContainableProps(stack);
+				if (props == null || !stack.Collectible.IsLiquid()) return 0f;
+
+				return (float)stack.StackSize / props.ItemsPerLitre;
+			}
+		}
 		public override InventoryBase Inventory
 		{
 			get
@@ -229,37 +240,108 @@ namespace HydrateOrDiedrate.WateringTrough
 		
 		public float ConsumeOneLiquidPortion(Entity entity)
 		{
-			if (WaterLitres < LitresPerPortion)
+			ItemStack stack = inventory[0].Itemstack;
+			if (stack == null) return 0f;
+
+			var props = BlockLiquidContainerBase.GetContainableProps(stack);
+			if (props == null || !stack.Collectible.IsLiquid()) return 0f;
+
+			// How many litres are currently in this slot?
+			float currentLitres = (float)stack.StackSize / props.ItemsPerLitre;
+			if (currentLitres < LitresPerPortion)
 			{
 				return 0f;
 			}
 
-			WaterLitres -= LitresPerPortion;
+			// How many "items" correspond to one animal portion?
+			int itemsToConsume = (int)Math.Ceiling(LitresPerPortion * props.ItemsPerLitre);
+
+			stack.StackSize -= itemsToConsume;
+			if (stack.StackSize <= 0)
+			{
+				inventory[0].Itemstack = null;
+			}
+
+			inventory[0].MarkDirty();
 			MarkDirty(true, null);
 
 			return LitresPerPortion;
 		}
-		
+
 		internal bool OnInteractWithLiquid(IPlayer byPlayer, BlockSelection blockSel)
 		{
 			ItemSlot handSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
 			if (handSlot.Empty) return false;
-			ItemStack stack = handSlot.Itemstack;
-			var liquidSource = stack.Collectible as ILiquidSource;
-			if (liquidSource == null) return false;
-			int canAccept = (int)Math.Floor(MaxWaterLitres - WaterLitres);
-			if (canAccept <= 0) return false;
-			ItemStack taken = liquidSource.TryTakeContent(stack, canAccept);
-			if (taken == null || taken.StackSize <= 0) return false;
-			WaterLitres += taken.StackSize;
 
-			MarkDirty(true, null);
+			ItemStack handStack = handSlot.Itemstack;
+
+			// Buckets, barrels, etc. all derive from BlockLiquidContainerBase
+			BlockLiquidContainerBase liqCntBlock = handStack.Block as BlockLiquidContainerBase;
+			if (liqCntBlock == null) return false;
+
+			// Content inside the bucket/barrel
+			ItemStack contentStack = liqCntBlock.GetContent(handStack);
+			if (contentStack == null) return false;
+
+			var props = BlockLiquidContainerBase.GetContainableProps(contentStack);
+			if (props == null || !contentStack.Collectible.IsLiquid()) return false;
+
+			ItemSlot targetSlot = inventory[0];
+			ItemStack cur = targetSlot.Itemstack;
+
+			// If slot already contains feed, don't treat this as a liquid interaction
+			if (!targetSlot.Empty && !cur.Collectible.IsLiquid())
+			{
+				return false;
+			}
+
+			// Current litres already in trough (if any)
+			float currentLitres = 0f;
+			if (!targetSlot.Empty)
+			{
+				var curProps = BlockLiquidContainerBase.GetContainableProps(cur);
+				if (curProps == null || !cur.Collectible.IsLiquid())
+				{
+					return false;
+				}
+
+				currentLitres = (float)cur.StackSize / curProps.ItemsPerLitre;
+			}
+
+			// How much we *want* to move from the held container
+			bool shift = byPlayer.Entity.Controls.ShiftKey;
+			float desiredLitres = shift ? liqCntBlock.CapacityLitres : liqCntBlock.TransferSizeLitres;
+
+			// Respect trough capacity
+			float freeLitres = MaxWaterLitres - currentLitres;
+			float toMoveLitres = Math.Min(desiredLitres, freeLitres);
+			if (toMoveLitres <= 0f) return false;
+
+			// Convert litres to "items" for the container
+			float itemsPerLitre = props.ItemsPerLitre;
+			int movePerContainer = (int)(toMoveLitres * itemsPerLitre);
+
+			ItemStack takenContentStack = liqCntBlock.TryTakeContent(handStack, movePerContainer);
+			if (takenContentStack == null || takenContentStack.StackSize <= 0) return false;
+
+			// Merge liquid into the trough slot
+			if (targetSlot.Empty)
+			{
+				targetSlot.Itemstack = takenContentStack;
+			}
+			else
+			{
+				targetSlot.Itemstack.StackSize += takenContentStack.StackSize;
+			}
+
+			targetSlot.MarkDirty();
 			handSlot.MarkDirty();
+			MarkDirty(true, null);
 
 			return true;
 		}
 
-		
+
 		public override void Initialize(ICoreAPI api)
 		{
 			base.Initialize(api);
@@ -432,8 +514,6 @@ namespace HydrateOrDiedrate.WateringTrough
 		{
 			base.FromTreeAttributes(tree, worldForResolving);
 			this.contentCode = tree.GetString("contentCode", null);
-			WaterLitres = tree.GetFloat("waterLitres", 0f);
-
 			ICoreAPI api = this.Api;
 			if (api != null && api.Side == EnumAppSide.Client)
 			{
