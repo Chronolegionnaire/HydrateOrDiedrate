@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
 using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.Hot_Weather;
 using Vintagestory.API.Client;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
@@ -21,8 +20,7 @@ public static class CharacterExtraDialogsPatch
         public GuiElementDynamicText thirstDynamicText;
         public GuiElementDynamicText thirstRateDynamicText;
         public GuiElementDynamicText nutritionDeficitDynamicText;
-        public GuiElementDynamicText gearCoolingDynamicText;
-        public GuiElementDynamicText totalCoolingDynamicText;
+        public GuiElementDynamicText coolingDynamicText;
         public GuiElementDynamicText hydrationDelayDynamicText;
         public GuiElementRichtext coolingBonusesRichText;
     }
@@ -170,64 +168,41 @@ public static class CharacterExtraDialogsPatch
                 hydrationDelayRightBounds,
                 "hydrateordiedrate_delay"
             );
-
-        const float gearCoolingVerticalOffset = -10.0f;
-
-        ElementBounds gearCoolingLeftBounds = hydrationDelayLeftBounds.BelowCopy(gearCoolingVerticalOffset)
+        const float coolingVerticalOffset = -10.0f;
+        ElementBounds coolingLeftBounds = hydrationDelayLeftBounds.BelowCopy(coolingVerticalOffset)
             .WithFixedPosition(
                 hydrationDelayLeftBounds.fixedX,
-                hydrationDelayLeftBounds.fixedY + hydrationDelayLeftBounds.fixedHeight + gearCoolingVerticalOffset
+                hydrationDelayLeftBounds.fixedY + hydrationDelayLeftBounds.fixedHeight + coolingVerticalOffset
             );
-        ElementBounds gearCoolingRightBounds = gearCoolingLeftBounds.FlatCopy()
+        ElementBounds coolingRightBounds = coolingLeftBounds.FlatCopy()
             .WithFixedPosition(
-                gearCoolingLeftBounds.fixedX + rightColumnHorizontalOffset,
-                gearCoolingLeftBounds.fixedY
+                coolingLeftBounds.fixedX + rightColumnHorizontalOffset,
+                coolingLeftBounds.fixedY
             );
+
+        var coolingLabelFont = CairoFont.WhiteDetailText().Clone();
+        coolingLabelFont.UnscaledFontsize *= 0.95f;
 
         composer
             .AddStaticText(
-                Lang.Get("hydrateordiedrate:characterextradialogs-gearcooling"),
-                CairoFont.WhiteDetailText(),
-                gearCoolingLeftBounds,
-                "gearCoolingStaticText"
+                Lang.Get("hydrateordiedrate:characterextradialogs-cooling"),
+                coolingLabelFont,
+                coolingLeftBounds,
+                "coolingStaticText"
             )
             .AddDynamicText(
-                "0",
+                "0 | 0",
                 CairoFont.WhiteDetailText(),
-                gearCoolingRightBounds,
-                "gearCooling"
-            );
-        const float totalCoolingVerticalOffset = -10.0f;
-        ElementBounds totalCoolingLeftBounds = gearCoolingLeftBounds.BelowCopy(totalCoolingVerticalOffset)
-            .WithFixedPosition(
-                gearCoolingLeftBounds.fixedX,
-                gearCoolingLeftBounds.fixedY + gearCoolingLeftBounds.fixedHeight + totalCoolingVerticalOffset
-            );
-        ElementBounds totalCoolingRightBounds = totalCoolingLeftBounds.FlatCopy()
-            .WithFixedPosition(
-                totalCoolingLeftBounds.fixedX + rightColumnHorizontalOffset,
-                totalCoolingLeftBounds.fixedY
+                coolingRightBounds,
+                "cooling"
             );
 
-        composer
-            .AddStaticText(
-                Lang.Get("hydrateordiedrate:characterextradialogs-totalcooling"),
-                CairoFont.WhiteDetailText(),
-                totalCoolingLeftBounds,
-                "totalCoolingStaticText"
-            )
-            .AddDynamicText(
-                "0",
-                CairoFont.WhiteDetailText(),
-                totalCoolingRightBounds,
-                "totalCooling"
-            );
         const float bonusesVerticalOffset = -16.0f;
 
-        ElementBounds bonusesBounds = totalCoolingLeftBounds.BelowCopy(bonusesVerticalOffset)
+        ElementBounds bonusesBounds = coolingLeftBounds.BelowCopy(bonusesVerticalOffset)
             .WithFixedPosition(
-                totalCoolingLeftBounds.fixedX + 10, 
-                totalCoolingLeftBounds.fixedY + 1 + totalCoolingLeftBounds.fixedHeight + bonusesVerticalOffset
+                coolingLeftBounds.fixedX + 10, 
+                coolingLeftBounds.fixedY + 1 + coolingLeftBounds.fixedHeight + bonusesVerticalOffset
             )
             .WithFixedWidth(160.0)
             .WithFixedHeight(26.0);
@@ -246,8 +221,7 @@ public static class CharacterExtraDialogsPatch
             thirstDynamicText = composer.GetDynamicText("hydrateordiedrate_thirst"),
             thirstRateDynamicText = composer.GetDynamicText("hydrateordiedrate_thirstrate"),
             nutritionDeficitDynamicText = composer.GetDynamicText("nutritionDeficit"),
-            gearCoolingDynamicText = composer.GetDynamicText("gearCooling"),
-            totalCoolingDynamicText = composer.GetDynamicText("totalCooling"),
+            coolingDynamicText = composer.GetDynamicText("cooling"),
             hydrationDelayDynamicText = composer.GetDynamicText("hydrateordiedrate_delay"),
             coolingBonusesRichText = composer.GetRichtext("hydrateordiedrate_coolingBonuses")
         };
@@ -272,8 +246,7 @@ public static class CharacterExtraDialogsPatch
                 thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst"),
                 thirstRateDynamicText = compo.GetDynamicText("hydrateordiedrate_thirstrate"),
                 nutritionDeficitDynamicText = compo.GetDynamicText("nutritionDeficit"),
-                gearCoolingDynamicText = compo.GetDynamicText("gearCooling"),
-                totalCoolingDynamicText = compo.GetDynamicText("totalCooling"),
+                coolingDynamicText = compo.GetDynamicText("cooling"),
                 hydrationDelayDynamicText = compo.GetDynamicText("hydrateordiedrate_delay"),
                 coolingBonusesRichText = compo.GetRichtext("hydrateordiedrate_coolingBonuses")
             };
@@ -312,9 +285,10 @@ public static class CharacterExtraDialogsPatch
         {
             float gearCooling = hodCooling.GetFloat("gearCooling", 0f);
             float totalCooling = hodCooling.GetFloat("totalCooling", 0f);
-
-            cached.gearCoolingDynamicText?.SetNewText($"{gearCooling:0.##}", false, false, false);
-            cached.totalCoolingDynamicText?.SetNewText($"{totalCooling:0.##}", false, false, false);
+            cached.coolingDynamicText?.SetNewText(
+                $"{gearCooling:0.##} | {totalCooling:0.##}",
+                false, false, false
+            );
 
             int wetBonus    = hodCooling.GetInt("wetBonus", 0);
             int roomBonus   = hodCooling.GetInt("roomBonus", 0);
@@ -340,7 +314,7 @@ public static class CharacterExtraDialogsPatch
             if (lines.Count > 0)
             {
                 string text = string.Join("<br>", lines);
-                vtml = $"<font color=\"#9fcfff\" size=\"9\">{text}</font>";
+                vtml = $"<font color=\"#1097b4\" size=\"9\">{text}</font>";
             }
 
             cached.coolingBonusesRichText?.SetNewText(
