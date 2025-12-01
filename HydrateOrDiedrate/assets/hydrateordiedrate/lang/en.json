@@ -281,5 +281,7 @@
 
   "direction-above": "above",
   "direction-and": "and",
-  "direction-below": "below"
+  "direction-below": "below",
+
+  "block-disguise": "<font opacity='0.6'>Disguised as: «{0}»</font>"
 }

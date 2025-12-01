@@ -1,6 +1,6 @@
 {
-  "// Hydrate or Diedrate v2.3.2 || Enlace de VS ModDB: https://mods.vintagestory.at/hydrateordiedrate ": "",
-  "// Traducido por C4BR3R4 || Última Modificación: 1/DIC/2025 || Registro de Cambios: http://c4br3r4.es/index.php?topic=1302.0 ": "",
+  // Hydrate or Diedrate v2.3.2 || Enlace de VS ModDB: https://mods.vintagestory.at/hydrateordiedrate
+  // Traducido por C4BR3R4 || Última Modificación: 1/DIC/2025 || Registro de Cambios: http://c4br3r4.es/index.php?topic=1302.0
 
   "hydrateordiedrate:Config.Setting.Add": "Añadir",
   "hydrateordiedrate:Config.Setting.AntiThirstScumming": "Antidesecante",
@@ -288,6 +288,6 @@
 
 
 
-  "// Creada en la v2.3.1 desde 'HydrateOrDiedrate/src/Piping/Pipe/BlockEntityPipe.cs' ": "",
-  "Disguised as: {0}": "<font opacity='0.6'>Camuflado con «{0}»</font>"
+  // Creada en la v2.3.1 desde 'HydrateOrDiedrate/src/Piping/Pipe/BlockEntityPipe.cs' 
+  "block-disguise": "<font opacity='0.6'>Camuflado con «{0}»</font>"
 }
