@@ -503,7 +503,7 @@ public class ItemHydrationPatch : HydrationPatchBase
             new()
             {
                 Code = "butchering:bloodportion",
-                Value = 50
+                Value = 600
             },
             new()
             {
