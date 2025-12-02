@@ -35,6 +35,7 @@
   "drops": [],
   "replaceable": 90,
   "FaceCullMode": "NeverCull",
+  "sideAo": { "all": false },
   "resistance": 8,
   "heldTpIdleAnimation": "holdbothhandslarge",
   "heldRightReadyAnimation": "heldblockready",
