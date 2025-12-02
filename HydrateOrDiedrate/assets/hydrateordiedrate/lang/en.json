@@ -244,7 +244,7 @@
   "itemwearable-maxcooling": "Max Cooling",
   "itemwearable-maxwarmth": "Max Warmth",
   "itemwearable-warmth": "Warmth",
-
+  "cooling-format": "{0:+0.#;-0.#}°C",
   "coolingbonus-lowsun": "Dark",
   "coolingbonus-room": "Indoors",
   "coolingbonus-shade": "Shade",
