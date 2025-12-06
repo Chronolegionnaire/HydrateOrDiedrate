@@ -96,7 +96,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
         {
             if (DisguiseSlot?.Itemstack?.Block != null)
             {
-                dsc.AppendLine(Lang.Get("Disguised as: {0}", DisguiseSlot.Itemstack.Block.GetPlacedBlockName(Api.World, Pos)));
+                dsc.AppendLine(Lang.Get("hydrateordiedrate:block-disguise", DisguiseSlot.Itemstack.Block.GetPlacedBlockName(Api.World, Pos)));
             }
         }
     }
