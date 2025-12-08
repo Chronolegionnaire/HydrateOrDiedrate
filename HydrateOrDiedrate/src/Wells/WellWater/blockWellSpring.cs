@@ -21,6 +21,15 @@ namespace HydrateOrDiedrate.Wells.WellWater
             return originBlock.GetDrops(world, pos, byPlayer, dropQuantityMultiplier);
         }
 
+        public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1)
+        {
+            if (!TryGetOriginBlock(pos, out var originBlock))
+            {
+                base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+            }
+            else originBlock.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+        }
+
         private bool TryGetOriginBlock(BlockPos pos, out Block result)
         {
             result = GetBlockEntity<BlockEntityWellSpring>(pos)?.OriginBlock;
