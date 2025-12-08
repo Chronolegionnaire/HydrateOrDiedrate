@@ -1,9 +1,0 @@
-[
-  {
-    "op": "replace",
-    "path": "/attributes/warmth",
-    "value": 0.01,
-    "file": "game:itemtypes/wearable/seraph/arm.json",
-    "side": "Server"
-  }
-]

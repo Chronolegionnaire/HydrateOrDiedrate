@@ -87,8 +87,9 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
 
                 continue;
             }
+            if(slot.Itemstack.Collectible is not ItemWearable itemWearable) continue;
 
-            var cooling = CustomItemWearableExtensions.GetCooling(slot, entity.World.Api);
+            var cooling = itemWearable.GetCooling(slot);
 
             cooling = (float)Math.Round(cooling, 1, MidpointRounding.AwayFromZero);
 

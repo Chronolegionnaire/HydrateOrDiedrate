@@ -228,12 +228,6 @@
   "characterextradialogs-nutritiondeficit": "Nutrition Deficit",
   "characterextradialogs-thirstrate": "Thirst Rate",
   "characterextradialogs-cooling": "Cooling Gear | Total",
-  "clothingcondition-good": "Good ({0}%)",
-  "clothingcondition-heavilytattered": "Heavily Tattered ({0}%)",
-  "clothingcondition-heavilyworn": "Heavily Worn ({0}%)",
-  "clothingcondition-tattered": "Tattered ({0}%)",
-  "clothingcondition-terrible": "Terrible ({0}%)",
-  "clothingcondition-worn": "Worn ({0}%)",
   "hydrateordiedrate-hp": "{0} hp",
   "hydrateordiedrate-hyd": "{0} hyd",
   "hydrateordiedrate-sat": "{0} sat",
@@ -244,6 +238,7 @@
   "itemwearable-maxcooling": "Max Cooling",
   "itemwearable-maxwarmth": "Max Warmth",
   "itemwearable-warmth": "Warmth",
+  "itemwearable-temperature-format": "{0:+0.#;-0.#}°C",
 
   "coolingbonus-lowsun": "Dark",
   "coolingbonus-room": "Indoors",
@@ -281,5 +276,7 @@
 
   "direction-above": "above",
   "direction-and": "and",
-  "direction-below": "below"
+  "direction-below": "below",
+
+  "block-disguise": "<font opacity='0.6'>Disguised as: «{0}»</font>"
 }
