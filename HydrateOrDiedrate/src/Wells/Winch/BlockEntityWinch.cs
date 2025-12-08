@@ -479,7 +479,7 @@ namespace HydrateOrDiedrate.Wells.Winch
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             base.GetBlockInfo(forPlayer, dsc);
-            if (!ModConfig.Instance.GroundWater.WinchOutputInfo) return;
+            if (!ModConfig.Instance.GroundWater.WellOutputInfo) return;
 
             var foundSpring = FindWellSpringBelow(Api.World.BlockAccessor, Pos, InfoMaxSearchDepth);
             if (foundSpring is null)
@@ -488,11 +488,9 @@ namespace HydrateOrDiedrate.Wells.Winch
                 return;
             }
 
+            dsc.AppendLine();
             dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.springDetected"));
-            dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.waterType", string.IsNullOrEmpty(foundSpring.LastWaterType) ? string.Empty : Lang.Get($"hydrateordiedrate:item-waterportion-{foundSpring.LastWaterType}")));
-            dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.outputRate", foundSpring.LastDailyLiters));
-            dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.retentionVolume", foundSpring.GetMaxTotalVolume()));
-            dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.totalShaftVolume", foundSpring.totalLiters));
+            foundSpring.GetWellOutputInfo(forPlayer, dsc, true);
         }
 
         public override void Dispose()

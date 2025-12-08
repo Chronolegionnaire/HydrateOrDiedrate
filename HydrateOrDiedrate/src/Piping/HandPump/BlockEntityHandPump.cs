@@ -655,30 +655,22 @@ namespace HydrateOrDiedrate.Piping.HandPump
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             base.GetBlockInfo(forPlayer, dsc);
-            if (!ModConfig.Instance.Pump.HandPumpOutputInfo) return;
-            RefreshPrimeDecay();
+
+            var displayPriming = ModConfig.Instance.Pump.HandPumpEnablePriming && ModConfig.Instance.Pump.HandPumpOutputInfo;
+            var displayWellOutput = ModConfig.Instance.GroundWater.WellOutputInfo;
+
+            if (!displayWellOutput && !displayPriming) return;
+
             var foundSpring = GetOrFindSpring();
-            if (foundSpring == null)
+            dsc.AppendLine();
+            if (foundSpring is null)
             {
                 dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.noSpring"));
                 return;
             }
 
             dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.springDetected"));
-            dsc.Append("  ");
-            dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.waterType",
-                string.IsNullOrEmpty(foundSpring.LastWaterType)
-                    ? string.Empty
-                    : Lang.Get($"hydrateordiedrate:item-waterportion-{foundSpring.LastWaterType}")));
-
-            dsc.Append("  ");
-            dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.outputRate", foundSpring.LastDailyLiters));
-            dsc.Append("  ");
-            dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.retentionVolume", foundSpring.GetMaxTotalVolume()));
-            dsc.Append("  ");
-            dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.totalShaftVolume", foundSpring.totalLiters));
-
-            if (ModConfig.Instance.Pump.HandPumpEnablePriming)
+            if (displayPriming)
             {
                 int required = ComputePrimingStrokes(Api.World, Pos, foundSpring.Pos);
 
@@ -687,20 +679,20 @@ namespace HydrateOrDiedrate.Piping.HandPump
                     int already = GetEffectivePrimeInt(required);
                     int remaining = Math.Max(0, required - already);
 
+                    dsc.Append("  ");
                     if (remaining > 0)
                     {
-                        dsc.Append("  ");
                         dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.primingRemaining", remaining));
                     }
                     else
                     {
-                        dsc.Append("  ");
                         dsc.AppendLine(Lang.Get("hydrateordiedrate:pump.primed"));
                     }
                 }
             }
+            if (displayWellOutput) foundSpring.GetWellOutputInfo(forPlayer, dsc, true);
         }
-        
+
         private int GetEffectivePrimeInt(int required)
         {
             if (primeLevel <= 0f) return 0;

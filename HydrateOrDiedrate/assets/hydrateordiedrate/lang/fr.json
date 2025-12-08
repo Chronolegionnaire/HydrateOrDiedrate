@@ -74,7 +74,7 @@
   "hydrateordiedrate:Config.Setting.SprintToDrink": "Sprint + Clic droit pour boire à la place de Accroupi + Clic droit, pour faciliter l'utilisation avec CarryOn",
   "hydrateordiedrate:Config.Setting.AquiferDataOnProspectingNodeMode": "Écrire les informations sur l'aquifère du tronçon actuel sur le nœud réalisé plutôt que sur la Recherche de densité.",
   "hydrateordiedrate:Config.Setting.ShowAquiferProspectingDataOnMap": "Inclure les données sur les aquifères dans les marqueurs de cartes de prospection générés automatiquement",
-  "hydrateordiedrate:Config.Setting.WinchOutputInfo": "Afficher au survol les informations sur la production lorsque l'on regarde le treuil. Affiche la production de la source directement sous le treuil (jusqu'à 256 blocs de distance).",
+  "hydrateordiedrate:Config.Setting.WellOutputInfo": "Afficher au survol les informations sur la production lorsque l'on regarde le treuil. Affiche la production de la source directement sous le treuil (jusqu'à 256 blocs de distance).",
   "hydrateordiedrate:ability-dromedary": "Dromadaire",
   "hydrateordiedrate:abilitydesc-dromedary": "Augmente la capacité de soif maximale.",
   "hydrateordiedrate:ability-equatidian": "Équatidien",
@@ -232,8 +232,8 @@
   "pickaxewellmode-digwellspring": "Creuser un puits de source",
   "winch.springDetected":      "Source détectée en dessous:",
   "winch.noSpring":            "Aucune source détectée sous le treuil.",
-  "winch.waterType":           "Type d’eau: {0}",
-  "winch.outputRate":          "Débit: {0:F1}L/jour",
-  "winch.retentionVolume":     "Volume max du puits: {0}litres",
-  "winch.totalShaftVolume":    "Volume actuel du puits: {0}L"
+  "well.waterType":           "Type d’eau: {0}",
+  "well.outputRate":          "Débit: {0:F1}L/jour",
+  "well.retentionVolume":     "Volume max du puits: {0}litres",
+  "well.totalShaftVolume":    "Volume actuel du puits: {0}L"
 }

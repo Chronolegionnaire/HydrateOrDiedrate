@@ -81,9 +81,9 @@
 
   "winch.springDetected":      "Quellwasser darunter erkannt:",
   "winch.noSpring":            "Keine Quelle unter der Seilwinde gefunden.",
-  "winch.waterType":           "Wassertyp: {0}",
-  "winch.outputRate":          "Förderrate: {0:F1}L/Tag",
-  "winch.retentionVolume":     "Maximales Brunnenvolumen: {0}Liter",
-  "winch.totalShaftVolume":    "Aktuelles Brunnenvolumen: {0}L"
+  "well.waterType":           "Wassertyp: {0}",
+  "well.outputRate":          "Förderrate: {0:F1}L/Tag",
+  "well.retentionVolume":     "Maximales Brunnenvolumen: {0}Liter",
+  "well.totalShaftVolume":    "Aktuelles Brunnenvolumen: {0}L"
 
 }

@@ -12,7 +12,7 @@ public class PumpConfig
     public bool HandPumpEnablePriming { get; set; } = true;
     
     /// <summary>
-    /// Whether hand pump priming strokes should be enabled
+    /// Whether to display priming strokes information on the pump tooltip
     /// </summary>
     [DefaultValue(true)]
     public bool HandPumpOutputInfo { get; set; } = true;

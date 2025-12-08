@@ -86,7 +86,7 @@
     "hydrateordiedrate:Config.Setting.SprintToDrink": "Sprint + PPM zamiast Kucnij + PPM (dla kompatybilności z CarryOn)",
     "hydrateordiedrate:Config.Setting.AquiferDataOnProspectingNodeMode": "Wyświetl dane warstwy wodnej dla aktualnego chunka zamiast wyszukiwania gęstości",
     "hydrateordiedrate:Config.Setting.ShowAquiferProspectingDataOnMap": "Dodaj dane warstw wodnych do automatycznych markerów mapy",
-    "hydrateordiedrate:Config.Setting.WinchOutputInfo": "Pokaż dane wyjściowe źródła po najechaniu kursorem na wyciąg (do 256 bloków w dół)",
+    "hydrateordiedrate:Config.Setting.WellOutputInfo": "Pokaż dane wyjściowe źródła po najechaniu kursorem na wyciąg (do 256 bloków w dół)",
     "hydrateordiedrate:ability-dromedary": "Dromader",
     "hydrateordiedrate:abilitydesc-dromedary": "Zwiększa maksymalną pojemność pragnienia.",
     "hydrateordiedrate:ability-equatidian": "Równikowiec",
@@ -211,10 +211,10 @@
     "pickaxewellmode-digwellspring": "Kop źródło studni",
     "winch.springDetected": "Wykryto źródło studni poniżej:",
     "winch.noSpring": "Brak źródła studni pod wyciągiem.",
-    "winch.waterType": "Rodzaj wody: {0}",
-    "winch.outputRate": "Wydajność: {0:F1} L/dzień",
-    "winch.retentionVolume": "Maksymalna pojemność studni: {0} litrów",
-    "winch.totalShaftVolume": "Aktualna pojemność studni: {0} L"
+    "well.waterType": "Rodzaj wody: {0}",
+    "well.outputRate": "Wydajność: {0:F1} L/dzień",
+    "well.retentionVolume": "Maksymalna pojemność studni: {0} litrów",
+    "well.totalShaftVolume": "Aktualna pojemność studni: {0} L"
 }
 
 

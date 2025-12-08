@@ -419,6 +419,26 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     {
         base.GetBlockInfo(forPlayer, dsc);
         dsc.AppendLine(Lang.Get("hydrateordiedrate:block-wellspring-description"));
+        dsc.AppendLine();
+        if(originBlock is not null)
+        {
+            dsc.AppendLine(Lang.Get("hydrateordiedrate:dug-in", originBlock.GetHeldItemName(new ItemStack(originBlock))));
+        }
+        if(!ModConfig.Instance.GroundWater.WellOutputInfo) return;
+        dsc.AppendLine();
+        GetWellOutputInfo(forPlayer, dsc);
+    }
+
+    public void GetWellOutputInfo(IPlayer forPlayer, StringBuilder dsc, bool addSpacing = false)
+    {
+        if(addSpacing) dsc.Append("  ");
+        dsc.AppendLine(Lang.Get("hydrateordiedrate:well.waterType", string.IsNullOrEmpty(LastWaterType) ? string.Empty : Lang.Get($"hydrateordiedrate:item-waterportion-{LastWaterType}")));
+        if(addSpacing) dsc.Append("  ");
+        dsc.AppendLine(Lang.Get("hydrateordiedrate:well.outputRate", LastDailyLiters));
+        if(addSpacing) dsc.Append("  ");
+        dsc.AppendLine(Lang.Get("hydrateordiedrate:well.retentionVolume", GetMaxTotalVolume()));
+        if(addSpacing) dsc.Append("  ");
+        dsc.AppendLine(Lang.Get("hydrateordiedrate:well.totalShaftVolume", totalLiters));
     }
 
     private void SyncWaterColumn()
@@ -850,7 +870,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
     public static string GetWaterType(bool isFresh, string pollution = "clean") => $"{(isFresh ? "fresh" : "salt")}-well-{pollution}";
 
-    public static int GetMaxVolumeForWaterType(string waterType) => waterType.Contains("muddy") ? 9 : 70;
+    public static int GetMaxVolumeForWaterType(string waterType) => waterType is not null && waterType.Contains("muddy") ? 9 : 70;
 
     public int GetMaxTotalVolume() => GetRetentionDepth() * GetMaxVolumeForWaterType(LastWaterType);
 

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Text;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 
 namespace HydrateOrDiedrate.Wells.WellWater
@@ -32,6 +34,27 @@ namespace HydrateOrDiedrate.Wells.WellWater
             if (!TryGetOriginBlock(pos, out var originBlock)) return base.GetRandomColor(capi, pos, facing, rndIndex);
 
             return originBlock.GetRandomColor(capi, pos, facing, rndIndex);
+        }
+
+        public override string GetPlacedBlockName(IWorldAccessor world, BlockPos pos)
+        {
+            var wellSpring = GetBlockEntity<BlockEntityWellSpring>(pos);
+            if(wellSpring is null) return base.GetPlacedBlockName(world, pos);
+
+            StringBuilder stringBuilder = new();
+            stringBuilder.Append(Lang.Get(
+                wellSpring.IsShallow
+                ? "hydrateordiedrate:block-wellspring-shallow"
+                : "hydrateordiedrate:block-wellspring-deep"
+            ));
+
+            BlockBehavior[] blockBehaviors = BlockBehaviors;
+            for (int i = 0; i < blockBehaviors.Length; i++)
+            {
+                blockBehaviors[i].GetPlacedBlockName(stringBuilder, world, pos);
+            }
+
+            return stringBuilder.ToString().TrimEnd();
         }
     }
 }

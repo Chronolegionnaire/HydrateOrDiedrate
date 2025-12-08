@@ -77,7 +77,7 @@
   "hydrateordiedrate:Config.Setting.SprintToDrink": "Бег + правый клик, чтобы выпить вместо красться + правый клик, для удобства использования с CarryOn",
   "hydrateordiedrate:Config.Setting.AquiferDataOnProspectingNodeMode": "Печать информации о водоносном горизонте текущего чанка при поиске по узлу, а не по плотности.",
   "hydrateordiedrate:Config.Setting.ShowAquiferProspectingDataOnMap": "Включение данных о водоносных горизонтах в автогенерируемые маркеры поисковых карт",
-  "hydrateordiedrate:Config.Setting.WinchOutputInfo": "Показывать информацию о производительности при наведении на лебедку. Отображает производительность источника, расположенного непосредственно под лебёдкой (на расстоянии до 256 блоков).",
+  "hydrateordiedrate:Config.Setting.WellOutputInfo": "Показывать информацию о производительности при наведении на лебедку. Отображает производительность источника, расположенного непосредственно под лебёдкой (на расстоянии до 256 блоков).",
   "hydrateordiedrate:ability-dromedary": "Верблюд",
   "hydrateordiedrate:abilitydesc-dromedary": "Увеличивает максимальную жажду.",
   "hydrateordiedrate:ability-equatidian": "Экваториальный",
@@ -228,10 +228,10 @@
   "pickaxewellmode-digwellspring": "Выкопайте колодезный источник",
   "winch.springDetected":      "Родник обнаружен ниже:",
   "winch.noSpring":            "Родник не обнаружен под лебёдкой.",
-  "winch.waterType":           "Тип воды: {0}",
-  "winch.outputRate":          "Производительность: {0:F1}л/день",
-  "winch.retentionVolume":     "Максимальный объем колодца: {0}литров",
-  "winch.totalShaftVolume":    "Текущий объем колодца: {0}л",
+  "well.waterType":           "Тип воды: {0}",
+  "well.outputRate":          "Производительность: {0:F1}л/день",
+  "well.retentionVolume":     "Максимальный объем колодца: {0}литров",
+  "well.totalShaftVolume":    "Текущий объем колодца: {0}л",
   "game:ore-$aquifer$": "Водоносный горизонт"
 }
  

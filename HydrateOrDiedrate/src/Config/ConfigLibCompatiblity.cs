@@ -110,7 +110,7 @@ public class ConfigLibCompatibility
     private const string settingWaterPerish = "hydrateordiedrate:Config.Setting.WaterPerish";
     private const string settingAquiferDataOnProspectingNodeMode = "hydrateordiedrate:Config.Setting.AquiferDataOnProspectingNodeMode";
     private const string settingShowAquiferProspectingDataOnMap = "hydrateordiedrate:Config.Setting.ShowAquiferProspectingDataOnMap";
-    private const string settingWinchOutputInfo = "hydrateordiedrate:Config.Setting.WinchOutputInfo";
+    private const string settingWinchOutputInfo = "hydrateordiedrate:Config.Setting.WellOutputInfo";
 
     private ConfigLibCompatibility()
     {
@@ -583,8 +583,8 @@ public class ConfigLibCompatibility
         ImGui.Checkbox(Lang.Get(settingShowAquiferProspectingDataOnMap) + $"##showAquiferProspectingDataOnMap-{id}", ref showAquiferProspectingDataOnMap);
         groundWaterConfig.ShowAquiferProspectingDataOnMap = showAquiferProspectingDataOnMap;
             
-        bool winchOutputInfo = groundWaterConfig.WinchOutputInfo;
-        ImGui.Checkbox(Lang.Get(settingWinchOutputInfo) + $"##winchOutputInfo-{id}", ref winchOutputInfo);
-        groundWaterConfig.WinchOutputInfo = winchOutputInfo;
+        bool winchOutputInfo = groundWaterConfig.WellOutputInfo;
+        ImGui.Checkbox(Lang.Get(settingWinchOutputInfo) + $"##wellOutputInfo-{id}", ref winchOutputInfo);
+        groundWaterConfig.WellOutputInfo = winchOutputInfo;
     }
 }
