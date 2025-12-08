@@ -152,9 +152,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         ClassRegistry.legacyBlockEntityClassNames["BlockEntityTun"]       = "HoD:BlockEntityTun";
         ClassRegistry.legacyBlockEntityClassNames["BlockEntityWellSpring"] = "HoD:BlockEntityWellSpring";
         ClassRegistry.legacyBlockEntityClassNames["BlockEntityWinch"]     = "HoD:BlockEntityWinch";
-        ClassRegistry.legacyBlockEntityClassNames["BlockEntityHandPump"]  = "HoD:BlockEntityHandPump";
-        ClassRegistry.legacyBlockEntityClassNames["BlockEntityHoDPipe"]   = "HoD:BlockEntityHoDPipe";
-        ClassRegistry.legacyBlockEntityClassNames["BlockEntityShutoffValve"] = "HoD:BlockEntityShutoffValve";
         ClassRegistry.legacyBlockEntityClassNames["BlockEntityWellWaterSentinel"] = "HoD:BlockEntityWellWaterSentinel";
         
         api.RegisterBlockClass("HoD:BlockKeg", typeof(BlockKeg));
