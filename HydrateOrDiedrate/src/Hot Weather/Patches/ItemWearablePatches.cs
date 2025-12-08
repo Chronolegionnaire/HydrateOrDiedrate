@@ -98,9 +98,7 @@ namespace HydrateOrDiedrate.patches
                 dsc.AppendFormat(coolingFormat, itemWearable.GetCooling(inSlot));
                 dsc.AppendLine(FONT_CLOSE_TAG);
             }
-
-            dsc.AppendLine();
-            
+            dsc.Append("<font size=13>");
             dsc.Append(Lang.Get("hydrateordiedrate:itemwearable-maxwarmth"));
             dsc.Append(": ");
             dsc.AppendFormat(warmthFormat, maxWarmth);
@@ -108,8 +106,7 @@ namespace HydrateOrDiedrate.patches
             dsc.Append(Lang.Get("hydrateordiedrate:itemwearable-maxcooling"));
             dsc.Append(": ");
             dsc.AppendFormat(coolingFormat, maxCooling);
-
-            dsc.AppendLine();
+            dsc.AppendLine(FONT_CLOSE_TAG);
         }
 
         public static void AppendTheCoolingChecks(CodeMatcher matcher)
