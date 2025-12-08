@@ -26,6 +26,7 @@ using HydrateOrDiedrate.Piping.HandPump;
 using HydrateOrDiedrate.Piping.Networking;
 using HydrateOrDiedrate.Piping.Pipe;
 using HydrateOrDiedrate.Piping.ShutoffValve;
+using Vintagestory.Common;
 
 namespace HydrateOrDiedrate;
 
@@ -146,6 +147,15 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void Start(ICoreAPI api)
     {
         base.Start(api);
+        
+        ClassRegistry.legacyBlockEntityClassNames["BlockEntityKeg"]       = "HoD:BlockEntityKeg";
+        ClassRegistry.legacyBlockEntityClassNames["BlockEntityTun"]       = "HoD:BlockEntityTun";
+        ClassRegistry.legacyBlockEntityClassNames["BlockEntityWellSpring"] = "HoD:BlockEntityWellSpring";
+        ClassRegistry.legacyBlockEntityClassNames["BlockEntityWinch"]     = "HoD:BlockEntityWinch";
+        ClassRegistry.legacyBlockEntityClassNames["BlockEntityHandPump"]  = "HoD:BlockEntityHandPump";
+        ClassRegistry.legacyBlockEntityClassNames["BlockEntityHoDPipe"]   = "HoD:BlockEntityHoDPipe";
+        ClassRegistry.legacyBlockEntityClassNames["BlockEntityShutoffValve"] = "HoD:BlockEntityShutoffValve";
+        ClassRegistry.legacyBlockEntityClassNames["BlockEntityWellWaterSentinel"] = "HoD:BlockEntityWellWaterSentinel";
         
         api.RegisterBlockClass("HoD:BlockKeg", typeof(BlockKeg));
         api.RegisterBlockEntityClass("HoD:BlockEntityKeg", typeof(BlockEntityKeg));
