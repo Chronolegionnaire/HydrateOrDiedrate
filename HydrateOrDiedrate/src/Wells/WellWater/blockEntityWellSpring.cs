@@ -428,15 +428,21 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         var baseCode = $"wellwater-{(IsFresh ? "fresh" : "salt")}-{currentPollution}";
         int perBlockMax = PerBlockMax();
         int retentionDepth = GetRetentionDepth();
-        bool requireWalls = currentPollution != "muddy";
         int allowedDepth = 0;
         var scanPos = Pos.Copy();
-        for (int i = 0; i < retentionDepth; i++)
+        if (currentPollution == "muddy")
         {
             scanPos.Y++;
-            if (!WellBlockUtils.SolidAllows(ba.GetSolid(scanPos))) break;
-            if (requireWalls && !HasSolidHorizNeighbors(ba, scanPos)) break;
-            allowedDepth++;
+            allowedDepth = WellBlockUtils.SolidAllows(ba.GetSolid(scanPos)) ? 1 : 0;
+        }
+        else
+        {
+            for (int i = 0; i < retentionDepth; i++)
+            {
+                scanPos.Y++;
+                if (!WellBlockUtils.IsValidShaftPosition(ba, scanPos)) break;
+                allowedDepth++;
+            }
         }
         int effectiveDepth = currentPollution == "muddy" ? Math.Min(allowedDepth, 1) : allowedDepth;
         int columnCap = currentPollution == "muddy" ? 9 : (effectiveDepth * perBlockMax);
@@ -808,16 +814,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             pos.Y++;
         }
     }
-    
-    private static bool HasSolidHorizNeighbors(IBlockAccessor ba, BlockPos pos)
-    {
-        foreach (var face in BlockFacing.HORIZONTALS)
-        {
-            var npos = pos.AddCopy(face);
-            if (WellBlockUtils.SolidAllows(ba.GetSolid(npos))) return false;
-        }
-        return true;
-    }
+   
     public override void ToTreeAttributes(ITreeAttribute tree)
     {
         base.ToTreeAttributes(tree);
