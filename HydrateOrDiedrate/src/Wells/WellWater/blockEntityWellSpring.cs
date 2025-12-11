@@ -434,8 +434,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         for (int i = 0; i < retentionDepth; i++)
         {
             scanPos.Y++;
-            if (!WellBlockUtils.SolidAllows(ba.GetSolid(scanPos))) break;
-            if (requireWalls && !HasSolidHorizNeighbors(ba, scanPos)) break;
+            if (requireWalls && !WellBlockUtils.IsValidShaftPosition(ba, scanPos)) break;
             allowedDepth++;
         }
         int effectiveDepth = currentPollution == "muddy" ? Math.Min(allowedDepth, 1) : allowedDepth;
@@ -808,16 +807,7 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             pos.Y++;
         }
     }
-    
-    private static bool HasSolidHorizNeighbors(IBlockAccessor ba, BlockPos pos)
-    {
-        foreach (var face in BlockFacing.HORIZONTALS)
-        {
-            var npos = pos.AddCopy(face);
-            if (WellBlockUtils.SolidAllows(ba.GetSolid(npos))) return false;
-        }
-        return true;
-    }
+   
     public override void ToTreeAttributes(ITreeAttribute tree)
     {
         base.ToTreeAttributes(tree);
