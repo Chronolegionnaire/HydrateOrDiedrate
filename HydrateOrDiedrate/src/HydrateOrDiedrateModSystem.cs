@@ -27,6 +27,7 @@ using HydrateOrDiedrate.Piping.Networking;
 using HydrateOrDiedrate.Piping.Pipe;
 using HydrateOrDiedrate.Piping.ShutoffValve;
 using Vintagestory.Common;
+using System.Linq;
 
 namespace HydrateOrDiedrate;
 
@@ -267,7 +268,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     //TODO: there should be a better way to do this, no?
     private void CheckAndInitializeCustomHud(float dt)
     {
-        var vanillaHudStatbar = GetVanillaStatbarHud();
+        var vanillaHudStatbar = _clientApi?.Gui?.OpenedGuis?.OfType<HudStatbar>().FirstOrDefault();
 
         if (vanillaHudStatbar != null && vanillaHudStatbar.IsOpened())
         {
@@ -282,19 +283,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
             _clientApi.Event.UnregisterGameTickListener(customHudListenerId);
         }
-    }
-
-    private HudStatbar GetVanillaStatbarHud()
-    {
-        foreach (var hud in _clientApi.Gui.OpenedGuis)
-        {
-            if (hud is HudStatbar statbar)
-            {
-                return statbar;
-            }
-        }
-
-        return null;
     }
 
     public void CheckPlayerInteraction(float dt)
