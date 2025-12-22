@@ -141,16 +141,36 @@ namespace HydrateOrDiedrate.patches
             );
 
             matcher.MatchStartForward(CodeMatch.LoadsConstant("warmth"));
+            var backupPos = matcher.Pos;
             matcher.MatchEndForward(
                 new CodeMatch(OpCodes.Ceq),
                 new CodeMatch(OpCodes.Ldc_I4_0),
                 new CodeMatch(OpCodes.Ceq),
                 CodeMatch.Branches()
             );
-            
+
+            if (matcher.IsValid)
+            {
+                matcher.Insert(
+                    CodeInstruction.LoadArgument(1), //slot
+                    new CodeInstruction(OpCodes.Call, AccessTools.PropertyGetter(typeof(ItemSlot), nameof(ItemSlot.Itemstack))),
+                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemWearablePatches), nameof(OrCoolingExists)))
+                );
+                return;
+            }
+
+            //Fallback inverted structure
+            matcher.Start().Advance(backupPos);
+            matcher.MatchEndForward(
+                CodeMatch.Calls(AccessTools.Method(typeof(JsonObject), nameof(JsonObject.AsFloat))),
+                CodeMatch.LoadsConstant(0f),
+                new CodeMatch(OpCodes.Ceq),
+                CodeMatch.Branches()
+            );
+
             matcher.Insert(
-                CodeInstruction.LoadArgument(1), //slot
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemWearablePatches), nameof(OrCoolingExists)))
+                CodeInstruction.LoadArgument(1), //sinkstack
+                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemWearablePatches), nameof(AndCoolingMissing)))
             );
         }
 
@@ -163,7 +183,17 @@ namespace HydrateOrDiedrate.patches
 
             return matcher.InstructionEnumeration();
         }
+        
+        [HarmonyPatch(typeof(ItemWearable), "GetMergableQuantity")]
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> ChangeMergableQuantity(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            var matcher = new CodeMatcher(instructions, generator);
+            AppendTheCoolingChecks(matcher);
+            return matcher.InstructionEnumeration();
+        }
 
-        public static bool OrCoolingExists(bool warmthExists, ItemSlot slot) => warmthExists || slot.Itemstack.ItemAttributes[Attributes.Cooling].AsFloat(0f) != 0f;
+        public static bool AndCoolingMissing(bool warmthMissing, ItemStack itemStack) => warmthMissing && itemStack.ItemAttributes[Attributes.Cooling].AsFloat(0f) == 0f;
+        public static bool OrCoolingExists(bool warmthExists, ItemStack itemStack) => warmthExists || itemStack.ItemAttributes[Attributes.Cooling].AsFloat(0f) != 0f;
     }
 }
