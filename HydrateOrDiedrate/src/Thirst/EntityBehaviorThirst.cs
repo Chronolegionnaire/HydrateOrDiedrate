@@ -199,12 +199,8 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
         {
             thirstDecayRate *= config.IdleThirstModifier;
         }
-        float thirstRateMul = entity.Stats.GetBlended(HoDStats.ThirstRateMul);
+        float thirstRateMul = entity.Stats.GetBlended(HoDStats.ThirstRateMul).GuardFinite(1f);
         
-        if (!float.IsFinite(thirstRateMul))
-        {
-            thirstRateMul = 1f;
-        }
         thirstDecayRate *= GameMath.Clamp(thirstRateMul, 0f, 1000f);
 
         return thirstDecayRate.GuardFinite(config.ThirstDecayRate);
