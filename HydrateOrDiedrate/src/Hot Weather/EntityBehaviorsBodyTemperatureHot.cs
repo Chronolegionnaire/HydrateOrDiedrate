@@ -150,13 +150,9 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
             HasShadeCoolingBonus = true;
         }
 
-        float coolingMul = entity.Stats.GetBlended(HoDStats.CoolingMul);
-        if (!float.IsFinite(coolingMul) || coolingMul <= 0f)
-        {
-            coolingMul = 1f;
-        }
+        float coolingMul = entity.Stats.GetBlended(HoDStats.CoolingMul).GuardFinite(1f);
 
-        coolingMul = GameMath.Clamp(coolingMul, 0.01f, 100f);
+        coolingMul = GameMath.Clamp(coolingMul, 0f, 100f);
 
         float totalCoolingMult = CoolingMultiplier * coolingMul;
 
