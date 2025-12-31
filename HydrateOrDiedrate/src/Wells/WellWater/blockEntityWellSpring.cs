@@ -9,6 +9,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace HydrateOrDiedrate.Wells.WellWater;
 
@@ -22,6 +23,12 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     public bool IsFresh => (LastWaterType?.StartsWith("fresh") ?? true);
     private const int reconcileIntervalMs = 5000;
     private int PerBlockMax() => currentPollution == "muddy" ? 9 : 70;
+
+    /// <summary>
+    /// True when a sync is supposed to happen but hasn't yet (most likely because neighboring chunks weren't loaded yet).
+    /// </summary>
+    private bool SyncPending = false;
+
     public int TryChangeVolume(int change, bool triggerSync = true)
     {
         if (change == 0) return 0;
@@ -297,16 +304,19 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             LastInGameDay = currentInGameDays;
             changed |= HandleWell(elapsedDays);
         }
+
         if (changed)
         {
             SyncWaterColumn();
             MarkDirty();
         }
+        else if(SyncPending) SyncWaterColumn();
     }
 
 
     private void OnPeriodicShaftCheck(float dt)
     {
+        if(Api is not ICoreServerAPI serverAPI || !serverAPI.World.IsFullyLoadedChunk(Pos)) return; //Only check shaft if neighboring chunks are loaded
         var pos = Pos.UpCopy();
         cachedRingMaterial = CheckRingMaterial(Api.World.BlockAccessor, pos);
         partialValidatedHeight = CheckColumnForMaterial(Api.World.BlockAccessor, pos, cachedRingMaterial);
@@ -423,7 +433,14 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
     private void SyncWaterColumn()
     {
-        if (Api.Side != EnumAppSide.Server) return;
+        if (Api is not ICoreServerAPI serverApi) return;
+        if (!serverApi.World.IsFullyLoadedChunk(Pos))
+        {
+            SyncPending = true;
+            return; //Wait with syncing until neighboring chunks are loaded
+        }
+        SyncPending = false;
+
         var ba = Api.World.BlockAccessor;
         var baseCode = $"wellwater-{(IsFresh ? "fresh" : "salt")}-{currentPollution}";
         int perBlockMax = PerBlockMax();
