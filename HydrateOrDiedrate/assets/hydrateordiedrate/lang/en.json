@@ -48,7 +48,6 @@
   "hydrateordiedrate:Config.Setting.PondChance": "Pond generation multiplier",
   "hydrateordiedrate:Config.Setting.ProspectingRadius": "The chunk radius that will be checked when prospecting for aquifers",
   "hydrateordiedrate:Config.Setting.RainMultiplier": "Rain Multiplier",
-  "hydrateordiedrate:Config.Setting.RandomMultiplierChance": "Random Multiplier Chance for aquifers, increase this to raise the chance of random aquifers appearing (not near sources of water)",
   "hydrateordiedrate:Config.Setting.Remove": "Remove",
   "hydrateordiedrate:Config.Setting.RoomCoolingBonus": "Room Cooling Bonus",
   "hydrateordiedrate:Config.Setting.SaltWaterMultiplier": "Salt Water Multiplier for aquifer rating, larger numbers will make aquifers near salt water heavier. This WILL affect aquifer salinity do not change unless you know what you are doing.",

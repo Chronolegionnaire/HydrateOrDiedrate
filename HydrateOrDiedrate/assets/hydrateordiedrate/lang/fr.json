@@ -36,7 +36,6 @@
   "hydrateordiedrate:Config.Setting.WellwaterDepthMaxBase": "Profondeur maximale de l'eau du puits (Base)",
   "hydrateordiedrate:Config.Setting.WellwaterDepthMaxClay": "Profondeur maximale de l'eau du puits (Brique d'argile)",
   "hydrateordiedrate:Config.Setting.WellwaterDepthMaxStone": "Profondeur maximale de l'eau du puits (Brique de pierre)",
-  "hydrateordiedrate:Config.Settings.RandomMultiplierChance": "Chance de multiplicateur aléatoire pour les aquifères, augmentez-le pour augmenter les chances d'apparition d'aquifères aléatoires (pas à proximité de sources d'eau)",
   "hydrateordiedrate:Config.Settings.Step": "Étape de l'aquifère, augmente la distance du tronçon, le calcul de l'aquifère vérifiera les blocs voisins, un impact important sur les performances, ne changez pas à moins que vous ne sachiez ce que vous faites.",
   "hydrateordiedrate:Config.Settings.WaterBlockMultiplier": "Multiplicateur de bloc d'eau pour l'évaluation de l'aquifère, des nombres plus grands rendront les aquifères proches de l'eau plus lourds.",
   "hydrateordiedrate:Config.Settings.SaltWaterMultiplier": "Multiplicateur d'eau salée pour l'évaluation de l'aquifère. Des nombres plus élevés rendront les aquifères proches de l'eau salée plus lourds. Cela affectera la salinité de l'aquifère. Ne changez rien à moins de savoir ce que vous faites.",
