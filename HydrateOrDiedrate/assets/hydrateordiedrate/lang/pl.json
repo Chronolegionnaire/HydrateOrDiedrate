@@ -42,7 +42,6 @@
     "hydrateordiedrate:Config.Setting.WellwaterDepthMaxBase": "Maksymalna głębokość wody w studni (bazowa)",
     "hydrateordiedrate:Config.Setting.WellwaterDepthMaxClay": "Maksymalna głębokość wody w studni (cegła gliniana)",
     "hydrateordiedrate:Config.Setting.WellwaterDepthMaxStone": "Maksymalna głębokość wody w studni (cegła kamienna)",
-    "hydrateordiedrate:Config.Setting.RandomMultiplierChance": "Szansa na losowy mnożnik dla warstw wodnych",
     "hydrateordiedrate:Config.Setting.Step": "Krok warstwy wodnej (odległość chunków)",
     "hydrateordiedrate:Config.Setting.WaterBlockMultiplier": "Mnożnik bloków wody dla oceny warstwy wodnej",
     "hydrateordiedrate:Config.Setting.SaltWaterMultiplier": "Mnożnik słonej wody dla oceny warstwy wodnej",

@@ -51,7 +51,6 @@
   "hydrateordiedrate:Config.Setting.PondChance": "Multiplicador de Generación de Estanques",
   "hydrateordiedrate:Config.Setting.ProspectingRadius": "El radio de sectores que se comprobarán al prospectar acuíferos.",
   "hydrateordiedrate:Config.Setting.RainMultiplier": "Multiplicador de Lluvia",
-  "hydrateordiedrate:Config.Setting.RandomMultiplierChance": "Multiplicador Aleatorio de Probabilidad de Generación de Acuíferos. Auméntalo para aumentar la probabilidad de que aparezcan acuíferos aleatorios (lejos de fuentes de agua).",
   "hydrateordiedrate:Config.Setting.Remove": "Eliminar",
   "hydrateordiedrate:Config.Setting.RoomCoolingBonus": "Bonificación de Refrigeración de Habitaciones",
   "hydrateordiedrate:Config.Setting.SaltWaterMultiplier": "Multiplicador de Agua Salada para la Clasificación de Acuíferos. Los valores altos harán que los acuíferos cercanos al Agua Salada sean más profundos. Esto afectará a la salinidad del acuífero. No lo cambies a menos que sepas lo que estás haciendo.",

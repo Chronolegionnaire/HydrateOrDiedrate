@@ -480,7 +480,7 @@ public class ConfigLibCompatibility
         ImGui.DragFloat(Lang.Get(settingWellSpringOutputMultiplier) + $"##wellSpringOutputMultiplier-{id}", ref wellSpringOutputMultiplier, 0.1f, 0.1f, 10.0f);
         groundWaterConfig.WellSpringOutputMultiplier = wellSpringOutputMultiplier;
         
-        // RandomMultiplierChance
+        // AquiferRandomMultiplierChance
         float aquiferRandomMultiplierChance = (float)groundWaterConfig.AquiferRandomMultiplierChance;
         ImGui.DragFloat(Lang.Get(settingAquiferRandomMultiplierChance) + $"##aquiferRandomMultiplierChance-{id}", ref aquiferRandomMultiplierChance, 0.001f, 0.0f, 1.0f);
         groundWaterConfig.AquiferRandomMultiplierChance = aquiferRandomMultiplierChance;
