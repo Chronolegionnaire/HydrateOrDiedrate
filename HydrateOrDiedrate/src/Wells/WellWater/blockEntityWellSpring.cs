@@ -203,9 +203,6 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
             if (!WellBlockUtils.IsOurWellwater(fluid))
                 break;
-            var be = ba.GetBlockEntity<BlockEntityWellWaterSentinel>(pos);
-            if (be != null)
-                ba.RemoveBlockEntity(pos);
             ba.SetFluid(0, pos);
             ba.TriggerNeighbourBlockUpdate(pos);
         }
@@ -558,11 +555,6 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             pos.Y++;
             var fluid = ba.GetFluid(pos);
             if (!WellBlockUtils.IsOurWellwater(fluid)) break;
-
-            if (ba.GetBlockEntity(pos) is null)
-            {
-                ba.SpawnBlockEntity("HoD:BlockEntityWellWaterSentinel", pos);
-            }
 
             if (detectedFresh == null)
             {

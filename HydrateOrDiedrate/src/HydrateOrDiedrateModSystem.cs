@@ -165,7 +165,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         api.RegisterCollectibleBehaviorClass("HoD:BehaviorPickaxeWellMode", typeof(BehaviorPickaxeWellMode));
         api.RegisterCollectibleBehaviorClass("HoD:BehaviorShovelWellMode", typeof(BehaviorShovelWellMode));
 
-        api.RegisterBlockEntityClass("HoD:BlockEntityWellWaterSentinel", typeof(BlockEntityWellWaterSentinel));
         api.RegisterBlockBehaviorClass("HoD:BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
         api.RegisterBlockClass("HoD:BlockWellSpring", typeof(BlockWellSpring));
         api.RegisterBlockEntityClass("HoD:BlockEntityWellSpring", typeof(BlockEntityWellSpring));
