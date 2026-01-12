@@ -110,7 +110,7 @@ namespace HydrateOrDiedrate.Wells.Winch
                     },
                     ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
                 ],
-                _ => [
+                1 => [
                     new WorldInteraction
                     {
                         ActionLangCode = "hydrateordiedrate:blockhelp-winch-lower",
@@ -129,7 +129,8 @@ namespace HydrateOrDiedrate.Wells.Winch
                             !beWinch.InputSlot.Empty
                     },
                     ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
-                ]
+                ],
+                _ => []
             };
 
         public override void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)
