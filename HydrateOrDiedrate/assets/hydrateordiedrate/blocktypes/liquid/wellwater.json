@@ -27,9 +27,6 @@
     "*-d-*": "BlockWaterfall",
     "*-still-*": "BlockWater"
   },
-  "entityClassByType": {
-    "*-natural-*": "HoD:BlockEntityWellWaterSentinel"
-  },
   "behaviors": [
     {
       "name": "HoD:BlockBehaviorWellWaterFinite",

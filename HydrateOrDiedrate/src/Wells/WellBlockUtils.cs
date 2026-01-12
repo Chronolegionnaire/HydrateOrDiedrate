@@ -50,8 +50,22 @@ public static class WellBlockUtils
         var ba = api.World.BlockAccessor;
         var behavior = blockAtPos?.GetBehavior<BlockBehaviorWellWaterFinite>();
         BlockPos probe = behavior?.FindNaturalSourceInLiquidChain(ba, pos) ?? pos;
-        var sentinel = ba.GetBlockEntity<BlockEntityWellWaterSentinel>(probe)
-                       ?? (probe.Equals(pos) ? null : ba.GetBlockEntity<BlockEntityWellWaterSentinel>(pos));
-        return sentinel?.TryGetGoverningSpring();
+        var scan = probe.DownCopy();
+
+        for (int i = 0; i < 64; i++)
+        {
+            var block = ba.GetBlock(scan);
+            if (block is BlockWellSpring)
+            {
+                return ba.GetBlockEntity<BlockEntityWellSpring>(scan);
+            }
+            if (!SolidAllows(ba.GetSolid(scan)))
+                break;
+
+            scan.Y--;
+            if (scan.Y <= 0) break;
+        }
+
+        return null;
     }
 }
