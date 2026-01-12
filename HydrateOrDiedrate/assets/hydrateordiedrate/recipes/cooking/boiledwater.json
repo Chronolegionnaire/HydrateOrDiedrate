@@ -1,5 +1,5 @@
 {
-  "code": "hydrateordiedrate:boiledwater",
+  "code": "boiledwater",
   "perishableProps": {
     "type": "None",
     "freshHours": { "avg": 75 },

@@ -1,47 +1,74 @@
-﻿using HarmonyLib;
-using Vintagestory.API.Common;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
+using HarmonyLib;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.patches;
-
-[HarmonyPatch(typeof(BlockCookingContainer), "DoSmelt")]
-public static class BlockCookingContainerPatch
+namespace HydrateOrDiedrate.patches
 {
-    [HarmonyPrefix]
-    [HarmonyPriority(Priority.VeryLow)]
-    public static bool Prefix(IWorldAccessor world, ISlotProvider cookingSlotsProvider, ItemSlot inputSlot, ItemSlot outputSlot, BlockCookingContainer __instance)
+    [HarmonyPatch(typeof(BlockCookingContainer), "DoSmelt")]
+    public static class BlockCookingContainer_DoSmelt_TranspilerPatch
     {
-        ItemStack[] stacks = __instance.GetCookingStacks(cookingSlotsProvider, true);
-        CookingRecipe recipe = __instance.GetMatchingCookingRecipe(world, stacks, out var quantityServings);
-
-        if (recipe == null)
+        private static bool IsHoDRecipe(CookingRecipe recipe)
         {
-            return true;
-        }
-        if (recipe.CooksInto?.ResolvedItemstack?.Collectible?.Code?.ToString()?.Contains("hydrateordiedrate:") == true)
-        {
-            ItemStack resolvedItemstack = recipe.CooksInto.ResolvedItemstack;
-            ItemStack outstack = resolvedItemstack?.Clone();
-            if (outstack != null)
-            {
-                outstack.StackSize *= quantityServings;
-                stacks = new ItemStack[] { outstack };
-            }
-            ItemStack outputStack = new ItemStack(__instance);
-            outputStack.Collectible.SetTemperature(world, outputStack, BlockCookingContainer.GetIngredientsTemperature(world, stacks), true);
-            TransitionableProperties cookedPerishProps = recipe.PerishableProps.Clone();
-            cookedPerishProps.TransitionedStack.Resolve(world, "cooking container perished stack", true);
+            var code = recipe?.CooksInto?.ResolvedItemstack?.Collectible?.Code?.ToString();
+            var recipeCode = recipe?.Code;
 
-            ICoreAPI api = world.Api;
+            if (!string.IsNullOrEmpty(recipeCode) &&
+                recipeCode.StartsWith("hydrateordiedrate:"))
+                return true;
 
-            CollectibleObject.CarryOverFreshness(api, cookingSlotsProvider.Slots, stacks, cookedPerishProps);
-            for (int i = 0; i < cookingSlotsProvider.Slots.Length; i++)
-            {
-                cookingSlotsProvider.Slots[i].Itemstack = (i == 0) ? stacks[0] : null;
-            }
-            inputSlot.Itemstack = outputStack;
+            if (!string.IsNullOrEmpty(code) &&
+                code.StartsWith("hydrateordiedrate:"))
+                return true;
+
             return false;
         }
-        return true;
+
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        {
+            var list = new List<CodeInstruction>(instructions);
+
+            var isHoDMethod = AccessTools.Method(
+                typeof(BlockCookingContainer_DoSmelt_TranspilerPatch),
+                nameof(IsHoDRecipe)
+            );
+
+            if (isHoDMethod == null)
+                return list;
+
+            for (int i = 0; i < list.Count - 2; i++)
+            {
+                if (list[i].opcode != OpCodes.Ldloc_1)
+                    continue;
+
+                if (list[i + 1].opcode != OpCodes.Ldfld)
+                    continue;
+
+                if (list[i + 1].operand is not FieldInfo fi || fi.Name != "IsFood")
+                    continue;
+
+                if (list[i + 2].opcode != OpCodes.Brtrue_S &&
+                    list[i + 2].opcode != OpCodes.Brtrue)
+                    continue;
+
+                var skipLabel = (Label)list[i + 2].operand;
+
+                int insertIndex = i + 3;
+
+                var newInstructions = new List<CodeInstruction>
+                {
+                    new CodeInstruction(OpCodes.Ldloc_1),
+                    new CodeInstruction(OpCodes.Call, isHoDMethod),
+                    new CodeInstruction(OpCodes.Brtrue_S, skipLabel)
+                };
+
+                list.InsertRange(insertIndex, newInstructions);
+                break;
+            }
+
+            return list;
+        }
     }
 }
