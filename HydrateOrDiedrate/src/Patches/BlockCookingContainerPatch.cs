@@ -25,49 +25,37 @@ namespace HydrateOrDiedrate.patches
         }
 
         [HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            var list = new List<CodeInstruction>(instructions);
-
             var isHoDMethod = AccessTools.Method(
                 typeof(BlockCookingContainer_DoSmelt_TranspilerPatch),
                 nameof(IsHoDRecipe)
             );
 
-            if (isHoDMethod == null)
-                return list;
+            if (isHoDMethod is null)
+                return instructions;
 
-            for (int i = 0; i < list.Count - 2; i++)
+            var matcher = new CodeMatcher(instructions, generator);
+    
+            matcher.MatchEndForward(
+                new CodeMatch(OpCodes.Ldloc_1),
+                new CodeMatch(code => code.opcode == OpCodes.Ldfld && code.operand is FieldInfo field && field.Name == "IsFood"),
+                new CodeMatch(code => code.opcode == OpCodes.Brtrue || code.opcode == OpCodes.Brtrue_S)
+            );
+
+            if (matcher.IsInvalid)
             {
-                if (list[i].opcode != OpCodes.Ldloc_1)
-                    continue;
-
-                if (list[i + 1].opcode != OpCodes.Ldfld)
-                    continue;
-
-                if (list[i + 1].operand is not FieldInfo fi || fi.Name != "IsFood")
-                    continue;
-
-                if (list[i + 2].opcode != OpCodes.Brtrue_S &&
-                    list[i + 2].opcode != OpCodes.Brtrue)
-                    continue;
-
-                var skipLabel = (Label)list[i + 2].operand;
-
-                int insertIndex = i + 3;
-
-                var newInstructions = new List<CodeInstruction>
-                {
-                    new CodeInstruction(OpCodes.Ldloc_1),
-                    new CodeInstruction(OpCodes.Call, isHoDMethod),
-                    new CodeInstruction(OpCodes.Brtrue_S, skipLabel)
-                };
-
-                list.InsertRange(insertIndex, newInstructions);
-                break;
+                return matcher.InstructionEnumeration();
             }
+            var skipLabel = (Label)matcher.Instruction.operand;
 
-            return list;
+            matcher.InsertAfter(
+                new CodeInstruction(OpCodes.Ldloc_1),
+                new CodeInstruction(OpCodes.Call, isHoDMethod),
+                new CodeInstruction(OpCodes.Brtrue_S, skipLabel)
+            );
+
+            return matcher.InstructionEnumeration();
         }
     }
 }
