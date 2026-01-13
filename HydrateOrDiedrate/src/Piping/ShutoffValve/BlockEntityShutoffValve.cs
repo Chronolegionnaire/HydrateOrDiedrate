@@ -19,8 +19,9 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
         public bool AxisInitialized { get; set; } = false;
         public int RollSteps { get; set; } = 0;
 
-        static MeshData pipeMeshAuthored;
-        static readonly Dictionary<(EValveAxis axis, int roll), MeshData> PipeMeshByOrientation = new();
+        MeshData pipeMeshAuthored;
+        readonly Dictionary<(EValveAxis axis, int roll), MeshData> PipeMeshByOrientation = new();
+
 
         internal ValveHandleRenderer HandleRenderer { get; private set; }
 
