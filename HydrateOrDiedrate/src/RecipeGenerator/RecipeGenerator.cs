@@ -94,6 +94,14 @@ public static partial class RecipeGenerator
         {
             try
             {
+                if (recipeList.Source.Equals("hydrateordiedrate", StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.VerboseDebug(
+                        "[{0}] Skipping recipe list for {1} ({2}) because it is owned by HoD.",
+                        recipeList.Source, recipeList.TargetObject, recipeList.HostMemberName
+                    );
+                    continue;
+                }
 
                 var processor = GetRecipeListProcessor(recipeList);
                 if(processor is null)
@@ -135,10 +143,11 @@ public static partial class RecipeGenerator
 
     public static bool MatchCode(AssetLocation code, AssetLocation match) => code is not null && code.Domain == match.Domain && code.Path == match.Path;
 
-    public static bool MatchCodeString(ReadOnlySpan<char> code, AssetLocation match)
+    public static bool MatchCodeString(string code, AssetLocation match)
     {
-        var path = code.ExtractSegment(':', out code);
-        return path.SequenceEqual(match.Path) && ((code.IsEmpty && "game" == match.Domain) || code.SequenceEqual(match.Domain));
+        if (string.IsNullOrEmpty(code)) return false;
+        var loc = AssetLocation.Create(code, match.Domain);
+        return loc != null && loc.Domain == match.Domain && loc.Path == match.Path;
     }
     
     public static void ModifyRecipeName(AssetLocation name, AssetLocation toCode)
