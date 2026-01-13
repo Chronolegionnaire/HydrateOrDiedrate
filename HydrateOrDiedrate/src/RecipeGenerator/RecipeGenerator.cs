@@ -143,11 +143,10 @@ public static partial class RecipeGenerator
 
     public static bool MatchCode(AssetLocation code, AssetLocation match) => code is not null && code.Domain == match.Domain && code.Path == match.Path;
 
-    public static bool MatchCodeString(ReadOnlySpan<char> codeSpan, AssetLocation match)
+    public static bool MatchCodeString(string code, AssetLocation match)
     {
-        if (codeSpan.IsEmpty) return false;
-        var s = codeSpan.ToString();
-        var loc = AssetLocation.Create(s, match.Domain);
+        if (string.IsNullOrEmpty(code)) return false;
+        var loc = AssetLocation.Create(code, match.Domain);
         return loc != null && loc.Domain == match.Domain && loc.Path == match.Path;
     }
     
