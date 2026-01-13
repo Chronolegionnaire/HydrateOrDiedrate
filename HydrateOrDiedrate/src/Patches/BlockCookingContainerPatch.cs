@@ -11,15 +11,14 @@ namespace HydrateOrDiedrate.patches
     {
         private static bool IsHoDRecipe(CookingRecipe recipe)
         {
-            var code = recipe?.CooksInto?.ResolvedItemstack?.Collectible?.Code?.ToString();
+            var code = recipe?.CooksInto?.ResolvedItemstack?.Collectible?.Code;
             var recipeCode = recipe?.Code;
 
             if (!string.IsNullOrEmpty(recipeCode) &&
                 recipeCode.StartsWith("hydrateordiedrate:"))
                 return true;
 
-            if (!string.IsNullOrEmpty(code) &&
-                code.StartsWith("hydrateordiedrate:"))
+            if (code is not null && code.Domain == "hydrateordiedrate") 
                 return true;
 
             return false;
