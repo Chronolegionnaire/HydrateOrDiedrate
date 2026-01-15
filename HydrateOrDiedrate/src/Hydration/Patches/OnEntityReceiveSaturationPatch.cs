@@ -1,118 +1,80 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 using HarmonyLib;
 using HydrateOrDiedrate.Config;
-using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.GameContent;
+namespace HydrateOrDiedrate.src.Hydration.Patches;
 
-namespace HydrateOrDiedrate.patches
+
+
+[HarmonyPatch]
+public static class EntityBehaviorHungerPatch
 {
-    [HarmonyPatch(typeof(EntityBehaviorHunger), "OnEntityReceiveSaturation")]
-    public class EntityBehaviorHungerPatch
+
+    [HarmonyTargetMethods]
+    public static IEnumerable<MethodBase> TargetMethods()
     {
-        [HarmonyPrefix]
-        public static bool Prefix(ref float saturation, ref EnumFoodCategory foodCat, float saturationLossDelay, ref float nutritionGainMultiplier, EntityBehaviorHunger __instance)
+        yield return AccessTools.Method(typeof(EntityBehaviorHunger), nameof(EntityBehaviorHunger.OnEntityReceiveSaturation));
+        
+        var method = AccessTools.Method("SmoothDigestion.Behaviors.EntityBehaviorSDHunger:OnEntityReceiveSaturation");
+        if(method is not null) yield return method;
+    }
+    
+    [HarmonyTranspiler]
+    public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator, MethodBase __originalMethod)
+    {
+        var matcher = new CodeMatcher(instructions, generator);
+
+        var negativeNutritionSkip = new Label();
+        matcher.MatchEndForward(
+            CodeMatch.Calls(AccessTools.PropertySetter(typeof(EntityBehaviorHunger), nameof(EntityBehaviorHunger.Saturation)))
+        );
+
+        matcher.InsertAfterAndAdvance(
+            CodeInstruction.LoadArgument(0), // this
+            CodeInstruction.LoadArgument(1, true), //saturation
+            new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(EntityBehaviorHungerPatch), nameof(ApplyDeficit))),
+            new CodeInstruction(OpCodes.Brtrue, negativeNutritionSkip)
+        );
+
+        matcher.MatchStartForward(
+            new CodeMatch(OpCodes.Ldarg_0), // this
+            new CodeMatch(code => code.operand is MethodBase method && method.Name == nameof(EntityBehaviorHunger.UpdateNutrientHealthBoost))
+        );
+        matcher.Labels.Add(negativeNutritionSkip);
+        
+        return matcher.InstructionEnumeration();
+    }
+
+    /// <summary>
+    /// Applies deficit
+    /// </summary>
+    /// <returns>true if saturation is negative and should skip normal logic</returns>
+    public static bool ApplyDeficit(EntityBehavior behavior, ref float saturation)
+    {
+        var thirstBehavior = behavior.entity.GetBehavior<EntityBehaviorThirst>();
+        if (thirstBehavior is null) return false;
+
+        if (saturation < 0)
         {
-            try
+            float deficitMul = ModConfig.Instance.Thirst.NutritionDeficitMultiplier;
+            if (!float.IsFinite(deficitMul) || deficitMul <= 0f)
             {
-                var thirstBehavior = __instance.entity.GetBehavior<EntityBehaviorThirst>();
-                bool applyNutrition = true;
-
-                if (thirstBehavior != null)
-                {
-                    float nutritionDeficitAmount = thirstBehavior.NutritionDeficitAmount;
-
-                    if (saturation > 0f)
-                    {
-
-                        thirstBehavior.NutritionDeficitAmount = Math.Max(0f, nutritionDeficitAmount - saturation);
-
-                        if (nutritionDeficitAmount > 0f)
-                        {
-
-                            applyNutrition = false;
-                        }
-                        else
-                        {
-
-                            applyNutrition = true;
-                        }
-                    }
-                    else if (saturation < 0f)
-                    {
-                        float deficitMul = ModConfig.Instance.Thirst.NutritionDeficitMultiplier;
-                        if (!float.IsFinite(deficitMul) || deficitMul <= 0f)
-                        {
-                            deficitMul = 1f;
-                        }
-
-                        thirstBehavior.NutritionDeficitAmount += Math.Abs(saturation) * deficitMul;
-
-                        applyNutrition = false;
-                    }
-                }
-
-                float maxsat = __instance.MaxSaturation;
-                __instance.Saturation = Math.Min(maxsat, __instance.Saturation + saturation);
-
-                if (applyNutrition)
-                {
-                    switch (foodCat)
-                    {
-                        case EnumFoodCategory.Fruit:
-                            __instance.FruitLevel = Math.Min(maxsat, __instance.FruitLevel + saturation / 2.5f * nutritionGainMultiplier);
-                            __instance.SaturationLossDelayFruit = Math.Max(__instance.SaturationLossDelayFruit, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.Vegetable:
-                            __instance.VegetableLevel = Math.Min(maxsat, __instance.VegetableLevel + saturation / 2.5f * nutritionGainMultiplier);
-                            __instance.SaturationLossDelayVegetable = Math.Max(__instance.SaturationLossDelayVegetable, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.Protein:
-                            __instance.ProteinLevel = Math.Min(maxsat, __instance.ProteinLevel + saturation / 2.5f * nutritionGainMultiplier);
-                            __instance.SaturationLossDelayProtein = Math.Max(__instance.SaturationLossDelayProtein, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.Grain:
-                            __instance.GrainLevel = Math.Min(maxsat, __instance.GrainLevel + saturation / 2.5f * nutritionGainMultiplier);
-                            __instance.SaturationLossDelayGrain = Math.Max(__instance.SaturationLossDelayGrain, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.Dairy:
-                            __instance.DairyLevel = Math.Min(maxsat, __instance.DairyLevel + saturation / 2.5f * nutritionGainMultiplier);
-                            __instance.SaturationLossDelayDairy = Math.Max(__instance.SaturationLossDelayDairy, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.NoNutrition:
-                            break;
-                    }
-                }
-                else
-                {
-                    switch (foodCat)
-                    {
-                        case EnumFoodCategory.Fruit:
-                            __instance.SaturationLossDelayFruit = Math.Max(__instance.SaturationLossDelayFruit, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.Vegetable:
-                            __instance.SaturationLossDelayVegetable = Math.Max(__instance.SaturationLossDelayVegetable, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.Protein:
-                            __instance.SaturationLossDelayProtein = Math.Max(__instance.SaturationLossDelayProtein, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.Grain:
-                            __instance.SaturationLossDelayGrain = Math.Max(__instance.SaturationLossDelayGrain, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.Dairy:
-                            __instance.SaturationLossDelayDairy = Math.Max(__instance.SaturationLossDelayDairy, saturationLossDelay);
-                            break;
-                        case EnumFoodCategory.NoNutrition:
-                            break;
-                    }
-                }
-                
-                __instance.UpdateNutrientHealthBoost();
+                deficitMul = 1f;
             }
-            catch (Exception ex)
-            {
-            }
-
-            return false;
+            
+            thirstBehavior.NutritionDeficitAmount += Math.Abs(saturation) * deficitMul;
+            return true;
         }
+
+        var nutritionDeficitAmount = thirstBehavior.NutritionDeficitAmount;
+        thirstBehavior.NutritionDeficitAmount = Math.Max(0, nutritionDeficitAmount - saturation);
+
+        saturation = Math.Max(0, saturation - nutritionDeficitAmount);
+
+        return false;
     }
 }
