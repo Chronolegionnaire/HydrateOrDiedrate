@@ -100,5 +100,42 @@ namespace HydrateOrDiedrate.Piping.Pipe
 
             ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
         ];
+        
+        public override bool SideIsSolid(IBlockAccessor blockAccess, BlockPos pos, int faceIndex)
+        {
+            if (blockAccess == null || pos == null) return base.SideIsSolid(pos, faceIndex);
+
+            var be = blockAccess.GetBlockEntity(pos) as BlockEntityPipe;
+            var disguise = be?.DisguiseSlot?.Itemstack?.Block;
+
+            return (disguise != null && disguise != this)
+                ? disguise.SideIsSolid(blockAccess, pos, faceIndex)
+                : base.SideIsSolid(blockAccess, pos, faceIndex);
+        }
+        public override int GetRetention(BlockPos pos, BlockFacing facing, EnumRetentionType type)
+        {
+            if (pos == null) return base.GetRetention(pos, facing, type);
+
+            var be = api?.World?.BlockAccessor?.GetBlockEntity(pos) as BlockEntityPipe;
+            var disguise = be?.DisguiseSlot?.Itemstack?.Block;
+
+            if (disguise != null && disguise != this)
+            {
+                return disguise.GetRetention(pos, facing, type);
+            }
+
+            return base.GetRetention(pos, facing, type);
+        }
+        public override EnumBlockMaterial GetBlockMaterial(IBlockAccessor blockAccessor, BlockPos pos, ItemStack stack = null)
+        {
+            if (blockAccessor == null || pos == null) return base.GetBlockMaterial(blockAccessor, pos, stack);
+
+            var be = blockAccessor.GetBlockEntity(pos) as BlockEntityPipe;
+            var disguise = be?.DisguiseSlot?.Itemstack?.Block;
+
+            return (disguise != null && disguise != this)
+                ? disguise.GetBlockMaterial(blockAccessor, pos, stack)
+                : base.GetBlockMaterial(blockAccessor, pos, stack);
+        }
     }
 }
