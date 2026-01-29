@@ -17,7 +17,7 @@ public class CollectibleTarget
         var index = code.IndexOf(':');
         if (index != -1)
         {
-            if (!(index == 1 && code[0] == '*'))
+            if (index != 1 || code[0] != '*')
             {
                 domain = code[..index].ToString();
             }
