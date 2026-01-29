@@ -4,7 +4,6 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Util;
-using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Piping.Pipe
 {
@@ -108,7 +107,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
             var be = blockAccess.GetBlockEntity(pos) as BlockEntityPipe;
             var disguise = be?.DisguiseSlot?.Itemstack?.Block;
 
-            return (disguise != null && disguise != this)
+            return (disguise != null)
                 ? disguise.SideIsSolid(blockAccess, pos, faceIndex)
                 : base.SideIsSolid(blockAccess, pos, faceIndex);
         }
@@ -116,10 +115,13 @@ namespace HydrateOrDiedrate.Piping.Pipe
         {
             if (pos == null) return base.GetRetention(pos, facing, type);
 
-            var be = api?.World?.BlockAccessor?.GetBlockEntity(pos) as BlockEntityPipe;
+            var accessor = api.World.BlockAccessor;
+            if (accessor == null) return base.GetRetention(pos, facing, type);
+
+            var be = accessor.GetBlockEntity(pos) as BlockEntityPipe;
             var disguise = be?.DisguiseSlot?.Itemstack?.Block;
 
-            if (disguise != null && disguise != this)
+            if (disguise != null)
             {
                 return disguise.GetRetention(pos, facing, type);
             }
@@ -133,9 +135,23 @@ namespace HydrateOrDiedrate.Piping.Pipe
             var be = blockAccessor.GetBlockEntity(pos) as BlockEntityPipe;
             var disguise = be?.DisguiseSlot?.Itemstack?.Block;
 
-            return (disguise != null && disguise != this)
+            return (disguise != null)
                 ? disguise.GetBlockMaterial(blockAccessor, pos, stack)
                 : base.GetBlockMaterial(blockAccessor, pos, stack);
+        }
+        public override float GetLiquidBarrierHeightOnSide(BlockFacing face, BlockPos pos)
+        {
+            if (pos == null) return base.GetLiquidBarrierHeightOnSide(face, pos);
+
+            var accessor = api.World.BlockAccessor;
+            if (accessor == null) return base.GetLiquidBarrierHeightOnSide(face, pos);
+
+            var be = accessor.GetBlockEntity(pos) as BlockEntityPipe;
+            var disguise = be?.DisguiseSlot?.Itemstack?.Block;
+
+            return (disguise != null)
+                ? disguise.GetLiquidBarrierHeightOnSide(face, pos)
+                : base.GetLiquidBarrierHeightOnSide(face, pos);
         }
     }
 }
