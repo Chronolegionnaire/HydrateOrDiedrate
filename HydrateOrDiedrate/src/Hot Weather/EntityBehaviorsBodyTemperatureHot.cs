@@ -87,9 +87,10 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
 
                 continue;
             }
-            if(slot.Itemstack.Collectible is not ItemWearable itemWearable) continue;
+            var wearableBh = slot.GetWearableBehavior();
+            if (wearableBh == null) continue;
 
-            var cooling = itemWearable.GetCooling(slot);
+            var cooling = wearableBh.GetCooling(slot);
 
             cooling = (float)Math.Round(cooling, 1, MidpointRounding.AwayFromZero);
 
@@ -210,7 +211,7 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
     {
         if (block == null) return false;
         if (block.BlockMaterial == EnumBlockMaterial.Glass ||
-            block.BlockMaterial == EnumBlockMaterial.Liquid ||
+            block.BlockMaterial == EnumBlockMaterial.Water ||
             block.BlockMaterial == EnumBlockMaterial.Ice)
         {
             return false;

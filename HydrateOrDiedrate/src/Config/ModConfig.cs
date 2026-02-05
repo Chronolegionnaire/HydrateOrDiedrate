@@ -83,11 +83,6 @@ public class ModConfig
     /// </summary>
     [DefaultValue(false)]
     public bool SprintToDrink { get; set; } = false;
-    
-    /// <summary>
-    /// The configuration for advanced user options
-    /// </summary>
-    public AdvancedConfig Advanced { get; set; } = new();
 
     [JsonExtensionData]
     public Dictionary<string, JToken> LegacyData { get; set; }

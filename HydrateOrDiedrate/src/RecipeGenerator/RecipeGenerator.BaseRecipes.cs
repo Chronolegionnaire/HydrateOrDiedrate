@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
@@ -8,36 +10,84 @@ namespace HydrateOrDiedrate.RecipeGenerator;
 
 public static partial class RecipeGenerator
 {
-    internal static void ProcessIRecipeBase<T>(IServerWorldAccessor world, RecipeListInfo recipeListInfo, object recipe, List<object> newRecipes) where T : IRecipeBase<T>
+    internal static void ProcessIRecipeBase(IServerWorldAccessor world, RecipeListInfo recipeListInfo, object recipe,
+        List<object> newRecipes)
     {
-        if(recipe is not IRecipeBase<T> recipeBase || recipeBase.Ingredients is null) return;
+        if (recipe is not IRecipeBase recipeBase) return;
 
-        Span<bool> matches = stackalloc bool[recipeBase.Ingredients.Length];
-        foreach((var fromCode, var toCodes) in ConversionMappings)
+        // Find a mutable "Ingredients" array on the concrete recipe type (common in VS recipes)
+        var recipeType = recipe.GetType();
+        var ingrMember =
+            (MemberInfo)recipeType.GetProperty("Ingredients", AccessTools.all) ??
+            recipeType.GetField("Ingredients", AccessTools.all);
+
+        if (ingrMember == null) return;
+
+        IRecipeIngredient[] ingredients = ingrMember switch
+        {
+            PropertyInfo pi => pi.GetValue(recipe) as IRecipeIngredient[],
+            FieldInfo fi => fi.GetValue(recipe) as IRecipeIngredient[],
+            _ => null
+        };
+
+        if (ingredients == null || ingredients.Length == 0) return;
+
+        Span<bool> matches = stackalloc bool[ingredients.Length];
+
+        foreach ((var fromCode, var toCodes) in ConversionMappings)
         {
             bool hasMatch = false;
-            for (int i = 0; i < recipeBase.Ingredients.Length; i++)
+
+            for (int i = 0; i < ingredients.Length; i++)
             {
-                if(recipeBase.Ingredients[i] is not BarrelRecipeIngredient ingredient) continue;
-                if (MatchCode(ingredient.Code, fromCode))
+                if (ingredients[i] is not BarrelRecipeIngredient bri)
+                {
+                    matches[i] = false;
+                    continue;
+                }
+
+                if (MatchCode(bri.Code, fromCode))
                 {
                     matches[i] = true;
                     hasMatch = true;
                 }
                 else matches[i] = false;
-
             }
-            if(!hasMatch) continue;
 
-            foreach(var toCode in toCodes)
+            if (!hasMatch) continue;
+
+            foreach (var toCode in toCodes)
             {
-                if(!recipeBase.TryClone(out var newRecipe)) continue;
-                newRecipe.Name = newRecipe.Name?.Clone();
-                ModifyRecipeName(newRecipe.Name, toCode);
-                ReplaceCodesWithoutResolve(world, newRecipe.Ingredients, matches, toCode);
-                if(!newRecipe.Resolve(world, SourceForLogging)) continue;
+                // Clone via interface (1.22+)
+                var cloned = recipeBase.CloneAsInterface();
+                if (cloned == null) continue;
 
-                newRecipes.Add(newRecipe);
+                // Try to keep concrete type if possible
+                var newRecipeObj = cloned;
+
+                // Update Name if available (interface has Name)
+                if (newRecipeObj.Name != null)
+                {
+                    newRecipeObj.Name = newRecipeObj.Name.Clone();
+                    ModifyRecipeName(newRecipeObj.Name, toCode);
+                }
+
+                // Mutate Ingredients on the clone via reflection
+                var newIngredients = ingrMember switch
+                {
+                    PropertyInfo pi => pi.GetValue(newRecipeObj) as IRecipeIngredient[],
+                    FieldInfo fi => fi.GetValue(newRecipeObj) as IRecipeIngredient[],
+                    _ => null
+                };
+
+                if (newIngredients == null || newIngredients.Length != ingredients.Length) continue;
+
+                ReplaceCodesWithoutResolve(world, newIngredients, matches, toCode);
+
+                // Resolve via interface (1.22+)
+                if (!newRecipeObj.Resolve(world, SourceForLogging)) continue;
+
+                newRecipes.Add(newRecipeObj);
             }
         }
     }

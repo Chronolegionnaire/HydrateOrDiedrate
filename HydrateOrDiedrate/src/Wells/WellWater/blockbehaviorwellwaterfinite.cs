@@ -647,7 +647,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
 						PosAndDist pad = new PosAndDist
 						{
 							pos = foundPos,
-							dist = pos.ManhattenDistance(pos.X + offset.X, pos.Y, pos.Z + offset.Y)
+							dist = pos.ManhattanDistance(pos.X + offset.X, pos.Y, pos.Z + offset.Y)
 						};
 						if (pad.dist == 1 && ourBlock.LiquidLevel < 7)
 						{

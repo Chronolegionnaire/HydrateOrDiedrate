@@ -126,14 +126,8 @@ public static partial class RecipeGenerator
         if (typeof(GridRecipe).IsAssignableFrom(recipeType)) return ProcessGridRecipe;
         if(typeof(CookingRecipe).IsAssignableFrom(recipeType)) return ProcessCookingRecipe;
 
-        var baseRecipeInterface = recipeType.FindGenericInterfaceDefinition(typeof(IRecipeBase<>));
-        if(baseRecipeInterface is not null)
-        {
-            return (RecipeItemProcessor) Delegate.CreateDelegate(
-                typeof(RecipeItemProcessor),
-                AccessTools.Method(typeof(RecipeGenerator), nameof(ProcessIRecipeBase)).MakeGenericMethod(baseRecipeInterface.GetGenericArguments()[0])
-            );
-        }
+        if (typeof(IRecipeBase).IsAssignableFrom(recipeType)) return ProcessIRecipeBase;
+
 
         if(recipeType.FullName == "ACulinaryArtillery.DoughRecipe") return ProcessACADoughRecipe;
         if(recipeType.FullName == "ACulinaryArtillery.SimmerRecipe") return ProcessACASimmerRecipe;

@@ -110,7 +110,7 @@ namespace HydrateOrDiedrate
             var headPos = player.Entity.ServerPos.XYZ.Add(0, player.Entity.LocalEyePos.Y, 0);
             var headBlockPos = new BlockPos((int)headPos.X, (int)headPos.Y, (int)headPos.Z, (int)headPos.Y / 32768);
             var block = _api.World.BlockAccessor.GetBlock(headBlockPos);
-            return block.BlockMaterial == EnumBlockMaterial.Liquid;
+            return block.BlockMaterial == EnumBlockMaterial.Water;
         }
 
         public void CheckPlayerInteraction(float dt, IServerPlayer player)
@@ -139,7 +139,7 @@ namespace HydrateOrDiedrate
                     {
                         var fluidBlock =
                             player.Entity.World.BlockAccessor.GetBlock(blockSel.Position, BlockLayersAccess.Fluid);
-                        if (fluidBlock != null && fluidBlock.BlockMaterial == EnumBlockMaterial.Liquid)
+                        if (fluidBlock != null && fluidBlock.BlockMaterial == EnumBlockMaterial.Water)
                         {
                             block = fluidBlock;
                         }
@@ -150,7 +150,7 @@ namespace HydrateOrDiedrate
                         }
                     }
 
-                    if (block.BlockMaterial == EnumBlockMaterial.Liquid &&
+                    if (block.BlockMaterial == EnumBlockMaterial.Water &&
                         ((player.Entity.RightHandItemSlot?.Itemstack != null) ||
                          (player.Entity.LeftHandItemSlot?.Itemstack != null)))
                     {
@@ -371,7 +371,7 @@ namespace HydrateOrDiedrate
                 var block = accessor.GetBlock(pos);
                 if (block != null
                     && block.Code != null
-                    && (block.BlockMaterial == EnumBlockMaterial.Liquid
+                    && (block.BlockMaterial == EnumBlockMaterial.Water
                         || block.Code.Path.StartsWith("furrowedland")
                         || block.GetType().GetInterface("IAqueduct") != null))
                 {

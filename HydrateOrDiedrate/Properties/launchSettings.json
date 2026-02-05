@@ -6,6 +6,7 @@
       "commandLineArgs": "--tracelog --addModPath \"$(ProjectDir)/bin/$(Configuration)/Mods\"",
       "workingDirectory": "$(VINTAGE_STORY)",
       "environmentVariables": {
+        "COMPlus_TieredCompilation":0
       }
     },
     "Server": {

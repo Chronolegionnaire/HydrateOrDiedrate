@@ -495,7 +495,7 @@ namespace HydrateOrDiedrate.Wells.Winch
             dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.totalShaftVolume", foundSpring.totalLiters));
         }
 
-        public override void Dispose()
+        protected override void Dispose()
         {
             base.Dispose();
             renderer?.Dispose();

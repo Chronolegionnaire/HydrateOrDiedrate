@@ -710,7 +710,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             return GameMath.Clamp(effective, 0, required);
         }
 
-        public override void Dispose()
+        protected override void Dispose()
         {
             base.Dispose();
             if (Api is ICoreClientAPI capi && containerRenderer != null)

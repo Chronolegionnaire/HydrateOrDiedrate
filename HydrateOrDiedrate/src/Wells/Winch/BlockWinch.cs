@@ -137,13 +137,16 @@ namespace HydrateOrDiedrate.Wells.Winch
         {
         }
 
-        public override bool HasMechPowerConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face) => Variant["side"] switch
+        public override bool HasMechPowerConnectorAt(IWorldAccessor world, BlockPos pos, BlockFacing face, BlockMPBase otherBlock)
         {
-            "north" => face == BlockFacing.WEST,
-            "south" => face == BlockFacing.EAST,
-            "east"  => face == BlockFacing.SOUTH,
-            "west"  => face == BlockFacing.NORTH,
-            _       => false,
-        };
+            return Variant["side"] switch
+            {
+                "north" => face == BlockFacing.WEST,
+                "south" => face == BlockFacing.EAST,
+                "east"  => face == BlockFacing.SOUTH,
+                "west"  => face == BlockFacing.NORTH,
+                _       => false,
+            };
+        }
     }
 }

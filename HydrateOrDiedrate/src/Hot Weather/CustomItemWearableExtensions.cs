@@ -1,36 +1,56 @@
 ﻿using HarmonyLib;
 using System;
 using Vintagestory.API.Common;
-using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace HydrateOrDiedrate.Hot_Weather;
-
-public static class CustomItemWearableExtensions
+namespace HydrateOrDiedrate.Hot_Weather
 {
-    private static readonly Action<ItemWearable, ItemSlot, bool> EnsureConditionExistsDelegate = AccessTools.MethodDelegate<Action<ItemWearable, ItemSlot, bool>>(
-        AccessTools.Method(typeof(ItemWearable), "ensureConditionExists")
-    );
-
-    public static void EnsureConditionExists(this ItemWearable wearableItem, ItemSlot slot, bool markdirty = true) => EnsureConditionExistsDelegate(wearableItem, slot, markdirty);
-
-    [Obsolete("Use the extension method instead")]
-    public static float GetCooling(ItemSlot inslot, ICoreAPI api) => (inslot.Itemstack.Item as ItemWearable)?.GetCooling(inslot) ?? 0f;
-
-    public static float GetCooling(this ItemWearable itemWearable, ItemSlot inslot)
+    public static class CustomWearableBehaviorExtensions
     {
-        if (inslot.Empty) return 0f;
-        itemWearable.EnsureConditionExists(inslot);
+        // protected virtual void ensureConditionExists(ItemSlot slot, bool markdirty = true)
+        private static readonly Action<CollectibleBehaviorWearable, ItemSlot, bool> EnsureConditionExistsDelegate =
+            AccessTools.MethodDelegate<Action<CollectibleBehaviorWearable, ItemSlot, bool>>(
+                AccessTools.Method(typeof(CollectibleBehaviorWearable), "ensureConditionExists")
+            );
 
-        ItemStack itemStack = inslot.Itemstack;
+        public static CollectibleBehaviorWearable GetWearableBehavior(this ItemSlot slot)
+        {
+            var stack = slot?.Itemstack;
+            if (stack?.Collectible == null) return null;
 
-        float maxCooling = CoolingManager.GetMaxCooling(itemStack);
-        if (maxCooling < 0f) return maxCooling;
+            var wearable = stack.Collectible.GetCollectibleInterface<IWearable>();
+            return wearable as CollectibleBehaviorWearable;
+        }
 
-        float condition = itemStack.Attributes.GetFloat("condition", 1f).GuardFinite(1f);
-        float factor = GameMath.Clamp(condition * 2f, 0f, 1f);
+        public static void EnsureConditionExists(this CollectibleBehaviorWearable wearableBh, ItemSlot slot, bool markdirty = true)
+        {
+            if (wearableBh == null) return;
+            EnsureConditionExistsDelegate(wearableBh, slot, markdirty);
+        }
 
-        return Util.GuardFinite(maxCooling * factor);
+        public static float GetCooling(this CollectibleBehaviorWearable wearableBh, ItemSlot inslot)
+        {
+            if (wearableBh == null || inslot == null || inslot.Empty) return 0f;
+
+            wearableBh.EnsureConditionExists(inslot);
+
+            ItemStack itemStack = inslot.Itemstack;
+            float maxCooling = CoolingManager.GetMaxCooling(itemStack);
+            if (maxCooling < 0f) return maxCooling;
+
+            float condition = itemStack.Attributes.GetFloat("condition", 1f).GuardFinite(1f);
+            float factor = GameMath.Clamp(condition * 2f, 0f, 1f);
+
+            return Util.GuardFinite(maxCooling * factor);
+        }
+
+        // Convenience so your existing code can do: itemWearable.GetCooling(slot)
+        public static float GetCooling(this ItemWearable itemWearable, ItemSlot inslot)
+        {
+            // ItemWearable is obsolete in 1.22; keep this only if you still have callsites compiled against it.
+            var bh = inslot.GetWearableBehavior();
+            return bh?.GetCooling(inslot) ?? 0f;
+        }
     }
 }
