@@ -30,8 +30,6 @@ public static partial class RecipeGenerator
                     ModifyRecipeName(newRecipe.Name, toCode);
 
                     ReplaceRequiresContentCode(newRecipe.Attributes.Token, toCode);
-
-                    // 1.22+: Resolve() replaces ResolveIngredients()
                     if (!newRecipe.Resolve(world, SourceForLogging)) continue;
 
                     newRecipes.Add(newRecipe);
@@ -40,8 +38,6 @@ public static partial class RecipeGenerator
 
             return;
         }
-
-        // 1.22+: use ResolvedIngredients (property), not resolvedIngredients (field)
         var resolved = gridRecipe.ResolvedIngredients;
         if (resolved == null || resolved.Length == 0) return;
 
@@ -53,7 +49,6 @@ public static partial class RecipeGenerator
 
             for (int i = 0; i < resolved.Length; i++)
             {
-                // ResolvedIngredients is CraftingRecipeIngredient?[]
                 if (resolved[i] is not CraftingRecipeIngredient ingredient)
                 {
                     matches[i] = false;
@@ -76,13 +71,8 @@ public static partial class RecipeGenerator
 
                 newRecipe.Name = newRecipe.Name?.Clone();
                 ModifyRecipeName(newRecipe.Name, toCode);
-
-                // ReplaceCodes expects CraftingRecipeIngredient[]; adapt:
                 var newResolved = newRecipe.ResolvedIngredients;
                 if (newResolved == null || newResolved.Length != resolved.Length) continue;
-
-                // Convert nullable array to non-nullable temp view for ReplaceCodes
-                // (we only touch indices where matches[i] == true, and those must be non-null)
                 var tmp = new CraftingRecipeIngredient[newResolved.Length];
                 for (int i = 0; i < tmp.Length; i++)
                 {
@@ -90,8 +80,6 @@ public static partial class RecipeGenerator
                 }
 
                 ReplaceCodes(world, tmp, matches, toCode);
-
-                // Copy back
                 for (int i = 0; i < tmp.Length; i++)
                 {
                     newResolved[i] = tmp[i];

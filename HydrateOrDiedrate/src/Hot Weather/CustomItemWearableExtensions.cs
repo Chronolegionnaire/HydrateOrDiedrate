@@ -8,7 +8,6 @@ namespace HydrateOrDiedrate.Hot_Weather
 {
     public static class CustomWearableBehaviorExtensions
     {
-        // protected virtual void ensureConditionExists(ItemSlot slot, bool markdirty = true)
         private static readonly Action<CollectibleBehaviorWearable, ItemSlot, bool> EnsureConditionExistsDelegate =
             AccessTools.MethodDelegate<Action<CollectibleBehaviorWearable, ItemSlot, bool>>(
                 AccessTools.Method(typeof(CollectibleBehaviorWearable), "ensureConditionExists")
@@ -43,14 +42,6 @@ namespace HydrateOrDiedrate.Hot_Weather
             float factor = GameMath.Clamp(condition * 2f, 0f, 1f);
 
             return Util.GuardFinite(maxCooling * factor);
-        }
-
-        // Convenience so your existing code can do: itemWearable.GetCooling(slot)
-        public static float GetCooling(this ItemWearable itemWearable, ItemSlot inslot)
-        {
-            // ItemWearable is obsolete in 1.22; keep this only if you still have callsites compiled against it.
-            var bh = inslot.GetWearableBehavior();
-            return bh?.GetCooling(inslot) ?? 0f;
         }
     }
 }

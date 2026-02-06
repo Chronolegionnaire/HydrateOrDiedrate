@@ -79,8 +79,6 @@ public static partial class RecipeGenerator
         {
             FindAndAppendRecipeLists(modSystem, result);
         }
-
-        // Deduplicate lists, preferring those whose target member can be set (i.e. not readonly)
         return result.GroupBy(list => list.RecipeList)
             .Select(duplicateLists => duplicateLists.OrderBy(info => info.TargetMember.CanSetValue()).First());
     }

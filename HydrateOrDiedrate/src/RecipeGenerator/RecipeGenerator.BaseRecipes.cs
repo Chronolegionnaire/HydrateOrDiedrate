@@ -14,8 +14,6 @@ public static partial class RecipeGenerator
         List<object> newRecipes)
     {
         if (recipe is not IRecipeBase recipeBase) return;
-
-        // Find a mutable "Ingredients" array on the concrete recipe type (common in VS recipes)
         var recipeType = recipe.GetType();
         var ingrMember =
             (MemberInfo)recipeType.GetProperty("Ingredients", AccessTools.all) ??
@@ -58,21 +56,14 @@ public static partial class RecipeGenerator
 
             foreach (var toCode in toCodes)
             {
-                // Clone via interface (1.22+)
                 var cloned = recipeBase.CloneAsInterface();
                 if (cloned == null) continue;
-
-                // Try to keep concrete type if possible
                 var newRecipeObj = cloned;
-
-                // Update Name if available (interface has Name)
                 if (newRecipeObj.Name != null)
                 {
                     newRecipeObj.Name = newRecipeObj.Name.Clone();
                     ModifyRecipeName(newRecipeObj.Name, toCode);
                 }
-
-                // Mutate Ingredients on the clone via reflection
                 var newIngredients = ingrMember switch
                 {
                     PropertyInfo pi => pi.GetValue(newRecipeObj) as IRecipeIngredient[],
@@ -83,8 +74,6 @@ public static partial class RecipeGenerator
                 if (newIngredients == null || newIngredients.Length != ingredients.Length) continue;
 
                 ReplaceCodesWithoutResolve(world, newIngredients, matches, toCode);
-
-                // Resolve via interface (1.22+)
                 if (!newRecipeObj.Resolve(world, SourceForLogging)) continue;
 
                 newRecipes.Add(newRecipeObj);
