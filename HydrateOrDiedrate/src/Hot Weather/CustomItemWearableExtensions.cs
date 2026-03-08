@@ -12,7 +12,7 @@ namespace HydrateOrDiedrate.Hot_Weather
             AccessTools.MethodDelegate<Action<CollectibleBehaviorWearable, ItemSlot, bool>>(
                 AccessTools.Method(typeof(CollectibleBehaviorWearable), "ensureConditionExists")
             );
-
+        // TODO change this to use UnsafeAccessorAttribute at some point (better for performance and far more readable)
         public static CollectibleBehaviorWearable GetWearableBehavior(this ItemSlot slot)
         {
             var stack = slot?.Itemstack;
