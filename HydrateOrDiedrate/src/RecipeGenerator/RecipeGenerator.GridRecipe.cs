@@ -3,22 +3,19 @@ using System;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
-using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.RecipeGenerator;
 
 public static partial class RecipeGenerator
 {
-    internal static void ProcessGridRecipe(IServerWorldAccessor world, RecipeListInfo recipeListInfo, object recipe,
+    internal static void ProcessGridRecipe(
+        IServerWorldAccessor world,
+        RecipeListInfo recipeListInfo,
+        object recipe,
         List<object> newRecipes)
     {
-        if(recipe is not GridRecipe gridRecipe) return;
-        if (gridRecipe.resolvedIngredients == null || gridRecipe.resolvedIngredients.Length == 0)
-        {
-            if (!gridRecipe.ResolveIngredients(world) || gridRecipe.resolvedIngredients == null)
-                return;
-        }
-        var contentCode = gridRecipe.Attributes?.Token["liquidContainerProps"]?["requiresContent"]?["code"].Value<string>();
+        if (recipe is not GridRecipe gridRecipe) return;
+        var contentCode = gridRecipe.Attributes?.Token["liquidContainerProps"]?["requiresContent"]?["code"]?.Value<string>();
         if (!string.IsNullOrEmpty(contentCode))
         {
             foreach (var (fromCode, toCodes) in ConversionMappings)
@@ -31,10 +28,7 @@ public static partial class RecipeGenerator
 
                     newRecipe.Name = newRecipe.Name?.Clone();
                     ModifyRecipeName(newRecipe.Name, toCode);
-
                     ReplaceRequiresContentCode(newRecipe.Attributes.Token, toCode);
-                    if (!newRecipe.Resolve(world, SourceForLogging)) continue;
-
                     newRecipes.Add(newRecipe);
                 }
             }
@@ -63,7 +57,10 @@ public static partial class RecipeGenerator
                     matches[i] = true;
                     hasMatch = true;
                 }
-                else matches[i] = false;
+                else
+                {
+                    matches[i] = false;
+                }
             }
 
             if (!hasMatch) continue;
@@ -74,28 +71,38 @@ public static partial class RecipeGenerator
 
                 newRecipe.Name = newRecipe.Name?.Clone();
                 ModifyRecipeName(newRecipe.Name, toCode);
+
                 var newResolved = newRecipe.ResolvedIngredients;
                 if (newResolved == null || newResolved.Length != resolved.Length) continue;
-                var tmp = new CraftingRecipeIngredient[newResolved.Length];
-                for (int i = 0; i < tmp.Length; i++)
+
+                for (int i = 0; i < newResolved.Length; i++)
                 {
-                    tmp[i] = newResolved[i] as CraftingRecipeIngredient;
+                    if (!matches[i]) continue;
+                    if (newResolved[i] is not CraftingRecipeIngredient ingredient) continue;
+
+                    ReplaceCode(world, ingredient, toCode);
+                    if (!ingredient.Resolve(world, SourceForLogging, newRecipe))
+                    {
+                        newResolved = null;
+                        break;
+                    }
                 }
 
-                ReplaceCodes(world, tmp, matches, toCode);
-                for (int i = 0; i < tmp.Length; i++)
-                {
-                    newResolved[i] = tmp[i];
-                }
+                if (newResolved == null) continue;
 
                 newRecipe.ResolvedIngredients = newResolved;
-
-                if (!newRecipe.Resolve(world, SourceForLogging)) continue;
-
                 newRecipes.Add(newRecipe);
             }
         }
     }
 
-    public static void ReplaceRequiresContentCode(JToken token, AssetLocation toCode) => token["liquidContainerProps"]["requiresContent"]["code"] = string.Intern(toCode.ToString());
+    private static void ReplaceCode(IWorldAccessor world, CraftingRecipeIngredient ingredient, AssetLocation toCode)
+    {
+        ingredient.Code = toCode;
+    }
+
+    public static void ReplaceRequiresContentCode(JToken token, AssetLocation toCode)
+    {
+        token["liquidContainerProps"]["requiresContent"]["code"] = string.Intern(toCode.ToString());
+    }
 }
