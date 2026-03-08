@@ -79,8 +79,6 @@ public static partial class RecipeGenerator
         {
             FindAndAppendRecipeLists(modSystem, result);
         }
-
-        // Deduplicate lists, preferring those whose target member can be set (i.e. not readonly)
         return result.GroupBy(list => list.RecipeList)
             .Select(duplicateLists => duplicateLists.OrderBy(info => info.TargetMember.CanSetValue()).First());
     }
@@ -126,14 +124,8 @@ public static partial class RecipeGenerator
         if (typeof(GridRecipe).IsAssignableFrom(recipeType)) return ProcessGridRecipe;
         if(typeof(CookingRecipe).IsAssignableFrom(recipeType)) return ProcessCookingRecipe;
 
-        var baseRecipeInterface = recipeType.FindGenericInterfaceDefinition(typeof(IRecipeBase<>));
-        if(baseRecipeInterface is not null)
-        {
-            return (RecipeItemProcessor) Delegate.CreateDelegate(
-                typeof(RecipeItemProcessor),
-                AccessTools.Method(typeof(RecipeGenerator), nameof(ProcessIRecipeBase)).MakeGenericMethod(baseRecipeInterface.GetGenericArguments()[0])
-            );
-        }
+        if (typeof(IRecipeBase).IsAssignableFrom(recipeType)) return ProcessIRecipeBase;
+
 
         if(recipeType.FullName == "ACulinaryArtillery.DoughRecipe") return ProcessACADoughRecipe;
         if(recipeType.FullName == "ACulinaryArtillery.SimmerRecipe") return ProcessACASimmerRecipe;

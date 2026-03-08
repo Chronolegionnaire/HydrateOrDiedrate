@@ -62,11 +62,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             harmony.PatchAllUncategorized();
             TryCompatibilityPatch(harmony, api, "hardcorewater", "HydrateOrDiedrate.HardcoreWater");
             TryCompatibilityPatch(harmony, api, "aculinaryartillery", "HydrateOrDiedrate.ACulinaryArtillery");
-
-            if (ModConfig.Instance.Advanced.IncreaseMarkDirtyThreshold)
-            {
-                harmony.PatchCategory(PatchCategory_MarkDirtyThreshold);
-            }
         }
     }
 

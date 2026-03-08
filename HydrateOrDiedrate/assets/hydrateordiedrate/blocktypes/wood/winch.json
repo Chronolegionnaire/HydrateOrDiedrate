@@ -13,7 +13,7 @@
 		}
 	],
 	"variantgroups": [
-		{ "code": "wood", "states": ["aged"], "loadFromProperties": "game:block/wood" },
+		{ "code": "wood", "states": ["aged", "veryaged"], "loadFromProperties": "game:block/wood" },
 		{ "code":"side", "loadFromProperties": "abstract/horizontalorientation" }
 	],
 	"shapeByType": {
@@ -26,6 +26,18 @@
 		"spindle":  { "base": "game:block/wood/debarked/{wood}" },
 		"plank": { "base": "game:block/wood/planks/{wood}1" },
 		"rope": { "base": "game:entity/lore/erel/pristine/rope" }
+	},
+	"texturesByType": {
+		"*-veryaged-*": {
+			"spindle":  { "base": "game:block/wood/debarked/{wood}" },
+			"plank": { "base": "game:block/wood/planks/aged/{wood}1" },
+			"rope": { "base": "game:entity/lore/erel/pristine/rope" }
+		},
+		"*-aged-*": {
+			"spindle":  { "base": "game:block/wood/debarked/{wood}" },
+			"plank": { "base": "game:block/wood/planks/aged/{wood}1" },
+			"rope": { "base": "game:entity/lore/erel/pristine/rope" }
+		}
 	},
 	"attributes": {
 		"mapColorCode": "settlement",

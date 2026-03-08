@@ -30,5 +30,6 @@
     "type": "Item",
     "code": "hydrateordiedrate:waterportion-boiled-rain-clean",
     "quantity": 100
-  }
+  },
+  "IsFood": "true"
 }
