@@ -12,10 +12,13 @@ public static partial class RecipeGenerator
     internal static void ProcessGridRecipe(IServerWorldAccessor world, RecipeListInfo recipeListInfo, object recipe,
         List<object> newRecipes)
     {
-        if (recipe is not GridRecipe gridRecipe) return;
-
-        var contentCode = gridRecipe.Attributes?.Token["liquidContainerProps"]?["requiresContent"]?["code"]
-            ?.Value<string>();
+        if(recipe is not GridRecipe gridRecipe) return;
+        if (gridRecipe.resolvedIngredients == null || gridRecipe.resolvedIngredients.Length == 0)
+        {
+            if (!gridRecipe.ResolveIngredients(world) || gridRecipe.resolvedIngredients == null)
+                return;
+        }
+        var contentCode = gridRecipe.Attributes?.Token["liquidContainerProps"]?["requiresContent"]?["code"].Value<string>();
         if (!string.IsNullOrEmpty(contentCode))
         {
             foreach (var (fromCode, toCodes) in ConversionMappings)
