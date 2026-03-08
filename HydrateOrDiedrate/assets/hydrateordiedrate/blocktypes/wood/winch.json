@@ -32,6 +32,11 @@
 			"spindle":  { "base": "game:block/wood/debarked/{wood}" },
 			"plank": { "base": "game:block/wood/planks/aged/{wood}1" },
 			"rope": { "base": "game:entity/lore/erel/pristine/rope" }
+		},
+		"*-aged-*": {
+			"spindle":  { "base": "game:block/wood/debarked/{wood}" },
+			"plank": { "base": "game:block/wood/planks/aged/{wood}1" },
+			"rope": { "base": "game:entity/lore/erel/pristine/rope" }
 		}
 	},
 	"attributes": {
