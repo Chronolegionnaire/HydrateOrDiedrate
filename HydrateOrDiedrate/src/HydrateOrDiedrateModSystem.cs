@@ -320,5 +320,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _serverApi = null;
         _clientApi = null;
         Wells.Aquifer.AquiferManager.Unload();
+        CharacterExtraDialogsPatch.cachedElements = null;
     }
 }

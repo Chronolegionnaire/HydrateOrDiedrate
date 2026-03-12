@@ -12,7 +12,7 @@ namespace HydrateOrDiedrate.patches;
 [HarmonyPatch(typeof(CharacterExtraDialogs))]
 public static class CharacterExtraDialogsPatch
 {
-    private static CachedUIElements cachedElements;
+    internal static CachedUIElements cachedElements;
 
     private class CachedUIElements
     {
