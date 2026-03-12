@@ -12,7 +12,7 @@ namespace HydrateOrDiedrate.patches;
 [HarmonyPatch(typeof(CharacterExtraDialogs))]
 public static class CharacterExtraDialogsPatch
 {
-    private static Dictionary<object, CachedUIElements> cachedUIElements = new Dictionary<object, CachedUIElements>();
+    private static CachedUIElements cachedElements;
 
     private class CachedUIElements
     {
@@ -226,7 +226,7 @@ public static class CharacterExtraDialogsPatch
             coolingBonusesRichText = composer.GetRichtext("hydrateordiedrate_coolingBonuses")
         };
         
-        cachedUIElements[__instance] = cached; //TODO check if this is propperly disposed
+        cachedElements = cached;
         UpdateDynamicTexts(capi, cached);
     }
 
@@ -237,7 +237,8 @@ public static class CharacterExtraDialogsPatch
     {
         if (ShouldSkipPatch() || !___dlg.IsOpened()) return;
 
-        if (!cachedUIElements.TryGetValue(__instance, out var cached))
+        var cached = cachedElements;
+        if (cached == null)
         {
             var compo = ___dlg.Composers["playerstats"];
             cached = new CachedUIElements
@@ -250,7 +251,7 @@ public static class CharacterExtraDialogsPatch
                 hydrationDelayDynamicText = compo.GetDynamicText("hydrateordiedrate_delay"),
                 coolingBonusesRichText = compo.GetRichtext("hydrateordiedrate_coolingBonuses")
             };
-            cachedUIElements[__instance] = cached;
+            cachedElements = cached;
         }
         
         UpdateDynamicTexts(___capi, cached);
