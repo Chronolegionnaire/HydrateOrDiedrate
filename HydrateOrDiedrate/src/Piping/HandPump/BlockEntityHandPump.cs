@@ -382,23 +382,12 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
             if (msg.StackBytes != null && msg.StackBytes.Length > 0)
             {
-                try
-                {
-                    using var ms = new MemoryStream(msg.StackBytes);
-                    using var br = new BinaryReader(ms);
+                using var ms = new MemoryStream(msg.StackBytes);
+                using var br = new BinaryReader(ms);
 
-                    stack = new ItemStack();
-                    stack.FromBytes(br);
-                    stack.ResolveBlockOrItem(capi.World);
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    return;
-                }
-                catch
-                {
-                    return;
-                }
+                stack = new ItemStack();
+                stack.FromBytes(br);
+                stack.ResolveBlockOrItem(capi.World);
             }
 
             if (stack == null || stack.Collectible == null) return;
