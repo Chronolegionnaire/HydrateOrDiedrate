@@ -375,16 +375,11 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
         public static void PlayPumpParticleBurst(ICoreClientAPI capi, PumpParticleBurstPacket msg)
         {
-            if (capi?.World == null) return;
-            if (capi.World.Items == null || capi.World.Items.Count == 0) return;
-
             ItemStack stack = null;
-
             if (msg.StackBytes != null && msg.StackBytes.Length > 0)
             {
                 using var ms = new MemoryStream(msg.StackBytes);
                 using var br = new BinaryReader(ms);
-
                 stack = new ItemStack();
                 stack.FromBytes(br);
                 stack.ResolveBlockOrItem(capi.World);
@@ -431,8 +426,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
             capi.Event.RegisterCallback(_ =>
             {
-                if (capi?.World == null) return;
-
                 var p1 = new PumpCubeParticles(
                         collisionPos: p1pos,
                         stack: stack,
