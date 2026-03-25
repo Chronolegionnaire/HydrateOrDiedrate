@@ -101,8 +101,8 @@ public static class Util
     {
         public static bool TryTransferLiquid(ItemStack source, ItemStack target)
         {
-            if (source?.Collectible is not BlockLiquidContainerBase sourceContainer ||
-                target?.Collectible is not BlockLiquidContainerBase targetContainer)
+            if (source?.Collectible is not BlockLiquidContainerBase sourceContainer || 
+                target?.Collectible is not BlockLiquidContainerBase targetContainer || !targetContainer.AllowHeldLiquidTransfer)
             {
                 return false;
             }
