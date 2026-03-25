@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using HydrateOrDiedrate.Config;
@@ -132,10 +133,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             MarkDirty();
             if (Api.Side == EnumAppSide.Server)
             {
-                var pkt = new PumpSfxPacket { X = Pos.X, Y = Pos.Y, Z = Pos.Z, Start = false };
-                ((ICoreServerAPI)Api).Network
-                    .GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID)
-                    .BroadcastPacket(pkt);
+                SendPumpSfxToNearbyPlayers(false);
             }
         }
 
@@ -173,10 +171,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             strokeInProgress = true;
             if (Api.Side == EnumAppSide.Server)
             {
-                var pkt = new PumpSfxPacket { X = Pos.X, Y = Pos.Y, Z = Pos.Z, Start = true };
-                ((ICoreServerAPI)Api).Network
-                    .GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID)
-                    .BroadcastPacket(pkt);
+                SendPumpSfxToNearbyPlayers(true);
             }
             willExtractLitresThisStroke = 0;
 
@@ -220,11 +215,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             {
                 pumping = false;
                 MarkDirty();
-
-                var pkt = new PumpSfxPacket { X = Pos.X, Y = Pos.Y, Z = Pos.Z, Start = false };
-                ((ICoreServerAPI)Api).Network
-                    .GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID)
-                    .BroadcastPacket(pkt);
+                SendPumpSfxToNearbyPlayers(false);
             }
 
             if (remainingPrimingStrokes > 0)
@@ -352,9 +343,9 @@ namespace HydrateOrDiedrate.Piping.HandPump
             {
                 var pkt = new PumpParticleBurstPacket
                 {
-                    PosX = (float)spoutPos.X,
-                    PosY = (float)spoutPos.Y,
-                    PosZ = (float)spoutPos.Z,
+                    PosX = spoutPos.X,
+                    PosY = spoutPos.Y,
+                    PosZ = spoutPos.Z,
                     DirX = spoutDir.X,
                     DirY = 0f,
                     DirZ = spoutDir.Z,
@@ -371,9 +362,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
                     StackBytes = stackBytes
                 };
 
-                ((ICoreServerAPI)Api).Network
-                    .GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID)
-                    .BroadcastPacket(pkt);
+                SendPacketToNearbyPlayingPlayers(pkt, spoutPos, 32f);
             }
 
             for (int i = 0; i < bursts; i++)
@@ -436,7 +425,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
                 msg.PosZ + right.Z * rightNudge + fwd.Z * fwdNudge
             );
 
-            capi.Event.RegisterCallback(dt =>
+            capi.Event.RegisterCallback(_ =>
             {
                 var p1 = new PumpCubeParticles(
                         collisionPos: p1pos,
@@ -452,6 +441,51 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
                 capi.World.SpawnParticles(p1);
             }, gravityDelayMs);
+        }
+
+        private void SendPacketToNearbyPlayingPlayers<T>(T packet, Vec3d origin, float range)
+        {
+            if (Api?.Side != EnumAppSide.Server) return;
+
+            var sapi = (ICoreServerAPI)Api;
+            var channel = sapi.Network.GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID);
+            float rangeSq = range * range;
+
+            var recipients = new List<IServerPlayer>();
+
+            foreach (var player in sapi.World.AllOnlinePlayers)
+            {
+                if (player is not IServerPlayer sp) continue;
+                if (sp.ConnectionState != EnumClientState.Playing) continue;
+                if (sp.Entity?.Pos == null) continue;
+
+                double dx = sp.Entity.Pos.X - origin.X;
+                double dy = sp.Entity.Pos.Y - origin.Y;
+                double dz = sp.Entity.Pos.Z - origin.Z;
+
+                if (dx * dx + dy * dy + dz * dz > rangeSq) continue;
+
+                recipients.Add(sp);
+            }
+
+            if (recipients.Count > 0)
+            {
+                channel.SendPacket(packet, recipients.ToArray());
+            }
+        }
+
+        private void SendPumpSfxToNearbyPlayers(bool start)
+        {
+            var origin = Pos.ToVec3d().Add(0.5, 0.5, 0.5);
+            var pkt = new PumpSfxPacket
+            {
+                X = Pos.X,
+                Y = Pos.Y,
+                Z = Pos.Z,
+                Start = start
+            };
+
+            SendPacketToNearbyPlayingPlayers(pkt, origin, 32f);
         }
 
         public static void OnClientPumpSfx(ICoreClientAPI capi, PumpSfxPacket msg)
@@ -514,8 +548,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
             if (Api?.World == null) return null;
 
             int curVersion = FluidNetworkState.NetworkVersion;
-
-            // If the graph hasn't changed since we last looked, trust the cache
+            
             if (currentSpring != null && lastNetworkVersion == curVersion)
             {
                 var be = Api.World.BlockAccessor.GetBlockEntity(currentSpring.Pos) as BlockEntityWellSpring;
@@ -596,11 +629,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
         {
             if (Api.Side == EnumAppSide.Server)
             {
-                var pkt = new PumpSfxPacket { X = Pos.X, Y = Pos.Y, Z = Pos.Z, Start = false };
-                ((ICoreServerAPI)Api).Network
-                    .GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID)
-                    .BroadcastPacket(pkt);
-
+                SendPumpSfxToNearbyPlayers(false);
                 Inventory?.DropAll(Pos.ToVec3d().Add(0.5, 0.5, 0.5));
             }
             base.OnBlockRemoved();
