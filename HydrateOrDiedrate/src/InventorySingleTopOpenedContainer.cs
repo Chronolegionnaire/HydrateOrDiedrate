@@ -72,7 +72,7 @@ namespace HydrateOrDiedrate
 
         public override bool CanHold(ItemSlot sourceSlot)
         {
-            if (sourceSlot?.Itemstack?.Collectible is not BlockLiquidContainerTopOpened)
+            if (sourceSlot?.Itemstack?.Collectible is not BlockLiquidContainerTopOpened liquidContainer || !liquidContainer.AllowHeldLiquidTransfer)
                 return false;
 
             if (!base.CanHold(sourceSlot))

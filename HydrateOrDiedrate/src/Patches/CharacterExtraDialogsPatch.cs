@@ -14,7 +14,7 @@ public static class CharacterExtraDialogsPatch
 {
     internal static CachedUIElements cachedElements;
 
-    private class CachedUIElements
+    internal class CachedUIElements
     {
         public GuiComposer composer;
         public GuiElementDynamicText thirstDynamicText;
