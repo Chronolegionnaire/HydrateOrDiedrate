@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using HydrateOrDiedrate.Config;
@@ -450,6 +451,8 @@ namespace HydrateOrDiedrate.Piping.HandPump
             var channel = sapi.Network.GetChannel(HydrateOrDiedrateModSystem.NetworkChannelID);
             float rangeSq = range * range;
 
+            var recipients = new List<IServerPlayer>();
+
             foreach (var player in sapi.World.AllOnlinePlayers)
             {
                 if (player is not IServerPlayer sp) continue;
@@ -462,7 +465,12 @@ namespace HydrateOrDiedrate.Piping.HandPump
 
                 if (dx * dx + dy * dy + dz * dz > rangeSq) continue;
 
-                channel.SendPacket(packet, sp);
+                recipients.Add(sp);
+            }
+
+            if (recipients.Count > 0)
+            {
+                channel.SendPacket(packet, recipients.ToArray());
             }
         }
 
