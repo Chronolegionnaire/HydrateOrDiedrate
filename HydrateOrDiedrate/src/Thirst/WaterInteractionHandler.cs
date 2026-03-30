@@ -23,6 +23,7 @@ namespace HydrateOrDiedrate
             "water",
             "boilingwater",
             "saltwater",
+            "rapidwater"
         };
 
         private class PlayerDrinkData
