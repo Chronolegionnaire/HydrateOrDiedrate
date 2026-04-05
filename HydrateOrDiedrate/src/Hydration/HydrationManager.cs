@@ -26,7 +26,7 @@ public static class HydrationManager
 
         if (CustomHydrationEvaluators.TryGetValue(collectible.Code, out var evaluator)) return evaluator(itemStack);
 
-        return collectible.Attributes?.Token.Value<int>(Attributes.Hydration) ?? 0f;
+        return collectible.Attributes?[Attributes.Hydration].AsFloat() ?? 0f;
     }
 
     public static float GetBlockHydration(ICoreAPI api, Block block)
