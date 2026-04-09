@@ -40,13 +40,14 @@ public static class OreMapComponentColorPatch
                 continue;
             }
             if (i + 4 < code.Count &&
-                code[i].opcode == OpCodes.Ldarg_2 &&
+                code[i].IsLdarg(2) &&
                 code[i + 1].LoadsField(oreReadingsField) &&
-                IsAnyLdarg(code[i + 2]) &&
+                code[i + 2].IsLdarg(5) &&
                 code[i + 3].Calls(dictItemGetter) &&
                 code[i + 4].LoadsField(totalFactorField))
             {
                 var first = code[i];
+                var arg = code[i + 2];
 
                 code[i] = new CodeInstruction(OpCodes.Ldarg_2)
                 {
@@ -54,29 +55,20 @@ public static class OreMapComponentColorPatch
                     blocks = first.blocks
                 };
 
-                code[i + 1] = CloneLoadInstruction(code[i + 2]);
-                code[i + 2] = new CodeInstruction(OpCodes.Call, helperFiltered);
+                code[i + 1] = CodeInstruction.LoadArgument(5);
+
+                code[i + 2] = new CodeInstruction(OpCodes.Call, helperFiltered)
+                {
+                    labels = arg.labels,
+                    blocks = arg.blocks
+                };
+
                 code[i + 3] = new CodeInstruction(OpCodes.Nop);
                 code[i + 4] = new CodeInstruction(OpCodes.Nop);
             }
         }
 
         return code;
-    }
-
-    private static bool IsAnyLdarg(CodeInstruction ins)
-    {
-        return ins.opcode == OpCodes.Ldarg_0 ||
-               ins.opcode == OpCodes.Ldarg_1 ||
-               ins.opcode == OpCodes.Ldarg_2 ||
-               ins.opcode == OpCodes.Ldarg_3 ||
-               ins.opcode == OpCodes.Ldarg ||
-               ins.opcode == OpCodes.Ldarg_S;
-    }
-
-    private static CodeInstruction CloneLoadInstruction(CodeInstruction ins)
-    {
-        return new CodeInstruction(ins.opcode, ins.operand);
     }
 
     public static double GetHighestReadingIgnoringAquifer(PropickReading reading)
