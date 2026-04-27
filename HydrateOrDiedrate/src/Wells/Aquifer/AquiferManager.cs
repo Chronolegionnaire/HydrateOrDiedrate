@@ -180,7 +180,7 @@ public static partial class AquiferManager
             }
         }
 
-        if (bestRating > currentRating)
+        if (bestRating > currentRating && bestRating > AquiferData.MinimumAquiferRatingForDetection)
         {
             int dxDir = bestChunk.X - chunkPos.X;
             int dyDir = bestChunk.Y - chunkPos.Y;
