@@ -1,4 +1,5 @@
 {
+  "code": "pipesection",
   "ingredient": { "type": "item", "code": "game:ingot-*", "name": "metal", "allowedVariants": ["copper", "lead"] },
   "pattern": [[
     "#######",

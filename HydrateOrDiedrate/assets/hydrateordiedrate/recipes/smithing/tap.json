@@ -1,4 +1,5 @@
 ﻿{
+  "code": "kegtap",
   "ingredient": { "type": "item", "code": "game:ingot-*", "name": "metal", "allowedVariants": ["brass"] },
   "pattern": [[
     "__#____________",
