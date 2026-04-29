@@ -2,7 +2,7 @@
 	"code": "winch",
 	"class": "HoD:BlockWinch",
 	"entityclass": "HoD:BlockEntityWinch",
-	"entityBehaviors": [{ "name": "MPConsumer" }],
+	"entityBehaviors": [{ "name": "MPConsumer", "properties": { "mechPartShape": null } }],
 	"behaviors": [
 		{"name": "Container"},
 		{
