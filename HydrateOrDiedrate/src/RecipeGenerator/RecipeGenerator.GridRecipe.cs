@@ -98,6 +98,7 @@ public static partial class RecipeGenerator
 
     private static void ReplaceCode(IWorldAccessor world, CraftingRecipeIngredient ingredient, AssetLocation toCode)
     {
+        UndoDeduplication(ingredient);
         ingredient.Code = toCode;
     }
 

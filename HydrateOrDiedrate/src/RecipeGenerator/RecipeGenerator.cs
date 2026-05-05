@@ -2,12 +2,11 @@ using HarmonyLib;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
-using Vintagestory.Server;
 
 namespace HydrateOrDiedrate.RecipeGenerator;
 
@@ -90,7 +89,7 @@ public static partial class RecipeGenerator
 
         foreach(var recipeList in recipeLists)
         {
-            try
+            try 
             {
                 if (recipeList.Source.Equals("hydrateordiedrate", StringComparison.OrdinalIgnoreCase))
                 {
@@ -149,8 +148,24 @@ public static partial class RecipeGenerator
         name.Path = $"-HoD-{name.Path}-{toCode.Path}";
     }
 
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "deduplicationIndex")]
+    public static extern ref int GetDeduplicationIndex(CraftingRecipeIngredient obj);
+
+    public static void UndoDeduplication(params IRecipeIngredient[] ingredients)
+    {
+        for (int i = 0; i < ingredients.Length; i++)
+        {
+            if (ingredients[i] is CraftingRecipeIngredient cri)
+            {
+                GetDeduplicationIndex(cri) = -1;
+                cri.ResolvedItemStack = null;
+            }
+        }
+    }
+
     public static void ReplaceCodes(IWorldAccessor world, CraftingRecipeIngredient[] ingredients, Span<bool> matches, AssetLocation toCode)
     {
+        UndoDeduplication(ingredients);
         for(var  i = 0;  i < ingredients.Length; i++)
         {
             if (!matches[i]) continue;
@@ -161,6 +176,7 @@ public static partial class RecipeGenerator
     }
     public static void ReplaceCodesWithoutResolve(IWorldAccessor world, IRecipeIngredient[] ingredients, Span<bool> matches, AssetLocation toCode)
     {
+        UndoDeduplication(ingredients);
         for(var  i = 0;  i < ingredients.Length; i++)
         {
             if (!matches[i]) continue;
