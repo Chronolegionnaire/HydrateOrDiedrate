@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+	  <Reference Include="HudShelf">
+		  <HintPath>lib\HudShelf.dll</HintPath>
+		  <Private>False</Private>
+	  </Reference>
     <Reference Include="ACulinaryArtillery">
       <HintPath>lib\ACulinaryArtillery.dll</HintPath>
       <Private>False</Private>

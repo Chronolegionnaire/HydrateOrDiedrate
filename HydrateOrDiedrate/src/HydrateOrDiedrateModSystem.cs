@@ -1,33 +1,33 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using HydrateOrDiedrate.Commands;
 using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.Config.Patching;
+using HydrateOrDiedrate.Config.Patching.PatchTypes;
 using HydrateOrDiedrate.encumbrance;
 using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.patches;
-using HydrateOrDiedrate.Wells.WellWater;
-using HydrateOrDiedrate.Wells.Winch;
-using HydrateOrDiedrate.XSkill;
-using Vintagestory.API.Client;
-using Vintagestory.API.Common;
-using Vintagestory.API.Server;
-using Vintagestory.Client.NoObf;
-using Vintagestory.GameContent;
-using HydrateOrDiedrate.Config.Patching;
-using HydrateOrDiedrate.Config.Patching.PatchTypes;
-using Vintagestory.API.Common.Entities;
-using Vintagestory.API.Util;
-using System.Collections.Generic;
-using Vintagestory.API.Datastructures;
-using Newtonsoft.Json.Linq;
 using HydrateOrDiedrate.Piping.HandPump;
 using HydrateOrDiedrate.Piping.Networking;
 using HydrateOrDiedrate.Piping.Pipe;
 using HydrateOrDiedrate.Piping.ShutoffValve;
-using Vintagestory.Common;
+using HydrateOrDiedrate.Wells.WellWater;
+using HydrateOrDiedrate.Wells.Winch;
+using HydrateOrDiedrate.XSkill;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using Vintagestory.API.Client;
+using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
+using Vintagestory.API.Datastructures;
+using Vintagestory.API.Server;
+using Vintagestory.API.Util;
+using Vintagestory.Client.NoObf;
+using Vintagestory.Common;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate;
 
@@ -216,7 +216,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         AquiferCommands.Register(api);
     }
 
-
     public override void StartClientSide(ICoreClientAPI api)
     {
         _clientApi = api;
@@ -235,6 +234,10 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
+        
+        _thirstHud = new HudElementThirstBar(_clientApi);
+        _clientApi.Gui.RegisterDialog(_thirstHud);
+
         if (ModConfig.Instance.Thirst.Enabled)
         {
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
@@ -261,11 +264,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         if (vanillaHudStatbar != null && vanillaHudStatbar.IsOpened())
         {
-
-            _thirstHud = new HudElementThirstBar(_clientApi);
-            _clientApi.Event.RegisterGameTickListener(_thirstHud.OnGameTick, 1000);
-            _clientApi.Gui.RegisterDialog(_thirstHud);
-
             nutritionDeficitHud = new HudElementNutritionDeficitBar(_clientApi);
             _clientApi.Event.RegisterGameTickListener(nutritionDeficitHud.OnGameTick, 1000);
             _clientApi.Gui.RegisterDialog(nutritionDeficitHud);
