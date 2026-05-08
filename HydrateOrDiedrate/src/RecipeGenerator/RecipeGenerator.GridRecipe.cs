@@ -15,9 +15,11 @@ public static partial class RecipeGenerator
         List<object> newRecipes)
     {
         if (recipe is not GridRecipe gridRecipe) return;
-        var contentCode = gridRecipe.Attributes?.Token["liquidContainerProps"]?["requiresContent"]?["code"]?.Value<string>();
-        if (!string.IsNullOrEmpty(contentCode))
+
+        foreach((var key, var value) in gridRecipe.Ingredients)
         {
+            if (value?.RecipeAttributes?.Token["requiresContent"]?["code"]?.Value<string>() is not string contentCode) continue;
+
             foreach (var (fromCode, toCodes) in ConversionMappings)
             {
                 if (!MatchCodeString(contentCode, fromCode)) continue;
@@ -28,13 +30,17 @@ public static partial class RecipeGenerator
 
                     newRecipe.Name = newRecipe.Name?.Clone();
                     ModifyRecipeName(newRecipe.Name, toCode);
-                    ReplaceRequiresContentCode(newRecipe.Attributes.Token, toCode);
-                    newRecipes.Add(newRecipe);
+                    UndoDeduplication([.. newRecipe.Ingredients.Values]);
+                    ReplaceRequiresContentCode(newRecipe.Ingredients[key], toCode);
+
+                    if(newRecipe.Resolve(world, SourceForLogging))
+                    {
+                        newRecipes.Add(newRecipe);
+                    }
                 }
             }
-
-            return;
         }
+
         var resolved = gridRecipe.ResolvedIngredients;
         if (resolved == null || resolved.Length == 0) return;
 
@@ -102,8 +108,9 @@ public static partial class RecipeGenerator
         ingredient.Code = toCode;
     }
 
-    public static void ReplaceRequiresContentCode(JToken token, AssetLocation toCode)
+    public static void ReplaceRequiresContentCode(CraftingRecipeIngredient ingredient, AssetLocation toCode)
     {
-        token["liquidContainerProps"]["requiresContent"]["code"] = string.Intern(toCode.ToString());
+        ingredient.RecipeAttributes.Token["requiresContent"]["code"] = string.Intern(toCode.ToString());
+
     }
 }
