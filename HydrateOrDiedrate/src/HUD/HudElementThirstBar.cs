@@ -48,8 +48,8 @@ public class HudElementThirstBar : HudElement
             DisplayName = "Thirst Bar",
 
             DefaultAnchor = HudAnchor.BottomCenter,
-            DefaultOffsetX = 310,
-            DefaultOffsetY = -110
+            DefaultOffsetX = 312,
+            DefaultOffsetY = -115
         });
 
         capi.Event.RegisterCallback(_ =>
@@ -137,7 +137,7 @@ public class HudElementThirstBar : HudElement
             .WithFixedHeight(10);
     
         var thirstBarParentBounds = statsBarBounds.FlatCopy()
-            .WithFixedAlignmentOffset(250, -90);
+            .WithFixedAlignmentOffset(250, -95);
     
         var composer = capi.Gui.CreateCompo("thirststatbar", thirstBarParentBounds);
     
