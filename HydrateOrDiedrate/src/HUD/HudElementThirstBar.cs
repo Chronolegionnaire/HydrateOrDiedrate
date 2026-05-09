@@ -1,4 +1,5 @@
-﻿using HydrateOrDiedrate.Config;
+﻿using HudShelf;
+using HydrateOrDiedrate.Config;
 using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -17,14 +18,45 @@ public class HudElementThirstBar : HudElement
     public bool ShowThirstBar = true;
     public override double InputOrder => 1.0;
     
-    private readonly EntityBehaviorThirst thirstBehavior;
+    private EntityBehaviorThirst thirstBehavior;
 
     public HudElementThirstBar(ICoreClientAPI capi) : base(capi)
     {
-        thirstBehavior = capi.World.Player.Entity.GetBehavior<EntityBehaviorThirst>();
-        
         ComposeGuis();
-        capi.Event.RegisterGameTickListener(OnGameTick, 100); //TODO: thirst is only updated every 10 seconds so is there a point in this being every 100ms?
+        capi.Event.RegisterGameTickListener(OnGameTick, 1000);
+
+        if (capi.ModLoader.IsModEnabled("hudshelf"))
+        {
+            RegisterToHudShelf();
+        }
+    }
+
+    private void RegisterToHudShelf()
+    {
+        var shelf = capi.ModLoader.GetModSystem<HudShelfModSystem>();
+        
+        var handle = shelf.Api.Register(new HudRegistration
+        {
+            Id = "hydrateordiedrate:thirstbar",
+            Element = this,
+            GetBounds = () => (SingleComposer?.Bounds.OuterWidth ?? 0, SingleComposer?.Bounds.OuterHeight ?? 0),
+            OnPositionChanged = pos => 
+            {
+                pos.ApplyTo(SingleComposer.Bounds);
+                SingleComposer.ReCompose();
+            },
+            DisplayName = "Thirst Bar",
+
+            DefaultAnchor = HudAnchor.BottomCenter,
+            DefaultOffsetX = 312,
+            DefaultOffsetY = -115
+        });
+
+        capi.Event.RegisterCallback(_ =>
+        {
+            handle.CurrentPosition.ApplyTo(SingleComposer.Bounds);
+            SingleComposer.ReCompose();
+        }, 1);
     }
 
     public void OnGameTick(float dt)
@@ -59,6 +91,11 @@ public class HudElementThirstBar : HudElement
 
     private void UpdateThirst()
     {
+        if(thirstBehavior is null)
+        {
+            thirstBehavior = capi.World.Player?.Entity?.GetBehavior<EntityBehaviorThirst>();
+            if(thirstBehavior is null) return;
+        }
         if (_statbar == null) return;
 
         var currentThirst = thirstBehavior.CurrentThirst;
@@ -92,22 +129,19 @@ public class HudElementThirstBar : HudElement
         {
             Alignment = EnumDialogArea.CenterBottom,
             BothSizing = ElementSizing.Fixed,
-            fixedWidth = statsBarParentWidth,
-            fixedHeight = 100
-        }.WithFixedAlignmentOffset(0.0, 5.0);
+            fixedWidth = statsBarWidth,
+            fixedHeight = 10
+        };
     
-        var isRight = true;
-        var alignmentOffsetX = isRight ? -2.0 : 1.0;
-    
-        var thirstBarBounds = ElementStdBounds.Statbar(isRight ? EnumDialogArea.RightTop : EnumDialogArea.LeftTop, statsBarWidth)
-            .WithFixedAlignmentOffset(alignmentOffsetX, -16)
+        var thirstBarBounds = ElementStdBounds.Statbar(EnumDialogArea.RightTop, statsBarWidth)
             .WithFixedHeight(10);
     
-        var thirstBarParentBounds = statsBarBounds.FlatCopy().FixedGrow(0.0, 20.0);
+        var thirstBarParentBounds = statsBarBounds.FlatCopy()
+            .WithFixedAlignmentOffset(250, -95);
     
         var composer = capi.Gui.CreateCompo("thirststatbar", thirstBarParentBounds);
     
-        _statbar = new GuiElementStatbar(composer.Api, thirstBarBounds, thirstBarColor, isRight, false);
+        _statbar = new GuiElementStatbar(composer.Api, thirstBarBounds, thirstBarColor, true, false);
     
         composer
             .BeginChildElements(statsBarBounds)
@@ -115,7 +149,7 @@ public class HudElementThirstBar : HudElement
             .EndChildElements()
             .Compose();
     
-        Composers["thirstbar"] = composer;
+        SingleComposer = composer;
     
         TryOpen();
     }
