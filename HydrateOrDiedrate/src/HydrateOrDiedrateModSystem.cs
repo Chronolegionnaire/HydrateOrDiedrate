@@ -185,7 +185,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _waterInteractionHandler = new WaterInteractionHandler(api);
 
         XLibSkills.Enabled = false;
-        if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibforked"))
+        if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibfork"))
         {
             XLibSkills.Initialize(api);
             XLibSkills.Enabled = true;
