@@ -303,11 +303,6 @@ namespace HydrateOrDiedrate.Wells.Winch
                 StopTurning();
                 return;
             }
-            var sel = RotationPlayer.CurrentBlockSelection;
-            if (sel == null || !sel.Position.Equals(Pos) || sel.SelectionBoxIndex != 1)
-            {
-                StopTurning();
-            }
         }
         // Hacky fix for infinite turning glitch
 
