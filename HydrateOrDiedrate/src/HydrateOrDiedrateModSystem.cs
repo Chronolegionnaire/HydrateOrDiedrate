@@ -185,10 +185,18 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _waterInteractionHandler = new WaterInteractionHandler(api);
 
         XLibSkills.Enabled = false;
-        if (api.ModLoader.IsModEnabled("xlib") || api.ModLoader.IsModEnabled("xlibfork"))
+        if (api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xlib")))
         {
-            XLibSkills.Initialize(api);
-            XLibSkills.Enabled = true;
+            try
+            {
+                XLibSkills.Initialize(api);
+                XLibSkills.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                api.Logger.Warning($"Failed to initialize XLib skills compatibility: {ex}");
+                XLibSkills.Enabled = false;
+            }
         }
 
         api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RegisterRainHarvester));
