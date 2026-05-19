@@ -24,7 +24,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
         {
             this.api = api;
             base.OnLoaded(api);
-            bool xskillsEnabled = api.ModLoader.IsModEnabled("xskills");
+            bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xlib"));
 
             if (!xskillsEnabled)
             {
