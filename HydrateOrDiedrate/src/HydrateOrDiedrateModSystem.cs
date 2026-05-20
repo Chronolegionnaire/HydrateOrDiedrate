@@ -49,9 +49,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private long customHudListenerId;
     
-    public static bool XLibLoaded { get; private set; }
-    public static bool XSkillsLoaded { get; private set; }
-    
     public const string PatchCategory_MarkDirtyThreshold = "HoD.MarkDirtyThreshold";
     public override void StartPre(ICoreAPI api)
     {
@@ -186,10 +183,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
         if (ModConfig.Instance.HeatAndCooling.HarshHeat) api.RegisterEntityBehaviorClass("HoD:bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot)); //TODO does this even do anything when thirst is disabled?
 
         _waterInteractionHandler = new WaterInteractionHandler(api);
-        XLibLoaded = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xlib"));
-        XSkillsLoaded = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
-        
-        if (XLibLoaded)
+
+        XLibSkills.Enabled = false;
+        if (api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xlib")))
         {
             try
             {
@@ -329,10 +325,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     {
         _serverApi = null;
         _clientApi = null;
-        
-        XLibLoaded = false;
-        XSkillsLoaded = false;
-        
         Wells.Aquifer.AquiferManager.Unload();
         CharacterExtraDialogsPatch.cachedElements = null;
     }

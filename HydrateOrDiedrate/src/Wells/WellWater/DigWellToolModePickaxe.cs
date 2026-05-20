@@ -24,7 +24,9 @@ namespace HydrateOrDiedrate.Wells.WellWater
         {
             this.api = api;
             base.OnLoaded(api);
-            if (HydrateOrDiedrateModSystem.XSkillsLoaded)
+            bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
+
+            if (!xskillsEnabled)
             {
                 if (api.Side == EnumAppSide.Client)
                 {
@@ -148,7 +150,9 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
         public override SkillItem[] GetToolModes(ItemSlot slot, IClientPlayer forPlayer, BlockSelection blockSel)
         {
-            if (HydrateOrDiedrateModSystem.XSkillsLoaded)
+            bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
+
+            if (!xskillsEnabled)
             {
                 return ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
             }
@@ -160,7 +164,9 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
         public override void SetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel, int toolMode)
         {
-            if (HydrateOrDiedrateModSystem.XSkillsLoaded)
+            bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
+
+            if (!xskillsEnabled)
             {
                 slot.Itemstack.Attributes.SetInt("toolMode", toolMode);
 
@@ -189,7 +195,9 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
         public override int GetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel)
         {
-            if (HydrateOrDiedrateModSystem.XSkillsLoaded)
+            bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
+
+            if (!xskillsEnabled)
             {
                 return slot.Itemstack.Attributes.GetInt("toolMode", 0);
             }
@@ -221,7 +229,9 @@ namespace HydrateOrDiedrate.Wells.WellWater
             if (blockSel == null || byEntity == null) return false;
 
             string modeName = "";
-            if (HydrateOrDiedrateModSystem.XSkillsLoaded)
+            bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
+
+            if (!xskillsEnabled)
             {
                 string code = itemslot.Itemstack.Attributes.GetString("toolModeCode", null);
                 int modeIndex = itemslot.Itemstack.Attributes.GetInt("toolMode", 0);
