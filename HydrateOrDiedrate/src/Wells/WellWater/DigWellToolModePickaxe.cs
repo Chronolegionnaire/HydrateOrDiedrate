@@ -16,10 +16,9 @@ namespace HydrateOrDiedrate.Wells.WellWater
         private static SkillItem digMode;
         private static SkillItem wellMode;
         private ICoreAPI api;
-        private List<SkillItem> customModes = new List<SkillItem>();
+        private readonly List<SkillItem> customModes = new List<SkillItem>();
 
         public BehaviorPickaxeWellMode(CollectibleObject collObj) : base(collObj) { }
-
         public override void OnLoaded(ICoreAPI api)
         {
             this.api = api;
@@ -28,194 +27,194 @@ namespace HydrateOrDiedrate.Wells.WellWater
 
             if (!xskillsEnabled)
             {
-                if (api.Side == EnumAppSide.Client)
-                {
-                    ICoreClientAPI capi = api as ICoreClientAPI;
-                    digMode = new SkillItem
-                    {
-                        Code = new AssetLocation("digmode"),
-                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digmode")
-                    }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
-                        new AssetLocation("game:textures/icons/rocks.svg"),
-                        48, 48, 5, ColorUtil.WhiteArgb));
+                CreateDefaultModes(api);
+                customModes.AddRange(new[] { digMode, wellMode });
 
-                    wellMode = new SkillItem
-                    {
-                        Code = new AssetLocation("digwellspring"),
-                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
-                    }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
-                        new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
-                        48, 48, 5, ColorUtil.WhiteArgb));
+                SkillItem[] existingModes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
+                if (existingModes == null)
+                {
+                    ObjectCacheUtil.GetOrCreate<SkillItem[]>(api, "pickaxeToolModes", () => customModes.ToArray());
                 }
                 else
                 {
-                    digMode = new SkillItem
-                    {
-                        Code = new AssetLocation("digmode"),
-                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digmode")
-                    };
+                    List<SkillItem> list = existingModes.ToList();
 
-                    wellMode = new SkillItem
+                    foreach (SkillItem mode in customModes)
                     {
-                        Code = new AssetLocation("digwellspring"),
-                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
-                    };
+                        if (!list.Any(m => m.Code.Path == mode.Code.Path))
+                        {
+                            list.Add(mode);
+                        }
+                    }
+                    api.ObjectCache["pickaxeToolModes"] = list.ToArray();
                 }
-                customModes.AddRange(new[] { digMode, wellMode });
             }
             else
             {
-                if (api.Side == EnumAppSide.Client)
+                CreateXSkillsWellMode(api);
+                customModes.Add(wellMode);
+                EnsureWellModeRegisteredWithXSkills(api);
+            }
+        }
+        private void CreateDefaultModes(ICoreAPI api)
+        {
+            if (api.Side == EnumAppSide.Client)
+            {
+                ICoreClientAPI capi = api as ICoreClientAPI;
+                digMode = new SkillItem
                 {
-                    ICoreClientAPI capi = api as ICoreClientAPI;
-                    wellMode = new SkillItem
-                    {
-                        Code = new AssetLocation("digwellspring"),
-                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
-                    }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
-                        new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
-                        48, 48, 5, ColorUtil.WhiteArgb));
-                    customModes.Add(wellMode);
-                    SkillItem[] xSkillsModes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
-                    if (xSkillsModes == null)
-                    {
-                        IEnumerable<SkillItem> combined = CreateXSkillsToolModes(api);
-                        if (combined != null)
-                        {
-                            List<SkillItem> list = combined.ToList();
-                            foreach (SkillItem mode in customModes)
-                            {
-                                if (!list.Any(cm => cm.Code.Path == mode.Code.Path))
-                                {
-                                    list.Add(mode);
-                                }
-                            }
-                            ObjectCacheUtil.GetOrCreate<SkillItem[]>(api, "pickaxeToolModes", () => list.ToArray());
-                        }
-                    }
-                    else
-                    {
-                        List<SkillItem> list = xSkillsModes.ToList();
-                        foreach (SkillItem mode in customModes)
-                        {
-                            if (!list.Any(m => m.Code.Path == mode.Code.Path))
-                            {
-                                list.Add(mode);
-                            }
-                        }
-                        api.ObjectCache["pickaxeToolModes"] = list.ToArray();
-                    }
-                }
-                else
+                    Code = new AssetLocation("digmode"),
+                    Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digmode")
+                }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
+                    new AssetLocation("game:textures/icons/rocks.svg"),
+                    48, 48, 5, ColorUtil.WhiteArgb));
+
+                wellMode = new SkillItem
                 {
-                    wellMode = new SkillItem
-                    {
-                        Code = new AssetLocation("digwellspring"),
-                        Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
-                    };
-                    customModes.Add(wellMode);
+                    Code = new AssetLocation("digwellspring"),
+                    Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
+                }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
+                    new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
+                    48, 48, 5, ColorUtil.WhiteArgb));
+            }
+            else
+            {
+                digMode = new SkillItem
+                {
+                    Code = new AssetLocation("digmode"),
+                    Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digmode")
+                };
+
+                wellMode = new SkillItem
+                {
+                    Code = new AssetLocation("digwellspring"),
+                    Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
+                };
+            }
+        }
+        private void CreateXSkillsWellMode(ICoreAPI api)
+        {
+            if (api.Side == EnumAppSide.Client)
+            {
+                ICoreClientAPI capi = api as ICoreClientAPI;
+                wellMode = new SkillItem
+                {
+                    Code = new AssetLocation("digwellspring"),
+                    Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
+                }.WithIcon(capi, capi.Gui.LoadSvgWithPadding(
+                    new AssetLocation("hydrateordiedrate:textures/icons/well.svg"),
+                    48, 48, 5, ColorUtil.WhiteArgb));
+            }
+            else
+            {
+                wellMode = new SkillItem
+                {
+                    Code = new AssetLocation("digwellspring"),
+                    Name = Lang.Get("hydrateordiedrate:pickaxewellmode-digwellspring")
+                };
+            }
+        }
+        private void EnsureWellModeRegisteredWithXSkills(ICoreAPI api)
+        {
+            if (wellMode == null) return;
+
+            SkillItem[] xSkillsModes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
+            if (xSkillsModes == null)
+            {
+                IEnumerable<SkillItem> combined = CreateXSkillsToolModes(api);
+                if (combined == null) return;
+
+                List<SkillItem> list = combined.ToList();
+
+                if (!list.Any(m => m.Code.Path == wellMode.Code.Path))
+                {
+                    list.Add(wellMode);
                 }
+
+                ObjectCacheUtil.GetOrCreate<SkillItem[]>(api, "pickaxeToolModes", () => list.ToArray());
+            }
+            else
+            {
+                List<SkillItem> list = xSkillsModes.ToList();
+
+                if (!list.Any(m => m.Code.Path == wellMode.Code.Path))
+                {
+                    list.Add(wellMode);
+                }
+
+                api.ObjectCache["pickaxeToolModes"] = list.ToArray();
             }
         }
         private IEnumerable<SkillItem> CreateXSkillsToolModes(ICoreAPI api)
         {
-            try
+            Type pickaxeBehaviorType = Type.GetType("XSkills.PickaxeBehavior, xskills");
+            if (pickaxeBehaviorType == null)
             {
-                Type pickaxeBehaviorType = Type.GetType("XSkills.PickaxeBehavior, xskills");
-                if (pickaxeBehaviorType != null)
-                {
-                    MethodInfo method = pickaxeBehaviorType.GetMethod("CreateToolModes", BindingFlags.Public | BindingFlags.Static);
-                    if (method != null)
-                    {
-                        object result = method.Invoke(null, new object[] { api });
-                        return result as IEnumerable<SkillItem>;
-                    }
-                }
+                return null;
             }
-            catch (Exception e)
+
+            MethodInfo method = pickaxeBehaviorType.GetMethod(
+                "CreateToolModes",
+                BindingFlags.Public | BindingFlags.Static);
+
+            if (method == null)
             {
-                api.Logger.Error("Error invoking XSkills.PickaxeBehavior.CreateToolModes: " + e);
+                return null;
             }
+            object result = method.Invoke(null, new object[] { api });
+            return result as IEnumerable<SkillItem>;
             return null;
         }
 
         public override void OnUnloaded(ICoreAPI api)
         {
-            foreach (SkillItem mode in customModes)
-            {
-                mode?.Dispose();
-            }
-            customModes.Clear();
+            Dispose();
         }
 
         public override SkillItem[] GetToolModes(ItemSlot slot, IClientPlayer forPlayer, BlockSelection blockSel)
         {
-            bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
+            SkillItem[] modes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
 
-            if (!xskillsEnabled)
+            if (modes != null)
             {
-                return ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
+                return modes;
             }
-            else
-            {
-                return customModes.ToArray();
-            }
+
+            return customModes.ToArray();
         }
 
         public override void SetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel, int toolMode)
         {
             bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
 
-            if (!xskillsEnabled)
-            {
-                slot.Itemstack.Attributes.SetInt("toolMode", toolMode);
+            SkillItem[] modes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
 
-                SkillItem[] modes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
-                if (modes != null && toolMode >= 0 && toolMode < modes.Length)
-                {
-                    slot.Itemstack.Attributes.SetString("toolModeCode", modes[toolMode].Code.Path);
-                }
-            }
-            else
+            if (modes != null && modes.Length > 0)
             {
-                SkillItem[] combined = GetToolModes(slot, byPlayer as IClientPlayer, blockSel);
-                if (combined == null || combined.Length == 0)
-                {
-                    slot.Itemstack.Attributes.SetString("toolMode", "digmode");
-                }
-                else
-                {
-                    toolMode = GameMath.Clamp(toolMode, 0, combined.Length - 1);
-                    string modeName = combined[toolMode].Code.Path;
-                    slot.Itemstack.Attributes.SetString("toolMode", modeName);
-                }
+                toolMode = GameMath.Clamp(toolMode, 0, modes.Length - 1);
             }
+            slot.Itemstack.Attributes.SetInt("toolMode", toolMode);
+
+            if (!xskillsEnabled && modes != null && toolMode >= 0 && toolMode < modes.Length)
+            {
+                slot.Itemstack.Attributes.SetString("toolModeCode", modes[toolMode].Code.Path);
+            }
+
             slot.MarkDirty();
         }
 
         public override int GetToolMode(ItemSlot slot, IPlayer byPlayer, BlockSelection blockSel)
         {
-            bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
+            int toolMode = slot.Itemstack.Attributes.GetInt("toolMode", 0);
 
-            if (!xskillsEnabled)
+            SkillItem[] modes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
+
+            if (modes == null || modes.Length == 0)
             {
-                return slot.Itemstack.Attributes.GetInt("toolMode", 0);
-            }
-            else
-            {
-                string storedMode = slot.Itemstack.Attributes.GetString("toolMode", "digmode");
-                SkillItem[] combined = GetToolModes(slot, byPlayer as IClientPlayer, blockSel);
-                if (combined == null || combined.Length == 0)
-                {
-                    return 0;
-                }
-                for (int i = 0; i < combined.Length; i++)
-                {
-                    if (combined[i].Code.Path == storedMode)
-                        return i;
-                }
                 return 0;
             }
+
+            return GameMath.Clamp(toolMode, 0, modes.Length - 1);
         }
 
         public override bool OnBlockBrokenWith(
@@ -226,24 +225,17 @@ namespace HydrateOrDiedrate.Wells.WellWater
             float dropQuantityMultiplier,
             ref EnumHandling bhHandling)
         {
-            if (blockSel == null || byEntity == null) return false;
+            if (blockSel == null || byEntity == null || itemslot?.Itemstack == null)
+            {
+                return false;
+            }
 
             string modeName = "";
-            bool xskillsEnabled = api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xskill"));
-
-            if (!xskillsEnabled)
+            int modeIndex = itemslot.Itemstack.Attributes.GetInt("toolMode", 0);
+            SkillItem[] modes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
+            if (modes != null && modeIndex >= 0 && modeIndex < modes.Length)
             {
-                string code = itemslot.Itemstack.Attributes.GetString("toolModeCode", null);
-                int modeIndex = itemslot.Itemstack.Attributes.GetInt("toolMode", 0);
-                SkillItem[] modes = ObjectCacheUtil.TryGet<SkillItem[]>(api, "pickaxeToolModes");
-                if (modes != null && modeIndex >= 0 && modeIndex < modes.Length)
-                { 
-                    modeName = modes[modeIndex].Code.Path;
-                }
-            }
-            else
-            {
-                modeName = itemslot.Itemstack.Attributes.GetString("toolMode", "digmode");
+                modeName = modes[modeIndex].Code.Path;
             }
 
             if (modeName == "digwellspring")
@@ -278,9 +270,15 @@ namespace HydrateOrDiedrate.Wells.WellWater
                     }
                 }
             }
-            return base.OnBlockBrokenWith(world, byEntity, itemslot, blockSel, dropQuantityMultiplier, ref bhHandling);
-        }
 
+            return base.OnBlockBrokenWith(
+                world,
+                byEntity,
+                itemslot,
+                blockSel,
+                dropQuantityMultiplier,
+                ref bhHandling);
+        }
         public void Dispose()
         {
             foreach (SkillItem mode in customModes)

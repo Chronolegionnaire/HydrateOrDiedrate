@@ -48,8 +48,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
     private DrinkHudOverlayRenderer hudOverlayRenderer;
 
     private long customHudListenerId;
-    
-    public const string PatchCategory_MarkDirtyThreshold = "HoD.MarkDirtyThreshold";
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
