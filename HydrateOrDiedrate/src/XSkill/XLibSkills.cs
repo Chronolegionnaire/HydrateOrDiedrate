@@ -27,8 +27,10 @@ public static class XLibSkills
 
         //TODO this should be behind equivelant IF statement no?
         //TODO these values should come from Xlevel config not ours
-        //TODO these values should be filled so we can use them in the ability description
-        int[] equatidianValues = [0];
+       // Convert multipliers (1.25, 1.5, 2.0) into bonus percentages (25, 50, 100)
+         int[] equatidianValues = ModConfig.Instance.XLib.EquatidianCoolingMultipliers
+        .Select(multiplier => (int)((multiplier - 1f) * 100f))
+        .ToArray();
         Ability equatidianAbility = new Ability("equatidian", "hydrateordiedrate:ability-equatidian", "hydrateordiedrate:abilitydesc-equatidian", 1, 3, equatidianValues, false);
         equatidianAbility.OnPlayerAbilityTierChanged += OnEquatidianChanged;
         skill.AddAbility(equatidianAbility);
