@@ -207,11 +207,9 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         var serverChannel = api.Network.RegisterChannel(NetworkChannelID)
             .RegisterMessageType<DrinkProgressPacket>()
-            .RegisterMessageType<WellSpringBlockPacket>()
             .RegisterMessageType<PumpParticleBurstPacket>()
             .RegisterMessageType<PumpSfxPacket>()
-            .RegisterMessageType<ValveToggleEventPacket>()
-            .SetMessageHandler<WellSpringBlockPacket>(WellSpringBlockPacketReceived);
+            .RegisterMessageType<ValveToggleEventPacket>();
         
         _waterInteractionHandler.Initialize(serverChannel);
         rainHarvesterManager = new RainHarvesterManager(_serverApi);
@@ -229,7 +227,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
         api.Network.RegisterChannel(NetworkChannelID)
             .RegisterMessageType<DrinkProgressPacket>()
-            .RegisterMessageType<WellSpringBlockPacket>()
             .RegisterMessageType<PumpParticleBurstPacket>()
             .RegisterMessageType<PumpSfxPacket>()
             .RegisterMessageType<ValveToggleEventPacket>()
@@ -298,14 +295,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             Name = "RainHarvester",
             properties = null
         });
-    }
-
-    private void WellSpringBlockPacketReceived(IServerPlayer sender, WellSpringBlockPacket packet)
-    {
-        if (_serverApi?.World is null) return;
-        IBlockAccessor accessor = _serverApi.World.GetBlockAccessor(true, true, false);
-        accessor.ExchangeBlock(packet.BlockId, packet.Position);
-        accessor.SpawnBlockEntity("HoD:BlockEntityWellSpring", packet.Position, null);
     }
 
     public override void Dispose()

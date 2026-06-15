@@ -148,7 +148,10 @@ public class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
         api.Event.EnqueueMainThreadTask(ReconcileStoredVolumeWithWorld, "well-spring-reconcile");
         RegisterGameTickListener(_ => ReconcileStoredVolumeWithWorld(), reconcileIntervalMs);
-        OriginBlock ??= api.World.FindMostLikelyOriginBlockFromNeighbors(Pos) ?? api.World.GetBlock(new AssetLocation("game", "rock-granite"));
+        api.Event.EnqueueMainThreadTask(
+            () => OriginBlock ??= api.World.FindMostLikelyOriginBlockFromNeighbors(Pos) ?? api.World.GetBlock(new AssetLocation("game", "rock-granite")),
+            "HoD:WellSpringEnsureOriginSet"
+        );
         OnPeriodicShaftCheck(0);
         HandleWell(0);
     }
