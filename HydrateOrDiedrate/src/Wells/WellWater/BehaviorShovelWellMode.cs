@@ -85,7 +85,7 @@ public class BehaviorShovelWellMode(CollectibleObject collObj) : CollectibleBeha
         var path = block?.Code?.Path;
         if(string.IsNullOrEmpty(path)) return false;
 
-        return path.StartsWith("soil-") || path.StartsWith("gravel-") || path.StartsWith("sand-");
+        return path.StartsWith("soil-") || path.StartsWith("gravel-") || path.StartsWith("sand-") || path.StartsWith("forestfloor-");
     }
 
     public override void OnUnloaded(ICoreAPI api)
