@@ -69,7 +69,7 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="xskills">
-      <HintPath>refDlls\xskills.dll</HintPath>
+      <HintPath>lib\dlls\xskills.dll</HintPath>
       <Private>False</Private>
     </Reference>
 	<Reference Include="HardcoreWater">

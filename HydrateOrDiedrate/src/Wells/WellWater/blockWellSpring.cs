@@ -1,5 +1,4 @@
-﻿using System;
-using Vintagestory.API.Client;
+﻿using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -19,6 +18,27 @@ namespace HydrateOrDiedrate.Wells.WellWater
             if (!TryGetOriginBlock(pos, out var originBlock)) return base.GetDrops(world, pos, byPlayer, dropQuantityMultiplier);
 
             return originBlock.GetDrops(world, pos, byPlayer, dropQuantityMultiplier);
+        }
+
+        public override float GetResistance(IBlockAccessor blockAccessor, BlockPos pos)
+        {
+            if (pos is null || !TryGetOriginBlock(pos, out var originBlock)) return base.GetResistance(blockAccessor, pos);
+
+            return originBlock.GetResistance(blockAccessor, pos);
+        }
+
+        public override int GetRequiredMiningTier(IWorldAccessor world, BlockPos pos)
+        {
+            if (pos is null || !TryGetOriginBlock(pos, out var originBlock)) return base.GetRequiredMiningTier(world, pos);
+
+            return originBlock.GetRequiredMiningTier(world, pos);
+        }
+
+        public override EnumBlockMaterial GetBlockMaterial(IBlockAccessor blockAccessor, BlockPos pos, ItemStack stack = null)
+        {
+            if (pos is null || !TryGetOriginBlock(pos, out var originBlock)) return base.GetBlockMaterial(blockAccessor, pos, stack);
+
+            return originBlock.GetBlockMaterial(blockAccessor, pos, stack);
         }
 
         public override void OnBlockBroken(IWorldAccessor world, BlockPos pos, IPlayer byPlayer, float dropQuantityMultiplier = 1)

@@ -8,7 +8,7 @@ namespace HydrateOrDiedrate;
 
 public static class BlockUtils
 {
-    public static string[] SoilPathPrefixes { get; set; } = [ "soil-", "sand-", "gravel-" ];
+    public static string[] SoilPathPrefixes { get; set; } = [ "soil-", "sand-", "gravel-", "forestfloor-" ];
 
     public static bool IsSoil(this Block block) => block?.Code is not null && SoilPathPrefixes.Any(block.Code.Path.StartsWith);
 
