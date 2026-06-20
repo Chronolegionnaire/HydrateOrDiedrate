@@ -192,7 +192,14 @@ public class WinchTopRenderer : IRenderer
             prog.ProjectionMatrix = rpi.CurrentProjectionMatrix;
             rpi.RenderMultiTextureMesh(WinchTopMeshRef, "tex", 0);
 
-            lastBucketDepth = GameMath.Lerp(lastBucketDepth, Winch.BucketDepth, deltaTime * 10);
+            //Maximum amount it may overshoot (allowes the animation to be slightly ahead without becomming jittery)
+            const float maxOvershoot = 2f; 
+
+            lastBucketDepth = GameMath.Clamp(
+                GameMath.Lerp(lastBucketDepth, Winch.BucketDepth, deltaTime * 10),
+                0,
+                Winch.BucketDepth + maxOvershoot
+            );
 
             if (containerMeshRef is null)
             {
