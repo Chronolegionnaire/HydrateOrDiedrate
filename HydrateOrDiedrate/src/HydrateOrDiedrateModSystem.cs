@@ -36,21 +36,22 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public const string HarmonyID = "com.chronolegionnaire.hydrateordiedrate";
     public const string NetworkChannelID = "hydrateordiedrate";
 
+    public INetworkChannel NetworkChannel { get; private set; }
+
     internal static ICoreServerAPI _serverApi { get; private set; }
     internal static ICoreClientAPI _clientApi { get; private set; }
 
     private HudElementThirstBar _thirstHud;
     private HudElementNutritionDeficitBar nutritionDeficitHud;
-    private WaterInteractionHandler _waterInteractionHandler;
     private Harmony harmony;
 
     private RainHarvesterManager rainHarvesterManager;
-    private DrinkHudOverlayRenderer hudOverlayRenderer;
 
     private long customHudListenerId;
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
+        NetworkChannel = api.Network.RegisterChannel(NetworkChannelID);
         ConfigManager.EnsureModConfigLoaded(api);
 
         if (!Harmony.HasAnyPatches(HarmonyID))
@@ -180,8 +181,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         if (ModConfig.Instance.Thirst.Enabled) api.RegisterEntityBehaviorClass("HoD:thirst", typeof(EntityBehaviorThirst));
         if (ModConfig.Instance.HeatAndCooling.HarshHeat) api.RegisterEntityBehaviorClass("HoD:bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot)); //TODO does this even do anything when thirst is disabled?
 
-        _waterInteractionHandler = new WaterInteractionHandler(api);
-
         XLibSkills.Enabled = false;
         if (api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xlib")))
         {
@@ -205,16 +204,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _serverApi = api;
         base.StartServerSide(api);
 
-        var serverChannel = api.Network.RegisterChannel(NetworkChannelID)
-            .RegisterMessageType<DrinkProgressPacket>()
+        ((IServerNetworkChannel)NetworkChannel)
             .RegisterMessageType<PumpParticleBurstPacket>()
             .RegisterMessageType<PumpSfxPacket>()
             .RegisterMessageType<ValveToggleEventPacket>();
         
-        _waterInteractionHandler.Initialize(serverChannel);
         rainHarvesterManager = new RainHarvesterManager(_serverApi);
-        api.Event.PlayerDisconnect += _waterInteractionHandler.OnPlayerDisconnect;
-        api.Event.RegisterGameTickListener(CheckPlayerInteraction, 100);
 
         ThirstCommands.Register(api);
         AquiferCommands.Register(api);
@@ -225,18 +220,13 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _clientApi = api;
         base.StartClientSide(api);
 
-        api.Network.RegisterChannel(NetworkChannelID)
-            .RegisterMessageType<DrinkProgressPacket>()
+        ((IClientNetworkChannel)NetworkChannel)
             .RegisterMessageType<PumpParticleBurstPacket>()
             .RegisterMessageType<PumpSfxPacket>()
             .RegisterMessageType<ValveToggleEventPacket>()
-            .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived)
             .SetMessageHandler<PumpParticleBurstPacket>(msg => BlockEntityHandPump.PlayPumpParticleBurst(api, msg))
-            .SetMessageHandler<PumpSfxPacket>(msg => BlockEntityHandPump.OnClientPumpSfx((ICoreClientAPI)api, msg))
-            .SetMessageHandler<ValveToggleEventPacket>(pkt => ValveHandleRenderer.OnClientValveToggleEvent((ICoreClientAPI)api, pkt));
-
-        hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
-        api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
+            .SetMessageHandler<PumpSfxPacket>(msg => BlockEntityHandPump.OnClientPumpSfx(api, msg))
+            .SetMessageHandler<ValveToggleEventPacket>(pkt => ValveHandleRenderer.OnClientValveToggleEvent(api, pkt));
         
         _thirstHud = new HudElementThirstBar(_clientApi);
         _clientApi.Gui.RegisterDialog(_thirstHud);
@@ -253,12 +243,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
         return rainHarvesterManager;
     }
 
-    private void OnDrinkProgressReceived(DrinkProgressPacket msg)
-    {
-        if (hudOverlayRenderer is null) return;
-        hudOverlayRenderer.ProcessDrinkProgress(msg.Progress, msg.IsDrinking, msg.IsDangerous);
-    }
-
 
     //TODO: there should be a better way to do this, no?
     private void CheckAndInitializeCustomHud(float dt)
@@ -272,15 +256,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
             _clientApi.Gui.RegisterDialog(nutritionDeficitHud);
 
             _clientApi.Event.UnregisterGameTickListener(customHudListenerId);
-        }
-    }
-
-    public void CheckPlayerInteraction(float dt)
-    {
-        foreach (IServerPlayer player in _serverApi.World.AllOnlinePlayers)
-        {
-            if(player.ConnectionState != EnumClientState.Playing) continue;
-            _waterInteractionHandler.CheckShiftRightClickBeforeInteractionForPlayer(dt, player);
         }
     }
 

@@ -33,20 +33,10 @@ public static class HydrationManager
     {
         try
         {
-            var token = block?.Attributes?.Token;
-            if (token is null) return 0f;
+            var liquidStack = block.GetLiquidFromBlock(api);
+            if(liquidStack is null) return 0f;
 
-            if (token["waterTightContainerProps"] is JObject containerToken)
-            {
-                var props = containerToken.ToObject<WaterTightContainableProps>();
-                if (props is not null)
-                {
-                    var liquidItem = props.WhenFilled.Stack;
-                    if (liquidItem.Resolve(api.World, nameof(GetBlockHydration))) return GetHydration(liquidItem.ResolvedItemstack);
-                }
-            }
-
-            return token.Value<float>(Attributes.Hydration);
+            return GetHydration(liquidStack);
         }
         catch (Exception ex)
         {
@@ -55,6 +45,20 @@ public static class HydrationManager
 
         return 0f;
     }
+
+    #nullable enable
+    public static ItemStack? GetLiquidFromBlock(this Block block, ICoreAPI api)
+    {
+        if (block.Attributes?.Token?["waterTightContainerProps"] is not JObject containerToken) return null;
+
+        if (containerToken.ToObject<WaterTightContainableProps>() is { } props)
+        {
+            var liquidItem = props.WhenFilled.Stack;
+            if (liquidItem.Resolve(api.World, nameof(GetBlockHydration))) return liquidItem.ResolvedItemstack;
+        }
+        return null;
+    }
+    #nullable disable
 
     //TODO
     public static bool IsBoiling(ICoreAPI api, CollectibleObject collectible) => collectible.Attributes?.Token.Value<bool>(Attributes.IsBoiling) ?? false;
