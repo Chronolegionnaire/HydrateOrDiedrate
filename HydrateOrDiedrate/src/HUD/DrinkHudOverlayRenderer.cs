@@ -104,7 +104,11 @@ namespace HydrateOrDiedrate.HUD
                 float cycleProgress = rawProgress - (float)Math.Floor(rawProgress);
                 targetCircleProgress = cycleProgress;
                 float smoothingSpeed = 20f;
-                circleProgress = GameMath.Lerp(circleProgress, targetCircleProgress, deltaTime * smoothingSpeed);
+            if (targetCircleProgress <= 0)
+            {
+                circleProgress = 0;
+            }
+            else circleProgress = GameMath.Lerp(circleProgress, targetCircleProgress, deltaTime * smoothingSpeed);
             }
             else if (circleAlpha > 0.0f)
             {
