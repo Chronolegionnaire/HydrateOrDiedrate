@@ -183,19 +183,6 @@ public class DrinkingInteractionModSystem : ModSystem
         SendDrinkProgressToClient(player, drinkData);
     }
 
-    //TODO
-    //if (isBoiling) ApplyHeatDamage(player, ModConfig.Instance.Thirst.BoilingWaterDamage);
-    private static void ApplyHeatDamage(IServerPlayer player, float boilingWaterDamage)
-    {
-        if(boilingWaterDamage <= 0) return;
-        
-        player.Entity.ReceiveDamage(new DamageSource
-        {
-            Source = EnumDamageSource.Internal,
-            Type = EnumDamageType.Heat
-        }, boilingWaterDamage);
-    }
-
     private void OnPlayerDisconnect(IServerPlayer player)
     {
         playerDrinkData.Remove(player.PlayerUID);

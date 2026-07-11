@@ -95,7 +95,8 @@ namespace HydrateOrDiedrate.patches
                         Player = player,
                         HydrationAmount = calculatedHydration,
                         HydLossDelay = hydLossDelay,
-                        NutritionDeficit = nutritionDeficit
+                        NutritionDeficit = nutritionDeficit,
+                        IsBoiling = HydrationManager.IsBoiling(byEntity.World, contentStack)
                     };
                 }
             }
@@ -125,6 +126,20 @@ namespace HydrateOrDiedrate.patches
 
                 thirstBehavior.ModifyThirst(__state.HydrationAmount, __state.HydLossDelay);
 
+                if (__state.IsBoiling)
+                {
+                    var boilingDamage = ModConfig.Instance.Thirst.BoilingWaterDamage;
+                    if(boilingDamage > 0)
+                    {
+                        //TODO boiling water blocks don't give boiling water so this doesn't really trigger -_-
+                        __state.Player.ReceiveDamage(new DamageSource
+                        {
+                            Source = EnumDamageSource.Internal,
+                            Type = EnumDamageType.Heat
+                        }, boilingDamage);
+                    }
+                }
+
                 if (__state.NutritionDeficit > 0)
                 {
                     float deficitMul = ModConfig.Instance.Thirst.NutritionDeficitMultiplier;
@@ -144,6 +159,7 @@ namespace HydrateOrDiedrate.patches
             public float HydrationAmount;
             public float HydLossDelay;
             public float NutritionDeficit;
+            public bool IsBoiling;
         }
     }
 }

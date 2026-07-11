@@ -371,7 +371,6 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         }
 
 
-        Console.WriteLine($"Max well height: {validHeight}");
         if(WellShaftHeight != validHeight)
         {
             WellShaftHeight = validHeight;

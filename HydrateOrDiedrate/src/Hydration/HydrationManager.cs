@@ -35,8 +35,7 @@ public static class HydrationManager
         return collectible.Attributes?[Attributes.Hydration].AsFloat() ?? 0f;
     }
 
-    //TODO There should be no methods for blocks other then GetLiquidFromBlock
-
+    [Obsolete("Use GetLiquidForDrinking instead")]
     public static float GetBlockHydration(ICoreAPI api, Block block)
     {
         try
@@ -114,8 +113,12 @@ public static class HydrationManager
     }
     #nullable disable
 
-    //TODO interface/provider
-    public static bool IsBoiling(ICoreAPI api, CollectibleObject collectible) => collectible.Attributes?.Token.Value<bool>(Attributes.IsBoiling) ?? false;
+    public static bool IsBoiling(IWorldAccessor world, ItemStack stack)
+    {
+        if(stack?.Collectible is not CollectibleObject collectible) return false;
+
+        return collectible.Attributes?.Token.Value<bool>(Attributes.IsBoiling) ?? false;
+    }
 
     public static int GetHealing(ICoreAPI api, CollectibleObject collectible)
     {
@@ -127,6 +130,7 @@ public static class HydrationManager
     [Obsolete("Use GetNutritionDeficit instead")] 
     public static int GetHungerReduction(ICoreAPI api, CollectibleObject collectible) => GetNutritionDeficit(api.World, collectible);
     
+    //TODO refactor
     public static int GetNutritionDeficit(IWorldAccessor world, CollectibleObject collectible)
     {
         var resultFromProps = GetProps(world, collectible)?.NutritionPropsPerLitre?.Satiety;

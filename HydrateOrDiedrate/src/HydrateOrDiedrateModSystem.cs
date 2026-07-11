@@ -119,13 +119,13 @@ public class HydrateOrDiedrateModSystem : ModSystem
         ];
 
         //TODO does this even do anything when HarshHeat is disabled?
-        PatchCollection<CoolingPatch>.GetMerged(api, "HoD.AddCooling.json", CoolingPatch.GenerateDefaultPatchCollection()).ApplyPatches(api.World.Items);
+        PatchCollection<CoolingPatch>.GetMerged(api, "HoD.AddCooling.json").ApplyPatches(api.World.Items);
 
         if (ModConfig.Instance.Thirst.Enabled)
         {
-            PatchCollection<ItemHydrationPatch>.GetMerged(api, "HoD.AddItemHydration.json", ItemHydrationPatch.GenerateDefaultPatchCollection()).ApplyPatches(api.World.Items);
+            PatchCollection<HydrationPatch>.GetMerged(api, "HoD.AddItemHydration.json").ApplyPatches(api.World.Items);
             
-            PatchCollection<BlockHydrationPatch>.GetMerged(api, "HoD.AddBlockHydration.json", BlockHydrationPatch.GenerateDefaultPatchCollection()).ApplyPatches(api.World.Blocks);
+            PatchCollection<HydrationPatch>.GetMerged(api, "HoD.AddBlockHydration.json").ApplyPatches(api.World.Blocks);
         }
 
         foreach (var block in api.World.Blocks)

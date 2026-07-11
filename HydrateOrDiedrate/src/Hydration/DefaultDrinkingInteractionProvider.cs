@@ -23,7 +23,7 @@ public class DefaultDrinkingInteractionProvider(BlockLiquidContainerBase interac
 
         if (!ValidatePlayer(player)) return;
 
-        bool isDangerous = hydration < 0f || HydrationManager.IsBoiling(world.Api, liquidStack.Collectible);
+        bool isDangerous = hydration < 0f || HydrationManager.IsBoiling(world, liquidStack);
         if (!isDangerous)
         {
             var drinkStack = new ItemStack(interactionBlock);
