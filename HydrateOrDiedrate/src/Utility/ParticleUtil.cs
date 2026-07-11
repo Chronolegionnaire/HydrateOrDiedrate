@@ -6,7 +6,7 @@ namespace HydrateOrDiedrate.Utility;
 #nullable enable
 public static class ParticleUtil
 {
-    public static SimpleParticleProperties CreateParticleProperties(int color, Vec3f minVelocity, Vec3f maxVelocity, string climateColorMap = null)
+    public static SimpleParticleProperties CreateParticleProperties(int color, Vec3f minVelocity, Vec3f maxVelocity, string? climateColorMap = null)
     {
         var particles = new SimpleParticleProperties(
             1, 1, color, new Vec3d(), new Vec3d(),

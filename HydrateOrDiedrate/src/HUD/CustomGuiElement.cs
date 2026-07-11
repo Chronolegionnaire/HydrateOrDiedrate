@@ -36,7 +36,7 @@ public class GuiElementCustomStatbar : GuiElementTextBase
         TyronThreadPool.QueueTask(delegate()
         {
             this.ComposeCustomValueOverlay();
-        });
+        }, "HoD:RecomposeCustomOverlays");
         if (this.CustomShowValueOnHover)
         {
             this.api.Gui.TextTexture.GenOrUpdateTextTexture(this.customOnGetStatbarValue(), this.customValueFont, ref this.customValueTexture, new TextBackground

@@ -133,7 +133,9 @@ namespace HydrateOrDiedrate.Piping.HandPump
                             world.BlockAccessor.GetBlockEntity(bs.Position) is BlockEntityHandPump bePump &&
                             !bePump.ContainerSlot.Empty
                     },
-                ]
+                    ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
+                ],
+                _ => base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
             };
     }
 }

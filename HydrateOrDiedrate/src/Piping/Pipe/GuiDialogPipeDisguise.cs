@@ -5,18 +5,11 @@ using Vintagestory.API.MathTools;
 
 namespace HydrateOrDiedrate.Piping.Pipe
 {
-    public class GuiDialogPipeDisguise : GuiDialogBlockEntity
+    public class GuiDialogPipeDisguise(ICoreClientAPI capi, IInventory inv, BlockPos pos) : GuiDialogBlockEntity("pipe-disguise", pos, capi)
     {
-        readonly IInventory inv;
-        readonly BlockPos pos;
+        readonly IInventory inv = inv;
+        readonly BlockPos pos = pos;
 
-        public GuiDialogPipeDisguise(ICoreClientAPI capi, IInventory inv, BlockPos pos)
-            : base("pipe-disguise", pos, capi)
-        {
-            this.inv = inv;
-            this.pos = pos;
-        }
-        
         void SendInvPacket(object p)
         {
             capi.Network.SendBlockEntityPacket(pos.X, pos.Y, pos.Z, p);
@@ -43,7 +36,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
         }
         // TODO Make wrench able to switch rotational variant of disguise
 
-        public bool TryOpen()
+        public override bool TryOpen(bool withFocus)
         {
             if (IsOpened()) return true;
 
