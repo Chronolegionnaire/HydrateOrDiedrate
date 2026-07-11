@@ -27,7 +27,7 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         var config = ModConfig.Instance.HeatAndCooling;
 
         var temperature = entity.World.BlockAccessor
-            .GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues)?
+            .GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.NowValues)?
             .Temperature.GuardFinite() ?? 0f;
 
         float threshold = config.TemperatureThreshold;

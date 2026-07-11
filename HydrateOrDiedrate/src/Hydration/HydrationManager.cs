@@ -1,7 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using HydrateOrDiedrate.Keg;
+using HydrateOrDiedrate.Wells;
+using HydrateOrDiedrate.Wells.WellWater;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Vintagestory.API.Common;
+using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate;
@@ -18,8 +23,9 @@ public static class HydrationManager
 
         CustomHydrationEvaluators[code] = evaluator ?? throw new ArgumentNullException(nameof(code));
     }
-
-    public static float GetHydration(ItemStack itemStack)
+    
+    //TODO interface/provider
+    public static float GetHydration(this ItemStack itemStack)
     {
         var collectible = itemStack?.Collectible;
         if (collectible?.Code is null) return 0f;
@@ -28,6 +34,8 @@ public static class HydrationManager
 
         return collectible.Attributes?[Attributes.Hydration].AsFloat() ?? 0f;
     }
+
+    //TODO There should be no methods for blocks other then GetLiquidFromBlock
 
     public static float GetBlockHydration(ICoreAPI api, Block block)
     {
@@ -47,6 +55,52 @@ public static class HydrationManager
     }
 
     #nullable enable
+
+    public static ILiquidSource? GetLiquidSourceForDrinking(this Block block, IWorldAccessor world, BlockPos pos)
+    {
+        if (block.HasBehavior<BlockBehaviorWellWaterFinite>())
+        {
+            return WellBlockUtils.FindGoverningSpring(world.Api, block, pos);
+        }
+
+        var liquidSource = block.GetInterface<ILiquidSource>(world, pos);
+        if(liquidSource is not null)
+        {
+            if(block is BlockLiquidContainerBase liquidContainer)
+            {
+                if(!liquidContainer.CanDrinkFrom) return null;
+                if(block is BlockBarrel && world.BlockAccessor.GetBlockEntity(pos) is BlockEntityBarrel barrelEntity && barrelEntity.Sealed) return null;
+            }
+            return liquidSource;
+        }
+
+        return null;
+    }
+
+    public static ItemStack? GetLiquidForDrinking(this Block block, IWorldAccessor world, BlockPos pos)
+    {
+        var liquidSource = GetLiquidSourceForDrinking(block, world, pos);
+        if(liquidSource is not null) return liquidSource.GetContent(pos);
+
+        return block.GetWhenFilledStack(world);
+    }
+
+    public static ItemStack? GetWhenFilledStack(this Block block, IWorldAccessor world)
+    {
+        if (block.Attributes is null) return null;
+
+        var token = block.Attributes["waterTightContainerProps"];
+        if(!token.Exists) return null;
+
+        var props = token.AsObject<WaterTightContainableProps>(null, block.Code.Domain);
+
+        var liquidItem = props?.WhenFilled?.Stack;
+        if (liquidItem is not null && liquidItem.Resolve(world, nameof(GetLiquidForDrinking))) return liquidItem.ResolvedItemstack;
+
+        return null;
+    }
+
+    [Obsolete("Use GetLiquidForDrinking instead")]
     public static ItemStack? GetLiquidFromBlock(this Block block, ICoreAPI api)
     {
         if (block.Attributes?.Token?["waterTightContainerProps"] is not JObject containerToken) return null;
@@ -60,32 +114,37 @@ public static class HydrationManager
     }
     #nullable disable
 
-    //TODO
+    //TODO interface/provider
     public static bool IsBoiling(ICoreAPI api, CollectibleObject collectible) => collectible.Attributes?.Token.Value<bool>(Attributes.IsBoiling) ?? false;
 
     public static int GetHealing(ICoreAPI api, CollectibleObject collectible)
     {
-        var resultFromProps = GetProps(api, collectible)?.NutritionPropsPerLitre?.Health;
+        var resultFromProps = GetProps(api.World, collectible)?.NutritionPropsPerLitre?.Health;
         if(resultFromProps is not null) return (int) (resultFromProps.Value < 0 ? resultFromProps.Value : 0);
         return collectible.Attributes?.Token.Value<int>(Attributes.Healing) ?? 0;
     }
 
-    [Obsolete("Use GetNutritionDeficit instead")] public static int GetHungerReduction(ICoreAPI api, CollectibleObject collectible) => GetNutritionDeficit(api, collectible);
-    public static int GetNutritionDeficit(ICoreAPI api, CollectibleObject collectible)
+    [Obsolete("Use GetNutritionDeficit instead")] 
+    public static int GetHungerReduction(ICoreAPI api, CollectibleObject collectible) => GetNutritionDeficit(api.World, collectible);
+    
+    public static int GetNutritionDeficit(IWorldAccessor world, CollectibleObject collectible)
     {
-        var resultFromProps = GetProps(api, collectible)?.NutritionPropsPerLitre?.Satiety;
+        var resultFromProps = GetProps(world, collectible)?.NutritionPropsPerLitre?.Satiety;
         if(resultFromProps is not null) return (int) (resultFromProps.Value < 0 ? -resultFromProps.Value : 0);
         return collectible.Attributes?.Token.Value<int>(Attributes.NutritionDeficit) ?? 0;
     }
 
-    private static WaterTightContainableProps GetProps(ICoreAPI api, CollectibleObject collectible)
+    public static WaterTightContainableProps GetProps(IWorldAccessor world, CollectibleObject collectible)
     {
-        if(collectible.Attributes?.Token is not JObject token || token["waterTightContainerProps"] is not JObject propsToken) return null;
-        var result = propsToken.ToObject<WaterTightContainableProps>();
+        var token = collectible.Attributes?["waterTightContainerProps"];
+        if(token is not { Exists: true }) return null;
+
+        var result = token.AsObject<WaterTightContainableProps>(null, collectible.Code.Domain);
+
         if(result is null) return null;
-        if(collectible is Block && result.WhenFilled.Stack is JsonItemStack itemStack && itemStack.Resolve(api.World, nameof(HydrationManager)))
+        if(collectible is Block && result.WhenFilled.Stack is JsonItemStack itemStack && itemStack.Resolve(world, nameof(HydrationManager)))
         {
-            var resultingItemProps = GetProps(api, itemStack.ResolvedItemstack.Collectible);
+            var resultingItemProps = GetProps(world, itemStack.ResolvedItemstack.Collectible);
             if(resultingItemProps is not null) return resultingItemProps;
         }
 

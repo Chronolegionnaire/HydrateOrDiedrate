@@ -12,10 +12,10 @@ public class PumpConfig
     public bool HandPumpEnablePriming { get; set; } = true;
     
     /// <summary>
-    /// Whether hand pump priming strokes should be enabled
+    /// Whether priming state should should be shown when looking at a pump.
     /// </summary>
     [DefaultValue(true)]
-    public bool HandPumpOutputInfo { get; set; } = true;
+    public bool ShowPrimingStrokes { get; set; } = true;
 
     /// <summary>
     /// How many pipe segments per priming stroke required on the hand pump.

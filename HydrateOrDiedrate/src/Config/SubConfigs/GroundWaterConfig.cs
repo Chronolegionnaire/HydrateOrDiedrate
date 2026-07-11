@@ -58,11 +58,11 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     public float WinchLowerSpeed { get; set; } = 0.8f;
 
     /// <summary>
-    /// Displays well output info in tooltips for winches
+    /// Displays well info in tooltips
     /// </summary>
     [Category("Well")]
     [DefaultValue(true)]
-    public bool WinchOutputInfo { get; set; } = true;
+    public bool ShowOutputInfo { get; set; } = true;
 
     /// <summary>
     /// Chance for a random output multiplier when generating an aquifer

@@ -28,7 +28,7 @@ public class IntersectionTester(IWorldIntersectionSupplier blockSelectionTester)
         pos.SetAndCorrectDimension(ray.origin);
     }
 
-    public BlockSelection GetFluidSelection(IPlayer player, float maxDistance)
+    public BlockSelection? GetFluidSelection(IPlayer player, float maxDistance)
     {
         var playerOrigin = player.Entity.Pos.XYZ.Add(player.Entity.LocalEyePos);
         var playerDir = player.Entity.Pos.GetViewVector().ToVec3d() * 5f;
@@ -55,7 +55,7 @@ public class IntersectionTester(IWorldIntersectionSupplier blockSelectionTester)
 
             distanceSq = pos.DistanceSqTo(ray.origin.X - 0.5f, ray.origin.Y - 0.5f, ray.origin.Z - 0.5f);
         }
-        if (!blockIntersected.ForFluidsLayer || blockIntersected.SideSolid.Any) return null;
+        if (!blockIntersected.ForFluidsLayer || blockIntersected.SideSolid.Any) return GetCurrentSelection();
 
         if (hitPosition.SquareDistanceTo(ray.origin) > maxDistance * maxDistance) return null;
         BlockSelection result = GetCurrentSelection();

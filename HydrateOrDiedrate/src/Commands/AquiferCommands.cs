@@ -22,7 +22,7 @@ namespace HydrateOrDiedrate.Commands
                     IPlayer player = args.Caller.Player;
                     if (player == null) return TextCommandResult.Error(Lang.Get("hydrateordiedrate:command-only-for-players"));
 
-                    if (!AquiferManager.SetAquiferRating(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.ServerPos.AsBlockPos, rating))
+                    if (!AquiferManager.SetAquiferRating(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.Pos.AsBlockPos, rating))
                     {
                         return TextCommandResult.Error(Lang.Get("hydrateordiedrate:setaquifer-failed"));
                     }
@@ -38,7 +38,7 @@ namespace HydrateOrDiedrate.Commands
                     if (player == null) return TextCommandResult.Error(Lang.Get("hydrateordiedrate:command-only-for-players"));
 
                     var world = HydrateOrDiedrateModSystem._serverApi.World;
-                    var aqData = AquiferManager.GetAquiferChunkData(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.ServerPos.AsBlockPos, world.Logger);
+                    var aqData = AquiferManager.GetAquiferChunkData(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.Pos.AsBlockPos, world.Logger);
                     if (aqData == null)
                     {
                         return TextCommandResult.Error(Lang.Get("hydrateordiedrate:getaquifer-not-found"));

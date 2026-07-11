@@ -681,18 +681,18 @@ namespace HydrateOrDiedrate.Wells.WellWater
 				{
 					origin = pos;
 				}
-				int curDist = pos.ManhattenDistance(target);
+				int curDist = pos.ManhattanDistance(target);
 				npos.Set(pos);
 				for (int i = 0; i < BlockFacing.HORIZONTALS.Length; i++)
 				{
 					BlockFacing.HORIZONTALS[i].IterateThruFacingOffsets(npos);
-					if (npos.ManhattenDistance(target) <= curDist)
+					if (npos.ManhattanDistance(target) <= curDist)
 					{
 						if (npos.Equals(target))
 						{
 							return pos;
 						}
-						if (world.BlockAccessor.GetMostSolidBlock(npos).GetLiquidBarrierHeightOnSide(BlockFacing.HORIZONTALS[i].Opposite, npos) < (float)(ourBlock.LiquidLevel - pos.ManhattenDistance(origin)) / 7f)
+						if (world.BlockAccessor.GetMostSolidBlock(npos).GetLiquidBarrierHeightOnSide(BlockFacing.HORIZONTALS[i].Opposite, npos) < (float)(ourBlock.LiquidLevel - pos.ManhattanDistance(origin)) / 7f)
 						{
 							uncheckedPositions.Enqueue(npos.Copy());
 						}

@@ -167,12 +167,12 @@ namespace HydrateOrDiedrate.Wells.Winch
         {
             if (InputSlot.Empty || InputSlot.Itemstack.Collectible is not BlockLiquidContainerBase container) return false;
 
-            int remainingCapacity = (int)(container.CapacityLitres - container.GetCurrentLitres(InputSlot.Itemstack));
-            if (remainingCapacity < 1) return false;
+            float remainingCapacity = container.CapacityLitres - container.GetCurrentLitres(InputSlot.Itemstack);
+            if (remainingCapacity < 0) return false;
 
             var content = container.GetContent(InputSlot.Itemstack);
-
-            var stack = ExtractStackAtPos(pos, remainingCapacity, content?.Collectible.Code);
+            
+            var stack = ExtractStackAtPos(pos, remainingCapacity, content?.Collectible);
             if (stack is null || stack.StackSize <= 0) return false;
 
             if (content is not null) stack.StackSize += content.StackSize;
@@ -183,38 +183,25 @@ namespace HydrateOrDiedrate.Wells.Winch
             return true;
         }
 
-        public ItemStack ExtractStackAtPos(BlockPos pos, int litersToExtract, AssetLocation filter = null)
+        public ItemStack ExtractStackAtPos(BlockPos pos, float litersToExtract, CollectibleObject filter = null)
         {
             Block block = Api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
-            if (block.Attributes is null) return null;
 
-            var props = block.Attributes["waterTightContainerProps"].AsObject<WaterTightContainableProps>();
-            var stack = props?.WhenFilled?.Stack;
-            if (stack is null || !stack.Resolve(Api.World, nameof(BlockEntityWinch))) return null;
-            if (filter is not null && stack.Code != filter) return null;
-
-            if (WellBlockUtils.IsOurWellwater(block))
+            if (block.HasBehavior<BlockBehaviorWellWaterFinite>())
             {
-                var spring = WellBlockUtils.FindGoverningSpring(Api, block, pos);
-
-                if (spring != null && litersToExtract > 0)
-                {
-                    int delta = spring.TryChangeVolume(-litersToExtract);
-                    litersToExtract = -delta;
-                }
-                else
-                {
-                    litersToExtract = 0;
-                }
+                var wellSpring = WellBlockUtils.FindGoverningSpring(Api, block, Pos);
+                if(filter is not null && wellSpring.WaterItem != filter) return null;
+                return wellSpring?.TryTakeContentLiters(pos, litersToExtract);
             }
 
-            var itemProps = stack.ResolvedItemstack.Collectible.Attributes?["waterTightContainerProps"]
-                .AsObject<WaterTightContainableProps>();
-            if (itemProps is null) return null;
+            var whenFilledStack = HydrationManager.GetWhenFilledStack(block, Api.World);
+            if(whenFilledStack is null || (filter is not null && whenFilledStack.Collectible != filter)) return null;
+            var props = HydrationManager.GetProps(Api.World, whenFilledStack.Collectible);
+            if(props is null) return null;
 
-            stack.ResolvedItemstack.StackSize = (int)Math.Round(itemProps.ItemsPerLitre * litersToExtract);
+            whenFilledStack.StackSize = (int)(props.ItemsPerLitre * litersToExtract);
 
-            return stack.ResolvedItemstack;
+            return whenFilledStack;
         }
 
         public static BlockPos FindNaturalSourceInLiquidChain(IBlockAccessor blockAccessor, BlockPos pos, HashSet<BlockPos> visited = null)
@@ -474,8 +461,8 @@ namespace HydrateOrDiedrate.Wells.Winch
         public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
         {
             base.GetBlockInfo(forPlayer, dsc);
-            if (!ModConfig.Instance.GroundWater.WinchOutputInfo) return;
-
+            if (!ModConfig.Instance.GroundWater.ShowOutputInfo) return;
+            dsc.AppendLine();
             var foundSpring = FindWellSpringBelow(Api.World.BlockAccessor, Pos, InfoMaxSearchDepth);
             if (foundSpring is null)
             {
@@ -484,10 +471,7 @@ namespace HydrateOrDiedrate.Wells.Winch
             }
 
             dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.springDetected"));
-            dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.waterType", string.IsNullOrEmpty(foundSpring.LastWaterType) ? string.Empty : Lang.Get($"hydrateordiedrate:item-waterportion-{foundSpring.LastWaterType}")));
-            dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.outputRate", foundSpring.LastDailyLiters));
-            dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.retentionVolume", foundSpring.GetMaxTotalVolume()));
-            dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:winch.totalShaftVolume", foundSpring.totalLiters));
+            foundSpring.AppendOutputInfo(forPlayer, dsc);
         }
 
         protected override void Dispose()

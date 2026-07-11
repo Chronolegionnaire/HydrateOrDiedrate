@@ -44,7 +44,7 @@ public static class ParticleUtil
     );
     
     
-    public static void SpawnWaterParticles(ICoreAPI api, Vec3d pos, IPlayer? dualCallByPlayer = null)
+    public static void SpawnWaterParticles(IWorldAccessor world, Vec3d pos, IPlayer? dualCallByPlayer = null)
     {
         _waterParticles.MinPos = new Vec3d(pos.X - 0.2, pos.Y + 0.1, pos.Z - 0.2);
         _waterParticles.AddPos = new Vec3d(0.4, 0.0, 0.4);
@@ -52,7 +52,7 @@ public static class ParticleUtil
         _waterParticles.MinVelocity = new Vec3f(0, 0.8f, 0);
         _waterParticles.AddVelocity = new Vec3f(0.2f, 0.8f, 0.2f);
 
-        float colorModifier = (float)api.World.Rand.NextDouble() * 0.3f;
+        float colorModifier = (float)world.Rand.NextDouble() * 0.3f;
         _waterParticles.Color = ColorUtil.ColorFromRgba(
             185 + (int)(colorModifier * 70f),
             145 + (int)(colorModifier * 110f),
@@ -66,8 +66,8 @@ public static class ParticleUtil
         _whiteParticles.MinVelocity = new Vec3f(0, 0.8f, 0);
         _whiteParticles.AddVelocity = new Vec3f(0.2f, 0.8f, 0.2f);
         _whiteParticles.AddQuantity = 5;
-        api.World.SpawnParticles(_waterParticles, dualCallByPlayer);
-        api.World.SpawnParticles(_whiteParticles, dualCallByPlayer);
+        world.SpawnParticles(_waterParticles, dualCallByPlayer);
+        world.SpawnParticles(_whiteParticles, dualCallByPlayer);
     }
     #nullable disable
 }
