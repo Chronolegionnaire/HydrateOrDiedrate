@@ -77,6 +77,8 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         TotalLiters = Math.Clamp(TotalLiters, 0, capacity);
         var clamped = Math.Clamp(TotalLiters + change, 0, capacity);
 
+        if(clamped < 0.005) clamped = 0;
+
         var applied = clamped - TotalLiters;
         TotalLiters = clamped;
 
