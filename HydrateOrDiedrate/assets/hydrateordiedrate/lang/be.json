@@ -60,7 +60,6 @@
   "hydrateordiedrate:Config.Setting.SpoilRateTapped": "Хуткасць псавання (з усталяваным кранікам)",
   "hydrateordiedrate:Config.Setting.SpoilRateUntapped": "Хуткасць псавання (без краніка)",
   "hydrateordiedrate:Config.Setting.SprintThirstMultiplier": "Множнік смагі пры спрынце",
-  "hydrateordiedrate:Config.Setting.SprintToDrink": "Спрынт + ПКМ для піцця замест Прысяд + ПКМ для зручнасці працы з CarryOn",
   "hydrateordiedrate:Config.Setting.Step": "Крок пласта. Павялічвае адлегласць паміж чанкамі пры разліку. Моцна ўплывае на прадукцыйнасць.",
   "hydrateordiedrate:Config.Setting.TemperatureThreshold": "Тэмпературны парог",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Шкода ад смагі",

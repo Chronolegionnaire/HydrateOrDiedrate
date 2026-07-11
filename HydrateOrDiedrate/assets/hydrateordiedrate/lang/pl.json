@@ -82,7 +82,6 @@
   "hydrateordiedrate:Config.Setting.WinchRaiseSpeed": "Prędkość podnoszenia wyciągu",
   "hydrateordiedrate:Config.Setting.KegDropWithLiquid": "Beczka zachowuje płyn po zniszczeniu",
   "hydrateordiedrate:Config.Setting.TunDropWithLiquid": "Kadź zachowuje płyn po zniszczeniu",
-  "hydrateordiedrate:Config.Setting.SprintToDrink": "Sprint + PPM zamiast Kucnij + PPM (dla kompatybilności z CarryOn)",
   "hydrateordiedrate:Config.Setting.AquiferDataOnProspectingNodeMode": "Wyświetl dane warstwy wodnej dla aktualnego chunka zamiast wyszukiwania gęstości",
   "hydrateordiedrate:Config.Setting.ShowAquiferProspectingDataOnMap": "Dodaj dane warstw wodnych do automatycznych markerów mapy",
   "hydrateordiedrate:ability-dromedary": "Dromader",

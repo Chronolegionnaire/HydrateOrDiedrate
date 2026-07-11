@@ -88,7 +88,6 @@
   "hydrateordiedrate:Config.Setting.WinchRaiseSpeed": "Скорость подъёма лебёдки",
   "hydrateordiedrate:Config.Setting.KegDropWithLiquid": "Бочонок сохраняет жидкость при разбивании",
   "hydrateordiedrate:Config.Setting.TunDropWithLiquid": "Бочка сохраняет жидкость при разбивании",
-  "hydrateordiedrate:Config.Setting.SprintToDrink": "Бег + правый клик, чтобы выпить вместо красться + правый клик, для удобства использования с CarryOn",
   "hydrateordiedrate:Config.Setting.ShowAquiferProspectingDataOnMap": "Включение данных о водоносных горизонтах в автогенерируемые маркеры поисковых карт",
   "hydrateordiedrate:ability-dromedary": "Верблюд",
   "hydrateordiedrate:abilitydesc-dromedary": "Увеличивает максимальную жажду.",

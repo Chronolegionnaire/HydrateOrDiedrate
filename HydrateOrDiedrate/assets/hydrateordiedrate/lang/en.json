@@ -60,7 +60,6 @@
   "hydrateordiedrate:Config.Setting.SpoilRateTapped": "Spoil Rate (Tapped)",
   "hydrateordiedrate:Config.Setting.SpoilRateUntapped": "Spoil Rate (Untapped)",
   "hydrateordiedrate:Config.Setting.SprintThirstMultiplier": "Sprint Thirst Multiplier",
-  "hydrateordiedrate:Config.Setting.SprintToDrink": "Sprint + Right Click to drink istead of Sneak + Right click, for ease of use with CarryOn",
   "hydrateordiedrate:Config.Setting.Step": "Aquifer Step, increase the chunk distance aquifer calculation will check for neighbor chunks, heavy performance impact do not change unless you know what you are doing.",
   "hydrateordiedrate:Config.Setting.TemperatureThreshold": "Temperature Threshold",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Thirst Damage",
@@ -274,5 +273,6 @@
   "direction-and": "and",
   "direction-below": "below",
 
-  "block-disguise": "<font opacity='0.6'>Disguised as: «{0}»</font>"
+  "block-disguise": "<font opacity='0.6'>Disguised as: «{0}»</font>",
+  "hydrateordiedrate:drinking": "Drinking"
 }

@@ -7,7 +7,7 @@ namespace HydrateOrDiedrate.Hydration.Interfaces;
 
 public interface IDrinkingInteraction
 {
-    void StartDrinking(IWorldAccessor world, BlockSelection blockSel, IServerPlayer player, PlayerDrinkData drinkData);
+    void StartDrinking(IWorldAccessor world, BlockSelection blockSel, IPlayer player, PlayerDrinkData drinkData);
 
     void ContinueDrinking(IWorldAccessor world, BlockSelection blockSel, IServerPlayer player, PlayerDrinkData drinkData);
 

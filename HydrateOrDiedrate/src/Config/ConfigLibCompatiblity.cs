@@ -100,8 +100,6 @@ public class ConfigLibCompatibility
     
     private const string settingKegDropWithLiquid = "hydrateordiedrate:Config.Setting.KegDropWithLiquid";
     private const string settingTunDropWithLiquid = "hydrateordiedrate:Config.Setting.TunDropWithLiquid";
-    
-    private const string settingSprintToDrink = "hydrateordiedrate:Config.Setting.SprintToDrink";
 
     private const string settingAquiferRatingCeilingAboveSeaLevel = "hydrateordiedrate:Config.Setting.settingAquiferRatingCeilingAboveSeaLevel";
     private const string settingAquiferDepthMultiplierScale = "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale";
@@ -558,10 +556,6 @@ public class ConfigLibCompatibility
         bool tunDropWithLiquid = containersConfig.TunDropWithLiquid;
         ImGui.Checkbox(Lang.Get(settingTunDropWithLiquid) + $"##tunDropWithLiquid-{id}", ref tunDropWithLiquid);
         containersConfig.TunDropWithLiquid = tunDropWithLiquid;
-        
-        bool sprintToDrink = config.SprintToDrink;
-        ImGui.Checkbox(Lang.Get(settingSprintToDrink) + $"##sprintToDrink-{id}", ref sprintToDrink);
-        config.SprintToDrink = sprintToDrink;
         
         int aquiferRatingCeilingAboveSeaLevel = groundWaterConfig.AquiferRatingCeilingAboveSeaLevel;
         ImGui.DragInt(Lang.Get(settingAquiferRatingCeilingAboveSeaLevel) + $"##aquiferRatingCeilingAboveSeaLevel-{id}", ref aquiferRatingCeilingAboveSeaLevel, 1, 0, 100);

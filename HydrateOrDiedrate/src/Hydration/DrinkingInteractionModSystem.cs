@@ -1,6 +1,6 @@
-﻿using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.HUD;
+﻿using HydrateOrDiedrate.HUD;
 using HydrateOrDiedrate.Hydration.Interfaces;
+using HydrateOrDiedrate.Hydration.Packets;
 using HydrateOrDiedrate.Thirst;
 using HydrateOrDiedrate.Utility;
 using System;
@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
+using Vintagestory.API.Config;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
+using Vintagestory.Client;
 using Vintagestory.GameContent;
 
 
@@ -27,7 +29,7 @@ public class DrinkingInteractionModSystem : ModSystem
 
     public DefaultDrinkingInteractionProvider DefaultDrinkingInteractionProvider { get; private set; }
 
-    private long? OnSlowGameTickListnerId;
+    private long? HandleDrinkingListnerId;
     #nullable enable
 
     private readonly Dictionary<string, PlayerDrinkData> playerDrinkData = [];
@@ -44,11 +46,34 @@ public class DrinkingInteractionModSystem : ModSystem
     {
         base.StartServerSide(api);
 
-        HoD.NetworkChannel
-            .RegisterMessageType<DrinkProgressPacket>();
+        ((IServerNetworkChannel)HoD.NetworkChannel)
+            .RegisterMessageType<DrinkProgressPacket>()
+            .SetMessageHandler<DrinkProgressPacket>(OnDrinkPacketReceivedFromClient);
 
         api.Event.PlayerDisconnect += OnPlayerDisconnect;
-        OnSlowGameTickListnerId = api.Event.RegisterGameTickListener(OnSlowGameTick, 100);
+        HandleDrinkingListnerId = api.Event.RegisterGameTickListener(HandleDrinkingServer, 100);
+    }
+
+    private PlayerDrinkData GetOrCreateDrinkData(IPlayer player)
+    {
+        if(playerDrinkData.TryGetValue(player.PlayerUID, out var drinkData)) return drinkData;
+        
+        return playerDrinkData[player.PlayerUID] = new();
+    }
+
+    private void OnDrinkPacketReceivedFromClient(IServerPlayer fromPlayer, DrinkProgressPacket packet)
+    {
+        var drinkData = GetOrCreateDrinkData(fromPlayer);
+        if (!packet.IsDrinking)
+        {
+            drinkData.StopDrinking();
+            SendDrinkProgressToClient(fromPlayer, drinkData);
+            return;
+        }
+        if(drinkData.IsDrinking) return;
+
+        TryStartDrinking(fromPlayer, drinkData);
+        SendDrinkProgressToClient(fromPlayer, drinkData);
     }
 
     public override void StartClientSide(ICoreClientAPI api)
@@ -57,10 +82,14 @@ public class DrinkingInteractionModSystem : ModSystem
 
         ((IClientNetworkChannel)HoD.NetworkChannel)
             .RegisterMessageType<DrinkProgressPacket>()
-            .SetMessageHandler<DrinkProgressPacket>(OnDrinkProgressReceived);
+            .SetMessageHandler<DrinkProgressPacket>(OnDrinkPacketReceivedFromServer);
 
         hudOverlayRenderer = new DrinkHudOverlayRenderer(api);
         api.Event.RegisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho, "drinkoverlay");
+
+        api.Input.RegisterHotKey("hydrateordiedrate:drinking", Lang.Get("hydrateordiedrate:drinking"), (GlKeys)242, ctrlPressed: true);
+
+        HandleDrinkingListnerId = api.Event.RegisterGameTickListener(HandleDrinkingClient, 100);
     }
 
     public override void AssetsFinalize(ICoreAPI api)
@@ -76,38 +105,86 @@ public class DrinkingInteractionModSystem : ModSystem
         DefaultDrinkingInteractionProvider = new DefaultDrinkingInteractionProvider(blockForDrinkingInteraction);
     }
 
-    private void OnDrinkProgressReceived(DrinkProgressPacket packet)
+    public bool IsLocalPlayerDrinking { get; private set; }
+    private void OnDrinkPacketReceivedFromServer(DrinkProgressPacket packet)
     {
+        IsLocalPlayerDrinking = packet.IsDrinking;
         if (hudOverlayRenderer is null) return;
         hudOverlayRenderer.ProcessDrinkProgress(packet.Progress, packet.IsDrinking, packet.IsDangerous);
     }
 
-    private void OnSlowGameTick(float dt)
+    private void HandleDrinkingServer(float dt)
     {
-        foreach (IPlayer player in api.World.AllOnlinePlayers)
+        if(api is not ICoreServerAPI sapi) return;
+        foreach((var playerId, var drinkData) in playerDrinkData)
         {
-            if(player is not IServerPlayer serverPlayer || serverPlayer.ConnectionState != EnumClientState.Playing) continue;
-            
+            if(!drinkData.IsDrinking || sapi.World.PlayerByUid(playerId) is not IServerPlayer player) continue;
+
             try
             {
-                CheckPlayerInteraction(serverPlayer);
+                TryContinueDrinking(player, drinkData);
+                SendDrinkProgressToClient(player, drinkData);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                Mod.Logger.Error("Error in CheckPlayerInteraction for player {0} ({1}): {2}", player.PlayerName, player.PlayerUID, ex);
-                
-                if (playerDrinkData.TryGetValue(player.PlayerUID, out var drinkData))
-                {
-                    if(drinkData.IsDrinking) continue;
+                Mod.Logger.Error("Error in player drinking interaction {0} ({1}): {2}", player.PlayerName, player.PlayerUID, ex);
+               
+                if(drinkData.IsDrinking) continue;
 
-                    drinkData.StopDrinking();
-                    SendDrinkProgressToClient(serverPlayer, drinkData);
-                }
+                drinkData.StopDrinking();
+                SendDrinkProgressToClient(player, drinkData);
             }
         }
     }
 
-    //TODO more hooks
+    private void HandleDrinkingClient(float dt)
+    {
+        if(api is not ICoreClientAPI capi || capi.Input.GetHotKeyByCode("hydrateordiedrate:drinking") is not { } drinkingHotKey) return;
+
+        var drinkingHotkeyPressed = IsPressed(drinkingHotKey.CurrentMapping);
+
+        if (IsLocalPlayerDrinking)
+        {
+            if (!drinkingHotkeyPressed)
+            {
+                SendIsDrinkingToServer(false);
+            }
+            return;
+        }
+
+        if (!drinkingHotkeyPressed) return;
+
+        var drinkData = new PlayerDrinkData();
+        TryStartDrinking(capi.World.Player, drinkData);
+
+        if (drinkData.IsDrinking)
+        {
+            SendIsDrinkingToServer(true);
+        }
+    }
+
+    //Normal hotkey hooks don't always trigger when I would expect them too so it could get stuck if we don't check manually.
+    private static bool IsPressed(KeyCombination mapping)
+    {
+        var modifiers = ScreenManager.KeyboardModifiers;
+        if(mapping.Alt && !modifiers.AltPressed) return false;
+        if(mapping.Shift && !modifiers.ShiftPressed) return false;
+        if(mapping.Ctrl && !modifiers.CtrlPressed) return false;
+
+        if (!IsPressed(mapping, mapping.KeyCode)) return false;
+        if (mapping.SecondKeyCode is not null && !IsPressed(mapping, mapping.SecondKeyCode.Value)) return false;
+
+        return true;
+    }
+
+    private static bool IsPressed(KeyCombination mapping, int keyCode)
+    {
+        if (mapping.IsMouseButton(keyCode))
+        {
+            return ScreenManager.MouseButtonState[keyCode - KeyCombination.MouseStart];
+        }
+        return ScreenManager.KeyboardKeyState[keyCode];
+    }
 
     private bool IsHeadInWater(IPlayer player)
     {
@@ -134,18 +211,18 @@ public class DrinkingInteractionModSystem : ModSystem
         );
     }
 
-    private void CheckPlayerInteraction(IServerPlayer player)
+    private void SendIsDrinkingToServer(bool isDrinking)
     {
-        if (!playerDrinkData.TryGetValue(player.PlayerUID, out var drinkData)) drinkData = playerDrinkData[player.PlayerUID] = new();
+        if(HoD.NetworkChannel is not IClientNetworkChannel clientChannel) return;
 
-        bool drinkingModifierKeyPressed = ModConfig.Instance.SprintToDrink ? player.Entity.Controls.Sprint : player.Entity.Controls.Sneak;
-        if (!drinkingModifierKeyPressed || !player.Entity.Controls.RightMouseDown || IsHeadInWater(player))
+        clientChannel.SendPacket(new DrinkProgressPacket { IsDrinking = isDrinking });
+    }
+
+    private void TryContinueDrinking(IServerPlayer player, PlayerDrinkData drinkData)
+    {
+        if (IsHeadInWater(player))
         {
-            if (drinkData.IsDrinking)
-            {
-                drinkData.StopDrinking();
-                SendDrinkProgressToClient(player, drinkData);
-            }
+            drinkData.StopDrinking();
             return;
         }
 
@@ -153,11 +230,7 @@ public class DrinkingInteractionModSystem : ModSystem
 
         if (blockSel?.Position is null || !blockSel.Block.ForFluidsLayer)
         {
-            if (drinkData.IsDrinking)
-            {
-                drinkData.StopDrinking();
-                SendDrinkProgressToClient(player, drinkData);
-            }
+            drinkData.StopDrinking();
             return;
         }
 
@@ -179,8 +252,34 @@ public class DrinkingInteractionModSystem : ModSystem
             drinkingProvider.FinishDrinking(world, blockSel, player, drinkData);
             drinkData.StopDrinking();
         }
+    }
 
-        SendDrinkProgressToClient(player, drinkData);
+    private void TryStartDrinking(IPlayer player, PlayerDrinkData drinkData)
+    {
+        if (IsHeadInWater(player))
+        {
+            drinkData.StopDrinking();
+            return;
+        }
+
+        var blockSel = intersectionTester.GetFluidSelection(player, interactionDistance);
+
+        if (blockSel?.Position is null || !blockSel.Block.ForFluidsLayer)
+        {
+            drinkData.StopDrinking();
+            return;
+        }
+
+        var world = api.World;
+        if(drinkData.IsDrinking && blockSel.Position != drinkData.DrinkPos)
+        {
+            drinkData.StopDrinking();
+            return;
+        }
+
+        var drinkingProvider = blockSel.Block.GetInterface<IDrinkingInteraction>(world, blockSel.Position) ?? DefaultDrinkingInteractionProvider;
+
+        drinkingProvider.StartDrinking(world, blockSel, player, drinkData);
     }
 
     private void OnPlayerDisconnect(IServerPlayer player)
@@ -202,10 +301,10 @@ public class DrinkingInteractionModSystem : ModSystem
             capi.Event.UnregisterRenderer(hudOverlayRenderer, EnumRenderStage.Ortho);
         }
 
-        if(OnSlowGameTickListnerId.HasValue)
+        if(HandleDrinkingListnerId.HasValue)
         {
-            api.Event.UnregisterGameTickListener(OnSlowGameTickListnerId.Value);
-            OnSlowGameTickListnerId = null;
+            api.Event.UnregisterGameTickListener(HandleDrinkingListnerId.Value);
+            HandleDrinkingListnerId = null;
         }
     }
 }

@@ -59,7 +59,6 @@
   "hydrateordiedrate:Config.Setting.SpoilRateTapped": "Taux de dégradation (avec robinet)",
   "hydrateordiedrate:Config.Setting.SpoilRateUntapped": "Taux de dégradation (sans robinet)",
   "hydrateordiedrate:Config.Setting.SprintThirstMultiplier": "Multiplicateur de soif quand on court",
-  "hydrateordiedrate:Config.Setting.SprintToDrink": "Courir + clic droit pour boire au lieu de s'accroupir + clic droit, pour faciliter l'utilisation avec le mod CarryOn",
   "hydrateordiedrate:Config.Setting.Step": "Intervalle de nappe phréatique, augmente la distance autour de vous (en tronçons) où seront cherchées les nappes phréatiques, gros impact sur les performances, ne pas modifier sauf si vous savez ce que vous faites.",
   "hydrateordiedrate:Config.Setting.TemperatureThreshold": "Seuil de température",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Dommages dus à la soif",

@@ -78,12 +78,6 @@ public class ModConfig
     [DefaultValue(false)]
     public bool DisableDrunkSway { get; set; } = false;
 
-    /// <summary>
-    /// Allows using the sprint key to initiate drinking instead of sneaking
-    /// </summary>
-    [DefaultValue(false)]
-    public bool SprintToDrink { get; set; } = false;
-
     [JsonExtensionData]
     public Dictionary<string, JToken> LegacyData { get; set; }
 }

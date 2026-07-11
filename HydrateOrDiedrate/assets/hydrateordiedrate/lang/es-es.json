@@ -62,7 +62,6 @@
   "hydrateordiedrate:Config.Setting.SpoilRateTapped": "Tasa de Descomposición (Aprovechados)",
   "hydrateordiedrate:Config.Setting.SpoilRateUntapped": "Porcentaje de Descomposición (sin usar)",
   "hydrateordiedrate:Config.Setting.SprintThirstMultiplier": "Multiplicador de Sed al Correr",
-  "hydrateordiedrate:Config.Setting.SprintToDrink": "Usar Correr + Botón Derecho para beber en lugar de Agacharse + Botón Derecho, para facilitar el uso en conjuento con el mod 'CarryOn'.",
   "hydrateordiedrate:Config.Setting.Step": "Paso del Acuífero. Aumentar la distancia entre sectores, el cálculo del acuífero, verificará si existen sectores cercanos. Tiene un gran impacto en el rendimiento. No lo cambies a menos que sepas lo que estás haciendo.",
   "hydrateordiedrate:Config.Setting.TemperatureThreshold": "Umbral de Temperatura",
   "hydrateordiedrate:Config.Setting.ThirstDamage": "Daño por tener Sed",
