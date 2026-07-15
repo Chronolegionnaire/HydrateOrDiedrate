@@ -8,6 +8,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
+using Vintagestory.Server;
 
 namespace HydrateOrDiedrate.Hydration;
 
@@ -100,7 +101,13 @@ public class DefaultDrinkingInteractionProvider(BlockLiquidContainerBase interac
 
         var dummy = new DummySlot(drinkStack);
         TryEatStop(interactionBlock, 1f, dummy, player.Entity);
-
+        
+        if(world is ServerMain server)
+        {
+            //Force quicker update
+            server.SendPacket(player.ClientId, ServerPackets.GetEntityAttributesPacket(player.Entity));
+        }
+        
         var pos = blockSel.FullPosition;
         world.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), pos.X, pos.Y, pos.Z, null, true, 32f, 1f);
         ParticleUtil.SpawnWaterParticles(world, pos);
