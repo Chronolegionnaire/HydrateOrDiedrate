@@ -101,7 +101,8 @@ public class DefaultDrinkingInteractionProvider(BlockLiquidContainerBase interac
         var dummy = new DummySlot(drinkStack);
         TryEatStop(interactionBlock, 1f, dummy, player.Entity);
 
-        world.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), blockSel.HitPosition.X, blockSel.HitPosition.Y, blockSel.HitPosition.Z, null, true, 32f, 1f);
-        ParticleUtil.SpawnWaterParticles(world, blockSel.HitPosition);
+        var pos = blockSel.FullPosition;
+        world.PlaySoundAt(new AssetLocation("sounds/effect/water-pour"), pos.X, pos.Y, pos.Z, null, true, 32f, 1f);
+        ParticleUtil.SpawnWaterParticles(world, pos);
     }
 }
