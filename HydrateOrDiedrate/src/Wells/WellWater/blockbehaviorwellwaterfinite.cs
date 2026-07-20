@@ -143,7 +143,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
 			int nearbySourceBlockCount = 0;
 			foreach (Cardinal val in Cardinal.ALL)
 			{
-				if (val.IsDiagnoal)
+				if (val.IsDiagonal)
 				{
 					npos.Set(pos.X + val.Normali.X, pos.Y, pos.Z + val.Normali.Z);
 					Block nblock = blockAccessor.GetBlock(npos, BlockLayersAccess.Fluid);
@@ -499,7 +499,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
 				if (nblock.LiquidLevel != liquidLevel && nblock.Replaceable >= 6000 && nblock.IsLiquid())
 				{
 					Vec3i normal = ((nblock.LiquidLevel < liquidLevel) ? val.Normali : val.Opposite.Normali);
-					if (!val.IsDiagnoal)
+					if (!val.IsDiagonal)
 					{
 						nblock = blockAccessor.GetBlock(npos, BlockLayersAccess.Solid);
 						anySideFree |= !nblock.SideIsSolid(blockAccessor, npos, val.Opposite.Index / 2);
@@ -619,10 +619,10 @@ namespace HydrateOrDiedrate.Wells.WellWater
 			return ourblock.LiquidLevel > 1 || facing.Index == BlockFacing.DOWN.Index;
 		}
 
-		public override bool IsReplacableBy(Block byBlock, ref EnumHandling handled)
+		public override bool IsReplacableBy(Block block, ref EnumHandling handling)
 		{
-			handled = EnumHandling.PreventDefault;
-			return (this.block.IsLiquid() || this.block.Replaceable >= BlockBehaviorWellWaterFinite.ReplacableThreshold) && byBlock.Replaceable <= this.block.Replaceable;
+			handling = EnumHandling.PreventDefault;
+			return (this.block.IsLiquid() || this.block.Replaceable >= BlockBehaviorWellWaterFinite.ReplacableThreshold) && block.Replaceable <= this.block.Replaceable;
 		}
 		public List<PosAndDist> FindDownwardPaths(IWorldAccessor world, BlockPos pos, Block ourBlock)
 		{
@@ -681,18 +681,18 @@ namespace HydrateOrDiedrate.Wells.WellWater
 				{
 					origin = pos;
 				}
-				int curDist = pos.ManhattenDistance(target);
+				int curDist = pos.ManhattanDistance(target);
 				npos.Set(pos);
 				for (int i = 0; i < BlockFacing.HORIZONTALS.Length; i++)
 				{
 					BlockFacing.HORIZONTALS[i].IterateThruFacingOffsets(npos);
-					if (npos.ManhattenDistance(target) <= curDist)
+					if (npos.ManhattanDistance(target) <= curDist)
 					{
 						if (npos.Equals(target))
 						{
 							return pos;
 						}
-						if (world.BlockAccessor.GetMostSolidBlock(npos).GetLiquidBarrierHeightOnSide(BlockFacing.HORIZONTALS[i].Opposite, npos) < (float)(ourBlock.LiquidLevel - pos.ManhattenDistance(origin)) / 7f)
+						if (world.BlockAccessor.GetMostSolidBlock(npos).GetLiquidBarrierHeightOnSide(BlockFacing.HORIZONTALS[i].Opposite, npos) < (float)(ourBlock.LiquidLevel - pos.ManhattanDistance(origin)) / 7f)
 						{
 							uncheckedPositions.Enqueue(npos.Copy());
 						}
@@ -701,9 +701,9 @@ namespace HydrateOrDiedrate.Wells.WellWater
 			}
 			return null;
 		}
-		public override bool ShouldReceiveClientParticleTicks(IWorldAccessor world, IPlayer byPlayer, BlockPos pos, ref EnumHandling handled)
+		public override bool ShouldReceiveClientParticleTicks(IWorldAccessor world, IPlayer byPlayer, BlockPos pos, ref EnumHandling handling)
 		{
-			handled = EnumHandling.PreventDefault;
+			handling = EnumHandling.PreventDefault;
 			if (this.block.ParticleProperties == null || this.block.ParticleProperties.Length == 0)
 			{
 				return false;
@@ -712,7 +712,7 @@ namespace HydrateOrDiedrate.Wells.WellWater
 			{
 				return world.BlockAccessor.GetBlockAbove(pos, 1, 0).Replaceable > BlockBehaviorWellWaterFinite.ReplacableThreshold;
 			}
-			handled = EnumHandling.PassThrough;
+			handling = EnumHandling.PassThrough;
 			return false;
 		}
 		private static AssetLocation CreateAssetLocation(JsonObject properties, string propertyName)

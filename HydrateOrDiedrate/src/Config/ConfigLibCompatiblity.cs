@@ -63,7 +63,7 @@ public class ConfigLibCompatibility
     
     //Pump Settings
     private const string settingHandPumpEnablePriming = "hydrateordiedrate:Config.Setting.HandPumpEnablePriming";
-    private const string settingHandPumpOutputInfo = "hydrateordiedrate:Config.Setting.HandPumpOutputInfo";
+    private const string settingShowPrimingStrokes = "hydrateordiedrate:Config.Setting.ShowPrimingStrokes";
     private const string settingHandPumpPrimingBlocksPerStroke = "hydrateordiedrate:Config.Setting.HandPumpPrimingBlocksPerStroke";
     
     // World Gen Settings
@@ -100,8 +100,6 @@ public class ConfigLibCompatibility
     
     private const string settingKegDropWithLiquid = "hydrateordiedrate:Config.Setting.KegDropWithLiquid";
     private const string settingTunDropWithLiquid = "hydrateordiedrate:Config.Setting.TunDropWithLiquid";
-    
-    private const string settingSprintToDrink = "hydrateordiedrate:Config.Setting.SprintToDrink";
 
     private const string settingAquiferRatingCeilingAboveSeaLevel = "hydrateordiedrate:Config.Setting.settingAquiferRatingCeilingAboveSeaLevel";
     private const string settingAquiferDepthMultiplierScale = "hydrateordiedrate:Config.Setting.settingAquiferDepthMultiplierScale";
@@ -110,7 +108,7 @@ public class ConfigLibCompatibility
     private const string settingWaterPerish = "hydrateordiedrate:Config.Setting.WaterPerish";
     private const string settingAquiferDataOnProspectingNodeMode = "hydrateordiedrate:Config.Setting.AquiferDataOnProspectingNodeMode";
     private const string settingShowAquiferProspectingDataOnMap = "hydrateordiedrate:Config.Setting.ShowAquiferProspectingDataOnMap";
-    private const string settingWinchOutputInfo = "hydrateordiedrate:Config.Setting.WinchOutputInfo";
+    private const string settingWellOutputInfo = "hydrateordiedrate:Config.Setting.WellOutputInfo";
 
     private ConfigLibCompatibility()
     {
@@ -415,9 +413,9 @@ public class ConfigLibCompatibility
         ImGui.Checkbox(Lang.Get(settingHandPumpEnablePriming) + $"##handPumpEnablePriming-{id}", ref handPumpEnablePriming);
         pumpConfig.HandPumpEnablePriming = handPumpEnablePriming;
         
-        bool handPumpOutputInfo = pumpConfig.HandPumpOutputInfo;
-        ImGui.Checkbox(Lang.Get(settingHandPumpOutputInfo) + $"##handPumpOutputInfo-{id}", ref handPumpOutputInfo);
-        pumpConfig.HandPumpOutputInfo = handPumpOutputInfo;
+        bool handPumpOutputInfo = pumpConfig.ShowPrimingStrokes;
+        ImGui.Checkbox(Lang.Get(settingShowPrimingStrokes) + $"##ShowPrimingStrokes-{id}", ref handPumpOutputInfo);
+        pumpConfig.ShowPrimingStrokes = handPumpOutputInfo;
         
         int handPumpPrimingBlocksPerStroke = pumpConfig.HandPumpPrimingBlocksPerStroke;
         ImGui.DragInt(Lang.Get(settingHandPumpPrimingBlocksPerStroke) + $"##handPumpPrimingBlocksPerStroke-{id}", ref handPumpPrimingBlocksPerStroke, 1, 1, 20);
@@ -559,10 +557,6 @@ public class ConfigLibCompatibility
         ImGui.Checkbox(Lang.Get(settingTunDropWithLiquid) + $"##tunDropWithLiquid-{id}", ref tunDropWithLiquid);
         containersConfig.TunDropWithLiquid = tunDropWithLiquid;
         
-        bool sprintToDrink = config.SprintToDrink;
-        ImGui.Checkbox(Lang.Get(settingSprintToDrink) + $"##sprintToDrink-{id}", ref sprintToDrink);
-        config.SprintToDrink = sprintToDrink;
-        
         int aquiferRatingCeilingAboveSeaLevel = groundWaterConfig.AquiferRatingCeilingAboveSeaLevel;
         ImGui.DragInt(Lang.Get(settingAquiferRatingCeilingAboveSeaLevel) + $"##aquiferRatingCeilingAboveSeaLevel-{id}", ref aquiferRatingCeilingAboveSeaLevel, 1, 0, 100);
         groundWaterConfig.AquiferRatingCeilingAboveSeaLevel = aquiferRatingCeilingAboveSeaLevel;
@@ -583,8 +577,8 @@ public class ConfigLibCompatibility
         ImGui.Checkbox(Lang.Get(settingShowAquiferProspectingDataOnMap) + $"##showAquiferProspectingDataOnMap-{id}", ref showAquiferProspectingDataOnMap);
         groundWaterConfig.ShowAquiferProspectingDataOnMap = showAquiferProspectingDataOnMap;
             
-        bool winchOutputInfo = groundWaterConfig.WinchOutputInfo;
-        ImGui.Checkbox(Lang.Get(settingWinchOutputInfo) + $"##winchOutputInfo-{id}", ref winchOutputInfo);
-        groundWaterConfig.WinchOutputInfo = winchOutputInfo;
+        bool winchOutputInfo = groundWaterConfig.ShowOutputInfo;
+        ImGui.Checkbox(Lang.Get(settingWellOutputInfo) + $"##WellOutputInfo-{id}", ref winchOutputInfo);
+        groundWaterConfig.ShowOutputInfo = winchOutputInfo;
     }
 }

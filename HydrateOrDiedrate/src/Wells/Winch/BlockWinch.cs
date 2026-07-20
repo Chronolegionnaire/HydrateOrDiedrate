@@ -130,7 +130,7 @@ namespace HydrateOrDiedrate.Wells.Winch
                     },
                     ..base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
                 ],
-                _ => []
+                _ => base.GetPlacedBlockInteractionHelp(world, selection, forPlayer)
             };
 
         public override void DidConnectAt(IWorldAccessor world, BlockPos pos, BlockFacing face)

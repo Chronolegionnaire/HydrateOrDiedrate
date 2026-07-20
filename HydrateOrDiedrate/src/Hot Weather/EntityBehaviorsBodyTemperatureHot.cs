@@ -27,7 +27,7 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         var config = ModConfig.Instance.HeatAndCooling;
 
         var temperature = entity.World.BlockAccessor
-            .GetClimateAt(entity.ServerPos.AsBlockPos, EnumGetClimateMode.NowValues)?
+            .GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.NowValues)?
             .Temperature.GuardFinite() ?? 0f;
 
         float threshold = config.TemperatureThreshold;
@@ -124,7 +124,7 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
 
         
         int sunlightLevel = entity.World.BlockAccessor.GetLightLevel(
-            entity.SidedPos.AsBlockPos,
+            entity.Pos.AsBlockPos,
             EnumLightLevelType.TimeOfDaySunLight
         );
         sunlightLevel = GameMath.Clamp(sunlightLevel, 0, 22);
@@ -178,7 +178,7 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         var world = entity.World;
         var calendar = world.Calendar;
 
-        Vec3d fromPos = agent.SidedPos.XYZ.Clone();
+        Vec3d fromPos = agent.Pos.XYZ.Clone();
         fromPos.Y += agent.LocalEyePos.Y;
 
         Vec3f sunDirF = calendar.GetSunPosition(fromPos, calendar.TotalDays);

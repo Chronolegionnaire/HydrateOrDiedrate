@@ -4,6 +4,7 @@ using System;
 using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.Common;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
@@ -39,6 +40,7 @@ namespace HydrateOrDiedrate.patches
             }
             catch (Exception ex)
             {
+                world.Logger.Error("[hydrateordiedrate] an error occured during BlockCrockPatch: {0}", ex);
             }
         }
     }

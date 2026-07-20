@@ -4,6 +4,7 @@
   "entityclass": "HoD:BlockEntityWellSpring",
   "storageFlags": 5,
   "attributes": {
+    "WellWaterBlock": "wellwater-fresh-clean-natural-still-7",
     "handbook": {
       "extraSections": [
         {

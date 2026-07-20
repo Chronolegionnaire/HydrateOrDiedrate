@@ -9,7 +9,6 @@ namespace HydrateOrDiedrate.Piping.HandPump
         private float? fixedLifeLength;
         private (float min, float max)? lifeRange;
         private float? gravityOverride;
-        private int? fixedRgbaColor;
 
         private bool useDirectional;
         private float lateralJitter = 0f;
@@ -36,7 +35,7 @@ namespace HydrateOrDiedrate.Piping.HandPump
         }
 
         public override float GravityEffect => gravityOverride ?? base.GravityEffect;
-        public override int GetRgbaColor(ICoreClientAPI capi) => fixedRgbaColor ?? base.GetRgbaColor(capi);
+
         public override Vec3f GetVelocity(Vec3d pos)
         {
             if (!useDirectional || velocity == null) return base.GetVelocity(pos);

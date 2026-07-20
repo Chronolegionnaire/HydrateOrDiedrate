@@ -190,7 +190,7 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
 
         thirstDecayRate = Math.Min(thirstDecayRate, config.ThirstDecayRate * config.ThirstDecayRateMax);
 
-        if (storySys?.GetStoryStructureAt(entity.SidedPos.AsBlockPos) is not null)
+        if (storySys?.GetStoryStructureAt(entity.Pos.AsBlockPos) is not null)
         {
             thirstDecayRate *= GameMath.Clamp(ModConfig.Instance.Thirst.ThirstRateAtStoryLocations, 0, 2);
         }

@@ -6,7 +6,7 @@ using Vintagestory.API.Util;
 
 namespace HydrateOrDiedrate.Config.Patching;
 
-public class PatchCollection<T> where T : PatchBase
+public class PatchCollection<T> where T : PatchBase, new()
 {
     public int Priority { get; set; }
 
@@ -37,20 +37,32 @@ public class PatchCollection<T> where T : PatchBase
         Patches = Patches.Append(missingPatches);
     }
 
-    public static PatchCollection<T> GetMerged(ICoreAPI api, string path, PatchCollection<T> defaultConfig)
+    public static PatchCollection<T> GetMerged(ICoreAPI api, string path)
     {
-        PatchCollection<T> result;
+        var defaults = api.Assets.GetMany<PatchCollection<T>>(api.Logger, "config/" + path.ToLower()).Values.OrderByDescending(collection => collection.Priority).ToArray();
+        int start = 0;
+        
+        PatchCollection<T> result = null;
         try
         {
             result = api.LoadModConfig<PatchCollection<T>>(path);
             if(result is null)
             {
-                result = defaultConfig;
+                if(defaults.Length > 0)
+                {
+                    result = defaults[0];
+                    start = 1;
+                }
+                else result = new PatchCollection<T>();
             }
             else
             {
                 result.Patches = [.. result.Patches.Where(static patch => patch is not null)];
-                result.MergeMissing(defaultConfig);
+            }
+
+            for(int i = start; i < defaults.Length; i++)
+            {
+                result.MergeMissing(defaults[i]);
             }
 
             api.StoreModConfig(result, path);
@@ -58,8 +70,7 @@ public class PatchCollection<T> where T : PatchBase
         catch(Exception ex)
         {
             api.Logger.Error(ex);
-            result = defaultConfig;
         }
-        return result;
+        return result ?? new();
     }
 }

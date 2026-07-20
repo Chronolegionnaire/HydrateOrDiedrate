@@ -8,6 +8,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Wells.Patches
 {
+    //TODO cleanup this logic
     [HarmonyPatch(typeof(BlockLiquidContainerBase))]
     [HarmonyPatch("TryFillFromBlock", new Type[] { typeof(ItemSlot), typeof(EntityAgent), typeof(BlockPos) })]
     public static class Patch_BlockLiquidContainerBase_TryFillFromBlock
@@ -51,13 +52,13 @@ namespace HydrateOrDiedrate.Wells.Patches
             var spring = WellBlockUtils.FindGoverningSpring(api, fluid, pos);
             if (spring == null) return true;
 
-            if (spring.totalLiters <= 0)
+            if (spring.TotalLiters <= 0)
             {
                 __result = false;
                 return false;
             }
 
-            float availableLitres = spring.totalLiters;
+            float availableLitres = spring.TotalLiters;
             float currentLitres = __instance.GetCurrentLitres(itemslot.Itemstack);
             float containerCapacity = __instance.CapacityLitres - currentLitres;
 
@@ -68,15 +69,14 @@ namespace HydrateOrDiedrate.Wells.Patches
             }
 
             float transferLitres = Math.Min(availableLitres, containerCapacity);
-            int volumeToTake = (int)Math.Floor(transferLitres);
-            if (volumeToTake <= 0)
+            if (transferLitres <= 0)
             {
                 __result = false;
                 return false;
             }
-
-            int delta = spring.TryChangeVolume(-volumeToTake);
-            int extractedLiters = -delta;
+            
+            float delta = spring.TryChangeVolume(-transferLitres);
+            float extractedLiters = -delta;
             if (extractedLiters <= 0)
             {
                 __result = false;
@@ -85,7 +85,7 @@ namespace HydrateOrDiedrate.Wells.Patches
 
             var contentStack = new ItemStack(item)
             {
-                StackSize = extractedLiters * 1000
+                StackSize = (int)(extractedLiters * 1000)
             };
 
             int moved = __instance.SplitStackAndPerformAction((Entity)byEntity, itemslot, (ItemStack singleItem) =>
@@ -137,7 +137,7 @@ namespace HydrateOrDiedrate.Wells.Patches
 
             if (entityItem.Swimming && world.Rand.NextDouble() < 0.03)
             {
-                BlockPos pos = entityItem.SidedPos.AsBlockPos;
+                BlockPos pos = entityItem.Pos.AsBlockPos;
                 var fluid = api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
 
                 if (!WellBlockUtils.IsOurWellwater(fluid))
@@ -145,7 +145,7 @@ namespace HydrateOrDiedrate.Wells.Patches
                     return true;
                 }
 
-                var spring = (fluid != null) ? WellBlockUtils.FindGoverningSpring(api, fluid, pos) : null;
+                var spring = (fluid != null) ? WellBlockUtils.FindGoverningSpring(api, fluid, pos) : null; 
                 if (spring == null)
                 {
                     return true;
@@ -160,47 +160,43 @@ namespace HydrateOrDiedrate.Wells.Patches
                     if (!string.IsNullOrEmpty(itemCode))
                     {
                         var item = world.GetItem(new AssetLocation(itemCode));
-                        if (item != null)
+                        if (item != null && spring.TotalLiters > 0)
                         {
-                            if (spring.totalLiters > 0)
+                            float availableLitres = spring.TotalLiters;
+                            float currentLitres = __instance.GetCurrentLitres(entityItem.Itemstack);
+                            float containerCapacity = __instance.CapacityLitres - currentLitres;
+
+                            if (containerCapacity > 0f)
                             {
-                                float availableLitres = spring.totalLiters;
-                                float currentLitres = __instance.GetCurrentLitres(entityItem.Itemstack);
-                                float containerCapacity = __instance.CapacityLitres - currentLitres;
-
-                                if (containerCapacity > 0f)
+                                float transferLitres = Math.Min(availableLitres, containerCapacity);
+                                if (transferLitres > 0)
                                 {
-                                    float transferLitres = Math.Min(availableLitres, containerCapacity);
-                                    int volumeToTake = (int)Math.Floor(transferLitres);
-                                    if (volumeToTake > 0)
+                                    float delta = spring.TryChangeVolume(-transferLitres);
+                                    float extractedLiters = -delta;
+
+                                    if (extractedLiters > 0)
                                     {
-                                        int delta = spring.TryChangeVolume(-volumeToTake);
-                                        int extractedLiters = -delta;
-
-                                        if (extractedLiters > 0)
+                                        var contentStack = new ItemStack(item)
                                         {
-                                            var contentStack = new ItemStack(item)
-                                            {
-                                                StackSize = extractedLiters * 1000
-                                            };
+                                            StackSize = (int)(extractedLiters * 1000)
+                                        };
 
-                                            var dummySlot = new DummySlot(entityItem.Itemstack);
-                                            int moved = __instance.SplitStackAndPerformAction(entityItem, dummySlot, (ItemStack singleItem) =>
-                                            {
-                                                float beforeLitres = __instance.GetCurrentLitres(singleItem);
-                                                int filled = __instance.TryPutLiquid(singleItem, contentStack, extractedLiters);
-                                                float afterLitres = __instance.GetCurrentLitres(singleItem);
-                                                return (Math.Abs(afterLitres - beforeLitres) >= 0.001f) ? filled : 0;
-                                            });
+                                        var dummySlot = new DummySlot(entityItem.Itemstack);
+                                        int moved = __instance.SplitStackAndPerformAction(entityItem, dummySlot, (ItemStack singleItem) =>
+                                        {
+                                            float beforeLitres = __instance.GetCurrentLitres(singleItem);
+                                            int filled = __instance.TryPutLiquid(singleItem, contentStack, extractedLiters);
+                                            float afterLitres = __instance.GetCurrentLitres(singleItem);
+                                            return (Math.Abs(afterLitres - beforeLitres) >= 0.001f) ? filled : 0;
+                                        });
 
-                                            if (moved > 0)
-                                            {
-                                                __instance.DoLiquidMovedEffects(null, contentStack, moved, BlockLiquidContainerBase.EnumLiquidDirection.Fill);
-                                            }
-                                            else
-                                            {
-                                                spring.TryChangeVolume(extractedLiters);
-                                            }
+                                        if (moved > 0)
+                                        {
+                                            __instance.DoLiquidMovedEffects(null, contentStack, moved, BlockLiquidContainerBase.EnumLiquidDirection.Fill);
+                                        }
+                                        else
+                                        {
+                                            spring.TryChangeVolume(extractedLiters);
                                         }
                                     }
                                 }
@@ -219,7 +215,7 @@ namespace HydrateOrDiedrate.Wells.Patches
                     {
                         if (stacks[i] != null && stacks[i].StackSize > 0 && stacks[i].Collectible.Code.Path == "rot")
                         {
-                            world.SpawnItemEntity(stacks[i], entityItem.ServerPos.XYZ, null);
+                            world.SpawnItemEntity(stacks[i], entityItem.Pos.XYZ, null);
                         }
                     }
                     __instance.SetContent(entityItem.Itemstack, null);

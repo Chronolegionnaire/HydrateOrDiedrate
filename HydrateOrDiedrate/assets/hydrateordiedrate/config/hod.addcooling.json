@@ -1,0 +1,4175 @@
+{
+  "Priority": 5,
+  "Patches": [
+    {
+      "Code": "game:clothes-upperbody-tattered-crimson-tunic",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-tattered-linen-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-peasent-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-pastoral-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-chateau-blouse",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-aristocrat-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-azure-embroidered-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-hunter-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-great-steppe-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-earth-toned-robe",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-jailor-tunic",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-lackey-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-linen-tunic",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-merchant-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-messenger-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-minstrel-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-noble-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-pearl-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-prince-tunic",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-reindeer-herder-collared-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-scarlet-ornate-linen-tunic",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-shepherd-tunic",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-squire-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-temptress-velvet-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-woolen-shirt",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-blackguard-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-clockmaker-shirt",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-malefactor-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-forlorn-tunic",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-commoner-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-raw-hide-mantle",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-tailor-blouse",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-homespun-shirt",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-marketeer",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-rottenking",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-king",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-surgeon",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-miner",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-alchemist",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-forgotten",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-deep",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-survivor",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-scribe",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbody-hunters-green",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-great-steppe-mantle",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-cerise-embroidered-reindeer-herder-coat",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-commoner-coat",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-fur-coat",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-huntsmans-tunic",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-cobalt-mantle",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-reindeer-herder-fur-coat",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-spice-merchants-coat",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-nomad-mantle",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-travelers-earthrobe",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-warm-robe",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-clockmaker-tunic",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-hunter-coat",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-malefactor-tunic",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-tailor-jacket",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-marketeer",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-rotwalker",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-rottenking",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-king",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-surgeon",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-miner",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-upperbodyover-forgotten",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-winter2",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-winter1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-tailor",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-shepherd",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-beekeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-musician",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-miner",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-miner-clean",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-coat-verylong",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-coat-short",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-coat-long",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbodyover-alchemist",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-winter2",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-winter1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-tailor",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-shepherd",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-beekeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-fisher",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-musician",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-miner",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-miner-clean",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-hunter",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-guard",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-blacksmith",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-innkeeper",
+      "cooling": 3.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-barber",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-alchemist",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-peasant1",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-peasant2",
+      "cooling": 3.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-peasant3",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-upperbody-peasant4",
+      "cooling": 3.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-aristocrat-belt",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-cerise-embroidered-reindeer-herder-waistband",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-fancy-royal-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-fortune-teller-hip-scarf",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-gold-waist-chain",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-heavy-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-heavy-tool-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-jailor-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-linen-rope",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-merchant-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-messenger-belt",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-moss-embroidered-belt",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-noble-sash",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-peasant-strap",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-prince-waistband",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-reindeer-herder-waistband",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-squire-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-sturdy-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-sturdy-leather-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-blackguard-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-clockmaker-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-malefactor-sash",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-forlorn-belt",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-tailor-belt",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-marketeer",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-rottenking",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-king",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-miner",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-alchemist",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-scribe",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-waist-jambiya-belt",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-aristocrat-mantle",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-artisans-scarf",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-blacksmith-apron",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-embroidered-collar",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-embroidered-tartarean-scarf",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-hooded-cape",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-jord-robe",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-hunter-poncho",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-longsleeve-pearl-moonrobe",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-minstrel-coat",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-mooncloth-robe",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-noble-fur-collar",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-peasent-kaftan",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-royal-fur",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-shortsleeve-pearl-moonrobe",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-stained-leather-poncho",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-woolen-scarf",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-squire-tunic",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-clockmaker-apron",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-forlorn-sash",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-malefactor-cloak",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-marketeer",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-rotwalker",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-surgeon",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-miner",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-alchemist",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-survivor",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-shoulder-scribe",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-winter1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-barber",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-blacksmith",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-innkeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-hunter",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-musician",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-shepherd",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-fisher",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-guard",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-peasant1",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-peasant2",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-peasant3",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-shoulder-alchemist",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-aristocrat-leggings",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-dirty-linen-trousers",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-fine-trousers",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-jailor-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-lackey-breeches",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-merchant-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-messenger-trousers",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-minstrel-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-noble-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-prince-breeches",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-reindeer-herder-trousers",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-raw-hide-trousers",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-shepherd-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-squire-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-nomad-trousers",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-tattered-peasent-gown",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-torn-riding-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-warm-woolen-pants",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-woolen-leggings",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-workmans-gown",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-blackguard-leggings",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-clockmaker-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-hunter-leggings",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-malefactor-trousers",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-forlorn-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-commoner-trousers",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-tailor-trousers",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-homespun-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-pastoral-pants",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-chateau-pants",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-marketeer",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-rotwalker",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-rottenking",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-king",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-surgeon",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-miner",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-alchemist",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-forgotten",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-deep",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-survivor",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-scribe",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-lowerbody-skirt",
+      "cooling": 3.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-winter2",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-winter1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-tailor",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-shepherd",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-peasant1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-peasant2",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-peasant3",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-peasant-skirt1",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-peasant-skirt2",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-peasant-skirt3",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-musician",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-miner",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-miner-clean",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-innkeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-hunter",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-guard",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-fisher",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-blacksmith",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-beekeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-barber",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-lowerbody-alchemist",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-embroidered-coif",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-fancy-head-dress",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-fortune-tellers-scarf",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-gem-encrusted-fur-hat",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-gold-coronet",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-jailors-hat",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-lackey-hat",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-merchant-hat",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-messengers-hat",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-minstrel-hat",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-noble-fillet",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-peasent-head-scarf",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-roll-hat",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-shepherds-cowl",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-silver-diadem",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-squire-hood",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-hunter-cape",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-straw-hat",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-tophat",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-bamboo-conehat",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-bamboo-conehat-large",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-crown",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-mianguan",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-marketeer",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-rotwalker",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-rottenking",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-surgeon",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-alchemist",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-head-crown-byzantine",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-winter2",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-winter1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-tailor",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-shepherd",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-peasantwhite",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-peasantbrown",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-peasantblue",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-peasantbeige",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-peasanttan",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-peasantred",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-musician",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-miner",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-innkeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-hunter",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-guard",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-fisher",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-blacksmith",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-beekeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-barber",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-head-alchemist",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-fur-gloves",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-heavy-leather-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-laced-handsome-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-lackey-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-minstrel-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-noble-riding-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-prince-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-clockmaker-wristguard",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-hunter-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-malefactor-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-forlorn-bracer",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-commoner-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-tailor-gloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-rottenking",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-king",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-surgeon",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-miner",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-forgotten",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-deep",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-survivor",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-hand-scribe",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-winter2",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-winter1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-shepherd",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-peasant2",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-peasant1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-miner-clean",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-miner",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-hunter",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-gloves",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-fisher",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-blacksmith",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-beekeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-barber",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-hand-alchemist",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-aristocrat-shoes",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-great-steppe-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-fur-lined-reindeer-herder-shoes",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-high-leather-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-jailor-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-knee-high-fur-boots",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-lackey-shoes",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-merchant-shoes",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-messenger-shoes",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-metalcap-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-minstrel-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-noble-shoes",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-peasent-slippers",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-prince-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-prisoner-binds",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-shepherd-sandals",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-soldier-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-squire-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-nomad-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-temptress-velvet-shoes",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-tigh-high-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-wool-lined-knee-high-boots",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-wool-lined-knee-high-boots",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-worn-leather-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-blackguard-shoes",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-clockmaker-shoes",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-hunter-boots",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-malefactor-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-forlorn-shoes",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-commoner-boots",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-tailor-shoes",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-marketeer",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-rotwalker",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-rottenking",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-king",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-surgeon",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-miner",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-alchemist",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-forgotten",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-survivor",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-scribe",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-foot-rusty-ankle-manacles",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-winter2",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-winter1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-tailor",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-shepherd",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-peasantwhite",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-peasantbrown",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-peasantblue",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-peasantbeige",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-musician",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-miner-clean",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-miner",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-innkeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-hunter",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-guard",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-fisher",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-blacksmith",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-beekeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-barber",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-foot-alchemist",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-armlet-teeth",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-barber-pouch",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-guard-bracers",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-seashell-bracelet",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-peasant-bracersbrown",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-peasant-bracerswhite",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-musician-bangles",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-copper-armlet",
+      "cooling": 5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-copper-lapis-bracelet",
+      "cooling": 5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-bronze-lapis-bracelet",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-copper-lapis-bracelet",
+      "cooling": 5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-arm-coral-bracelet",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-acacia-amulet",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-bamboo-seed-amulet",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-birch-amulet",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-cattail-root-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-copper-lapis-necklace",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-ebony-amulet",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-feather-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-flint-amulet",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-fur-shawl",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-kapok-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-lapis-necklace",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-maple-amulet",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-maple-red-amulet",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-necklace-coral",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-necklace-musician",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-necklace-seashells",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-necklace-teeth",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-papyrus-root-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-purpleheart-amulet",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-neck-tule-root-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-alchemist",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-barber",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-beekeeper",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-fisher",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-guard",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-hunter",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-innkeeper",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-innkeeper-accessories",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-miner",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-miner-accessories",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-musician",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-peasant1",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-peasant2",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-shepherd",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-tailor",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-winter1",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-waist-winter2",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-leather-reinforced-mask",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-hunter-mask",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-malefactor-mask",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-forlorn-veil",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-glasses",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-tailor-mask",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-sheepskull",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-crow",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-hummingbird",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-corroded",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-cat",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-festivecat",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-marketeer",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-rotwalker",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-rottenking",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-surgeon",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-surgeonhood",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-miner",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-forgotten",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-survivor",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-snow-goggles",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-face-glasses-clockmaker",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-face-alchemist",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-face-barber",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-face-blacksmith",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-face-hunter",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-face-miner",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-nadiya-face-grain",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-gear-amulet-temporal",
+      "cooling": 5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-forlorn-talisman",
+      "cooling": 3.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-copper-torc",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-bronze-gem-necklace",
+      "cooling": 3.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-fancy-royal-collar",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-golden-necklace",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-merchant-amulet",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-noble-necklace",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-pearl-necklace",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-acorn-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-cypress-seed-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-larch-seed-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-pinecone-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-redwood-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-walnut-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-marketeer",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-rottenking",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-king",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-forgotten",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-deep",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-malefactor-pendant",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-gear-amulet-rusty",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-nazar1",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-nazar2",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-nazar3",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-necklace-seashell1",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-simple-cross",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-teardrop-amulet",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-fancy-cross",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-gear-amulet-gold",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-gorget",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-gorget-vulture",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-jade-amulet",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-japamala",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-pillory",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-neck-lunula",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-copper-bracelet",
+      "cooling": 5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-bronze-bracelet",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-bronze-armlet",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-gem-studded-bracelet",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-japamala",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-large-silver-bracelets",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-leather-bracers",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-long-gem-studded-bracelet",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-merchant-bracelet",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-prisoner-binds",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-rosary",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-rusty-wrist-manacles",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-silver-bracelet",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-silver-chain",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-squire-bracers",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-arm-tailor-needlepuff",
+      "cooling": 0.1,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-blue-seal",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-brass-ruby-brooch",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-messenger-pin",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-royal-pin",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-silver-pin",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-silver-star",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-squire-emblem",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-blackguard-pin",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-fibula",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-lily",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-silver-brooch",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-emblem-falcon",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-acadianhairstreak",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-alchemical",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-bandedpeacock",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-bluekallima",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-bluemorpho",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-bluepansy",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-bogcopper",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-bronzecopper",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-cabbagewhite",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-clipper",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-coloradohairstreak",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-comma",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-commonbrimstone",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-darkbluepansy",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-desertorangetip",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-easterntigerswallowtail",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-godartsnumberwing",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-goldbandedforester",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-greatpurplehairstreak",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-greencharaxes",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-largewhite",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-littlemetalmark",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-littlewoodsatyr",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-malachite",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-marbledwhite",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-milbertstortoiseshell",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-mourningcloak",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-oakblue",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-paintedbeauty",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-pallidnawab",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-peacock",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-pipevineswallowtail",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-purpleemperor",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-redadmiral",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-redglider",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-redpostman",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-resplendantforester",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-ringlet",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-rot",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-rust",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-rustytippedpage",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-silveryblue",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-smallheath",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-speckledwood",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-temporal",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-whiteadmiral",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-whitepeacock",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-zebraheliconan",
+      "cooling": 0.4,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-zebraswallowtail",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:clothes-butterflypin-zeredaskipper",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-antique-blackguard-broken",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-antique-blackguard-damaged",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-antique-blackguard-pristine",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-antique-forlorn-broken",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-antique-forlorn-damaged",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-antique-forlorn-pristine",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-brigandine-bismuthbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-brigandine-blackbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-brigandine-copper",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-brigandine-iron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-brigandine-meteoriciron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-brigandine-steel",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-brigandine-tinbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-chain-bismuthbronze",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-chain-blackbronze",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-chain-copper",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-chain-gold",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-chain-iron",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-chain-meteoriciron",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-chain-silver",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-chain-steel",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-chain-tinbronze",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-hide-bear-black",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-hide-bear-brown",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-hide-bear-panda",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-hide-bear-polar",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-hide-bear-sun",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-improvised-wood",
+      "cooling": -3.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-jerkin-leather",
+      "cooling": -5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-lamellar-bismuthbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-lamellar-blackbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-lamellar-copper",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-lamellar-tinbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-lamellar-wood",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-plate-bismuthbronze",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-plate-blackbronze",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-plate-copper",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-plate-gold",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-plate-iron",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-plate-meteoriciron",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-plate-silver",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-plate-steel",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-plate-tinbronze",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-scale-bismuthbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-scale-blackbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-scale-copper",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-scale-iron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-scale-meteoriciron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-scale-steel",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-scale-tinbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-sewn-leather",
+      "cooling": -5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-sewn-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-black-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-blue-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-brown-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-gray-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-green-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-orange-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-pink-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-plain-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-purple-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-red-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-white-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-body-tailored-yellow-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-antique-blackguard-broken",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-antique-blackguard-damaged",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-antique-blackguard-pristine",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-antique-forlorn-broken",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-antique-forlorn-damaged",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-antique-forlorn-pristine",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-brigandine-bismuthbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-brigandine-blackbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-brigandine-copper",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-brigandine-iron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-brigandine-meteoriciron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-brigandine-steel",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-brigandine-tinbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-chain-bismuthbronze",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-chain-blackbronze",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-chain-copper",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-chain-gold",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-chain-iron",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-chain-meteoriciron",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-chain-silver",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-chain-steel",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-chain-tinbronze",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-hide-bear-black",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-hide-bear-brown",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-hide-bear-panda",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-hide-bear-polar",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-hide-bear-sun",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-lamellar-bismuthbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-lamellar-blackbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-lamellar-copper",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-lamellar-tinbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-lamellar-wood",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-plate-bismuthbronze",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-plate-blackbronze",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-plate-copper",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-plate-gold",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-plate-iron",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-plate-meteoriciron",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-plate-silver",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-plate-steel",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-plate-tinbronze",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-scale-bismuthbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-scale-blackbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-scale-copper",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-scale-iron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-scale-meteoriciron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-scale-steel",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-scale-tinbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-sewn-leather",
+      "cooling": -5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-sewn-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-black-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-blue-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-brown-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-gray-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-green-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-orange-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-pink-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-plain-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-purple-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-red-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-white-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-head-tailored-yellow-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-antique-blackguard-broken",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-antique-blackguard-damaged",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-antique-blackguard-pristine",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-antique-forlorn-broken",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-antique-forlorn-damaged",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-antique-forlorn-pristine",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-brigandine-bismuthbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-brigandine-blackbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-brigandine-copper",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-brigandine-iron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-brigandine-meteoriciron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-brigandine-steel",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-brigandine-tinbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-chain-bismuthbronze",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-chain-blackbronze",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-chain-copper",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-chain-gold",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-chain-iron",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-chain-meteoriciron",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-chain-silver",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-chain-steel",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-chain-tinbronze",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-hide-bear-black",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-hide-bear-brown",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-hide-bear-panda",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-hide-bear-polar",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-hide-bear-sun",
+      "cooling": -6.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-jerkin-leather",
+      "cooling": -5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-lamellar-bismuthbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-lamellar-blackbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-lamellar-copper",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-lamellar-tinbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-lamellar-wood",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-plate-bismuthbronze",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-plate-blackbronze",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-plate-copper",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-plate-gold",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-plate-iron",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-plate-meteoriciron",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-plate-silver",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-plate-steel",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-plate-tinbronze",
+      "cooling": -8.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-scale-bismuthbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-scale-blackbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-scale-copper",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-scale-iron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-scale-meteoriciron",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-scale-steel",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-scale-tinbronze",
+      "cooling": -7.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-sewn-leather",
+      "cooling": -5.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-sewn-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-black-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-blue-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-brown-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-gray-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-green-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-orange-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-pink-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-plain-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-purple-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-red-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-white-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "game:armor-legs-tailored-yellow-linen",
+      "cooling": -4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "eldritchcuteclothing:clothes-upperbody-kosovorotka-*",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "eldritchcuteclothing:clothes-lowerbody-*",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-upperbodyover-*",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-upperbody-*",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-upperbody-*",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-shoulder-*",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-neck-*",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-lowerbody-homespun-cottonpants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-lowerbody-homespun-woolenleggings",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-lowerbody-denim-pants",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-lowerbody-denim-shorts",
+      "cooling": 2.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-head-hidecap-*",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-head-brimmedhat-*",
+      "cooling": 3.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-hand-*",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "hideandfabric:clothes-foot-*",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-face-*",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-foot-*",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-lowerbody-furl*",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-upperbodyover-furt*",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-head-*",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-lowerbody-*",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-shoulder-*",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-upperbody-shirt-*",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-upperbody-tunic-*",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-upperbody-exomis-*",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-upperbodyover-*",
+      "cooling": 1.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "simplecloth:clothes-waist-*",
+      "cooling": 0.3,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-foot-reed-sandals",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-foot-leather-moccasins",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-foot-leather-slipper-boots",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-foot-blackguard-shoes-repaired",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-raw-leather-skirt",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-reed-skirt",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-homespun-pants-brown",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-homespun-pants-green",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-homespun-braies",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-homespun-braies-brown",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-homespun-braies-green",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-dungaree-braies",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-lace-leggings",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-lowerbody-blackguard-leggings-repaired",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-shoulder-fur-scarf",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-raw-leather-dress",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-raw-leather-tunic",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-darkened-raw-leather-tunic",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-raw-leather-camisole",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-raw-leather-cropped-camisole",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-homespun-shirt-brown",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-homespun-shirt-green",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-homespun-camisole",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-homespun-camisole-brown",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-homespun-camisole-green",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-homespun-cropped-camisole",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-homespun-cropped-camisole-brown",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-homespun-cropped-camisole-green",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-dungaree-jumpsuit-top",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbody-blackguard-shirt-repaired",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbodyover-leather-vest",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "dressedtokill:clothes-upperbodyover-sweater",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-face-cigar",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-face-cigarette",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-face-cigarillo",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-face-belcourtspectacles",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-face-bandanafancy",
+      "cooling": 1.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-foot-mukluks",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-hand-leathergloves",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-hand-leatherglovesfringe",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-head-strawboaterhat",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-head-derby",
+      "cooling": 2.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-head-cowboyhatopencrown",
+      "cooling": 4.0,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-head-coonskincap",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-lowerbody-bluejeans",
+      "cooling": 0.5,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-lowerbody-mountaineerpants",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-upperbody-cottonshirt",
+      "cooling": 0.8,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-upperbody-cottonshirttucked",
+      "cooling": 0.8,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-upperbodyover-mountaineercoat",
+      "cooling": 0.2,
+      "CoolingByType": null
+    },
+    {
+      "Code": "americanfrontiersman:clothes-upperbodyover-mountaineercoatnofringe",
+      "cooling": 0.2,
+      "CoolingByType": null
+    }
+  ]
+}

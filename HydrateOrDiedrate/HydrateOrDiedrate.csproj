@@ -7,7 +7,12 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="IgnoresAccessChecksToGenerator" Version="0.8.0" PrivateAssets="All" />
+		<IgnoresAccessChecksTo Include="VintagestoryAPI" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Reference Include="HudShelf">
 		  <HintPath>lib\HudShelf.dll</HintPath>
 		  <Private>False</Private>
