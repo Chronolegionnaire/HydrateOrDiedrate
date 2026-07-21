@@ -74,8 +74,8 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         if (change == 0) return 0;
 
         var capacity = CapacityLitres;
-        TotalLiters = Math.Clamp(TotalLiters, 0, capacity);
-        var clamped = Math.Clamp(TotalLiters + change, 0, capacity);
+        TotalLiters = GameMath.Clamp(TotalLiters, 0, capacity);
+        var clamped = GameMath.Clamp(TotalLiters + change, 0, capacity);
 
         if(clamped < 0.005) clamped = 0;
 
@@ -450,16 +450,11 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         OnPeriodicShaftCheck(0);
         var ba = Api.World.BlockAccessor;
 
-        TotalLiters = Math.Clamp(TotalLiters, 0, CapacityLitres);
+        TotalLiters = GameMath.Clamp(TotalLiters, 0, CapacityLitres);
 
         var pos = Pos.Copy();
 
-        float neededBlocks;
-        if (IsShallow)
-        {
-            neededBlocks = TotalLiters > 0 ? 1 : 0;
-        }
-        else neededBlocks = TotalLiters / LitersPerFullBlock;
+        float neededBlocks = TotalLiters / LitersPerFullBlock;
 
         int allowedDepth = WellShaftHeight;
         for (int i = 1; i <= allowedDepth; i++)
@@ -527,7 +522,7 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         if(targetPollution is not null) TryEnsureWaterVariant("pollution", targetPollution);
 
         var leeway = LitersFromHeight(1);
-        targetLiters = Math.Clamp(TotalLiters, targetLiters - leeway, Math.Min(targetLiters + leeway, CapacityLitres));
+        targetLiters = GameMath.Clamp(TotalLiters, targetLiters - leeway, Math.Min(targetLiters + leeway, CapacityLitres));
 
         bool changed;
         if(targetLiters != TotalLiters)
