@@ -44,7 +44,7 @@ namespace HydrateOrDiedrate.Piping.Pipe
 
             Compose();
             capi.Gui.RegisterDialog(this);
-            return base.TryOpen();
+            return base.TryOpen(withFocus);
         }
 
         public override bool TryClose()
