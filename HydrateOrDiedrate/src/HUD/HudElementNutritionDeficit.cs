@@ -19,12 +19,40 @@ namespace HydrateOrDiedrate.HUD
             thirstBehavior = capi.World.Player.Entity.GetBehavior<EntityBehaviorThirst>();
             ComposeGuis();
             capi.Event.RegisterGameTickListener(OnGameTick, 1000);
+            requiresReAllignmentCheck = capi.ModLoader.IsModEnabled("hudshelfessentials");
+        }
+
+        private readonly bool requiresReAllignmentCheck;
+        private static bool AreBoundsAlligned(ElementBounds bounds1, ElementBounds bounds2) => bounds1.absX == bounds2.absX && bounds1.absY == bounds2.absY;
+
+        private GuiElement saturationStatBar;
+        private GuiElement deficitBar;
+
+        private void EnsureAllignedWithSaturationBar()
+        {
+            if(saturationStatBar is null)
+            {
+                var composers = ((Vintagestory.Client.NoObf.ClientMain)this.capi.World).GuiComposers.Composers;
+                if(!composers.TryGetValue("inventory-statbar", out var statbarComposer)) return;
+
+                saturationStatBar = statbarComposer.GetStatbar("saturationstatbar");
+                if(saturationStatBar is null) return;
+            }
+            
+            deficitBar ??= Composers["nutritionDeficitBar"].GetElement("nutritionDeficitStatbar");
+            if(deficitBar is null) return;
+            if(AreBoundsAlligned(deficitBar.Bounds, saturationStatBar.Bounds)) return;
+            deficitBar.Bounds.fixedX = saturationStatBar.Bounds.fixedX - deficitBar.Bounds.fixedOffsetX;
+            deficitBar.Bounds.fixedY = saturationStatBar.Bounds.fixedY - deficitBar.Bounds.fixedOffsetY;
+            Composers["nutritionDeficitBar"].ReCompose();
         }
 
         public void OnGameTick(float dt)
         {
             ITreeAttribute hungerTree = capi.World.Player.Entity.WatchedAttributes.GetTreeAttribute("hunger");
             if (hungerTree == null) return;
+
+            if (requiresReAllignmentCheck) EnsureAllignedWithSaturationBar();
             UpdateNutritionDeficit(capi.World.Player.Entity, hungerTree);
             flashTimer += dt;
             if (flashTimer >= 2.5f)
