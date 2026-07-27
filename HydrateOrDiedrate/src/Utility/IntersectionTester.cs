@@ -117,6 +117,7 @@ public class IntersectionTester(IWorldIntersectionSupplier blockSelectionTester)
 
     private bool TryIntersect(BlockPos pos, Cuboidf[] hitboxes, Block block)
     {
+        if(hitboxes is null) return false;
         bool intersects = false;
         bool wasDecor = false;
 
