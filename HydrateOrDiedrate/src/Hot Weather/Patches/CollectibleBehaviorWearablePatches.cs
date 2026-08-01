@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.Hot_Weather;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -73,8 +74,8 @@ namespace HydrateOrDiedrate.patches
             var itemStack = inSlot?.Itemstack;
             if (itemStack == null) return;
             float maxWarmth = wearableBh.GetMaxWarmth(inSlot);
-            float maxCooling = CoolingManager.GetMaxCooling(itemStack);
-            float coolingNow = wearableBh.GetCooling(inSlot);
+            float maxCooling = CoolingManager.GetMaxCooling(itemStack) * ModConfig.Instance.HeatAndCooling.CoolingTempOffsetPerPoint;
+            float coolingNow = wearableBh.GetCooling(inSlot) * ModConfig.Instance.HeatAndCooling.CoolingTempOffsetPerPoint;
 
             var warmthFormat = Lang.GetUnformatted("+{0:0.#}°C");
             var coolingFormat = Lang.GetUnformatted("hydrateordiedrate:itemwearable-temperature-format");
