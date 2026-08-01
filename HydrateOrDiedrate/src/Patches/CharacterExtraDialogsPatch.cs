@@ -284,13 +284,13 @@ public static class CharacterExtraDialogsPatch
         var hodCooling = entity.WatchedAttributes.GetTreeAttribute("hodCooling");
         if (hodCooling != null)
         {
-            float gearCooling = hodCooling.GetFloat("gearCooling", 0f);
-            float totalCooling = hodCooling.GetFloat("totalCooling", 0f);
+            float gearCooling = hodCooling.GetFloat("gearCooling", 0f) * ModConfig.Instance.HeatAndCooling.CoolingTempOffsetPerPoint;
+            float totalCooling = hodCooling.GetFloat("totalCooling", 0f) * ModConfig.Instance.HeatAndCooling.CoolingTempOffsetPerPoint;
             cached.coolingDynamicText?.SetNewText(
                 $"{gearCooling:0.##} | {totalCooling:0.##}",
                 false, false, false
             );
-
+            
             int wetBonus    = hodCooling.GetInt("wetBonus", 0);
             int roomBonus   = hodCooling.GetInt("roomBonus", 0);
             int lowSunBonus = hodCooling.GetInt("lowSunBonus", 0);
