@@ -189,7 +189,7 @@ namespace HydrateOrDiedrate.Wells.Winch
 
             if (block.HasBehavior<BlockBehaviorWellWaterFinite>())
             {
-                var wellSpring = WellBlockUtils.FindGoverningSpring(Api, block, Pos);
+                var wellSpring = WellBlockUtils.FindGoverningSpring(Api, block, pos);
                 if(filter is not null && wellSpring.WaterItem != filter) return null;
                 return wellSpring?.TryTakeContentLiters(pos, litersToExtract);
             }
