@@ -179,7 +179,19 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     
     private const double AquiferRatingToLitersOutputRatio = 0.5;
     
-    public double LastDailyLiters { get; private set; }
+    public double LastDailyLiters 
+    { 
+        get; 
+        private set
+        {
+            if(value != field)
+            {
+                
+                MarkDirty();
+                field = value;
+            }
+        }
+    }
 
     private double accumulatedWater = 0.0;
 
@@ -209,8 +221,11 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
             () => OriginBlock ??= api.World.FindMostLikelyOriginBlockFromNeighbors(Pos) ?? api.World.GetBlock(new AssetLocation("game", "rock-granite")),
             "HoD:WellSpringEnsureOriginSet"
         );
-        api.Event.EnqueueMainThreadTask(() => OnPeriodicShaftCheck(0), "well-spring-init");
-        HandleWell(0);
+        api.Event.EnqueueMainThreadTask(() =>
+        {
+            OnPeriodicShaftCheck(0);
+            HandleWell(0);
+        }, "well-spring-init");
     }
 
     public override bool OnTesselation(ITerrainMeshPool mesher, ITesselatorAPI tessThreadTesselator)
@@ -270,7 +285,11 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
     {
         bool changed = false;
         var (nearbySalty, nearbyFresh) = Api.World.BlockAccessor.CheckForNearbyGameWater(Pos);
-        if (!nearbyFresh && !nearbySalty) return false;
+        if (!nearbyFresh && !nearbySalty)
+        {
+            LastDailyLiters = 0;
+            return false;
+        }
 
         var oldWaterBlock = WaterBlock;
         TryEnsureWaterVariant("pollution", "muddy");
@@ -608,7 +627,10 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
     public void AppendOutputInfo(IPlayer forPlayer, StringBuilder dsc)
     {
-        dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:well.waterType", WaterItem is null ? string.Empty : WaterItem.GetHeldItemName(new ItemStack(WaterItem))));
+        if(LastDailyLiters > 0)
+        {
+            dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:well.waterType", WaterItem is null ? string.Empty : WaterItem.GetHeldItemName(new ItemStack(WaterItem))));
+        }
         dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:well.outputRate", LastDailyLiters));
         dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:well.retentionVolume", CapacityLitres));
         dsc.Append("  "); dsc.AppendLine(Lang.Get("hydrateordiedrate:well.totalShaftVolume", TotalLiters));
