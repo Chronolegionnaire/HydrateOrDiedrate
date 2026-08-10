@@ -99,7 +99,7 @@ public class DefaultDrinkingInteractionProvider(BlockLiquidContainerBase interac
 
         interactionBlock.SetContent(drinkStack,  liquidStack);
 
-        var dummy = new DummySlot(drinkStack);
+        var dummy = new LockedDummySlot(drinkStack);
         TryEatStop(interactionBlock, 1f, dummy, player.Entity);
         
         if(world is ServerMain server)
