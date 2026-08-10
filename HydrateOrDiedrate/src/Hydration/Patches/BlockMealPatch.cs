@@ -8,7 +8,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
 {
-    //TODO convert to transpiler patch
+    //TODO refactor
     [HarmonyPatch(typeof(BlockMeal))]
     public static class BlockMealPatches
     {
