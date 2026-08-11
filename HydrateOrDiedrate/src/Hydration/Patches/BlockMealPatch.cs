@@ -8,6 +8,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
 {
+    //TODO refactor
     [HarmonyPatch(typeof(BlockMeal))]
     public static class BlockMealPatches
     {
@@ -49,7 +50,7 @@ namespace HydrateOrDiedrate.patches
                     Player = player,
                     TotalHydration = totalHydration,
                     ServingsBeforeConsume = servingsBeforeConsume,
-                    HydLossDelay = Math.Min(((totalHydration / servingsBeforeConsume / 2) * effectiveMultiplier), maxDelay)
+                    HydLossDelay = (totalHydration /  2) * effectiveMultiplier
                 };
             }
         }
@@ -79,7 +80,7 @@ namespace HydrateOrDiedrate.patches
 
                 float totalHydrationConsumed = __state.TotalHydration * servingsConsumed;
                 float maxDelay = 600f; 
-                __state.HydLossDelay = Math.Min(__state.HydLossDelay, maxDelay);
+                __state.HydLossDelay = Math.Min(__state.HydLossDelay * servingsConsumed, maxDelay);
                 var thirstBehavior = __state.Player.GetBehavior<EntityBehaviorThirst>();
                 thirstBehavior?.ModifyThirst(totalHydrationConsumed, __state.HydLossDelay);
             }

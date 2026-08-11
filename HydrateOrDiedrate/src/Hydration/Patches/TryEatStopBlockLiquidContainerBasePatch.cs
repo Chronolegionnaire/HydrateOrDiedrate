@@ -7,6 +7,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
 {
+    //TODO full refactor
     [HarmonyPatch(typeof(BlockLiquidContainerBase), "tryEatStop")]
     public class TryEatStopBlockLiquidContainerBasePatch
     {
@@ -53,9 +54,9 @@ namespace HydrateOrDiedrate.patches
 
                 if (hydrationValue != 0 && byEntity is EntityPlayer player)
                 {
-                    float drinkCapLitres = 1f;
+                    float drinkCapLitres = block.DrinkPortionSize;
                     float litresToDrink = Math.Min(drinkCapLitres, currentLitres);
-                    float calculatedHydration = (hydrationValue * litresToDrink) / drinkCapLitres;
+                    float calculatedHydration = hydrationValue * litresToDrink;
                     float intoxicationValue = nutriProps.Intoxication;
                     var config = ModConfig.Instance.Thirst;
                     float baseMultiplier = 0.05f;
