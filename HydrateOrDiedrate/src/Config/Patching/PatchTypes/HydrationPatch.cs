@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 
@@ -9,12 +8,8 @@ public class HydrationPatch : PatchBase
 {
     public override string Code { get; set; }
 
-    ////Legacy mapping
-    [Obsolete("use Code instead")] [JsonProperty(nameof(BlockCode))] private string BlockCode { set => Code = value; }
-    [Obsolete("use Code instead")] [JsonProperty(nameof(ItemName))] private string ItemName { set => Code = value;}
-
     [JsonProperty(Attributes.Hydration)]
-    public override float Value { get; set; }
+    public override float? Value { get; set; }
 
     public bool IsBoiling { get; set; }
 
@@ -23,7 +18,8 @@ public class HydrationPatch : PatchBase
 
     public override void Apply(CollectibleObject collectible, float value)
     {
-        collectible.Attributes.Token[Attributes.Hydration] = value;
-        collectible.Attributes.Token[Attributes.IsBoiling] = IsBoiling;
+        var token = collectible.Attributes.Token;
+        if (OverwriteExisting || token[Attributes.Hydration] is null) token[Attributes.Hydration] = value;
+        if (OverwriteExisting || token[Attributes.IsBoiling] is null) token[Attributes.IsBoiling] = IsBoiling;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using Vintagestory.API.Common;
 
@@ -8,17 +7,16 @@ namespace HydrateOrDiedrate.Config.Patching.PatchTypes;
 public class CoolingPatch : PatchBase
 {
     public override string Code { get; set; }
-    //Legacy mapping
-    [Obsolete("use Code instead")] [JsonProperty(nameof(ItemName))] private string ItemName { set => Code = value;}
 
     [JsonProperty(Attributes.Cooling)]
-    public override float Value { get; set; }
+    public override float? Value { get; set; }
 
     [JsonProperty("CoolingByType")]
     public override Dictionary<string, float> ValueByType { get; set; }
 
     public override void Apply(CollectibleObject collectible, float value)
     {
-        collectible.Attributes.Token[Attributes.Cooling] = value;
+        var token = collectible.Attributes.Token;
+        if (OverwriteExisting || token[Attributes.Cooling] is null) token[Attributes.Cooling] = value;
     }
 }
