@@ -5,6 +5,7 @@ using HarmonyLib;
 using HydrateOrDiedrate.Config;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
 {
@@ -18,7 +19,7 @@ namespace HydrateOrDiedrate.patches
 
         static bool Prepare()
         {
-            return AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "ACulinaryArtillery");
+            return AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "ACulinaryArtillery") && TargetMethod()?.DeclaringType != typeof(BlockLiquidContainerBase);
         }
 
         static MethodBase TargetMethod()
