@@ -9,6 +9,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
 {
+    [Obsolete("This patch should be removed after next ACA release as https://github.com/GastronomistGuild/ACulinaryArtillery/pull/141 has made this obsolete")]
     [HarmonyPatch]
     public class TryEatStopBlockBottlePatch
     {
