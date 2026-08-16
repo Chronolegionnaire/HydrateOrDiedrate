@@ -70,6 +70,27 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
         }, thirstDamage);
     }
 
+    public void HandleConsumption(float totalHydration, float totalIntox, bool isBoiling = false)
+    {
+        var hydLossDelay = HydrationManager.CalculateHydLossDelay(totalHydration, totalIntox);
+        ModifyThirst(totalHydration, hydLossDelay);
+
+        //Nutrient Penalty is handled by satiety path
+        if (isBoiling)
+        {
+            var boilingDamage = ModConfig.Instance.Thirst.BoilingWaterDamage;
+            if(boilingDamage > 0)
+            {
+                //TODO boiling water blocks don't give boiling water so this doesn't really trigger -_-
+                entity.ReceiveDamage(new DamageSource
+                {
+                    Source = EnumDamageSource.Internal,
+                    Type = EnumDamageType.Heat
+                }, boilingDamage);
+            }
+        }
+    }
+
     public void ModifyThirst(float amount, float hydLossDelay = 0)
     {
         CurrentThirst += amount.GuardFinite();

@@ -3,10 +3,7 @@
   "Patches": [
     {
       "Code": "game:mushroom-*",
-      "hydration": 0.0,
-      "IsBoiling": false,
       "hydrationByType": {
-        "*": 0.0,
         "game:mushroom-flyagaric-*": -25.0,
         "game:mushroom-earthball-*": -30.0,
         "game:mushroom-deathcap-*": -35.0,

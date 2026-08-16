@@ -1,10 +1,9 @@
-﻿using HydrateOrDiedrate.Keg;
+﻿using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.Wells;
 using HydrateOrDiedrate.Wells.WellWater;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
@@ -153,5 +152,35 @@ public static class HydrationManager
         }
 
         return result;
+    }
+
+    public static float CalculateHydLossDelay(float totalHydration, float intoxicationValue)
+    {
+        const float maxDelay = 600f;
+        float effectiveMultiplier = 0.05f * ModConfig.Instance.Thirst.HydrationLossDelayMultiplierNormalized;
+
+        float hydLossDelay;
+        if (intoxicationValue < 0.02)
+        {
+            hydLossDelay = (totalHydration / 2) * effectiveMultiplier;
+        }
+        else if (intoxicationValue < 0.2)
+        {
+            hydLossDelay = (totalHydration / 2) * effectiveMultiplier * (float)(Math.Log(1 + intoxicationValue * 100f));
+        }
+        else if (intoxicationValue > 0.7)
+        {
+            hydLossDelay = (totalHydration / 2) * effectiveMultiplier * (float)Math.Pow(5f, intoxicationValue);
+        }
+        else
+        {
+            float logValue_0_2 = (float)Math.Log(1 + 0.2 * 100f);
+            float expValue_0_7 = (float)Math.Pow(5f, 0.7);
+            float blendRatio = (intoxicationValue - 0.2f) / 0.5f;
+            float blendedValue = logValue_0_2 * (1 - blendRatio) + expValue_0_7 * blendRatio;
+            hydLossDelay = (totalHydration / 2) * effectiveMultiplier * blendedValue;
+        }
+
+        return Math.Min(hydLossDelay, maxDelay);
     }
 }

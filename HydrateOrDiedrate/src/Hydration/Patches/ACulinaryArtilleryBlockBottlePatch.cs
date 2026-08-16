@@ -5,9 +5,11 @@ using HarmonyLib;
 using HydrateOrDiedrate.Config;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
 {
+    [Obsolete("This patch should be removed after next ACA release as https://github.com/GastronomistGuild/ACulinaryArtillery/pull/141 has made this obsolete")]
     [HarmonyPatch]
     public class TryEatStopBlockBottlePatch
     {
@@ -18,7 +20,7 @@ namespace HydrateOrDiedrate.patches
 
         static bool Prepare()
         {
-            return AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "ACulinaryArtillery");
+            return AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "ACulinaryArtillery") && TargetMethod()?.DeclaringType != typeof(BlockLiquidContainerBase);
         }
 
         static MethodBase TargetMethod()

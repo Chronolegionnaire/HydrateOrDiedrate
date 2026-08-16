@@ -4,15 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
-using Vintagestory.Client.NoObf;
 
 namespace HydrateOrDiedrate.Config.Patching;
 
 public abstract class PatchBase
 {
+    public bool OverwriteExisting { get; set; }
+
     public abstract string Code { get; set; }
 
-    public abstract float Value { get; set; }
+    public abstract float? Value { get; set; }
     public abstract Dictionary<string, float> ValueByType { get; set; }
 
     [JsonIgnore]
@@ -42,7 +43,7 @@ public abstract class PatchBase
 
         if(CompiledValues is null)
         {
-            Apply(collectible, Value);
+            if(Value is not null) Apply(collectible, Value.Value);
             return;
         }
 
@@ -55,7 +56,7 @@ public abstract class PatchBase
             return;
         }
         
-        Apply(collectible, Value);
+        if(Value is not null) Apply(collectible, Value.Value);
     }
 
     public abstract void Apply(CollectibleObject collectible, float value);
