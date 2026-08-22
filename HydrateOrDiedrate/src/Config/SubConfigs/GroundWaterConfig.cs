@@ -124,7 +124,7 @@ public class GroundWaterConfig //TODO: this could potentially be split even furt
     public bool CrossChunkColumnSmoothing { get; set; } = true;
 
     /// <summary>
-    /// Block radius when prospecting within which aquifers are detected
+    /// Chunk radius when prospecting within which aquifers are detected
     /// </summary>
     [Category("Prospecting")]
     [DefaultValue(3)]
