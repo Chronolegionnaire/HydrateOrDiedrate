@@ -1,7 +1,10 @@
-﻿using HydrateOrDiedrate.Config;
+﻿using System;
+using System.Collections.Generic;
+using HydrateOrDiedrate.Config;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
+using Vintagestory.Common;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.encumbrance
@@ -82,7 +85,7 @@ namespace HydrateOrDiedrate.encumbrance
 
         private bool CheckInventorySlots(IInventory inventory)
         {
-            foreach (var slot in inventory)
+            foreach (var slot in GetInventorySlotsSnapshot(inventory))
             {
                 if (slot?.Itemstack == null) continue;
 
@@ -102,6 +105,26 @@ namespace HydrateOrDiedrate.encumbrance
             }
 
             return false;
+        }
+
+        private static List<ItemSlot> GetInventorySlotsSnapshot(IInventory inventory)
+        {
+            var slots = new List<ItemSlot>(inventory.Count);
+            for (var slotId = 0; slotId < inventory.Count; slotId++)
+            {
+                try
+                {
+                    slots.Add(inventory[slotId]);
+                }
+                catch (ArgumentOutOfRangeException) when (inventory is InventoryPlayerBackpacks)
+                {
+                    // A backpack can rebuild its bag inventory while player data is
+                    // being synchronized. Recheck it on the next encumbrance tick.
+                    break;
+                }
+            }
+
+            return slots;
         }
 
         private float GetTotalLitresInStack(ItemStack itemStack)
