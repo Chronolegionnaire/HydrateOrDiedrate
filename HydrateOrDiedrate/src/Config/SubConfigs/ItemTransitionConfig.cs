@@ -1,8 +1,15 @@
-﻿namespace HydrateOrDiedrate.Config.SubConfigs;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+namespace HydrateOrDiedrate.Config.SubConfigs;
 
 public class ItemTransitionConfig
 {
-    public float FreshHours { get; set; }
+    [Range(0, float.PositiveInfinity)]
+    [DefaultValue(150f)]
+    public float FreshHours { get; set; } = 150f;
 
-    public float TransitionHours { get; set; }
+    [Range(0.001f, float.PositiveInfinity)]
+    [DefaultValue(36f)]
+    public float TransitionHours { get; set; } = 36f;
 }
