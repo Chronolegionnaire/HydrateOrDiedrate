@@ -35,6 +35,11 @@ public static class WaterPatches
                     if (perishtTransition is not null)
                     {
                         perishtTransition.FreshHours.avg = config.FreshHours;
+                        if(config.TransitionHours <= 0)
+                        {
+                            api.Logger.Warning("[hydrateordiedrate] TransitionHours of '{0}' is configured to 0, this will cause NaN values using minimum of 0.001f instead", collectible.Code);
+                            config.TransitionHours = 0.001f;
+                        }
                         perishtTransition.TransitionHours.avg = config.TransitionHours;
                     }
                 }
