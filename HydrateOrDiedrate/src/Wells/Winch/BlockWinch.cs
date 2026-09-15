@@ -28,6 +28,8 @@ namespace HydrateOrDiedrate.Wells.Winch
                 {
                     case 0:
                     {
+                        if(!beWinch.InputSlot.Empty && beWinch.BucketDepth > BlockEntityWinch.maxBucketInteractionDepth) break;
+
                         var sourceSlot = byPlayer.InventoryManager.ActiveHotbarSlot;
                         if (sourceSlot is not null)
                         {

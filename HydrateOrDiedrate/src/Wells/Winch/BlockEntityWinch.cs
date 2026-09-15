@@ -17,6 +17,7 @@ namespace HydrateOrDiedrate.Wells.Winch
     {
         public const float minTurnpeed = 0.00001f;
         public const float minBucketDepth = 0.5f;
+        public const float maxBucketInteractionDepth = 0.75f;
         public const string WinchBaseMeshPath = "shapes/block/winch/base.json";
         private static readonly AssetLocation WaterFillSound = new AssetLocation("game", "sounds/effect/water-fill.ogg");
         
