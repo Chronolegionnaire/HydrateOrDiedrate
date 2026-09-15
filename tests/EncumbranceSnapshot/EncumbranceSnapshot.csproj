@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../HydrateOrDiedrate/HydrateOrDiedrate.csproj" />
+    <Reference Include="VintagestoryAPI"><HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath></Reference>
+    <Reference Include="VintagestoryLib"><HintPath>$(VINTAGE_STORY)/VintagestoryLib.dll</HintPath></Reference>
+  </ItemGroup>
+</Project>

@@ -14,6 +14,7 @@ namespace HydrateOrDiedrate.encumbrance
         private int _tickCounter = 0;
         private float _currentPenaltyAmount = 0f;
         private bool _isPenaltyApplied = false;
+        private bool _inventoryScanIncomplete;
 
         //TODO why not just bind on inventory slot changes?
         public override void OnGameTick(float deltaTime)
@@ -47,11 +48,13 @@ namespace HydrateOrDiedrate.encumbrance
             if (inventoryManager == null) return;
 
             bool isEncumbered = false;
+            _inventoryScanIncomplete = false;
             
             var backpackInventory = inventoryManager.GetOwnInventory("backpack");
             if (backpackInventory != null)
             {
                 isEncumbered = CheckInventorySlots(backpackInventory);
+                if (_inventoryScanIncomplete) return;
             }
             
             var hotbarInventory = inventoryManager.GetOwnInventory("hotbar");
@@ -107,19 +110,26 @@ namespace HydrateOrDiedrate.encumbrance
             return false;
         }
 
-        private static List<ItemSlot> GetInventorySlotsSnapshot(IInventory inventory)
+        private List<ItemSlot> GetInventorySlotsSnapshot(IInventory inventory)
         {
             var slots = new List<ItemSlot>(inventory.Count);
             for (var slotId = 0; slotId < inventory.Count; slotId++)
             {
                 try
                 {
-                    slots.Add(inventory[slotId]);
+                    var slot = inventory[slotId];
+                    if (slot == null && inventory is InventoryPlayerBackpacks)
+                    {
+                        _inventoryScanIncomplete = true;
+                        break;
+                    }
+                    slots.Add(slot);
                 }
                 catch (ArgumentOutOfRangeException) when (inventory is InventoryPlayerBackpacks)
                 {
-                    // A backpack can rebuild its bag inventory while player data is
-                    // being synchronized. Recheck it on the next encumbrance tick.
+                    // The observed backpack index was unavailable. The cause may
+                    // involve mod patches; do not treat a partial scan as complete.
+                    _inventoryScanIncomplete = true;
                     break;
                 }
             }
