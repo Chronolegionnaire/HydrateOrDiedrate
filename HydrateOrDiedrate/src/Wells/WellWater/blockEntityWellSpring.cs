@@ -376,19 +376,20 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         }
         else
         {
-            int retentionHeight = int.MaxValue;
-
-            for(int i = 0; i < retentionHeight; i++)
+            //A shaft can retain water up to height Y if the shaft walls up to that point all have retention >= Y.
+            //e.g. a shaft consisting of 6 ashlar layers, 1 dirt layer, then 3 more ashlar layers will retain 6 layers of water.
+            int minRetentionSeen = int.MaxValue;
+            for(int i = 0; i < int.MaxValue; i++)
             {
                 pos.Y++;
                 if(!WellBlockUtils.SolidAllows(ba.GetSolid(pos))) break;
 
-                if(!HasValidShaftWalls(ba, pos, ref retentionHeight)) break;
+                if(!HasValidShaftWalls(ba, pos, ref minRetentionSeen)) break;
+
+                if(minRetentionSeen <= i) break;
 
                 validHeight++;
             }
-
-            validHeight = Math.Min(validHeight, retentionHeight);
         }
 
 
