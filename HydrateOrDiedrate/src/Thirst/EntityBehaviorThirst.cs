@@ -161,8 +161,7 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
         float currentSpeedOfTime = entity.World.Calendar.SpeedOfTime.GuardFinite(DefaultSpeedOfTime);
         float currentCalendarSpeedMul = entity.World.Calendar.CalendarSpeedMul.GuardFinite(DefaultCalendarSpeedMul);
 
-        float multiplierPerGameSec = Util.GuardFinite((currentSpeedOfTime / DefaultSpeedOfTime) * (currentCalendarSpeedMul / DefaultCalendarSpeedMul));
-        if (multiplierPerGameSec <= 0) multiplierPerGameSec = 1f;
+        float multiplierPerGameSec = Util.GuardFinite((currentSpeedOfTime / DefaultSpeedOfTime) * (currentCalendarSpeedMul / DefaultCalendarSpeedMul), 1f);
 
         return multiplierPerGameSec;
     }
