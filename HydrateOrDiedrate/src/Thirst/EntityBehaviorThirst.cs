@@ -1,5 +1,6 @@
 ﻿using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.Thirst;
+using InsanityLib.Generators.Attributes;
 using System;
 using System.Linq;
 using Vintagestory.API.Common;
@@ -10,6 +11,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate;
 
+[AutoRegistryName("HoD:thirst")]
 public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity)
 {
     private StoryStructuresSpawnConditions storySys;
