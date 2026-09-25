@@ -1,0 +1,10 @@
+﻿{
+  "hydrateordiedrate:Config.Setting.Add": "Додати",
+  "hydrateordiedrate:Config.Setting.Icon": "Піктограма",
+  "hydrateordiedrate:Config.Text.Icon": "Піктограма",
+  "aquifer-water": "Вода",
+  "itemwearable-condition": "Стан",
+  "poor": "Низька",
+  "verypoor": "Дуже низька кількість",
+  "direction-and": "і"
+}

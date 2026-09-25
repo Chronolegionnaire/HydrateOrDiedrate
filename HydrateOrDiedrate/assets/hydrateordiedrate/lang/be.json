@@ -1,4 +1,4 @@
-{
+﻿{
   "hydrateordiedrate:Config.Setting.Add": "Дадаць",
   "hydrateordiedrate:Config.Setting.AntiThirstScumming": "Абарона ад злоўжывання смагай",
   "hydrateordiedrate:Config.Setting.AquiferBoilingWaterMultiplier": "Множнік гарачай вады: паляпшае паказчык ваданоснага пласта паблізу гарачых крыніц (кіпеню).",
@@ -47,7 +47,6 @@
   "hydrateordiedrate:Config.Setting.PondChance": "Множнік генерацыі сажалак",
   "hydrateordiedrate:Config.Setting.ProspectingRadius": "Радыус чанкаў, якія будуць правярацца пры разведцы ваданосных пластоў",
   "hydrateordiedrate:Config.Setting.RainMultiplier": "Множнік дажджу",
-  "hydrateordiedrate:Config.Setting.RandomMultiplierChance": "Шанц выпадковага множніка для пластоў. Павялічце, каб павысіць імавернасць з'яўлення выпадковых пластоў (не каля крыніц вады).",
   "hydrateordiedrate:Config.Setting.Remove": "Выдаліць",
   "hydrateordiedrate:Config.Setting.RoomCoolingBonus": "Бонус ахалоджвання ў пакоі",
   "hydrateordiedrate:Config.Setting.SaltWaterMultiplier": "Множнік салёнай вады для рэйтынгу пласта. Вялікія лічбы зробяць пласты паблізу салёнай вады больш магутнымі. Гэта ПАЎПЛЫВАЕ на салёнасць пластоў.",
@@ -163,7 +162,6 @@
   "well.outputRate": "Прадукцыйнасць: {0:F1} л/дзень",
   "well.retentionVolume": "Макс. аб'ём калодзежа: {0} літраў",
   "winch.springDetected": "Крыніца знойдзена ніжэй:",
-  "well.totalShaftVolume": "Бягучы аб'ём калодзежа: {0:0.#} л",
   "well.waterType": "Тып вады: {0}",
   "pickaxewellmode-digmode": "Рэжым капання",
   "pickaxewellmode-digwellspring": "Выкапаць крыніцу калодзежа",
@@ -215,8 +213,8 @@
   "hydrateordiedrate-hp": "{0} HP",
   "hydrateordiedrate-hyd": "{0} гідр",
   "hydrateordiedrate-sat": "{0} сыт",
-  "hydrateordiedrate-whenEaten": "Пры з'яданні:",
-  "hydrateordiedrate-whenDrunk": "Пры выпіванні:",
+  "hydrateordiedrate-whenDrunk": "Пры піцці:",
+  "hydrateordiedrate-whenEaten": "Пры ежы:",
   "itemwearable-condition": "Стан",
   "itemwearable-cooling": "Ахаладжэнне",
   "itemwearable-maxcooling": "Макс. ахаладжэнне",
