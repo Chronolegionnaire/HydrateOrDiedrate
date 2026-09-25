@@ -1,0 +1,17 @@
+name: Update translations
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 18 * * 5"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  translations:
+    uses: InsanityGod/InsanityLib/.github/workflows/update-translations.yml@master
+    with:
+      MOD_LANG_PATH: "HydrateOrDiedrate/assets/hydrateordiedrate/lang"
+      TRANSLATION_ZIP: "hydrateordiedrate-chronolegionnaire.zip"
