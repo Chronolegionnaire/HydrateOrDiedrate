@@ -1,0 +1,726 @@
+{
+  "Configuration": [
+    {
+      "ConfigFile": "HydrateOrDiedrateConfig.json",
+      "ConfigLabel": "Mod Config",
+      "Settings": [
+        {
+          "Type": "Advanced",
+          "Label": "Thirst",
+          "Description": "The configuration for thirst mechanics",
+          "Map": "Thirst",
+          "Advanced": {
+            "Type": "Object",
+            "Fields": [
+              {
+                "Type": "Boolean",
+                "Key": "Enabled",
+                "Label": "Enabled",
+                "Description": "Master switch for the entire thirst/dehydration system",
+                "InitialValue": true
+              },
+              {
+                "Type": "Decimal",
+                "Key": "MaxThirst",
+                "Label": "Max Thirst",
+                "Description": "The upper bound of the player’s thirst gauge",
+                "InitialValue": 1500
+              },
+              {
+                "Type": "Boolean",
+                "Key": "AntiThirstScumming",
+                "Label": "Anti Thirst Scumming",
+                "Description": "Toggle for turning on anti thirst scumming. If on players will spawn with the same thirst as when they died,\r\nunless it is 0 in which case they will spawn with 0.005% satiety.",
+                "InitialValue": false
+              },
+              {
+                "Type": "Decimal",
+                "Key": "ThirstDamage",
+                "Label": "Thirst Damage",
+                "Description": "Damage dealt to the player each interval once fully dehydrated\r\n(set to 0 to disable thirst damage entirely)",
+                "InitialValue": 1
+              },
+              {
+                "Type": "Decimal",
+                "Key": "BoilingWaterDamage",
+                "Label": "Boiling Water Damage",
+                "Description": "How much damage a player takes from drinking boiling water.\r\n(set to 0 to disable boiling water damage entirely)",
+                "InitialValue": 5
+              },
+              {
+                "Type": "Slider",
+                "Key": "MaxMovementSpeedPenalty",
+                "Label": "Max Movement Speed Penalty",
+                "Description": "The maximum speed penalty a player can get from thirst.",
+                "InitialValue": 0.3,
+                "Min": 0,
+                "Max": 1,
+                "Step": 0.01
+              },
+              {
+                "Type": "Decimal",
+                "Key": "MovementSpeedPenaltyThreshold",
+                "Label": "Movement Speed Penalty Threshold",
+                "Description": "From which thirst level the player starts getting a movement speed penalty.\r\nSet to -1 to disable the movement speed penalty entirely.\r\n(penalty will increase gradually as hydration drops even further)",
+                "InitialValue": 600
+              },
+              {
+                "Type": "Slider",
+                "Key": "ThirstPercentageOnRespawn",
+                "Label": "Thirst Percentage On Respawn",
+                "Description": "Percentage of the thirst gauge that will be filled after the player respawns.",
+                "InitialValue": 0.5,
+                "Min": 0,
+                "Max": 1,
+                "Step": 0.01
+              },
+              {
+                "Type": "Slider",
+                "Key": "NutritionDeficitMultiplier",
+                "Label": "Nutrition Deficit Multiplier",
+                "Description": "Multiplier on nutrition penalty from drinking water, set this to 0 to disable it entirely.",
+                "InitialValue": 3.0,
+                "Min": 0,
+                "Max": 10,
+                "Step": 0.01
+              },
+              {
+                "Type": "Slider",
+                "Key": "ThirstRateAtStoryLocations",
+                "Label": "Thirst Rate At Story Locations",
+                "Description": "How much thirst is effected in story locations.",
+                "InitialValue": 1.0,
+                "Min": 0,
+                "Max": 2,
+                "Step": 0.01
+              },
+              {
+                "Type": "Decimal",
+                "Key": "ThirstDecayRate",
+                "Label": "Thirst Decay Rate",
+                "Description": "Base rate (units/tick) at which thirst increases under normal conditions\r\n(this will be affected by other multipliers depending on the circumstances)",
+                "InitialValue": 10
+              },
+              {
+                "Type": "Decimal",
+                "Key": "ThirstDecayRateMax",
+                "Label": "Thirst Decay Rate Max",
+                "Description": "Maximum multiplier applied to ThirstDecayRate under extreme conditions\r\n(So the thirst decay rate after applying all multipliers will be capped at ThirstDecayRate * ThirstDecayRateMax)",
+                "InitialValue": 5
+              },
+              {
+                "Type": "Decimal",
+                "Key": "HydrationLossDelayMultiplierNormalized",
+                "Label": "Hydration Loss Delay Multiplier Normalized",
+                "Description": "Scales the thirst reduction delay you get from drinking drinks\r\nNote: other parts of the equation are not configurable yet and final delay is capped at 600 seconds.",
+                "InitialValue": 1
+              },
+              {
+                "Type": "Decimal",
+                "Key": "SprintThirstMultiplier",
+                "Label": "Sprint Thirst Multiplier",
+                "Description": "Multiplier for thirst decay when the player is sprinting.",
+                "InitialValue": 1.5
+              },
+              {
+                "Type": "Slider",
+                "Key": "IdleThirstModifier",
+                "Label": "Idle Thirst Modifier",
+                "Description": "Multiplier for thirst decay when the player is idle.",
+                "InitialValue": 0.25,
+                "Min": 0.01,
+                "Max": 1,
+                "Step": 0.01
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "Satiety",
+          "Description": "The configuration for satiety mechanics",
+          "Map": "Satiety",
+          "Advanced": {
+            "Type": "Object",
+            "Key": "",
+            "Label": "",
+            "Fields": [
+              {
+                "Type": "Dictionary",
+                "Key": "ItemSatietyMapping",
+                "Label": "Item Satiety Mapping",
+                "Nullable": true,
+                "Value": {
+                  "Type": "Decimal",
+                  "Key": "",
+                  "Label": "",
+                  "Nullable": true
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "Perish Rates",
+          "Description": "The configuration for the perish rates",
+          "Map": "PerishRates",
+          "Advanced": {
+            "Type": "Object",
+            "Key": "",
+            "Label": "",
+            "Fields": [
+              {
+                "Type": "Boolean",
+                "Key": "Enabled",
+                "Label": "Enabled",
+                "Description": "Wether or not water should perish over time.",
+                "InitialValue": true
+              },
+              {
+                "Type": "Dictionary",
+                "Key": "TransitionConfig",
+                "Label": "Transition Config",
+                "Nullable": true,
+                "Value": {
+                  "Type": "Object",
+                  "Key": "",
+                  "Label": "",
+                  "Fields": [
+                    {
+                      "Type": "Decimal",
+                      "Key": "FreshHours",
+                      "Label": "Fresh Hours",
+                      "InitialValue": 150
+                    },
+                    {
+                      "Type": "Decimal",
+                      "Key": "TransitionHours",
+                      "Label": "Transition Hours",
+                      "InitialValue": 36
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "Liquid Encumbrance",
+          "Description": "The configuration for liquid encumbrance mechanics",
+          "Map": "LiquidEncumbrance",
+          "Advanced": {
+            "Type": "Object",
+            "Key": "",
+            "Label": "",
+            "Fields": [
+              {
+                "Type": "Boolean",
+                "Key": "Enabled",
+                "Label": "Enabled",
+                "Description": "Wether or not the liquid encumbrance is enabled.",
+                "InitialValue": true
+              },
+              {
+                "Type": "Decimal",
+                "Key": "EncumbranceLimit",
+                "Label": "Encumbrance Limit",
+                "Description": "Litres of liquid you can carry in a single slotbefore incurring penalties",
+                "InitialValue": 4
+              },
+              {
+                "Type": "Slider",
+                "Key": "EncumbranceMovementSpeedDebuff",
+                "Label": "Encumbrance Movement Speed Debuff",
+                "Description": "How large the penalty for being encumbered is.",
+                "InitialValue": 0.4,
+                "Min": 0,
+                "Max": 1,
+                "Step": 0.01
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "Heat And Cooling",
+          "Description": "The configuration for heat and cooling mechanics",
+          "Map": "HeatAndCooling",
+          "Advanced": {
+            "Type": "Object",
+            "Key": "",
+            "Label": "",
+            "Fields": [
+              {
+                "Type": "Boolean",
+                "Key": "HarshHeat",
+                "Label": "Harsh Heat",
+                "Description": "Wether Harsh Heat mechanics are enabled.\r\n(accelerated dehydration in high‑temperature locations)",
+                "InitialValue": true
+              },
+              {
+                "Type": "Decimal",
+                "Key": "TemperatureThreshold",
+                "Label": "Temperature Threshold",
+                "Description": "Ambient temperature above which thirst decay starts ramping up",
+                "InitialValue": 25
+              },
+              {
+                "Type": "Decimal",
+                "Key": "ThirstIncreasePerDegreeMultiplier",
+                "Label": "Thirst Increase Per Degree Multiplier",
+                "Description": "Additional thirst units per degree above the threshold each second",
+                "InitialValue": 5
+              },
+              {
+                "Type": "Decimal",
+                "Key": "HarshHeatExponentialGainMultiplier",
+                "Label": "Harsh Heat Exponential Gain Multiplier",
+                "Description": "Exponential scaling factor for thirst gain in extreme heat",
+                "InitialValue": 0.25
+              },
+              {
+                "Type": "Decimal",
+                "Key": "UnequippedSlotCooling",
+                "Label": "Unequipped Slot Cooling",
+                "Description": "Cooling bonus for each empty armor/clothing slot",
+                "InitialValue": 1
+              },
+              {
+                "Type": "Decimal",
+                "Key": "WetnessCoolingBonus",
+                "Label": "Wetness Cooling Bonus",
+                "Description": "Cooling effect of being wet",
+                "InitialValue": 8
+              },
+              {
+                "Type": "Decimal",
+                "Key": "RoomCoolingBonus",
+                "Label": "Room Cooling Bonus",
+                "Description": "Cooling bonus when in a room",
+                "InitialValue": 8
+              },
+              {
+                "Type": "Decimal",
+                "Key": "ShadeCoolingBonus",
+                "Label": "Shade Cooling Bonus",
+                "Description": "How much cooling being in shade provides",
+                "InitialValue": 8
+              },
+              {
+                "Type": "Decimal",
+                "Key": "CoolingTempOffsetPerPoint",
+                "Label": "Cooling Temp Offset Per Point",
+                "Description": "How many degrees of effective temperature are reduced per 1 point of Cooling.\r\nThis directly shifts the temperature used by the harsh-heat equation,\r\nallowing cooling to matter across the entire heat range.",
+                "InitialValue": 0.5
+              },
+              {
+                "Type": "Integer",
+                "Key": "LowSunlightThreshold",
+                "Label": "Low Sunlight Threshold",
+                "Description": "Sunlight level (0-22). Below this, we start giving a cooling bonus.",
+                "InitialValue": 16
+              },
+              {
+                "Type": "Decimal",
+                "Key": "LowSunlightCoolingBonus",
+                "Label": "Low Sunlight Cooling Bonus",
+                "Description": "Max extra cooling bonus when sunlight level is 0.\r\nThis is a flat additive cooling value (like gear cooling).",
+                "InitialValue": 8
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "Ground Water",
+          "Description": "The configuration for ground water sources",
+          "Map": "GroundWater",
+          "Advanced": {
+            "Type": "Object",
+            "Key": "",
+            "Label": "",
+            "Fields": [
+              {
+                "Type": "Decimal",
+                "Key": "AquiferRandomMultiplierChance",
+                "Label": "Aquifer Random Multiplier Chance",
+                "Description": "Chance for a random output multiplier when generating an aquifer",
+                "InitialValue": 0.015
+              },
+              {
+                "Type": "Decimal",
+                "Key": "AquiferWaterBlockMultiplier",
+                "Label": "Aquifer Water Block Multiplier",
+                "Description": "Water‑block multiplier for determining aquifer rating. Larger numbers will make aquifers stronger near regular water",
+                "InitialValue": 4
+              },
+              {
+                "Type": "Decimal",
+                "Key": "AquiferSaltWaterMultiplier",
+                "Label": "Aquifer Salt Water Multiplier",
+                "Description": "Salt‑water multiplier for determining aquifer rating\r\nLarger numbers will make aquifers stronger near salt-water\r\n(Will also make aquifers that are further from oceans saltier)",
+                "InitialValue": 4
+              },
+              {
+                "Type": "Integer",
+                "Key": "AquiferBoilingWaterMultiplier",
+                "Label": "Aquifer Boiling Water Multiplier",
+                "Description": "Boiling water multiplier for determining aquifer rating\r\nLarger numbers will make aquifers stronger near boiling water",
+                "InitialValue": 50
+              },
+              {
+                "Type": "Integer",
+                "Key": "AquiferRatingCeilingAboveSeaLevel",
+                "Label": "Aquifer Rating Ceiling Above Sea Level",
+                "Description": "Maximum aquifer quality rating above sea level",
+                "InitialValue": 30
+              },
+              {
+                "Type": "Decimal",
+                "Key": "AquiferDepthMultiplierScale",
+                "Label": "Aquifer Depth Multiplier Scale",
+                "Description": "Scale factor for depth’s effect on aquifer rating",
+                "InitialValue": 1
+              },
+              {
+                "Type": "Integer",
+                "Key": "AquiferMinimumWaterBlockThreshold",
+                "Label": "Aquifer Minimum Water Block Threshold",
+                "Description": "Minimum number of water blocks in a chunk to qualify for an aquifer (unless a random aquifer generates)",
+                "InitialValue": 5
+              },
+              {
+                "Type": "Boolean",
+                "Key": "CrossChunkColumnSmoothing",
+                "Label": "Cross Chunk Column Smoothing",
+                "Description": "WWether aquifer data should be smoothed across chunk columns",
+                "InitialValue": true
+              },
+              {
+                "Type": "Integer",
+                "Key": "ProspectingRadius",
+                "Label": "Prospecting Radius",
+                "Description": "Block radius when prospecting within which aquifers are detected",
+                "InitialValue": 3
+              },
+              {
+                "Type": "Boolean",
+                "Key": "AquiferDataOnProspectingNodeMode",
+                "Label": "Aquifer Data On Prospecting Node Mode",
+                "Description": "Show aquifer prospecting on Node mode rather than density search",
+                "InitialValue": false
+              },
+              {
+                "Type": "Boolean",
+                "Key": "ShowAquiferProspectingDataOnMap",
+                "Label": "Show Aquifer Prospecting Data On Map",
+                "Description": "Toggle display of aquifer icons/overlays on the world map after prospecting",
+                "InitialValue": true
+              },
+              {
+                "Type": "Decimal",
+                "Key": "ShallowWellLitersPerDay",
+                "Label": "Shallow Well Liters Per Day",
+                "Description": "How much muddy water a shallow well should produce each day",
+                "InitialValue": 4
+              },
+              {
+                "Type": "Decimal",
+                "Key": "WellSpringOutputMultiplier",
+                "Label": "Well Spring Output Multiplier",
+                "Description": "Scales the flow rate of natural springs in wells",
+                "InitialValue": 1
+              },
+              {
+                "Type": "Integer",
+                "Key": "WellwaterDepthMaxBase",
+                "Label": "Wellwater Depth Max Base",
+                "Description": "Max water retention depth (in blocks) for wells with normal shafts",
+                "InitialValue": 5
+              },
+              {
+                "Type": "Integer",
+                "Key": "WellwaterDepthMaxClay",
+                "Label": "Wellwater Depth Max Clay",
+                "Description": "Max water retention depth (in blocks) for wells with normal shafts",
+                "InitialValue": 7
+              },
+              {
+                "Type": "Integer",
+                "Key": "WellwaterDepthMaxStone",
+                "Label": "Wellwater Depth Max Stone",
+                "Description": "Max water retention depth (in blocks) for wells with stone shafts",
+                "InitialValue": 10
+              },
+              {
+                "Type": "Decimal",
+                "Key": "WinchRaiseSpeed",
+                "Label": "Winch Raise Speed",
+                "Description": "Multiplier for how fast it’s raised back up",
+                "InitialValue": 0.8
+              },
+              {
+                "Type": "Decimal",
+                "Key": "WinchLowerSpeed",
+                "Label": "Winch Lower Speed",
+                "Description": "Multiplier for how fast the bucket lowers in a well",
+                "InitialValue": 0.8
+              },
+              {
+                "Type": "Boolean",
+                "Key": "ShowOutputInfo",
+                "Label": "Show Output Info",
+                "Description": "Displays well info in tooltips",
+                "InitialValue": true
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "Rain",
+          "Description": "The configuration for rain mechanics",
+          "Map": "Rain",
+          "Advanced": {
+            "Type": "Object",
+            "Key": "",
+            "Label": "",
+            "Fields": [
+              {
+                "Type": "Boolean",
+                "Key": "EnableRainGathering",
+                "Label": "Enable Rain Gathering",
+                "Description": "Whether rain gathering should be enabled\r\n(Allows containers to collect rainwater automatically)",
+                "InitialValue": true
+              },
+              {
+                "Type": "Decimal",
+                "Key": "RainMultiplier",
+                "Label": "Rain Multiplier",
+                "Description": "Scales how much water is gathered per tick of rain",
+                "InitialValue": 1
+              },
+              {
+                "Type": "Boolean",
+                "Key": "EnableParticleTicking",
+                "Label": "Enable Particle Ticking",
+                "Description": "Toggles per‑tick updates for rain particles\r\n(performance trade‑off)",
+                "InitialValue": false
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "Pump",
+          "Description": "The configuration for pump mechanics",
+          "Map": "Pump",
+          "Advanced": {
+            "Type": "Object",
+            "Key": "",
+            "Label": "",
+            "Fields": [
+              {
+                "Type": "Boolean",
+                "Key": "HandPumpEnablePriming",
+                "Label": "Hand Pump Enable Priming",
+                "Description": "Whether hand pump priming strokes should be enabled",
+                "InitialValue": true
+              },
+              {
+                "Type": "Boolean",
+                "Key": "ShowPrimingStrokes",
+                "Label": "Show Priming Strokes",
+                "Description": "Whether priming state should should be shown when looking at a pump.",
+                "InitialValue": true
+              },
+              {
+                "Type": "Integer",
+                "Key": "HandPumpPrimingBlocksPerStroke",
+                "Label": "Hand Pump Priming Blocks Per Stroke",
+                "Description": "How many pipe segments per priming stroke required on the hand pump.",
+                "InitialValue": 3
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "World Gen",
+          "Description": "The configuration for world gen settings",
+          "Map": "WorldGen",
+          "Advanced": {
+            "Type": "Object",
+            "Fields": [
+              {
+                "Type": "Slider",
+                "Key": "PondChance",
+                "Label": "Pond Chance",
+                "Description": "Multiplier for vanilla pond generation attempts.\r\n1.0 = vanilla, 0 = no ponds, 2 = roughly double ponds, etc.",
+                "InitialValue": 1.0,
+                "Min": 0,
+                "Max": 10,
+                "Step": 0.01
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "Containers",
+          "Description": "The configuration for the containers",
+          "Map": "Containers",
+          "Advanced": {
+            "Type": "Object",
+            "Fields": [
+              {
+                "Type": "Decimal",
+                "Key": "KegCapacityLitres",
+                "Label": "Keg Capacity Litres",
+                "Description": "Storage capacity of a keg in litres",
+                "InitialValue": 100
+              },
+              {
+                "Type": "Decimal",
+                "Key": "SpoilRateUntapped",
+                "Label": "Spoil Rate Untapped",
+                "Description": "Hourly spoilage rate when a keg is sealed",
+                "InitialValue": 0.15
+              },
+              {
+                "Type": "Decimal",
+                "Key": "SpoilRateTapped",
+                "Label": "Spoil Rate Tapped",
+                "Description": "Hourly spoilage rate when a keg is open/tapped",
+                "InitialValue": 0.65
+              },
+              {
+                "Type": "Slider",
+                "Key": "KegIronHoopDropChance",
+                "Label": "Keg Iron Hoop Drop Chance",
+                "Description": "Chance (0–1) of recovering the iron hoop when dismantling a keg",
+                "InitialValue": 0.8,
+                "Min": 0,
+                "Max": 1,
+                "Step": 0.01
+              },
+              {
+                "Type": "Slider",
+                "Key": "KegTapDropChance",
+                "Label": "Keg Tap Drop Chance",
+                "Description": "Chance of recovering the tap when dismantling",
+                "InitialValue": 0.9,
+                "Min": 0,
+                "Max": 1,
+                "Step": 0.01
+              },
+              {
+                "Type": "Boolean",
+                "Key": "KegDropWithLiquid",
+                "Label": "Keg Drop With Liquid",
+                "Description": "If true, kegs drop with contents instead of spilling",
+                "InitialValue": true
+              },
+              {
+                "Type": "Decimal",
+                "Key": "TunCapacityLitres",
+                "Label": "Tun Capacity Litres",
+                "Description": "Capacity of a tun barrel in litres",
+                "InitialValue": 950
+              },
+              {
+                "Type": "Decimal",
+                "Key": "TunSpoilRateMultiplier",
+                "Label": "Tun Spoil Rate Multiplier",
+                "Description": "Global spoilage multiplier for tuns",
+                "InitialValue": 1
+              },
+              {
+                "Type": "Boolean",
+                "Key": "TunDropWithLiquid",
+                "Label": "Tun Drop With Liquid",
+                "Description": "If true, tuns drop with contents instead of spilling",
+                "InitialValue": false
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Advanced",
+          "Label": "XLib",
+          "Description": "The configuration for the XLib integration",
+          "Map": "XLib",
+          "Advanced": {
+            "Type": "Object",
+            "Fields": [
+              {
+                "Type": "Decimal",
+                "Key": "DromedaryMultiplierPerLevel",
+                "Label": "Dromedary Multiplier Per Level",
+                "InitialValue": 0.3
+              },
+              {
+                "Type": "Array",
+                "Key": "EquatidianCoolingMultipliers",
+                "Label": "Equatidian Cooling Multipliers",
+                "Nullable": true,
+                "Element": {
+                  "Type": "Decimal",
+                  "Nullable": true
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Boolean",
+          "Label": "Disable Drunk Sway",
+          "Description": "Turns off the sway/distortion effect when the player is drunk",
+          "Map": "DisableDrunkSway"
+        }
+      ]
+    }
+  ],
+  "Dependencies": [
+    {
+      //Disable dana tweaks rain collection
+      //TODO if/when alternative resolution options become a thing, add an option to use dana tweaks raincollection but with HoD rainwater
+      "ModId": "danatweaks",
+      "Label": "Incompatibility",
+      "Description": "Overlapping rain collection system",
+      "Severity": "Warning",
+      "Criteria": [
+        {
+          "Type": "Setting",
+          "Target": {
+            "ModId": "danatweaks",
+            "ConfigFile": "DanaTweaks-Server.json",
+            "Map": "RainCollector.Enabled"
+          },
+          "Operator": "Equal",
+          "Value": true
+        },
+        {
+          "Type": "Setting",
+          "Target": {
+            "ConfigFile": "HydrateOrDiedrateConfig.json",
+            "Map": "Rain.EnableRainGathering"
+          },
+          "Operator": "Equal",
+          "Value": true
+        }
+      ],
+      "Resolution": {
+        "Type": "SetSetting",
+        "Target": {
+          "ModId": "danatweaks",
+          "ConfigFile": "DanaTweaks-Server.json",
+          "Map": "RainCollector.Enabled"
+        },
+        "Value": false
+      }
+    }
+  ]
+}
