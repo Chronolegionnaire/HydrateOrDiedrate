@@ -8,8 +8,10 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="TheInsanityGod.VintageStory.InsanityLib" Version="2.*" PrivateAssets="All" />
 		<PackageReference Include="IgnoresAccessChecksToGenerator" Version="0.8.0" PrivateAssets="All" />
 		<IgnoresAccessChecksTo Include="VintagestoryAPI" />
+		<IgnoresAccessChecksTo Include="VSSurvivalMod" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -61,10 +63,6 @@
       <HintPath>$(VINTAGE_STORY)/Lib/Microsoft.Data.Sqlite.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="configlib">
-      <HintPath>lib\configlib.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
     <Reference Include="SkiaSharp">
       <HintPath>$(VINTAGE_STORY)/Lib/SkiaSharp.dll</HintPath>
       <Private>false</Private>
@@ -96,6 +94,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="modinfo.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="modicon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
