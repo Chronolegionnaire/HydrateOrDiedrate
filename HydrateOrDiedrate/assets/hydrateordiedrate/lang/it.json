@@ -1,0 +1,18 @@
+﻿{
+  "hydrateordiedrate:Config.Setting.Add": "Aggiungi",
+  "hydrateordiedrate:Config.Setting.BoilingWaterDamage": "Danni da acqua bollente",
+  "hydrateordiedrate:Config.Setting.Classes": "Classi",
+  "hydrateordiedrate:Config.Setting.Color": "Colore",
+  "hydrateordiedrate:Config.Setting.EnableIcon": "Abilita Icona",
+  "hydrateordiedrate:Config.Setting.FreshHours": "{0} Ore Fresche",
+  "hydrateordiedrate:Config.Setting.HorizontalRadius": "Raggio orizzontale",
+  "hydrateordiedrate:Config.Setting.Icon": "Icona",
+  "hydrateordiedrate:Config.Setting.MaxThirst": "Sete Massima",
+  "hydrateordiedrate:Config.Setting.RainMultiplier": "Moltiplicatore Pioggia",
+  "hydrateordiedrate:Config.Setting.Remove": "Rimuovi",
+  "hydrateordiedrate:Config.Setting.Size": "Dimensione",
+  "hydrateordiedrate:Config.Text.Icon": "Icona",
+  "hydrateordiedrate:block-tun*": "Botte",
+  "none": "No",
+  "direction-and": "e"
+}

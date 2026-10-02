@@ -162,7 +162,7 @@
   "well.outputRate": "Débit : {0:F1} L/jour",
   "well.retentionVolume": "Volume max du puits : {0} litres",
   "winch.springDetected": "Source d'eau détectée au-dessous :",
-  "well.totalShaftVolume": "Volume actuel du puits : {0:0.#} L",
+  "well.totalShaftVolume": "Volume actuel du puits : {0:0.#} L",
   "well.waterType": "Type d'eau : {0}",
   "pickaxewellmode-digmode": "Mode creuser",
   "pickaxewellmode-digwellspring": "Creuser une source d'eau",
