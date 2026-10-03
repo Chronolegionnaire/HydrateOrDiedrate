@@ -96,7 +96,7 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
             bool prevEnabled = Enabled;
             var  prevAxis    = Axis;
             int  prevRoll    = RollSteps;
-
+            
             Enabled         = tree.GetBool("enabled", Enabled);
             Axis            = (EValveAxis)tree.GetInt("axis", (int)Axis);
             AxisInitialized = tree.GetBool("axisInit", AxisInitialized);
@@ -108,11 +108,13 @@ namespace HydrateOrDiedrate.Piping.ShutoffValve
                 if (geomChanged)
                 {
                     Api.World.BlockAccessor.MarkBlockDirty(Pos);
+                    FluidNetworkState.InvalidateNetwork();
                 }
 
                 if (prevEnabled != Enabled)
                 {
                     HandleRenderer?.AnimateToggle(Enabled);
+                    FluidNetworkState.InvalidateNetwork();
                 }
             }
         }
