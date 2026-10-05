@@ -1,5 +1,6 @@
 ﻿using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.Thirst;
+using InsanityLib.Generators.Attributes;
 using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -9,6 +10,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Hot_Weather;
 
+[AutoRegistryName("HoD:bodytemperaturehot")]
 public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBehavior(entity), IThirstRateModifier
 {
     public override string PropertyName() => "bodytemperaturehot";
