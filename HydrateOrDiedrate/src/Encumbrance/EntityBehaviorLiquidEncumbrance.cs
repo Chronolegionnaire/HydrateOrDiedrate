@@ -1,4 +1,5 @@
 ﻿using HydrateOrDiedrate.Config;
+using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
@@ -82,23 +83,30 @@ namespace HydrateOrDiedrate.encumbrance
 
         private bool CheckInventorySlots(IInventory inventory)
         {
-            foreach (var slot in inventory)
+            try
             {
-                if (slot?.Itemstack == null) continue;
-
-                var attributes = slot.Itemstack.Collectible?.Attributes;
-                if (attributes == null) continue;
-
-                var isLiquidContainer = slot.Itemstack.Block is BlockLiquidContainerBase;
-                if (isLiquidContainer)
+                foreach (var slot in inventory)
                 {
-                    float totalLitresInStack = GetTotalLitresInStack(slot.Itemstack);
+                    if (slot?.Itemstack == null) continue;
 
-                    if (totalLitresInStack > ModConfig.Instance.LiquidEncumbrance.EncumbranceLimit)
+                    var attributes = slot.Itemstack.Collectible?.Attributes;
+                    if (attributes == null) continue;
+
+                    var isLiquidContainer = slot.Itemstack.Block is BlockLiquidContainerBase;
+                    if (isLiquidContainer)
                     {
-                        return true;
+                        float totalLitresInStack = GetTotalLitresInStack(slot.Itemstack);
+
+                        if (totalLitresInStack > ModConfig.Instance.LiquidEncumbrance.EncumbranceLimit)
+                        {
+                            return true;
+                        }
                     }
                 }
+            }
+            catch(Exception ex)
+            {
+                entity.Api?.Logger.Error("[hydrateordiedrate] an unexpected error occured while scanning for LiquidEncumbrance on inventory '{0}' ({1}), exception: {2}", inventory.InventoryID, inventory.ClassName, ex);
             }
 
             return false;
