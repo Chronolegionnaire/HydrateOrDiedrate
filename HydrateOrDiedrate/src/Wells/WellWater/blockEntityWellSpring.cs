@@ -522,7 +522,6 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
                         ba.TriggerNeighbourBlockUpdate(pos);
                     }
                 }
-                break;
             }
         }
 
