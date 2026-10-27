@@ -145,6 +145,40 @@
       "hydration": 10.0
     },
     {
+      "Code": "game:egg-*",
+      "hydrationByType": {
+        "game:egg-chicken-boiled": -5,
+        "game:egg-chicken-pickled": -15
+      }
+    },
+    {
+      "Code": "game:fat",
+      "hydration": -10
+    },
+    {
+      "Code": "game:fat-rendered",
+      "hydration": -20
+    },
+    {
+      "Code": "game:treeseed-walnut",
+      "hydration": -2
+    },
+    {
+      "Code": "game:honeycomb",
+      "hydration": -15
+    },
+    {
+      "Code": "game:fishchunk-*",
+      "hydrationByType": {
+        "game:fishchunk-standard-2-cooked": -40,
+        "game:fishchunk-standard-4-cooked": -80,
+        "game:fishchunk-standard-7-cooked": -140,
+        "game:fishchunk-standard-9-cooked": -180,
+        "game:fishchunk-long-4-cooked": -80,
+        "game:fishchunk-long-7-cooked": -140
+      }
+    },
+    {
       "Code": "game:legume-*",
       "hydration": -30.0
     },
@@ -785,7 +819,7 @@
       "hydration": 1.0
     },
     {
-      "Code": "expandedfoods:gelatinfish-*",
+      "Code": "expandedfoods:gelatinfish",
       "hydration": 1.0
     },
     {
@@ -929,7 +963,7 @@
       "hydration": -25.0
     },
     {
-      "Code": "expandedfoods:pemmicanfish-*",
+      "Code": "expandedfoods:fishpemmican-*",
       "hydration": -25.0
     },
     {
@@ -973,11 +1007,11 @@
       "hydration": -2.0
     },
     {
-      "Code": "expandedfoods:pemmicancrab-*",
+      "Code": "expandedfoods:crabpemmican-*",
       "hydration": -25.0
     },
     {
-      "Code": "expandedfoods:pemmicansnake-*",
+      "Code": "expandedfoods:snakepemmican-*",
       "hydration": -25.0
     },
     {
@@ -1051,6 +1085,10 @@
     {
       "Code": "expandedfoods:wildtreedryfruit-*",
       "hydration": -5.0
+    },
+    {
+      "Code": "expandedfoods:fruitleather-sliced",
+      "hydration": -1.0
     },
     {
       "Code": "floralzonescaperegion:fruit-*",
@@ -2130,14 +2168,6 @@
       "hydration": -5.0
     },
     {
-      "Code": "primitivesurvival:trussedrot-*",
-      "hydration": -5.0
-    },
-    {
-      "Code": "primitivesurvival:trussedmeat-*",
-      "hydration": -5.0
-    },
-    {
       "Code": "primitivesurvival:snakemeat-*",
       "hydration": -2.0
     },
@@ -2164,6 +2194,22 @@
     {
       "Code": "primitivesurvival:crabmeat-*",
       "hydration": -4.0
+    },
+    {
+      "Code": "primitivesurvival:fisheggs-raw-*",
+      "hydration": 5
+    },
+    {
+      "Code": "primitivesurvival:fisheggscooked",
+      "hydration": -10
+    },
+    {
+      "Code": "primitivesurvival:caviar-cured",
+      "hydration": -40
+    },
+    {
+      "Code": "primitivesurvival:nightcrawler",
+      "hydration": 5
     },
     {
       "Code": "ancienttools:saltedmeat-*",

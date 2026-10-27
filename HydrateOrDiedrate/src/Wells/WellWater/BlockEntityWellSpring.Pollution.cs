@@ -70,7 +70,7 @@ public partial class BlockEntityWellSpring
 
                     if (intersects && !agent.Alive)
                     {
-                        TryEnsureWaterVariant("pollution", "tainted");
+                        TryEnsureWaterVariant("pollution", "tainted", triggerSync: false, logMessage: "[hydrateordiedrate] Well at {0} was tainted by dead entity: {1}", Pos, agent.Code);
                         return true;
                     }
                 }
@@ -105,6 +105,7 @@ public partial class BlockEntityWellSpring
                     var stack = item.Itemstack;
                     if (stack?.Collectible?.Code == null) continue;
 
+                    //TODO maybe allow for other poisonous mushroms to bee used
                     if (!stack.Collectible.Code.Equals(new AssetLocation("game", "mushroom-deathcap-normal"))) continue;
 
                     var emin = item.Pos.XYZ.AddCopy(item.CollisionBox.X1, item.CollisionBox.Y1, item.CollisionBox.Z1);
@@ -117,7 +118,7 @@ public partial class BlockEntityWellSpring
 
                     if (intersects)
                     {
-                        TryEnsureWaterVariant("pollution", "poisoned");
+                        TryEnsureWaterVariant("pollution", "poisoned", triggerSync: false, logMessage: "[hydrateordiedrate] Well at {0} was poisoned by '{1}' dropped by {2}", Pos, stack, item.ByPlayerUid ?? "Unknown");
                         return true;
                     }
                 }

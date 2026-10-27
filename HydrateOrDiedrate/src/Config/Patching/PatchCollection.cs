@@ -39,7 +39,16 @@ public class PatchCollection<T> where T : PatchBase, new()
 
     public static PatchCollection<T> GetMerged(ICoreAPI api, string path)
     {
-        var defaults = api.Assets.GetMany<PatchCollection<T>>(api.Logger, "config/" + path.ToLower()).Values.OrderByDescending(collection => collection.Priority).ToArray();
+        var configPath = "config/" + path.ToLower();
+        var defaultAsset = api.Assets.Get(new AssetLocation("hydrateordiedrate", configPath));
+        if(defaultAsset.Location.Domain != "hydrateordiedrate")
+        {
+            api.Logger.Error("[hydrateordiedrate] incorrect '{0}' file detected (it's overwriting the built in file from hydrateordiedrate) at '{1}'", configPath, defaultAsset.Location);
+
+            return new();
+        }
+
+        var defaults = api.Assets.GetMany<PatchCollection<T>>(api.Logger, configPath).Values.OrderByDescending(collection => collection.Priority).ToArray();
         int start = 0;
         
         PatchCollection<T> result = null;
