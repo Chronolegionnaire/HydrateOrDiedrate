@@ -27,6 +27,7 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
     public int WellShaftHeight { get; private set; }
 
+    /// <returns>True if the water block was changed, False if the location could not be resolved or it was already the current block</returns>
     private bool TryUpdateWaterBlock(IWorldAccessor world, AssetLocation location) => WaterBlock?.Code != location && TryUpdateWaterBlock(world, world.GetBlock(location));
 
     private bool TryUpdateWaterBlock(IWorldAccessor world, int id) => WaterBlock?.Id != id && TryUpdateWaterBlock(world, world.GetBlock(id));
@@ -45,20 +46,29 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
         return true;
     }
 
-    public bool TryEnsureWaterVariant(string variant, string value, bool triggerSync = false)
+    [Obsolete("Use other overload and specify logMessage")]
+    public bool TryEnsureWaterVariant(string variant, string value, bool triggerSync) => TryEnsureWaterVariant(variant, value, triggerSync, null);
+
+    #nullable enable
+    public bool TryEnsureWaterVariant(string variant, string value, bool triggerSync = false, string? logMessage = null, params object[] logParameters)
     {
         if(!WaterBlock.Variant.TryGetValue(variant, out var currentValue)) return false;
         if(currentValue == value) return true;
 
-        var result = TryUpdateWaterBlock(Api.World, WaterBlock.CodeWithVariant(variant, value));
-        if (result)
+        var polutionChanged = TryUpdateWaterBlock(Api.World, WaterBlock.CodeWithVariant(variant, value));
+        if (polutionChanged)
         {
             if(triggerSync) SyncWaterColumn();
             MarkDirty();
+            if (!string.IsNullOrWhiteSpace(logMessage))
+            {
+                Api.Logger.VerboseDebug(logMessage, logParameters);
+            }
         }
 
-        return result;
+        return polutionChanged;
     }
+    #nullable disable
 
     public float TotalLiters { get; private set; } = 0;
 
@@ -90,7 +100,7 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
         if(!IsShallow && TotalLiters <= 0f)
         {
-            TryEnsureWaterVariant("pollution", "clean");
+            TryEnsureWaterVariant("pollution", "clean", triggerSync: false, logMessage: "[hydrateordiedrate] Well at {0} was emptied and returned to being clean", Pos);
         }
 
         return applied;
@@ -472,6 +482,11 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
         TotalLiters = GameMath.Clamp(TotalLiters, 0, CapacityLitres);
 
+        if (TotalLiters <= 0f && !IsShallow)
+        {
+            TryEnsureWaterVariant("pollution", "clean", triggerSync: false, logMessage: "[hydrateordiedrate] Well at {0} was emptied and returned to being clean", Pos);
+        }
+
         var pos = Pos.Copy();
 
         float neededBlocks = TotalLiters / LitersPerFullBlock;
@@ -551,7 +566,7 @@ public partial class BlockEntityWellSpring : BlockEntity, ITexPositionSource
 
             if(!IsShallow && TotalLiters <= 0f)
             {
-                TryEnsureWaterVariant("pollution", "clean");
+                TryEnsureWaterVariant("pollution", "clean", triggerSync: false, logMessage: "[hydrateordiedrate] Well at {0} was emptied and returned to being clean", Pos);
             }
             changed = true;
         }
