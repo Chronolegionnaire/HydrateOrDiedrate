@@ -1,9 +1,11 @@
 ﻿using HydrateOrDiedrate.Config;
+using InsanityLib.Generators.Attributes;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
 namespace HydrateOrDiedrate
 {
+    [AutoRegistryName("RainHarvester")] //TODO refactor to have propper prefix
     public class RegisterRainHarvester : BlockEntityBehavior
     {
         private RainHarvesterManager harvesterManager;

@@ -1,11 +1,9 @@
 ﻿using HydrateOrDiedrate.Config.SubConfigs;
+using InsanityLib.Generators.Attributes;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Config;
@@ -15,6 +13,7 @@ public class ModConfig
 {
     public const string ConfigPath = "HydrateOrDiedrateConfig.json";
 
+    [AutoConfig(ConfigPath, ServerSync = true)]
     public static ModConfig Instance { get; internal set; }
 
     /// <summary>
@@ -78,6 +77,28 @@ public class ModConfig
     [DefaultValue(false)]
     public bool DisableDrunkSway { get; set; } = false;
 
-    [JsonExtensionData]
-    public Dictionary<string, JToken> LegacyData { get; set; }
+    // TODO See if there is a good way to re-implement this auto fill functionality
+    public void LoadLiveLiquidPortionData(ICoreAPI api)
+    {
+        foreach(var item in api.World.Items.OfType<ItemLiquidPortion>().Where(item => item.Code.Path.StartsWith("water")))
+        {
+            if (!Satiety.ItemSatietyMapping.ContainsKey(item.Code))
+            {
+                var satiety = item.Attributes?.Token["waterTightContainerProps"]?["nutritionPropsPerLitre"]?.Value<float>("satiety");
+                if(satiety is null || satiety > 0) continue;
+                
+                Satiety.ItemSatietyMapping[item.Code] = satiety.Value;
+            }
+
+            var perish = item.TransitionableProps?.FirstOrDefault(static item => item.Type == EnumTransitionType.Perish);
+            if(perish is not null)
+            {
+                PerishRates.TransitionConfig[item.Code] = new ItemTransitionConfig
+                {
+                    FreshHours = perish.FreshHours.avg,
+                    TransitionHours = perish.TransitionHours.avg,
+                };
+            }
+        }
+    }
 }

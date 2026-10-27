@@ -1,3 +1,4 @@
+using InsanityLib.Generators.Attributes;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -6,6 +7,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Piping.HandPump
 {
+    [AutoRegistryName("HoD:HandPumpAnim")]
     public class BEBehaviorHandPumpAnim : BEBehaviorAnimatable
     {
         public bool IsPumping { get; protected set; }

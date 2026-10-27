@@ -1,20 +1,14 @@
-﻿using HarmonyLib;
-using HydrateOrDiedrate.Commands;
+﻿using HydrateOrDiedrate.Commands;
 using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.Config.Patching;
 using HydrateOrDiedrate.Config.Patching.PatchTypes;
-using HydrateOrDiedrate.encumbrance;
-using HydrateOrDiedrate.Hot_Weather;
 using HydrateOrDiedrate.HUD;
-using HydrateOrDiedrate.Keg;
 using HydrateOrDiedrate.patches;
 using HydrateOrDiedrate.Piping.HandPump;
 using HydrateOrDiedrate.Piping.Networking;
-using HydrateOrDiedrate.Piping.Pipe;
 using HydrateOrDiedrate.Piping.ShutoffValve;
-using HydrateOrDiedrate.Wells.WellWater;
-using HydrateOrDiedrate.Wells.Winch;
 using HydrateOrDiedrate.XSkill;
+using InsanityLib.Generators.Attributes;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -29,11 +23,11 @@ using Vintagestory.Client.NoObf;
 using Vintagestory.Common;
 using Vintagestory.GameContent;
 
+[assembly: AutoRegistryName("HoD:{name}")]
 namespace HydrateOrDiedrate;
 
-public class HydrateOrDiedrateModSystem : ModSystem
+public partial class HydrateOrDiedrateModSystem : ModSystem
 {
-    public const string HarmonyID = "com.chronolegionnaire.hydrateordiedrate";
     public const string NetworkChannelID = "hydrateordiedrate";
 
     public INetworkChannel NetworkChannel { get; private set; }
@@ -43,7 +37,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
 
     private HudElementThirstBar _thirstHud;
     private HudElementNutritionDeficitBar nutritionDeficitHud;
-    private Harmony harmony;
 
     private RainHarvesterManager rainHarvesterManager;
 
@@ -51,30 +44,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void StartPre(ICoreAPI api)
     {
         base.StartPre(api);
+        AutoSetup(api);
         NetworkChannel = api.Network.RegisterChannel(NetworkChannelID);
-        ConfigManager.EnsureModConfigLoaded(api);
-
-        if (!Harmony.HasAnyPatches(HarmonyID))
-        {
-            harmony = new Harmony(HarmonyID);
-            
-            harmony.PatchAllUncategorized();
-            TryCompatibilityPatch(harmony, api, "hardcorewater", "HydrateOrDiedrate.HardcoreWater");
-            TryCompatibilityPatch(harmony, api, "aculinaryartillery", "HydrateOrDiedrate.ACulinaryArtillery");
-        }
-    }
-
-    internal void TryCompatibilityPatch(Harmony harmony, ICoreAPI api, string modID, string category)
-    {
-        if(!api.ModLoader.IsModEnabled(modID)) return;
-        try
-        {
-            harmony.PatchCategory(category);
-        }
-        catch (Exception ex)
-        {
-            Mod.Logger.Error("Failed to apply compatibility patches ({0}) for mod {1}: {2}",category, modID, ex);
-        }
     }
     
     //NOTE: any higher then this and Gourmand will crash because it loads stuff rather early
@@ -83,6 +54,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
     public override void AssetsLoaded(ICoreAPI api)
     {
         base.AssetsLoaded(api);
+        AutoAssetsLoaded(api);
 
         if(api is not ICoreServerAPI serverApi) return; //This data is decided by the server and synced over to client automatically
         RecipeGenerator.RecipeGenerator.GenerateVariants(serverApi, Mod.Logger); //NOTE: has to happen here and not in `AssetsFinalize` because otherwise Gourmand will crash
@@ -149,37 +121,7 @@ public class HydrateOrDiedrateModSystem : ModSystem
         ClassRegistry.legacyBlockEntityClassNames["BlockEntityWinch"]     = "HoD:BlockEntityWinch";
         ClassRegistry.legacyBlockEntityClassNames["BlockEntityWellWaterSentinel"] = "HoD:BlockEntityWellWaterSentinel";
         
-        api.RegisterBlockClass("HoD:BlockKeg", typeof(BlockKeg));
-        api.RegisterBlockEntityClass("HoD:BlockEntityKeg", typeof(BlockEntityKeg));
-        api.RegisterItemClass("HoD:ItemKegTap", typeof(ItemKegTap));
-        
-        api.RegisterBlockClass("HoD:BlockTun", typeof(BlockTun));
-        api.RegisterBlockEntityClass("HoD:BlockEntityTun", typeof(BlockEntityTun));
-        
-        api.RegisterCollectibleBehaviorClass("HoD:BehaviorPickaxeWellMode", typeof(BehaviorPickaxeWellMode));
-        api.RegisterCollectibleBehaviorClass("HoD:BehaviorShovelWellMode", typeof(BehaviorShovelWellMode));
-
-        api.RegisterBlockBehaviorClass("HoD:BlockBehaviorWellWaterFinite", typeof(BlockBehaviorWellWaterFinite));
-        api.RegisterBlockClass("HoD:BlockWellSpring", typeof(BlockWellSpring));
-        api.RegisterBlockEntityClass("HoD:BlockEntityWellSpring", typeof(BlockEntityWellSpring));
-        api.RegisterBlockClass("HoD:BlockHoDPipe", typeof(BlockPipe));
-        api.RegisterBlockEntityClass("HoD:BlockEntityHoDPipe", typeof(BlockEntityPipe));
-        api.RegisterBlockClass("HoD:BlockShutoffValve", typeof(BlockShutoffValve));
-        api.RegisterBlockEntityClass("HoD:BlockEntityShutoffValve", typeof(BlockEntityShutoffValve));
-        api.RegisterBlockClass("HoD:BlockHandPump", typeof(BlockHandPump));
-        api.RegisterBlockEntityClass("HoD:BlockEntityHandPump", typeof(BlockEntityHandPump));
-        api.RegisterBlockEntityBehaviorClass("HoD:HandPumpAnim", typeof(BEBehaviorHandPumpAnim));
-        api.RegisterBlockClass("HoD:BlockWinch", typeof(BlockWinch));
-        api.RegisterBlockEntityClass("HoD:BlockEntityWinch", typeof(BlockEntityWinch));
-
-        api.ClassRegistry.RegisterParticlePropertyProvider(
-            "HoD:PumpCubeParticles",
-            typeof(Piping.HandPump.PumpCubeParticles)
-        );
-        
-        if (ModConfig.Instance.LiquidEncumbrance.Enabled) api.RegisterEntityBehaviorClass("HoD:liquidencumbrance", typeof(EntityBehaviorLiquidEncumbrance));
-        if (ModConfig.Instance.Thirst.Enabled) api.RegisterEntityBehaviorClass("HoD:thirst", typeof(EntityBehaviorThirst));
-        if (ModConfig.Instance.HeatAndCooling.HarshHeat) api.RegisterEntityBehaviorClass("HoD:bodytemperaturehot", typeof(EntityBehaviorBodyTemperatureHot)); //TODO does this even do anything when thirst is disabled?
+        api.ClassRegistry.RegisterParticlePropertyProvider("HoD:PumpCubeParticles", typeof(PumpCubeParticles));
 
         XLibSkills.Enabled = false;
         if (api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xlib")))
@@ -195,8 +137,6 @@ public class HydrateOrDiedrateModSystem : ModSystem
                 XLibSkills.Enabled = false;
             }
         }
-
-        api.RegisterBlockEntityBehaviorClass("RainHarvester", typeof(RegisterRainHarvester));
     }
     
     public override void StartServerSide(ICoreServerAPI api)
@@ -235,14 +175,12 @@ public class HydrateOrDiedrateModSystem : ModSystem
         {
             customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
         }
-        if(api.ModLoader.IsModEnabled("configlib")) ConfigLibCompatibility.Init(api);
     }
 
     public RainHarvesterManager GetRainHarvesterManager()
     {
         return rainHarvesterManager;
     }
-
 
     //TODO: there should be a better way to do this, no?
     private void CheckAndInitializeCustomHud(float dt)
@@ -277,9 +215,8 @@ public class HydrateOrDiedrateModSystem : ModSystem
         _thirstHud?.Dispose();
         nutritionDeficitHud?.Dispose();
 
-        ConfigManager.UnloadModConfig();
-        harmony?.UnpatchAll(HarmonyID);
         UnloadStatics();
+        AutoDispose();
         base.Dispose();
     }
 

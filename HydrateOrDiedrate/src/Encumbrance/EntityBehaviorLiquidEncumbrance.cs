@@ -1,5 +1,6 @@
 ﻿using HydrateOrDiedrate.Config;
 using System;
+using InsanityLib.Generators.Attributes;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
@@ -7,6 +8,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.encumbrance
 {
+    [AutoRegistryName("HoD:liquidencumbrance")]
     public class EntityBehaviorLiquidEncumbrance(Entity entity) : EntityBehavior(entity)
     {
         private int _tickCounter = 0;

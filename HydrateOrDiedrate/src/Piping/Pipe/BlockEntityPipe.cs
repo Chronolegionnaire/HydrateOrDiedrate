@@ -1,3 +1,4 @@
+using InsanityLib.Generators.Attributes;
 using System.Text;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
@@ -7,6 +8,7 @@ using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.Piping.Pipe
 {
+    [AutoRegistryName("HoD:BlockEntityHoDPipe")]
     public class BlockEntityPipe : BlockEntityOpenableContainer
     {
         ICoreClientAPI capi;

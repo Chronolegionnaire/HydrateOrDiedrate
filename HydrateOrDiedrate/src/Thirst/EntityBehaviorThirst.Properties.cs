@@ -17,7 +17,7 @@ public partial class EntityBehaviorThirst
 
     public float MaxThirst
     {
-        get => ThirstTree.TryGetFloat("maxThirst") ?? ModConfig.Instance.Thirst.MaxThirst;
+        get => ThirstTree.TryGetFloat("maxThirst") ?? ModConfig.Instance.Thirst.MaxHydration;
         set
         {
             var currentMaxThirst = MaxThirst;
@@ -47,7 +47,7 @@ public partial class EntityBehaviorThirst
 
     public float ThirstRate
     {
-        get => ThirstTree.TryGetFloat("thirstRate") ?? ModConfig.Instance.Thirst.ThirstDecayRate;
+        get => ThirstTree.TryGetFloat("thirstRate") ?? ModConfig.Instance.Thirst.ThirstRate;
         set
         {
             var safeValue = value.GuardFinite();
@@ -144,7 +144,7 @@ public partial class EntityBehaviorThirst
     public void RecalculateMaxThirst()
     {
         if(entity.Api.Side != EnumAppSide.Server) return;
-        var newMaxThirst = ModConfig.Instance.Thirst.MaxThirst;
+        var newMaxThirst = ModConfig.Instance.Thirst.MaxHydration;
 
         if(XLibSkills.Enabled) newMaxThirst *= XLibSkills.GetDromedaryModifier(entity.Api, (entity as EntityPlayer)?.Player);
 

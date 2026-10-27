@@ -271,7 +271,7 @@ public static class CharacterExtraDialogsPatch
 
             float thirstRatePercentage = Math.Max(
                 0,
-                (thirstBehavior.ThirstRate / ModConfig.Instance.Thirst.ThirstDecayRate) * 100
+                (thirstBehavior.ThirstRate / ModConfig.Instance.Thirst.ThirstRate) * 100
             );
             cached.thirstRateDynamicText?.SetNewText($"{(int)thirstRatePercentage}%", false, false, false);
 

@@ -5,7 +5,7 @@ using Vintagestory.API.Common;
 
 namespace HydrateOrDiedrate.Patches.AculinaryArtillery;
 
-[HarmonyPatchCategory("HydrateOrDiedrate.ACulinaryArtillery")]
+[HarmonyPatchCategory("mod:aculinaryartillery")]
 [HarmonyPatch]
 internal static class BlockSaucepanPatches
 {
