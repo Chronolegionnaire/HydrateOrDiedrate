@@ -48,7 +48,7 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
             currentModifier += heatIncrease;
         }
 
-        float minThirst = ModConfig.Instance.Thirst.ThirstDecayRate;
+        float minThirst = ModConfig.Instance.Thirst.ThirstRate;
         if (currentModifier < minThirst)
         {
             currentModifier = minThirst;

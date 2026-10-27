@@ -141,7 +141,7 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
         thirstDelta += deltaTime;
         if (thirstDelta >= thirstInterval)
         {
-            HandleAccumulatedThirstDecay(playerEntity, thirstDelta);
+            HandleAccumulatedThirst(playerEntity, thirstDelta);
             thirstDelta = 0;
         }
 
@@ -183,7 +183,7 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
         }
     }
 
-    private void HandleAccumulatedThirstDecay(EntityPlayer player, float deltaTime)
+    private void HandleAccumulatedThirst(EntityPlayer player, float deltaTime)
     {
         var thirstRate = ThirstRate = CalculateThirstRate(player);
 
@@ -195,37 +195,37 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
     private float CalculateThirstRate(EntityPlayer player)
     {
         var config = ModConfig.Instance.Thirst;
-        float thirstDecayRate = config.ThirstDecayRate;
+        float ThirstRate = config.ThirstRate;
 
         var controls = player.Controls;
         if (controls.Sprint)
         {
-            thirstDecayRate *= config.SprintThirstMultiplier;
+            ThirstRate *= config.SprintThirstMultiplier;
         }
 
         foreach (var modifier in player.SidedProperties.Behaviors.OfType<IThirstRateModifier>())
         {
-            var newThirstDecayRate = modifier.OnThirstRateCalculate(thirstDecayRate);
+            var newThirstRate = modifier.OnThirstRateCalculate(ThirstRate);
 
-            if (float.IsFinite(newThirstDecayRate)) thirstDecayRate = newThirstDecayRate;
+            if (float.IsFinite(newThirstRate)) ThirstRate = newThirstRate;
         }
-
-        thirstDecayRate = Math.Min(thirstDecayRate, config.ThirstDecayRate * config.ThirstDecayRateMax);
 
         if (storySys?.GetStoryStructureAt(entity.Pos.AsBlockPos) is not null)
         {
-            thirstDecayRate *= GameMath.Clamp(ModConfig.Instance.Thirst.ThirstRateAtStoryLocations, 0, 2);
+            ThirstRate *= GameMath.Clamp(ModConfig.Instance.Thirst.ThirstRateAtStoryLocations, 0, 2);
         }
 
         if (entity.World.ElapsedMilliseconds - lastMoveMs > 3000L)
         {
-            thirstDecayRate *= config.IdleThirstModifier;
+            ThirstRate *= config.IdleThirstModifier;
         }
         float thirstRateMul = entity.Stats.GetBlended(HoDStats.ThirstRateMul).GuardFinite(1f);
         
-        thirstDecayRate *= GameMath.Clamp(thirstRateMul, 0f, 1000f);
+        ThirstRate *= GameMath.Clamp(thirstRateMul, 0f, 1000f);
 
-        return thirstDecayRate.GuardFinite(config.ThirstDecayRate);
+        ThirstRate = Math.Min(ThirstRate, config.ThirstRate * config.MaxThirstRateMultiplier);
+
+        return ThirstRate.GuardFinite(config.ThirstRate);
     }
 
 }
