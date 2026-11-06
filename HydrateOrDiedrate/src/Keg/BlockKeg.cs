@@ -96,6 +96,7 @@ public class BlockKeg : BlockLiquidContainerBase
     
     public override void OnBlockInteractStop(float secondsUsed, IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel)
     {
+        KegAnimations.StopAllAnimations(byPlayer.Entity.AnimManager);
         //Finish chopping action
         if(byPlayer.InventoryManager.ActiveTool == EnumTool.Axe)
         {
@@ -105,7 +106,6 @@ public class BlockKeg : BlockLiquidContainerBase
                 DropKegItems(world, blockSel.Position);
             }
 
-            KegAnimations.StopAxeAnimation(byPlayer.Entity.AnimManager);
             return;
         }
 
@@ -127,8 +127,6 @@ public class BlockKeg : BlockLiquidContainerBase
                 }
 
             }
-
-            KegAnimations.StopTappingAnimation(byPlayer.Entity.AnimManager);
             return;
         }
         
