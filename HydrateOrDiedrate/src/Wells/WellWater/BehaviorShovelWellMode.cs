@@ -84,6 +84,7 @@ public class BehaviorShovelWellMode(CollectibleObject collObj) : CollectibleBeha
     {
         var path = block?.Code?.Path;
         if(string.IsNullOrEmpty(path)) return false;
+        if(block.Attributes?[Attributes.AllowWellSpring] is { Exists: true } allow) return allow.AsBool();
 
         return path.StartsWith("soil-") || path.StartsWith("gravel-") || path.StartsWith("sand-") || path.StartsWith("forestfloor-");
     }
