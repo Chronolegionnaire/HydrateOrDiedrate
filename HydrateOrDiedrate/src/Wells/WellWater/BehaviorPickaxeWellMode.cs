@@ -59,6 +59,7 @@ public class BehaviorPickaxeWellMode(CollectibleObject collObj) : BehaviorShovel
     {
         var path = block?.Code?.Path;
         if(string.IsNullOrEmpty(path)) return false;
+        if(block.Attributes?[Attributes.AllowWellSpring] is { Exists: true } allow) return allow.AsBool();
 
         return path.StartsWith("rock") || path.StartsWith("crackedrock");
     }
