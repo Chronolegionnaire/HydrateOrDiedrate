@@ -21,9 +21,9 @@
               },
               {
                 "Type": "Decimal",
-                "Key": "MaxThirst",
-                "Label": "Max Thirst",
-                "Description": "The upper bound of the player’s thirst gauge",
+                "Key": "MaxHydration",
+                "Label": "Max Hydration",
+                "Description": "The upper bound of the player’s hydration gauge",
                 "InitialValue": 1500
               },
               {
@@ -103,9 +103,9 @@
               },
               {
                 "Type": "Decimal",
-                "Key": "ThirstDecayRateMax",
-                "Label": "Thirst Decay Rate Max",
-                "Description": "Maximum multiplier applied to ThirstDecayRate under extreme conditions\r\n(So the thirst decay rate after applying all multipliers will be capped at ThirstDecayRate * ThirstDecayRateMax)",
+                "Key": "MaxThirstRateMultiplier",
+                "Label": "Max thirst rate multiplier",
+                "Description": "The maximum allowed multiplier on ThirstRate.\r\n(So the thirst rate after applying all multipliers will be capped at ThirstRate * MaxThirstRateMultiplier)",
                 "InitialValue": 5
               },
               {

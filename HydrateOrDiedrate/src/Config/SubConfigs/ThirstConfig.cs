@@ -7,8 +7,6 @@ namespace HydrateOrDiedrate.Config.SubConfigs;
 
 public class ThirstConfig 
 {
-    //TODO: stuff should really be renamed to hydration in some places , but for now we will keep it as thirst to avoid breaking compatibility too much.
-
     /// <summary>
     /// Master switch for the entire thirst/dehydration system
     /// </summary>
@@ -16,51 +14,79 @@ public class ThirstConfig
     public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// The upper bound of the player’s thirst gauge
+    /// The upper bound of the player’s hydration bar
     /// </summary>
     [Range(100d, 10000d)]
     [DefaultValue(1500f)]
-    public float MaxThirst { get; set; } = 1500f;
+    public float MaxHydration { get; set; } = 1500f;
+
+    [Obsolete("Use MaxHydration instead")]
+    [JsonIgnore]
+    [Browsable(false)]
+    public float MaxThirst
+    {
+        get => MaxHydration;
+        set => MaxHydration = value;
+    }
 
     /// <summary>
-    /// Base rate (units/tick) at which thirst increases under normal conditions
-    /// (this will be affected by other multipliers depending on the circumstances)
+    /// Base amount of hydration lost every thirst tick under normal conditions
+    /// (this will be multiplied with other factors to decide the final amount of hydration lost)
     /// </summary>
-    [Category("Thirst Decay")]
+    [Category("Thirst Rate")]
     [Range(0.1d, double.PositiveInfinity)]
     [DefaultValue(10f)]
-    public float ThirstDecayRate { get; set; } = 10f;
+    public float ThirstRate { get; set; } = 10f;
+
+    [Obsolete("Use ThirstRate instead")]
+    [JsonIgnore]
+    [Browsable(false)]
+    public float ThirstDecayRate 
+    { 
+        get => ThirstRate;
+        set => ThirstRate = value; 
+    }
 
     /// <summary>
-    /// Maximum multiplier applied to ThirstDecayRate under extreme conditions
-    /// (So the thirst decay rate after applying all multipliers will be capped at ThirstDecayRate * ThirstDecayRateMax)
+    /// The maximum allowed multiplier on ThirstRate.
+    /// (So the thirst rate after applying all multipliers will be capped at ThirstRate * MaxThirstRateMultiplier)
     /// </summary>
-    [Category("Thirst Decay")]
+    [Category("Thirst Rate")]
     [Range(1d, double.PositiveInfinity)]
     [DefaultValue(5f)]
-    public float ThirstDecayRateMax { get; set; } = 5f;
+    [DisplayFormat(DataFormatString = "P")]
+    public float MaxThirstRateMultiplier { get; set; } = 5f;
+
+    [Obsolete("Use ThirstRateMax instead")]
+    [JsonIgnore]
+    [Browsable(false)]
+    public float ThirstDecayRateMax 
+    {
+        get => MaxThirstRateMultiplier;
+        set => MaxThirstRateMultiplier = value; 
+    }
 
     /// <summary>
     /// Scales the thirst reduction delay you get from drinking drinks
     /// Note: other parts of the equation are not configurable yet and final delay is capped at 600 seconds.
     /// </summary>
-    [Category("Thirst Decay")]
+    [Category("Thirst Rate")]
     [Range(0d, double.PositiveInfinity)]
     [DefaultValue(1d)]
     public float HydrationLossDelayMultiplierNormalized { get; set; } = 1f; //TODO: the other parts of this equation should really be configurable as well.
 
     /// <summary>
-    /// Multiplier for thirst decay when the player is sprinting.
+    /// Multiplier for thirst rate when the player is sprinting.
     /// </summary>
-    [Category("Thirst Decay")]
+    [Category("Thirst Rate")]
     [Range(1d, double.PositiveInfinity)]
     [DefaultValue(1.5d)]
     public float SprintThirstMultiplier { get; set; } = 1.5f;
     
     /// <summary>
-    /// Multiplier for thirst decay when the player is idle.
+    /// Multiplier for thirst rate when the player is idle.
     /// </summary>
-    [Category("Thirst Decay")]
+    [Category("Thirst Rate")]
     [DisplayFormat(DataFormatString = "P")]
     [Range(0.01d, 1d)]
     [DefaultValue(0.25f)]

@@ -12,7 +12,7 @@ public class HeatAndCoolingConfig
     public bool HarshHeat { get; set; } = true;
 
     /// <summary>
-    /// Ambient temperature above which thirst decay starts ramping up
+    /// Ambient temperature above which thirst rate starts ramping up
     /// </summary>
     [DefaultValue(25.0d)]
     public float TemperatureThreshold { get; set; } = 25.0f;

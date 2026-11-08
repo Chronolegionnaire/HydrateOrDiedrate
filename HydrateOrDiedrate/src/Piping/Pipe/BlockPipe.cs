@@ -1,5 +1,6 @@
 using System.Linq;
 using HydrateOrDiedrate.Piping.FluidNetwork;
+using InsanityLib.Generators.Attributes;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -7,6 +8,7 @@ using Vintagestory.API.Util;
 
 namespace HydrateOrDiedrate.Piping.Pipe
 {
+    [AutoRegistryName("HoD:BlockHoDPipe")]
     public class BlockPipe : Block, IFluidBlock
     {
 
