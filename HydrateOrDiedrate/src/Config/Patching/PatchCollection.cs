@@ -39,7 +39,7 @@ public class PatchCollection<T> where T : PatchBase, new()
 
     public static PatchCollection<T> GetMerged(ICoreAPI api, string path)
     {
-        var configPath = "config/" + path.ToLower();
+        var configPath = "config/" + path.ToLowerInvariant();
         var defaultAsset = api.Assets.Get(new AssetLocation("hydrateordiedrate", configPath));
         if(defaultAsset.Location.Domain != "hydrateordiedrate")
         {
