@@ -26,7 +26,7 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
 
     private void UpdateMovementPenalty()
     {
-        float currentThirst = CurrentThirst;
+        float currentThirst = CurrentHydration;
         var threshold = ModConfig.Instance.Thirst.MovementSpeedPenaltyThreshold;
         if(threshold < 0 || currentThirst > threshold)
         {
@@ -49,14 +49,14 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
         {
             if (ModConfig.Instance.Thirst.AntiThirstScumming)
             {
-                if (CurrentThirst <= 0f)
+                if (CurrentHydration <= 0f)
                 {
-                    CurrentThirst = 0.1f * MaxThirst;
+                    CurrentHydration = 0.1f * MaxHydration;
                 }
             }
             else
             {
-                CurrentThirst = ModConfig.Instance.Thirst.ThirstPercentageOnRespawn * MaxThirst;
+                CurrentHydration = ModConfig.Instance.Thirst.ThirstPercentageOnRespawn * MaxHydration;
                 NutritionDeficitAmount = 0;
             }
         }
@@ -95,7 +95,7 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
 
     public void ModifyThirst(float amount, float hydLossDelay = 0)
     {
-        CurrentThirst += amount.GuardFinite();
+        CurrentHydration += amount.GuardFinite();
 
         int hydrationLossDelay = HydrationLossDelay;
         if (hydLossDelay > hydrationLossDelay)
@@ -145,7 +145,7 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
             thirstDelta = 0;
         }
 
-        if (CurrentThirst > 0) return;
+        if (CurrentHydration > 0) return;
 
         thirstDamageDelta += deltaTime;
         if (thirstDamageDelta >= thirstDamageInterval)

@@ -15,32 +15,35 @@ public partial class EntityBehaviorThirst
     private ITreeAttribute ThirstTree => entity.WatchedAttributes.GetTreeAttribute(thirstTreePath);
     public const string thirstTreePath = "thirst";
 
-    public float MaxThirst
+    [Obsolete("Use MaxHydration instead")]
+    public float MaxThirst { get => MaxHydration;  set => MaxHydration = value; }
+    public float MaxHydration
     {
-        get => ThirstTree.TryGetFloat("maxThirst") ?? ModConfig.Instance.Thirst.MaxHydration;
+        get => ThirstTree.TryGetFloat("maxHydration") ?? ModConfig.Instance.Thirst.MaxHydration;
         set
         {
-            var currentMaxThirst = MaxThirst;
+            var currentMaxThirst = MaxHydration;
             if (!float.IsFinite(value) || value == currentMaxThirst) return;
 
-            ThirstTree.SetFloat("maxThirst", value);
+            ThirstTree.SetFloat("maxHydration", value);
             entity.WatchedAttributes.MarkPathDirty(thirstTreePath);
 
-            CurrentThirst = (CurrentThirst / currentMaxThirst) * value; // adjust current thirst relative to the new max thirst
+            CurrentHydration = (CurrentHydration / currentMaxThirst) * value; // adjust current thirst relative to the new max thirst
         }
     }
 
-    //TODO this should honestly be renamed to hydration for clarity
-    public float CurrentThirst
+    [Obsolete("Use CurrentHydration instead")]
+    public float CurrentThirst { get => CurrentHydration; set =>  CurrentHydration = value; }
+    public float CurrentHydration
     {
-        get => ThirstTree.TryGetFloat("currentThirst") ?? MaxThirst;
+        get => ThirstTree.TryGetFloat("currentHydration") ?? MaxHydration;
         set
         {
-            var maxThirst = MaxThirst;
+            var maxThirst = MaxHydration;
             var safeValue = GameMath.Clamp(value.GuardFinite(maxThirst), 0, maxThirst);
-            if (safeValue == CurrentThirst) return;
+            if (safeValue == CurrentHydration) return;
 
-            ThirstTree.SetFloat("currentThirst", safeValue);
+            ThirstTree.SetFloat("currentHydration", safeValue);
             UpdateMovementPenalty();
             entity.WatchedAttributes.MarkPathDirty(thirstTreePath);
         }
@@ -101,33 +104,17 @@ public partial class EntityBehaviorThirst
 
     public void MapLegacyData()
     {
-        var attr = entity.WatchedAttributes;
-        attr.RemoveAttribute("dromedaryActive");
+        var attr = entity.WatchedAttributes.GetTreeAttribute(thirstTreePath);
         
         if(attr.HasAttribute("maxThirst"))
         {
-            MaxThirst = attr.GetFloat("maxThirst");
+            MaxHydration = attr.GetFloat("maxThirst");
             attr.RemoveAttribute("maxThirst");
         }
         if(attr.HasAttribute("currentThirst"))
         {
-            CurrentThirst = attr.GetFloat("currentThirst");
+            CurrentHydration = attr.GetFloat("currentThirst");
             attr.RemoveAttribute("currentThirst");
-        }
-        if(attr.HasAttribute("thirstRate"))
-        {
-            ThirstRate = attr.GetFloat("thirstRate");
-            attr.RemoveAttribute("thirstRate");
-        }
-        if(attr.HasAttribute("nutritionDeficitAmount"))
-        {
-            NutritionDeficitAmount = attr.GetFloat("nutritionDeficitAmount");
-            attr.RemoveAttribute("nutritionDeficitAmount");
-        }
-        if(attr.HasAttribute("hydrationLossDelay"))
-        {
-            HydrationLossDelay = attr.GetInt("hydrationLossDelay");
-            attr.RemoveAttribute("hydrationLossDelay");
         }
     }
 
@@ -136,8 +123,8 @@ public partial class EntityBehaviorThirst
         if(entity.WatchedAttributes.GetTreeAttribute(thirstTreePath) is null)
         {
             entity.WatchedAttributes.SetAttribute(thirstTreePath, new TreeAttribute());
-            MapLegacyData();
         }
+        MapLegacyData();
 
         if(!XLibSkills.Enabled) RecalculateMaxThirst();
     }
@@ -149,6 +136,6 @@ public partial class EntityBehaviorThirst
 
         if(XLibSkills.Enabled) newMaxThirst *= XLibSkills.GetDromedaryModifier(entity.Api, (entity as EntityPlayer)?.Player);
 
-        MaxThirst = newMaxThirst;
+        MaxHydration = newMaxThirst;
     }
 }

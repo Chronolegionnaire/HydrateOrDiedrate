@@ -55,7 +55,7 @@ public class DefaultDrinkingInteractionProvider(BlockLiquidContainerBase interac
         }
 
         var thirstBehavior = player.Entity.GetBehavior<EntityBehaviorThirst>();
-        if (thirstBehavior is null || thirstBehavior.CurrentThirst >= thirstBehavior.MaxThirst)
+        if (thirstBehavior is null || thirstBehavior.CurrentHydration >= thirstBehavior.MaxHydration)
         {
             SendInGameError(player, "fullhydration", Lang.Get("hydrateordiedrate:waterinteraction-fullhydration"));
             return false;

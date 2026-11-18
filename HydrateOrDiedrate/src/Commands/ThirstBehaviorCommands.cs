@@ -15,13 +15,13 @@ public static class ThirstBehaviorCommands
     {
         if (entity.GetBehavior<EntityBehaviorThirst>() is not { } thirstBehavior) return TextCommandResult.Error(BehaviorMissing, BehaviorMissing);
 
-        thirstBehavior.CurrentThirst = thirstValue;
+        thirstBehavior.CurrentHydration = thirstValue;
 
         return new TextCommandResult
         {
             Status = EnumCommandStatus.Success,
             StatusMessage = "hydrateordiedrate:cmd-hydration-set",
-            MessageParams = [entity.GetName(), thirstBehavior.CurrentThirst, thirstValue]
+            MessageParams = [entity.GetName(), thirstBehavior.CurrentHydration, thirstValue]
         };
     }
 
@@ -35,7 +35,7 @@ public static class ThirstBehaviorCommands
         {
             Status = EnumCommandStatus.Success,
             StatusMessage = "hydrateordiedrate:cmd-hydration-get",
-            MessageParams = [entity.GetName(), thirstBehavior.CurrentThirst]
+            MessageParams = [entity.GetName(), thirstBehavior.CurrentHydration]
         };
     }
 

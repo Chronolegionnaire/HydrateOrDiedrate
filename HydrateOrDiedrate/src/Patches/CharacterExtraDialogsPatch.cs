@@ -265,7 +265,7 @@ public static class CharacterExtraDialogsPatch
         if (thirstBehavior is not null)
         {
             cached.thirstDynamicText?.SetNewText(
-                $"{(int)thirstBehavior.CurrentThirst} / {(int)thirstBehavior.MaxThirst}",
+                $"{(int)thirstBehavior.CurrentHydration} / {(int)thirstBehavior.MaxHydration}",
                 false, false, false
             );
 

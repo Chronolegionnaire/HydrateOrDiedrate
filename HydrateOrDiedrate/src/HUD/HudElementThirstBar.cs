@@ -98,8 +98,8 @@ public class HudElementThirstBar : HudElement
         }
         if (_statbar == null) return;
 
-        var currentThirst = thirstBehavior.CurrentThirst;
-        var maxThirst = thirstBehavior.MaxThirst;
+        var currentThirst = thirstBehavior.CurrentHydration;
+        var maxThirst = thirstBehavior.MaxHydration;
 
         if (currentThirst != _lastCurrentThirst || maxThirst != _lastMaxThirst)
         {
