@@ -130,7 +130,10 @@ public static partial class AquiferManager
         }
     }
 
-    public static bool SetAquiferRating(IWorldAccessor world, BlockPos blockPos, int rating)
+    [Obsolete("Use TrySetAquiferRating instead")]
+    public static bool SetAquiferRating(IWorldAccessor world, BlockPos blockPos, int rating) => TrySetAquiferRating(world, blockPos, rating);
+
+    public static bool TrySetAquiferRating(IWorldAccessor world, BlockPos blockPos, int rating, bool isSalty = false)
     {
         if (world.Side != EnumAppSide.Server && rating < 0 || rating > 100) return false;
         
@@ -146,7 +149,7 @@ public static partial class AquiferManager
         {
             AquiferRatingRaw = chunkData.Data?.AquiferRatingRaw ?? rating,
             AquiferRatingSmoothed = rating,
-            IsSalty = false
+            IsSalty = isSalty
         };
 
         chunk.LiveModData[AquiferModDataKey] = chunkData;

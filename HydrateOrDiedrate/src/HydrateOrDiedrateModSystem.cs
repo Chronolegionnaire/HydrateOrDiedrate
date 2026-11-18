@@ -33,7 +33,6 @@ public partial class HydrateOrDiedrateModSystem : ModSystem
     public INetworkChannel NetworkChannel { get; private set; }
 
     internal static ICoreServerAPI _serverApi { get; private set; }
-    internal static ICoreClientAPI _clientApi { get; private set; }
 
     private HudElementThirstBar _thirstHud;
     private HudElementNutritionDeficitBar nutritionDeficitHud;
@@ -149,15 +148,11 @@ public partial class HydrateOrDiedrateModSystem : ModSystem
             .RegisterMessageType<PumpSfxPacket>()
             .RegisterMessageType<ValveToggleEventPacket>();
         
-        rainHarvesterManager = new RainHarvesterManager(_serverApi);
-
-        ThirstCommands.Register(api);
-        AquiferCommands.Register(api);
+        rainHarvesterManager = new RainHarvesterManager(api);
     }
 
     public override void StartClientSide(ICoreClientAPI api)
     {
-        _clientApi = api;
         base.StartClientSide(api);
 
         ((IClientNetworkChannel)NetworkChannel)
@@ -167,34 +162,31 @@ public partial class HydrateOrDiedrateModSystem : ModSystem
             .SetMessageHandler<PumpParticleBurstPacket>(msg => BlockEntityHandPump.PlayPumpParticleBurst(api, msg))
             .SetMessageHandler<PumpSfxPacket>(msg => BlockEntityHandPump.OnClientPumpSfx(api, msg))
             .SetMessageHandler<ValveToggleEventPacket>(pkt => ValveHandleRenderer.OnClientValveToggleEvent(api, pkt));
-        
-        _thirstHud = new HudElementThirstBar(_clientApi);
-        _clientApi.Gui.RegisterDialog(_thirstHud);
 
-        if (ModConfig.Instance.Thirst.Enabled)
+        if (!ModConfig.Instance.Thirst.Enabled) return;
+
+        _thirstHud = new HudElementThirstBar(api);
+        api.Gui.RegisterDialog(_thirstHud);
+
+        //TODO: there should be a better way to do this, no?
+        customHudListenerId = api.Event.RegisterGameTickListener(_ =>
         {
-            customHudListenerId = api.Event.RegisterGameTickListener(CheckAndInitializeCustomHud, 20);
-        }
+            var vanillaHudStatbar = api?.Gui?.OpenedGuis?.OfType<HudStatbar>().FirstOrDefault();
+
+            if (vanillaHudStatbar != null && vanillaHudStatbar.IsOpened())
+            {
+                nutritionDeficitHud = new HudElementNutritionDeficitBar(api);
+                api.Event.RegisterGameTickListener(nutritionDeficitHud.OnGameTick, 1000);
+                api.Gui.RegisterDialog(nutritionDeficitHud);
+
+                api.Event.UnregisterGameTickListener(customHudListenerId);
+            }
+        }, 20);
     }
 
     public RainHarvesterManager GetRainHarvesterManager()
     {
         return rainHarvesterManager;
-    }
-
-    //TODO: there should be a better way to do this, no?
-    private void CheckAndInitializeCustomHud(float dt)
-    {
-        var vanillaHudStatbar = _clientApi?.Gui?.OpenedGuis?.OfType<HudStatbar>().FirstOrDefault();
-
-        if (vanillaHudStatbar != null && vanillaHudStatbar.IsOpened())
-        {
-            nutritionDeficitHud = new HudElementNutritionDeficitBar(_clientApi);
-            _clientApi.Event.RegisterGameTickListener(nutritionDeficitHud.OnGameTick, 1000);
-            _clientApi.Gui.RegisterDialog(nutritionDeficitHud);
-
-            _clientApi.Event.UnregisterGameTickListener(customHudListenerId);
-        }
     }
 
     private static void EnsureRainHarvesterBehaviorPresent(Block block)
@@ -223,7 +215,6 @@ public partial class HydrateOrDiedrateModSystem : ModSystem
     private static void UnloadStatics()
     {
         _serverApi = null;
-        _clientApi = null;
         Wells.Aquifer.AquiferManager.Unload();
         CharacterExtraDialogsPatch.cachedElements = null;
     }

@@ -1,51 +1,26 @@
 ﻿using HydrateOrDiedrate.Wells.Aquifer;
+using InsanityLib.Auto.Command;
 using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
+using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-namespace HydrateOrDiedrate.Commands
+namespace HydrateOrDiedrate.Commands;
+
+public static class AquiferCommands
 {
-    public static class AquiferCommands
-    {
-        public static void Register(ICoreServerAPI api)
-        {
-            api.ChatCommands.Create("setaquifer")
-                .WithDescription(Lang.Get("hydrateordiedrate:setaquifer-description"))
-                .RequiresPrivilege("controlserver")
-                .WithArgs(api.ChatCommands.Parsers.Int("rating"))
-                .HandleWith(static (args) =>
-                {
-                    int rating = (int)args[0];
-                    rating = Math.Clamp(rating, 0, 100);
+    [Description("hydrateordiedrate:setaquifer-description")]
+    [AutoCommand(Path = "", RequiredPrivelege = "controlserver")]
+    public static TextCommandResult SetAquifer(ICoreServerAPI sapi, BlockPos pos, [Range(0, 100)] int rating, bool isSalty = false) => AquiferManager.TrySetAquiferRating(sapi.World, pos, rating, isSalty)
+            ? TextCommandResult.Success(Lang.Get("hydrateordiedrate:setaquifer-success", rating))
+            : TextCommandResult.Error(Lang.Get("hydrateordiedrate:setaquifer-failed"));
 
-                    IPlayer player = args.Caller.Player;
-                    if (player == null) return TextCommandResult.Error(Lang.Get("hydrateordiedrate:command-only-for-players"));
-
-                    if (!AquiferManager.SetAquiferRating(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.Pos.AsBlockPos, rating))
-                    {
-                        return TextCommandResult.Error(Lang.Get("hydrateordiedrate:setaquifer-failed"));
-                    }
-                    return TextCommandResult.Success(Lang.Get("hydrateordiedrate:setaquifer-success", rating)); //TODO this does not represent the actual rating set, but the one requested
-                });
-
-            api.ChatCommands.Create("getaquifer")
-                .WithDescription(Lang.Get("hydrateordiedrate:getaquifer-description"))
-                .RequiresPrivilege("controlserver")
-                .HandleWith(static args =>
-                {
-                    IPlayer player = args.Caller.Player;
-                    if (player == null) return TextCommandResult.Error(Lang.Get("hydrateordiedrate:command-only-for-players"));
-
-                    var world = HydrateOrDiedrateModSystem._serverApi.World;
-                    var aqData = AquiferManager.GetAquiferChunkData(HydrateOrDiedrateModSystem._serverApi.World, player.Entity.Pos.AsBlockPos, world.Logger);
-                    if (aqData == null)
-                    {
-                        return TextCommandResult.Error(Lang.Get("hydrateordiedrate:getaquifer-not-found"));
-                    }
-
-                    return TextCommandResult.Success(Lang.Get("hydrateordiedrate:getaquifer-success", aqData.Data.AquiferRating, aqData.Data.IsSalty));
-                });
-        }
-    }
+    [Description("hydrateordiedrate:getaquifer-description")]
+    [AutoCommand(Path = "", RequiredPrivelege = "controlserver")]
+    public static TextCommandResult GetAquifer(ICoreServerAPI sapi, BlockPos pos) => AquiferManager.GetAquiferChunkData(sapi.World, pos, sapi.Logger) is { } aqData
+            ? TextCommandResult.Success(Lang.Get("hydrateordiedrate:getaquifer-success", aqData.Data.AquiferRating, aqData.Data.IsSalty))
+            : TextCommandResult.Error(Lang.Get("hydrateordiedrate:getaquifer-not-found"));
 }

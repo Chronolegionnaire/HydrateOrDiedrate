@@ -30,6 +30,7 @@ public partial class EntityBehaviorThirst
         }
     }
 
+    //TODO this should honestly be renamed to hydration for clarity
     public float CurrentThirst
     {
         get => ThirstTree.TryGetFloat("currentThirst") ?? MaxThirst;
