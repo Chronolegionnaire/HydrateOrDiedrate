@@ -1,5 +1,6 @@
 ﻿{
   code: "kegtap",
+  "enabled": "config://HydrateOrDiedrateConfig/Containers/KegEnabled",
   class: "HoD:ItemKegTap",
   attributes: {
     heldItemPitchFollow: 1,

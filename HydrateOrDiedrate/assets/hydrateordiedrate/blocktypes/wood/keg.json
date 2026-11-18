@@ -1,5 +1,6 @@
 {
 	"code": "keg",
+	"enabled": "config://HydrateOrDiedrateConfig/Containers/KegEnabled",
 	"class": "HoD:BlockKeg",
 	"entityclass": "HoD:BlockEntityKeg",
 	"behaviors": [

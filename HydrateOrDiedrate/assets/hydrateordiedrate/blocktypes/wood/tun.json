@@ -1,5 +1,6 @@
 ﻿{
   "code": "tun",
+  "enabled": "config://HydrateOrDiedrateConfig/Containers/TunEnabled",
   "class": "HoD:BlockTun",
   "entityclass": "HoD:BlockEntityTun",
   "defaultType": "normal-generic",

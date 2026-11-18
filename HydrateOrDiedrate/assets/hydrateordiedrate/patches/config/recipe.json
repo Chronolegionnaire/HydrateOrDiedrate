@@ -1,0 +1,32 @@
+[
+  {
+    "File": "recipes/smithing/tap",
+    "Path": "/Enabled",
+    "Op": "Add",
+    "Value": false,
+    "Condition": {
+      "When": "config://HydrateOrDiedrateConfig/Containers/KegEnabled", //not supported directly in recipe files currently (generic method patching issue)
+      "IsValue": false
+    }
+  },
+  {
+    "File": "recipes/grid/keg",
+    "Path": "/Enabled",
+    "Op": "Add",
+    "Value": false,
+    "Condition": {
+      "When": "config://HydrateOrDiedrateConfig/Containers/KegEnabled", //not supported directly in recipe files currently (generic method patching issue)
+      "IsValue": false
+    }
+  },
+  {
+    "File": "recipes/grid/tun",
+    "Path": "/Enabled",
+    "Op": "Add",
+    "Value": false,
+    "Condition": {
+      "When": "config://HydrateOrDiedrateConfig/Containers/TunEnabled", //not supported directly in recipe files currently (generic method patching issue)
+      "IsValue": false
+    }
+  }
+]

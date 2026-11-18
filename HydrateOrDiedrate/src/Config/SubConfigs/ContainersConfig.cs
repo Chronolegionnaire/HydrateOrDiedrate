@@ -7,6 +7,14 @@ namespace HydrateOrDiedrate.Config.SubConfigs;
 public class ContainersConfig
 {
     /// <summary>
+    /// If set to false, kegs (and kegtaps) won't exist ingame
+    /// Note: Disabling this on an existing save will result in leftovers (question mark blocks / black box items)
+    /// </summary>
+    [Category("Keg")]
+    [DefaultValue(true)]
+    public bool KegEnabled { get; set; } = true;
+
+    /// <summary>
     /// Storage capacity of a keg in litres
     /// </summary>
     [Category("Keg")]
@@ -54,6 +62,14 @@ public class ContainersConfig
     [Category("Keg")]
     [DefaultValue(true)]
     public bool KegDropWithLiquid { get; set; } = true;
+
+    /// <summary>
+    /// If set to false, tuns won't exist ingame
+    /// Note: Disabling this on an existing save will result in leftovers (question mark blocks / black box items)
+    /// </summary>
+    [Category("Keg")]
+    [DefaultValue(true)]
+    public bool TunEnabled { get; set; } = true;
 
     /// <summary>
     /// Capacity of a tun barrel in litres 
