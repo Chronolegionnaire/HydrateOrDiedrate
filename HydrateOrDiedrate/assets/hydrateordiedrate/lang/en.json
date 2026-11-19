@@ -273,5 +273,8 @@
 
   "block-disguise": "<font opacity='0.6'>Disguised as: «{0}»</font>",
   "hydrateordiedrate:drinking": "Drinking",
-  "container-detach-contains-liquid": "Not Empty! (requires CarryOn interaction to detach)"
+  "container-detach-contains-liquid": "Not Empty! (requires CarryOn interaction to detach)",
+
+  "game:statkey-thirstPenalty": "Thirst",
+  "game:statkey-liquidEncumbrancePenalty": "Liquid Encumbrance"
 }
