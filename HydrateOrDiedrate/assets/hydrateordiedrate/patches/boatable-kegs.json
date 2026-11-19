@@ -1,0 +1,22 @@
+[
+  {
+    "File": "blocktypes/wood/keg",
+    "Path": "/behaviors",
+    "Op": "AddMerge",
+    "Value": [
+      {
+        "name": "HoD:AttachableLiquidContainer",
+        "properties": {
+          "PreventDetachWithLiquid": "config://!HydrateOrDiedrateConfig/Containers/KegDropWithLiquid"
+        }
+      }
+    ],
+    "DependsOn": [
+      { "modid": "yangcoifix" }
+    ],
+    "Condition": {
+      "When": "config://HydrateOrDiedrateConfig/Containers/KegEnabled",
+      "IsValue": true
+    }
+  }
+]

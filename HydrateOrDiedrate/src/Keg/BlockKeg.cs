@@ -16,8 +16,6 @@ public class BlockKeg : BlockLiquidContainerBase
     public override bool AllowHeldLiquidTransfer => false;
     public override bool CanDrinkFrom => false; 
     
-
-    
     //TODO: Rework this... currently implementation can respond weirdly when multiple people try to do the interaction at the same time
     private float playNextSound = 0.7f;
 
@@ -191,5 +189,30 @@ public class BlockKeg : BlockLiquidContainerBase
         }
 
         base.OnBlockBroken(world, pos, byPlayer, dropQuantityMultiplier);
+    }
+
+    public override void OnHeldInteractStart(ItemSlot itemslot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handHandling)
+    {
+        // We don't want the standard liquid container logic because it blocks the attachable logic (we don't need it anyway since held liquid transfer is disallowed)
+        EnumHandHandling bhHandHandling = EnumHandHandling.NotHandled;
+        bool preventDefault = false;
+
+        foreach (CollectibleBehavior behavior in CollectibleBehaviors)
+        {
+            EnumHandling bhHandling = EnumHandling.PassThrough;
+
+            behavior.OnHeldInteractStart(itemslot, byEntity, blockSel, entitySel, firstEvent, ref bhHandHandling, ref bhHandling);
+            if (bhHandling != EnumHandling.PassThrough)
+            {
+                handHandling = bhHandHandling;
+                preventDefault = true;
+            }
+
+            if (bhHandling == EnumHandling.PreventSubsequent) return;
+        }
+
+        if (preventDefault) return;
+
+        handHandling = bhHandHandling;
     }
 }

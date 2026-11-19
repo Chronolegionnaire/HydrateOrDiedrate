@@ -272,5 +272,6 @@
   "direction-below": "below",
 
   "block-disguise": "<font opacity='0.6'>Disguised as: «{0}»</font>",
-  "hydrateordiedrate:drinking": "Drinking"
+  "hydrateordiedrate:drinking": "Drinking",
+  "container-detach-contains-liquid": "Not Empty! (requires CarryOn interaction to detach)"
 }
