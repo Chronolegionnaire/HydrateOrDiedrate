@@ -142,11 +142,6 @@ public partial class HydrateOrDiedrateModSystem : ModSystem
     {
         _serverApi = api;
         base.StartServerSide(api);
-
-        ((IServerNetworkChannel)NetworkChannel)
-            .RegisterMessageType<PumpParticleBurstPacket>()
-            .RegisterMessageType<PumpSfxPacket>()
-            .RegisterMessageType<ValveToggleEventPacket>();
         
         rainHarvesterManager = new RainHarvesterManager(api);
     }
@@ -154,14 +149,6 @@ public partial class HydrateOrDiedrateModSystem : ModSystem
     public override void StartClientSide(ICoreClientAPI api)
     {
         base.StartClientSide(api);
-
-        ((IClientNetworkChannel)NetworkChannel)
-            .RegisterMessageType<PumpParticleBurstPacket>()
-            .RegisterMessageType<PumpSfxPacket>()
-            .RegisterMessageType<ValveToggleEventPacket>()
-            .SetMessageHandler<PumpParticleBurstPacket>(msg => BlockEntityHandPump.PlayPumpParticleBurst(api, msg))
-            .SetMessageHandler<PumpSfxPacket>(msg => BlockEntityHandPump.OnClientPumpSfx(api, msg))
-            .SetMessageHandler<ValveToggleEventPacket>(pkt => ValveHandleRenderer.OnClientValveToggleEvent(api, pkt));
 
         if (!ModConfig.Instance.Thirst.Enabled) return;
 
@@ -183,6 +170,10 @@ public partial class HydrateOrDiedrateModSystem : ModSystem
             }
         }, 20);
     }
+
+    [AutoNetworkMessage(NetworkChannelID)] private void OnPumpParticleBurstPacketReceived(PumpParticleBurstPacket msg) => BlockEntityHandPump.PlayPumpParticleBurst((ICoreClientAPI)_api, msg);
+    [AutoNetworkMessage(NetworkChannelID)] private void OnPumpSfxPacketReceived(PumpSfxPacket msg) => BlockEntityHandPump.OnClientPumpSfx((ICoreClientAPI)_api, msg);
+    [AutoNetworkMessage(NetworkChannelID)] private void OnValveToggleEventPacketReceived(ValveToggleEventPacket msg) => ValveHandleRenderer.OnClientValveToggleEvent((ICoreClientAPI)_api, msg);
 
     public RainHarvesterManager GetRainHarvesterManager()
     {
