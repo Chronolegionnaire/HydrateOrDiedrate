@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
 using Vintagestory.API.Common;
 
 namespace HydrateOrDiedrate.Config.SubConfigs;

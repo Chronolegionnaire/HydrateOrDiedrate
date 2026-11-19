@@ -1,5 +1,4 @@
-﻿using ProtoBuf;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace HydrateOrDiedrate.Config.SubConfigs;

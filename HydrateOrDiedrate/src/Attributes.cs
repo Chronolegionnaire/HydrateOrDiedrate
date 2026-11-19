@@ -1,6 +1,4 @@
-﻿using Vintagestory.API.Common;
-
-namespace HydrateOrDiedrate;
+﻿namespace HydrateOrDiedrate;
 
 public static class Attributes
 {

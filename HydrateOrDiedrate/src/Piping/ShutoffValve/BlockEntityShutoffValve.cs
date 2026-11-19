@@ -1,11 +1,9 @@
 using System.Collections.Generic;
-using HydrateOrDiedrate.Piping;
 using HydrateOrDiedrate.Piping.FluidNetwork;
 using HydrateOrDiedrate.Piping.Networking;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
-using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
 namespace HydrateOrDiedrate.Piping.ShutoffValve

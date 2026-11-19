@@ -1,5 +1,4 @@
-﻿using HydrateOrDiedrate.Commands;
-using HydrateOrDiedrate.Config;
+﻿using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.Config.Patching;
 using HydrateOrDiedrate.Config.Patching.PatchTypes;
 using HydrateOrDiedrate.HUD;

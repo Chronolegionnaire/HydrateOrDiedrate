@@ -1,5 +1,4 @@
-﻿using ProtoBuf;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using Vintagestory.API.Common;
 

@@ -1,5 +1,4 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Text.RegularExpressions;
 using Vintagestory.API.Common;
 

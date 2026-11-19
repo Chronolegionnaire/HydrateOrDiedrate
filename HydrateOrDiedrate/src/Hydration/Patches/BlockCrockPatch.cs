@@ -4,7 +4,6 @@ using System;
 using System.Text;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
-using Vintagestory.Common;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate.patches
