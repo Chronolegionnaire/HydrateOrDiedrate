@@ -4,8 +4,8 @@
       //Disable dana tweaks rain collection
       //TODO if/when alternative resolution options become a thing, add an option to use dana tweaks raincollection but with HoD rainwater
       "ModId": "danatweaks",
-      "Label": "Incompatibility",
-      "Description": "Overlapping rain collection system",
+      "Label": "Overlap with Dana Tweaks",
+      "Description": "Both mods add rain collection system, meaning you might not collect the correct amount or type of water",
       "Severity": "Warning",
       "Criteria": [
         {
@@ -34,6 +34,58 @@
           "ModId": "danatweaks",
           "ConfigFile": "DanaTweaks-Server.json",
           "Map": "RainCollector.Enabled"
+        },
+        "Value": false
+      }
+    },
+    {
+      //Disable tun when foodshelves present
+      "ModId": "foodshelves",
+      "Label": "Overlap with Food Shelves",
+      "Description": "Both mods add similar containers liquid storage (tun), won't cause any issues (just unnecesary to have both)",
+      "Severity": "Warning",
+      "Criteria": [
+        {
+          "Type": "Setting",
+          "Target": {
+            "ConfigFile": "HydrateOrDiedrateConfig.json",
+            "Map": "Containers.TunEnabled"
+          },
+          "Operator": "Equal",
+          "Value": true
+        }
+      ],
+      "Resolution": {
+        "Type": "SetSetting",
+        "Target": {
+          "ConfigFile": "HydrateOrDiedrateConfig.json",
+          "Map": "Containers.TunEnabled"
+        },
+        "Value": false
+      }
+    },
+    {
+      //Disable keg when foodshelves present
+      "ModId": "foodshelves",
+      "Label": "Overlap with Food Shelves",
+      "Description": "Both mods add similar containers liquid storage (keg), won't cause any issues (just unnecesary to have both)",
+      "Severity": "Warning",
+      "Criteria": [
+        {
+          "Type": "Setting",
+          "Target": {
+            "ConfigFile": "HydrateOrDiedrateConfig.json",
+            "Map": "Containers.KegEnabled"
+          },
+          "Operator": "Equal",
+          "Value": true
+        }
+      ],
+      "Resolution": {
+        "Type": "SetSetting",
+        "Target": {
+          "ConfigFile": "HydrateOrDiedrateConfig.json",
+          "Map": "Containers.KegEnabled"
         },
         "Value": false
       }
