@@ -1,5 +1,4 @@
 ﻿using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.Thirst;
 using InsanityLib.Generators.Attributes;
 using System;
 using Vintagestory.API.Common;
@@ -11,23 +10,39 @@ using Vintagestory.GameContent;
 namespace HydrateOrDiedrate.Hot_Weather;
 
 [AutoRegistryName("HoD:bodytemperaturehot")]
-public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBehavior(entity), IThirstRateModifier
+public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
 {
     public override string PropertyName() => "bodytemperaturehot";
+
+    public EntityBehaviorBodyTemperatureHot(Entity entity) : base(entity)
+    {
+        entity.Stats.Register(HoDStats.Cooling, EnumStatBlendType.FlatSum);
+        entity.Stats[HoDStats.Cooling].Set("base", 0, true);
+    }
 
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
         base.Initialize(properties, attributes);
-        InitBodyHeatAttributes();
+        MapLegacyData();
+
+        //HACK: manually updating blend types as workaround for https://github.com/anegostudios/VintageStory-Issues/issues/10278
+        entity.WatchedAttributes.RegisterModifiedListener("stats", () =>
+        {
+            entity.Stats[HoDStats.Cooling].BlendType = EnumStatBlendType.FlatSum;
+        });
     }
 
-    public float OnThirstRateCalculate(float currentModifier)
+    public void UpdateStats()
     {
-        if (!ModConfig.Instance.HeatAndCooling.HarshHeat) return currentModifier;
-        UpdateCoolingFactor();
-
         var config = ModConfig.Instance.HeatAndCooling;
+        if (!config.HarshHeat) return;
 
+
+        UpdateRoomStats();
+        UpdateGearStats();
+        UpdateEnvironmentStats();
+
+        var stat = entity.Stats[HoDStats.ThirstRate];
         var temperature = entity.World.BlockAccessor
             .GetClimateAt(entity.Pos.AsBlockPos, EnumGetClimateMode.NowValues)?
             .Temperature.GuardFinite() ?? 0f;
@@ -41,39 +56,54 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         effectiveTempDiff = Util.GuardFinite(effectiveTempDiff);
         if (effectiveTempDiff > 0f)
         {
-            float expArgument = config.HarshHeatExponentialGainMultiplier * effectiveTempDiff;
-            float heatIncrease = config.ThirstIncreasePerDegreeMultiplier * ((float)Math.Exp(expArgument) - 1f);
-            heatIncrease = Util.GuardFinite(heatIncrease);
+            var increase = effectiveTempDiff * config.HarshHeatThirstIncrease * Math.Pow(config.HarshHeatExponentialFactor, effectiveTempDiff);
 
-            currentModifier += heatIncrease;
+            stat.Set("harshheat", 1 + (float)increase);
         }
-
-        float minThirst = ModConfig.Instance.Thirst.ThirstRate;
-        if (currentModifier < minThirst)
-        {
-            currentModifier = minThirst;
-        }
-
-        return currentModifier;
+        else stat.Remove("harshheat");
     }
 
-    public void UpdateCoolingFactor()
+    private void UpdateEnvironmentStats()
     {
-        if (entity is not EntityAgent entityAgent) return;
-        UpdateRoomInfo();
+        var config = ModConfig.Instance.HeatAndCooling;
+        var stat = entity.Stats[HoDStats.Cooling];
+        if (entity.WatchedAttributes.GetFloat("wetness", 0f) > 0f)
+        {
+            stat.Set("wetness", config.WetnessCoolingBonus);
+        }
+        else stat.Remove("wetness");
 
-        HasWetnessCoolingBonus = false;
-        HasRoomCoolingBonus = false;
-        HasLowSunlightCoolingBonus = false;
-        HasShadeCoolingBonus = false;
+        int sunlightLevel = entity.World.BlockAccessor.GetLightLevel(
+            entity.Pos.AsBlockPos,
+            EnumLightLevelType.TimeOfDaySunLight
+        );
+        sunlightLevel = GameMath.Clamp(sunlightLevel, 0, 22);
 
-        var behaviorContainer = entityAgent.GetBehavior<EntityBehaviorContainer>();
-        if (behaviorContainer is null || behaviorContainer.Inventory is null) return;
+        if (sunlightLevel < config.LowSunlightThreshold)
+        {
+            float darknessFraction = (float)(config.LowSunlightThreshold - sunlightLevel) / config.LowSunlightThreshold;
+            darknessFraction = GameMath.Clamp(darknessFraction, 0f, 1f);
+            float sunlightCoolingBonus = config.LowSunlightCoolingBonus * darknessFraction;
 
-        var inventory = behaviorContainer.Inventory;
+            stat.Set("lowSunlight", sunlightCoolingBonus);
+        }
+
+        if (!HasDirectSunlight())
+        {
+            stat.Set("shade", config.ShadeCoolingBonus);
+        }
+        else stat.Remove("shade");
+    }
+
+    private void UpdateGearStats()
+    {
+
+        if (entity.GetBehavior<EntityBehaviorContainer>()?.Inventory is not { } inventory) return;
+
+        var config = ModConfig.Instance.HeatAndCooling;
+        var stat = entity.Stats[HoDStats.Cooling];
 
         int unequippedSlots = 0;
-        float finalCooling = 0f;
         float gearCooling = 0f;
 
         for (int i = 0; i < inventory.Count; i++)
@@ -82,6 +112,8 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
 
             if (slot?.Itemstack is null)
             {
+                //TODO make it clearer which slots this should count for and see if there is a better way then with these "magic numbers"
+                //Only some slots count
                 if (i == 0 || i == 1 || i == 2 || i == 11 || i == 3 || i == 4 || i == 8 || i == 5)
                 {
                     unequippedSlots++;
@@ -89,85 +121,85 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
 
                 continue;
             }
-            var wearableBh = slot.GetWearableBehavior();
-            if (wearableBh == null) continue;
+
+            if (slot.GetWearableBehavior() is not { } wearableBh) continue;
 
             var cooling = wearableBh.GetCooling(slot);
 
             cooling = (float)Math.Round(cooling, 1, MidpointRounding.AwayFromZero);
 
             gearCooling += cooling;
-            finalCooling += cooling;
         }
 
+        if(Math.Abs(gearCooling) > float.Epsilon)
+        {
+            stat.Set("gear", gearCooling);
+        }
+        else stat.Remove("gear");
+
+        if(unequippedSlots > 0)
+        {
+            stat.Set("exposedSkin", unequippedSlots * config.UnequippedSlotCooling);
+        }
+        else stat.Remove("exposedSkin");
+    }
+
+    private void UpdateRoomStats()
+    {
         var config = ModConfig.Instance.HeatAndCooling;
+        var stat = entity.Stats[HoDStats.Cooling];
+        var tempPos = entity.Pos.AsBlockPos;
 
-        float nakedCooling = unequippedSlots * config.UnequippedSlotCooling;
+        var roomRegistry = entity.Api.ModLoader.GetModSystem<RoomRegistry>();
+        var room = roomRegistry.GetRoomForPosition(tempPos);
 
-        gearCooling += nakedCooling;
-        finalCooling += nakedCooling;
-
-        GearCooling = Util.GuardFinite(gearCooling);
-        finalCooling = Util.GuardFinite(finalCooling);
-
-        if (entity.WatchedAttributes.GetFloat("wetness", 0f) > 0f)
+        if (room?.ExitCount == 0 && room.SkylightCount <= room.NonSkylightCount)
         {
-            finalCooling += config.WetnessCoolingBonus;
-            HasWetnessCoolingBonus = true;
+            stat.Set("room", config.RoomCoolingBonus);
         }
+        else stat.Remove("room");
 
-        if (inEnclosedRoom)
+        if (room?.ExitCount == 0)
         {
-            finalCooling += config.RoomCoolingBonus;
-            HasRoomCoolingBonus = true;
-        }
+            const double proximityPower = 0.875;
 
-        finalCooling -= nearbyHeatSourcesStrength * 0.5f;
+            BlockPos min = new(room.Location.X1, room.Location.Y1, room.Location.Z1, tempPos.dimension);
+            BlockPos max = new(room.Location.X2, room.Location.Y2, room.Location.Z2, tempPos.dimension);
 
-        
-        int sunlightLevel = entity.World.BlockAccessor.GetLightLevel(
-            entity.Pos.AsBlockPos,
-            EnumLightLevelType.TimeOfDaySunLight
-        );
-        sunlightLevel = GameMath.Clamp(sunlightLevel, 0, 22);
-
-        int threshold = config.LowSunlightThreshold;
-
-        if (sunlightLevel < threshold)
-        {
-            float darknessFraction = (float)(threshold - sunlightLevel) / threshold;
-            darknessFraction = GameMath.Clamp(darknessFraction, 0f, 1f);
-            float sunlightCoolingBonus = config.LowSunlightCoolingBonus * darknessFraction;
-            finalCooling += sunlightCoolingBonus;
-
-            if (sunlightCoolingBonus > 0f)
+            float nearbyHeatSourcesStrength = 0;
+            var entityPos = tempPos.Copy();
+            entity.World.BlockAccessor.WalkBlocks(min, max, (block, x, y, z) =>
             {
-                HasLowSunlightCoolingBonus = true;
+                tempPos.Set(x, y, z);
+                var blockEntity = entity.World.BlockAccessor.GetBlockEntity(tempPos);
+                if (blockEntity is IHeatSource heatSource)
+                {
+                    float factor = Math.Min(
+                        1f,
+                        9f / (8f + (float)Math.Pow(
+                            tempPos.DistanceTo(entityPos.X, entityPos.Y + 0.9f, entityPos.Z),
+                            proximityPower
+                        ))
+                    );
+
+                    nearbyHeatSourcesStrength += heatSource.GetHeatStrength(entity.World, tempPos, entityPos) * factor;
+                }
+            });
+
+            nearbyHeatSourcesStrength *= 0.5f;
+
+            if (Math.Abs(nearbyHeatSourcesStrength) > float.Epsilon)
+            {
+                stat.Set("roomHeating", -nearbyHeatSourcesStrength);
             }
+            else stat.Remove("roomHeating");
         }
-
-        bool hasDirectSun = HasDirectSunlight();
-        if (!hasDirectSun)
-        {
-            finalCooling += config.ShadeCoolingBonus;
-            HasShadeCoolingBonus = true;
-        }
-
-        float coolingMul = entity.Stats.GetBlended(HoDStats.CoolingMul).GuardFinite(1f);
-
-        coolingMul = GameMath.Clamp(coolingMul, 0f, 100f);
-
-        float totalCoolingMult = CoolingMultiplier * coolingMul;
-
-        finalCooling = ApplyBidirectionalMultiplier(finalCooling, totalCoolingMult);
-
-        Cooling = GameMath.Clamp(Util.GuardFinite(finalCooling), -100f, 100f);
-        SyncCoolingToWatchedAttributes();
+        else stat.Remove("roomHeating");
     }
 
     private static float ApplyBidirectionalMultiplier(float value, float factor)
     {
-        if (factor <= 0f || value == 0f) return value;
+        if (factor <= 0f || Math.Abs(value) < float.Epsilon) return value;
         if (value > 0f) return value * factor;
         return value / factor;
     }
@@ -208,78 +240,13 @@ public partial class EntityBehaviorBodyTemperatureHot(Entity entity) : EntityBeh
         );
         return blockSel == null;
     }
-    
-    private static bool SunBlockFilter(BlockPos pos, Block block)
+
+    private static bool SunBlockFilter(BlockPos pos, Block block) => block?.BlockMaterial switch
     {
-        if (block == null) return false;
-        if (block.BlockMaterial == EnumBlockMaterial.Glass ||
-            block.BlockMaterial == EnumBlockMaterial.Water ||
-            block.BlockMaterial == EnumBlockMaterial.Ice)
-        {
-            return false;
-        }
-        if (block.BlockMaterial == EnumBlockMaterial.Leaves)
-            return true;
-        return block.LightAbsorption > 0;
-    }
+        null => false,
+        EnumBlockMaterial.Glass or EnumBlockMaterial.Water or EnumBlockMaterial.Ice => false,
+        EnumBlockMaterial.Leaves => true,
+        _ => block.LightAbsorption > 0,
+    };
 
-    private bool inEnclosedRoom;
-    private float nearbyHeatSourcesStrength;
-    private bool inGreenhouse;
-    private void UpdateRoomInfo()
-    {
-        var roomRegistry = entity.Api.ModLoader.GetModSystem<RoomRegistry>();
-        if (roomRegistry is null) return;
-
-        var tempPos = entity.Pos.AsBlockPos;
-        Room room = roomRegistry.GetRoomForPosition(tempPos);
-
-        inEnclosedRoom = false;
-        inGreenhouse   = false;
-        nearbyHeatSourcesStrength = 0f;
-
-        if (room is null) return;
-
-        bool isClosedRoom        = room.ExitCount == 0;
-        bool isSkylightDominant  = room.SkylightCount > room.NonSkylightCount;
-
-        bool isGreenhouse = isClosedRoom && isSkylightDominant;
-
-        if (isGreenhouse)
-        {
-            inGreenhouse = true;
-        }
-        else if (isClosedRoom)
-        {
-            inEnclosedRoom = true;
-        }
-
-        if (!inEnclosedRoom) return;
-
-        const double proximityPower = 0.875;
-
-        BlockPos min = new(room.Location.X1, room.Location.Y1, room.Location.Z1, tempPos.dimension);
-        BlockPos max = new(room.Location.X2, room.Location.Y2, room.Location.Z2, tempPos.dimension);
-
-        var entityPos = tempPos.Copy();
-        entity.World.BlockAccessor.WalkBlocks(min, max, (block, x, y, z) =>
-        {
-            tempPos.Set(x, y, z);
-            var blockEntity = entity.World.BlockAccessor.GetBlockEntity(tempPos);
-            if (blockEntity is IHeatSource heatSource)
-            {
-                float factor = Math.Min(
-                    1f,
-                    9f / (8f + (float)Math.Pow(
-                        tempPos.DistanceTo(entityPos.X, entityPos.Y + 0.9f, entityPos.Z),
-                        proximityPower
-                    ))
-                );
-
-                nearbyHeatSourcesStrength += heatSource.GetHeatStrength(entity.World, tempPos, entityPos) * factor;
-            }
-        });
-
-        nearbyHeatSourcesStrength = nearbyHeatSourcesStrength.GuardFinite();
-    }
 }

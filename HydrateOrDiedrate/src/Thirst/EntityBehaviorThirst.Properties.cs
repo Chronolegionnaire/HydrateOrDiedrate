@@ -51,15 +51,19 @@ public partial class EntityBehaviorThirst
 
     public float ThirstRate
     {
-        get => ThirstTree.TryGetFloat("thirstRate") ?? ModConfig.Instance.Thirst.ThirstRate;
-        set
+        get
         {
-            var safeValue = value.GuardFinite();
-            if(safeValue == ThirstRate) return;
-
-            ThirstTree.SetFloat("thirstRate", safeValue);
-            entity.WatchedAttributes.MarkPathDirty(thirstTreePath);
+            var defaultThirstRate = ModConfig.Instance.Thirst.ThirstRate;
+            
+            return GameMath.Clamp(
+                defaultThirstRate * entity.Stats.GetBlended(HoDStats.ThirstRate),
+                1,
+                defaultThirstRate * ModConfig.Instance.Thirst.MaxThirstRateMultiplier
+            ).GuardFinite(defaultThirstRate);
         }
+
+        [Obsolete("ThirstRate now uses stats and is no longer settable directly")]
+        set { /*Obsolete*/ }
     }
 
     [Obsolete("Use NutritionDeficitAmount instead")] public float HungerReductionAmount { get => NutritionDeficitAmount; set => NutritionDeficitAmount = value; }
@@ -116,6 +120,7 @@ public partial class EntityBehaviorThirst
             CurrentHydration = attr.GetFloat("currentThirst");
             attr.RemoveAttribute("currentThirst");
         }
+        attr.RemoveAttribute("thirstRate");
     }
 
     private void InitThirstAttributes()

@@ -10,6 +10,8 @@ namespace HydrateOrDiedrate;
 /// </summary>
 public static class HoDStats
 {
-    public const string ThirstRateMul = "HoD:ThirstRateMul";
+    public const string ThirstRate = "HoD:thirstRate"; 
+    public const string Cooling = "HoD:cooling";
+
     public const string CoolingMul    = "HoD:CoolingMul";
 }

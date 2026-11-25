@@ -220,7 +220,6 @@
   "characterextradialogs-hydrationdelay": "Hydration Delay",
   "characterextradialogs-nutritiondeficit": "Nutrition Deficit",
   "characterextradialogs-thirstrate": "Thirst Rate",
-  "characterextradialogs-cooling": "Cooling Gear | Total",
   "hydrateordiedrate-hp": "{0} hp",
   "hydrateordiedrate-hyd": "{0} hyd",
   "hydrateordiedrate-sat": "{0} sat",
@@ -276,5 +275,20 @@
   "container-detach-contains-liquid": "Not Empty! (requires CarryOn interaction to detach)",
 
   "game:statkey-thirstPenalty": "Thirst",
-  "game:statkey-liquidEncumbrancePenalty": "Liquid Encumbrance"
+  "game:statkey-liquidEncumbrancePenalty": "Liquid Encumbrance",
+  "statkey-base": "Base",
+  "statkey-sprint": "Sprinting",
+  "statkey-idle": "Idle",
+  "statkey-story": "Story Location",
+  "statkey-harshheat": "Harsh Heat",
+
+  "statkey-wetness": "Wetness",
+  "statkey-lowSunlight": "Low Sunlight",
+  "statkey-shade": "Shade",
+  "statkey-gear": "Gear",
+  "statkey-exposedSkin": "Exposed Skin",
+  "statkey-room": "Room",
+  "statkey-roomHeating": "Room Heating"
+
+  //TODO create InsanityLib style stat language keys
 }

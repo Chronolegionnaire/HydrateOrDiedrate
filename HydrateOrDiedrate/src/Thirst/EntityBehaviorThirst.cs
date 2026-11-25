@@ -1,24 +1,34 @@
 ﻿using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.Thirst;
+using HydrateOrDiedrate.Hot_Weather;
 using InsanityLib.Generators.Attributes;
 using System;
-using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
-using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace HydrateOrDiedrate;
 
 [AutoRegistryName("HoD:thirst")]
-public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity)
+public partial class EntityBehaviorThirst : EntityBehavior
 {
+    public EntityBehaviorThirst(Entity entity) : base(entity)
+    {
+        entity.Stats.Register(HoDStats.ThirstRate, EnumStatBlendType.FlatMultiply);
+    }
+
     private StoryStructuresSpawnConditions storySys;
 
     public override void Initialize(EntityProperties properties, JsonObject attributes)
     {
         base.Initialize(properties, attributes);
+
+        //HACK: manually updating blend types as workaround for https://github.com/anegostudios/VintageStory-Issues/issues/10278
+        entity.WatchedAttributes.RegisterModifiedListener("stats", () =>
+        {
+            entity.Stats[HoDStats.ThirstRate].BlendType = EnumStatBlendType.FlatMultiply;
+        });
+
         storySys = entity.Api.ModLoader.GetModSystem<StoryStructuresSpawnConditions>(false);
         InitThirstAttributes();
         UpdateMovementPenalty();
@@ -183,49 +193,36 @@ public partial class EntityBehaviorThirst(Entity entity) : EntityBehavior(entity
         }
     }
 
-    private void HandleAccumulatedThirst(EntityPlayer player, float deltaTime)
+    private void HandleAccumulatedThirst(EntityAgent agent, float deltaTime)
     {
-        var thirstRate = ThirstRate = CalculateThirstRate(player);
-
-        thirstRate *= CalculateMultiplierPerGameSecond();
-
-        ModifyThirst(-thirstRate * deltaTime * 0.1f);
+        UpdateStats(agent);
+        ModifyThirst(-ThirstRate * CalculateMultiplierPerGameSecond() * deltaTime * 0.1f);
     }
 
-    private float CalculateThirstRate(EntityPlayer player)
+    private void UpdateStats(EntityAgent agent)
     {
         var config = ModConfig.Instance.Thirst;
-        float ThirstRate = config.ThirstRate;
+        var stat = agent.Stats[HoDStats.ThirstRate];
 
-        var controls = player.Controls;
-        if (controls.Sprint)
+        if (agent.Controls.Sprint)
         {
-            ThirstRate *= config.SprintThirstMultiplier;
+            stat.Set("sprint", config.SprintThirstMultiplier);
         }
-
-        foreach (var modifier in player.SidedProperties.Behaviors.OfType<IThirstRateModifier>())
-        {
-            var newThirstRate = modifier.OnThirstRateCalculate(ThirstRate);
-
-            if (float.IsFinite(newThirstRate)) ThirstRate = newThirstRate;
-        }
+        else stat.Remove("sprint");
 
         if (storySys?.GetStoryStructureAt(entity.Pos.AsBlockPos) is not null)
         {
-            ThirstRate *= GameMath.Clamp(ModConfig.Instance.Thirst.ThirstRateAtStoryLocations, 0, 2);
+            stat.Set("story", config.ThirstRateAtStoryLocations);
         }
+        else stat.Remove("story");
 
         if (entity.World.ElapsedMilliseconds - lastMoveMs > 3000L)
         {
-            ThirstRate *= config.IdleThirstModifier;
+            stat.Set("idle", config.IdleThirstModifier);
         }
-        float thirstRateMul = entity.Stats.GetBlended(HoDStats.ThirstRateMul).GuardFinite(1f);
-        
-        ThirstRate *= GameMath.Clamp(thirstRateMul, 0f, 1000f);
+        else stat.Remove("idle");
 
-        ThirstRate = Math.Min(ThirstRate, config.ThirstRate * config.MaxThirstRateMultiplier);
-
-        return ThirstRate.GuardFinite(config.ThirstRate);
+        agent.GetBehavior<EntityBehaviorBodyTemperatureHot>()?.UpdateStats();
     }
 
 }

@@ -1,9 +1,13 @@
-﻿using System;
+﻿using HarmonyLib;
+using HydrateOrDiedrate.Config;
+using HydrateOrDiedrate.Config.SubConfigs;
+using HydrateOrDiedrate.Hot_Weather;
+using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using HarmonyLib;
-using HydrateOrDiedrate.Config;
+using System.Text;
 using Vintagestory.API.Client;
+using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
@@ -19,10 +23,11 @@ public static class CharacterExtraDialogsPatch
         public GuiComposer composer;
         public GuiElementDynamicText thirstDynamicText;
         public GuiElementDynamicText thirstRateDynamicText;
+        public GuiElementHoverText thirstRateHoverText;
         public GuiElementDynamicText nutritionDeficitDynamicText;
         public GuiElementDynamicText coolingDynamicText;
+        public GuiElementHoverText coolingHoverText;
         public GuiElementDynamicText hydrationDelayDynamicText;
-        public GuiElementRichtext coolingBonusesRichText;
     }
 
     private static bool ShouldSkipPatch() => !ModConfig.Instance.Thirst.Enabled; //TODO use patch category instead
@@ -34,7 +39,7 @@ public static class CharacterExtraDialogsPatch
         var codeMatcher = new CodeMatcher(instructions);
         
         codeMatcher.MatchStartForward(
-            new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GuiComposer), "Compose", new Type[] { typeof(bool) }))
+            new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(GuiComposer), "Compose", [typeof(bool)]))
         );
 
         codeMatcher.Insert(
@@ -48,7 +53,9 @@ public static class CharacterExtraDialogsPatch
 
         return codeMatcher.InstructionEnumeration();
     }
-
+    
+    //TODO maybe create some shared library code for stuff like this
+    //TODO support different types of stats and blend/calculation method
     private static void ExtraUI(CharacterExtraDialogs __instance, ICoreClientAPI capi, GuiDialog.DlgComposers composers)
     {
         if (ShouldSkipPatch() || composers is null || !composers.ContainsKey("playerstats")) return;
@@ -61,7 +68,7 @@ public static class CharacterExtraDialogsPatch
         const float rightColumnHorizontalOffset = 165.0f;
         const float hydrationVerticalOffset = -10.0f;
         const float hydrationXOffset = -165.0f;
-        
+
         ElementBounds hydrationLeftBounds = baseBounds.BelowCopy(hydrationVerticalOffset)
             .WithFixedPosition(
                 baseBounds.fixedX + hydrationXOffset,
@@ -89,7 +96,7 @@ public static class CharacterExtraDialogsPatch
 
         const float thirstRateVerticalOffset = -10f;
         const float thirstRateXOffset = 0.0f;
-        
+
         ElementBounds thirstRateLeftBounds = hydrationLeftBounds.BelowCopy(thirstRateVerticalOffset)
             .WithFixedPosition(
                 hydrationLeftBounds.fixedX + thirstRateXOffset,
@@ -114,6 +121,11 @@ public static class CharacterExtraDialogsPatch
                 thirstRateRightBounds,
                 "hydrateordiedrate_thirstrate"
             );
+
+        var statBounds = thirstRateRightBounds.FlatCopy();
+        statBounds.fixedHeight = 20;
+        statBounds.fixedWidth /= 3;
+        composer.AddAutoSizeHoverText(BuildThirstRateStatsString(capi.World.Player.Entity), CairoFont.WhiteDetailText(), 300, statBounds, "hydrateordiedrate_thirstrate_hover");
 
         const float nutritionDeficitVerticalOffset = -10.0f;
         const float nutritionDeficitXOffset = 0.0f;
@@ -179,55 +191,47 @@ public static class CharacterExtraDialogsPatch
                 coolingLeftBounds.fixedX + rightColumnHorizontalOffset,
                 coolingLeftBounds.fixedY
             );
-
+        
         var coolingLabelFont = CairoFont.WhiteDetailText().Clone();
         coolingLabelFont.UnscaledFontsize *= 0.95f;
 
         composer
             .AddStaticText(
-                Lang.Get("hydrateordiedrate:characterextradialogs-cooling"),
+                Lang.Get("hydrateordiedrate:itemwearable-cooling"),
                 coolingLabelFont,
                 coolingLeftBounds,
                 "coolingStaticText"
             )
             .AddDynamicText(
-                "0 | 0",
+                "{0:+0.#;-0.#}°C",
                 CairoFont.WhiteDetailText(),
                 coolingRightBounds,
                 "cooling"
             );
 
-        const float bonusesVerticalOffset = -16.0f;
+        statBounds = coolingRightBounds.FlatCopy();
+        statBounds.fixedHeight = 20;
+        statBounds.fixedWidth /= 3;
+        composer.AddAutoSizeHoverText(BuildCoolingStatsString(capi.World.Player.Entity), CairoFont.WhiteDetailText(), 300, statBounds, "hydrateordiedrate_cooling_hover");
+        CachedUIElements cached = CacheFromComposer(composer);
 
-        ElementBounds bonusesBounds = coolingLeftBounds.BelowCopy(bonusesVerticalOffset)
-            .WithFixedPosition(
-                coolingLeftBounds.fixedX + 10, 
-                coolingLeftBounds.fixedY + 1 + coolingLeftBounds.fixedHeight + bonusesVerticalOffset
-            )
-            .WithFixedWidth(160.0)
-            .WithFixedHeight(26.0);
+        cachedElements = cached;
+        UpdateDynamicTexts(capi, cached);
+    }
 
-        composer.AddRichtext(
-            "",
-            CairoFont.WhiteDetailText(),
-            bonusesBounds,
-            "hydrateordiedrate_coolingBonuses"
-        );
-
-        
-        CachedUIElements cached = new CachedUIElements
+    private static CachedUIElements CacheFromComposer(GuiComposer composer)
+    {
+        return new()
         {
             composer = composer,
             thirstDynamicText = composer.GetDynamicText("hydrateordiedrate_thirst"),
             thirstRateDynamicText = composer.GetDynamicText("hydrateordiedrate_thirstrate"),
+            thirstRateHoverText = composer.GetHoverText("hydrateordiedrate_thirstrate_hover"),
             nutritionDeficitDynamicText = composer.GetDynamicText("nutritionDeficit"),
             coolingDynamicText = composer.GetDynamicText("cooling"),
+            coolingHoverText = composer.GetHoverText("hydrateordiedrate_cooling_hover"),
             hydrationDelayDynamicText = composer.GetDynamicText("hydrateordiedrate_delay"),
-            coolingBonusesRichText = composer.GetRichtext("hydrateordiedrate_coolingBonuses")
         };
-        
-        cachedElements = cached;
-        UpdateDynamicTexts(capi, cached);
     }
 
     [HarmonyPatch("UpdateStats")]
@@ -237,22 +241,7 @@ public static class CharacterExtraDialogsPatch
     {
         if (ShouldSkipPatch() || !___dlg.IsOpened()) return;
 
-        var cached = cachedElements;
-        if (cached == null)
-        {
-            var compo = ___dlg.Composers["playerstats"];
-            cached = new CachedUIElements
-            {
-                composer = compo,
-                thirstDynamicText = compo.GetDynamicText("hydrateordiedrate_thirst"),
-                thirstRateDynamicText = compo.GetDynamicText("hydrateordiedrate_thirstrate"),
-                nutritionDeficitDynamicText = compo.GetDynamicText("nutritionDeficit"),
-                coolingDynamicText = compo.GetDynamicText("cooling"),
-                hydrationDelayDynamicText = compo.GetDynamicText("hydrateordiedrate_delay"),
-                coolingBonusesRichText = compo.GetRichtext("hydrateordiedrate_coolingBonuses")
-            };
-            cachedElements = cached;
-        }
+        var cached = cachedElements ??= CacheFromComposer(___dlg.Composers["playerstats"]);
         
         UpdateDynamicTexts(___capi, cached);
     }
@@ -275,54 +264,20 @@ public static class CharacterExtraDialogsPatch
             );
             cached.thirstRateDynamicText?.SetNewText($"{(int)thirstRatePercentage}%", false, false, false);
 
+            cached.thirstRateHoverText?.SetNewText(BuildThirstRateStatsString(entity));
+            cached.coolingHoverText?.SetNewText(BuildCoolingStatsString(entity));
+
             cached.nutritionDeficitDynamicText?.SetNewText(
                 $"{thirstBehavior.NutritionDeficitAmount}",
                 false, false, false
             );
         }
 
-        var hodCooling = entity.WatchedAttributes.GetTreeAttribute("hodCooling");
-        if (hodCooling != null)
+        if(entity.GetBehavior<EntityBehaviorBodyTemperatureHot>() is { } bodyTemperatureHotBehavior)
         {
-            float gearCooling = hodCooling.GetFloat("gearCooling", 0f) * ModConfig.Instance.HeatAndCooling.CoolingTempOffsetPerPoint;
-            float totalCooling = hodCooling.GetFloat("totalCooling", 0f) * ModConfig.Instance.HeatAndCooling.CoolingTempOffsetPerPoint;
-            cached.coolingDynamicText?.SetNewText(
-                $"{gearCooling:0.##} | {totalCooling:0.##}",
-                false, false, false
-            );
-            
-            int wetBonus    = hodCooling.GetInt("wetBonus", 0);
-            int roomBonus   = hodCooling.GetInt("roomBonus", 0);
-            int lowSunBonus = hodCooling.GetInt("lowSunBonus", 0);
-            int shadeBonus  = hodCooling.GetInt("shadeBonus", 0);
-            var line1Parts = new List<string>();
-            if (wetBonus != 0)
-                line1Parts.Add(Lang.Get("hydrateordiedrate:coolingbonus-wet"));
-            if (roomBonus != 0)
-                line1Parts.Add(Lang.Get("hydrateordiedrate:coolingbonus-room"));
-            var line2Parts = new List<string>();
-            if (lowSunBonus != 0)
-                line2Parts.Add(Lang.Get("hydrateordiedrate:coolingbonus-lowsun"));
-            if (shadeBonus != 0)
-                line2Parts.Add(Lang.Get("hydrateordiedrate:coolingbonus-shade"));
-            var lines = new List<string>();
-            if (line1Parts.Count > 0)
-                lines.Add(string.Join(" ", line1Parts));
-            if (line2Parts.Count > 0)
-                lines.Add(string.Join(" ", line2Parts));
-
-            string vtml = "";
-            if (lines.Count > 0)
-            {
-                string text = string.Join("<br>", lines);
-                vtml = $"<font color=\"#1097b4\" size=\"9\">{text}</font>";
-            }
-
-            cached.coolingBonusesRichText?.SetNewText(
-                vtml,
-                CairoFont.WhiteDetailText()
-            );
+            cached.coolingDynamicText.SetNewText(string.Format("{0:+0.#;-0.#}°C", bodyTemperatureHotBehavior.Cooling * ModConfig.Instance.HeatAndCooling.CoolingTempOffsetPerPoint));
         }
+
         if (thirstBehavior is not null)
         {
             var seconds = Math.Max(0, thirstBehavior.HydrationLossDelay);
@@ -334,4 +289,40 @@ public static class CharacterExtraDialogsPatch
             );
         }
     }
+
+    public static string BuildThirstRateStatsString(EntityAgent agent)
+	{
+		StringBuilder sb = new();
+
+		var stats = agent.Stats[HoDStats.ThirstRate];
+
+        sb.AppendFormat("{0}: 100%", Lang.Get("hydrateordiedrate:statkey-base")).AppendLine();
+
+        foreach ((var key, var value) in stats.ValuesByKey)
+        {
+            if (Math.Abs(value.Value - 1) < float.Epsilon) continue;
+
+            sb.AppendFormat("{0}: x{1:P0}", Lang.Get($"hydrateordiedrate:statkey-{key}"), value.Value).AppendLine();
+        }
+
+        return sb.ToString();
+	}
+
+    public static string BuildCoolingStatsString(EntityAgent agent)
+	{
+		StringBuilder sb = new();
+        var offsetPerPoint = ModConfig.Instance.HeatAndCooling.CoolingTempOffsetPerPoint;
+		var stats = agent.Stats[HoDStats.Cooling];
+
+        foreach ((var key, var value) in stats.ValuesByKey)
+        {
+            if (Math.Abs(value.Value) < float.Epsilon) continue;
+
+            sb.AppendFormat("{0}: {1:+0.#;-0.#}°C", Lang.Get($"hydrateordiedrate:statkey-{key}"), value.Value * offsetPerPoint).AppendLine();
+        }
+
+        //TODO show multipliers
+
+        return sb.ToString();
+	}
 }

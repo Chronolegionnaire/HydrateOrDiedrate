@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace HydrateOrDiedrate.Config.SubConfigs;
 
@@ -17,20 +18,24 @@ public class HeatAndCoolingConfig
     [DefaultValue(25.0d)]
     public float TemperatureThreshold { get; set; } = 25.0f;
 
+    
     /// <summary>
-    /// Additional thirst units per degree above the threshold each second
+    /// Percentage with which thirst increases based on temperature above threshold.
+    /// increase =  tempAboveThreashold * HarshHeatThirstIncrease * (HarshHeatExponentialFactor ^ tempAboveThreashold)
     /// </summary>
-    [DefaultValue(5.0d)]
-    public float ThirstIncreasePerDegreeMultiplier { get; set; } = 5f;
+    [DisplayFormat( DataFormatString = "P")]
+    [DefaultValue(0.5d)]
+    public float HarshHeatThirstIncrease { get; set; } = 0.05f;
 
     /// <summary>
     /// Exponential scaling factor for thirst gain in extreme heat
     /// </summary>
-    [DefaultValue(0.25d)]
-    public float HarshHeatExponentialGainMultiplier { get; set; } = 0.25f;
+    [DefaultValue(1.15d)]
+    public float HarshHeatExponentialFactor { get; set; } = 1.15f;
 
     /// <summary>
-    /// Cooling bonus for each empty armor/clothing slot
+    /// Cooling bonus for on empty armor/clothing slots
+    /// Note: this bonus only applies to some of the slots (slots like the necklace do not get this bonus)
     /// </summary>
     [DefaultValue(1.0d)]
     public float UnequippedSlotCooling { get; set; } = 1.0f;
