@@ -15,6 +15,7 @@ public partial class EntityBehaviorThirst : EntityBehavior
     public EntityBehaviorThirst(Entity entity) : base(entity)
     {
         entity.Stats.Register(HoDStats.ThirstRate, EnumStatBlendType.FlatMultiply);
+        entity.Stats.Register(HoDStats.MaxHydration);
     }
 
     private StoryStructuresSpawnConditions storySys;
@@ -23,11 +24,7 @@ public partial class EntityBehaviorThirst : EntityBehavior
     {
         base.Initialize(properties, attributes);
 
-        //HACK: manually updating blend types as workaround for https://github.com/anegostudios/VintageStory-Issues/issues/10278
-        entity.WatchedAttributes.RegisterModifiedListener("stats", () =>
-        {
-            entity.Stats[HoDStats.ThirstRate].BlendType = EnumStatBlendType.FlatMultiply;
-        });
+        entity.WatchedAttributes.RegisterModifiedListener("stats", OnStatsChanged);
 
         storySys = entity.Api.ModLoader.GetModSystem<StoryStructuresSpawnConditions>(false);
         InitThirstAttributes();

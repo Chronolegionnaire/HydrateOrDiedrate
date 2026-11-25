@@ -13,5 +13,10 @@ public static class HoDStats
     public const string ThirstRate = "HoD:thirstRate"; 
     public const string Cooling = "HoD:cooling";
 
-    public const string CoolingMul    = "HoD:CoolingMul";
+    /// <summary>
+    /// Note: this is affects the effectiveness of cooling rather then a direct multiplier (meaning it still has a positive effect on negative cooling)
+    /// </summary>
+    public const string CoolingMul = "HoD:CoolingMul";
+
+    public const string MaxHydration = "HoD:maxHydration";
 }

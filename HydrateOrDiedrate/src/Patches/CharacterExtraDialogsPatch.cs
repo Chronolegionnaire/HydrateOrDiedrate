@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Cairo;
+using HarmonyLib;
 using HydrateOrDiedrate.Config;
 using HydrateOrDiedrate.Config.SubConfigs;
 using HydrateOrDiedrate.Hot_Weather;
@@ -312,16 +313,23 @@ public static class CharacterExtraDialogsPatch
 	{
 		StringBuilder sb = new();
         var offsetPerPoint = ModConfig.Instance.HeatAndCooling.CoolingTempOffsetPerPoint;
-		var stats = agent.Stats[HoDStats.Cooling];
+		var coolingStat = agent.Stats[HoDStats.Cooling];
 
-        foreach ((var key, var value) in stats.ValuesByKey)
+        foreach ((var key, var value) in coolingStat.ValuesByKey)
         {
             if (Math.Abs(value.Value) < float.Epsilon) continue;
 
-            sb.AppendFormat("{0}: {1:+0.#;-0.#}°C", Lang.Get($"hydrateordiedrate:statkey-{key}"), value.Value * offsetPerPoint).AppendLine();
+            sb.AppendFormat("{0}: {1:+0.#;-0.#}°C ", Lang.Get($"hydrateordiedrate:statkey-{key}"), value.Value * offsetPerPoint).AppendLine();
         }
 
-        //TODO show multipliers
+        var coolingMultStat = agent.Stats[HoDStats.CoolingMul];
+        foreach ((var key, var value) in coolingMultStat.ValuesByKey)
+        {
+            if (key == "base") continue;
+
+            //TODO think about a better way to display that this is done in an always beneficial way (negative cooling just becomes less negative)
+            sb.AppendFormat("{0}: {1:P0}", Lang.Get($"hydrateordiedrate:statkey-{key}"), value.Value).AppendLine();
+        }
 
         return sb.ToString();
 	}

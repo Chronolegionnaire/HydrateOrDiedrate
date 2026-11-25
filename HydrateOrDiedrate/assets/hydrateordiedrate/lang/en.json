@@ -94,8 +94,8 @@
 
   "hydrateordiedrate:ability-dromedary": "Dromedary",
   "hydrateordiedrate:ability-equatidian": "Equatidian",
-  "hydrateordiedrate:abilitydesc-dromedary": "Increases max thirst capacity.",
-  "hydrateordiedrate:abilitydesc-equatidian": "Provides a cooling multiplier.",
+  "hydrateordiedrate:abilitydesc-dromedary": "Max hydration +{0}%",
+  "hydrateordiedrate:abilitydesc-equatidian": "Cooling is +{0}% better",
 
   "hydrateordiedrate:block-handpump-copper*": "Copper Hand Pump",
   "hydrateordiedrate:block-handpump-lead*": "Lead Hand Pump",
@@ -288,7 +288,8 @@
   "statkey-gear": "Gear",
   "statkey-exposedSkin": "Exposed Skin",
   "statkey-room": "Room",
-  "statkey-roomHeating": "Room Heating"
+  "statkey-roomHeating": "Room Heating",
+  "statkey-ability-equatidian": "<lang>hydrateordiedrate:ability-equatidian</lang>"
 
   //TODO create InsanityLib style stat language keys
 }

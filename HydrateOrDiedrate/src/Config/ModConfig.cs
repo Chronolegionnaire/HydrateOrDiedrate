@@ -67,11 +67,6 @@ public class ModConfig
     public ContainersConfig Containers { get; set; } = new();
 
     /// <summary>
-    /// The configuration for the XLib integration
-    /// </summary>
-    public XLibConfig XLib { get; set; } = new();
-
-    /// <summary>
     /// Turns off the sway/distortion effect when the player is drunk
     /// </summary>
     [DefaultValue(false)]

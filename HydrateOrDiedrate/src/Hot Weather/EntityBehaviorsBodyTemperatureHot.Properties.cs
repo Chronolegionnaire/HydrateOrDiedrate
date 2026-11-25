@@ -22,12 +22,12 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
     public bool HasShadeCoolingBonus => entity.Stats[HoDStats.Cooling].ValuesByKey.TryGetValue("shade") is { Value: > 0 };
 
     [Obsolete("this makes use of stats now")]
-    public float CoolingMultiplier => 1f; //TODO
+    public float CoolingMultiplier => entity.Stats[HoDStats.CoolingMul].GetBlended();
 
     [Obsolete("this makes use of stats now")]
     public float GearCooling
     {
-        get => entity.Stats[HoDStats.Cooling].ValuesByKey.TryGetValue("equipment")?.Value ?? 0;
+        get => entity.Stats[HoDStats.Cooling].ValuesByKey.TryGetValue("gear")?.Value ?? 0;
         
         [Obsolete("GearCooling now uses stats and is no longer settable directly")]
         set { /*Obsolete*/ }
@@ -40,17 +40,28 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
             var cooling = entity.Stats.GetBlended(HoDStats.Cooling);
             var mult = entity.Stats.GetBlended(HoDStats.CoolingMul);
 
-            if(XLibSkills.Enabled && entity is EntityPlayer player)
+            if(cooling > 0)
             {
-                mult += XLibSkills.GetEquatidianModifier(entity.Api, player.Player); 
-                //TODO this used to multiplied with the earlier mult, decide if that should still happen
-                //TODO have the XSkill just set the stat rather then checking it ourselves
+                cooling = cooling * mult;
             }
-            return GameMath.Clamp(ApplyBidirectionalMultiplier(cooling, mult), -100f, 100f).GuardFinite();
+            else if(cooling < 0)
+            {
+                cooling /= mult;
+            }
+
+            return GameMath.Clamp(cooling, -100f, 100f).GuardFinite();
         }
 
         [Obsolete("Cooling now uses stats and is no longer settable directly")]
         set { /*Obsolete*/ }
+    }
+
+        //TODO
+    private static float ApplyBidirectionalMultiplier(float value, float factor)
+    {
+        if (factor <= 0f || Math.Abs(value) < float.Epsilon) return value;
+        if (value > 0f) return value * factor;
+        return value / factor;
     }
 
     private void MapLegacyData()

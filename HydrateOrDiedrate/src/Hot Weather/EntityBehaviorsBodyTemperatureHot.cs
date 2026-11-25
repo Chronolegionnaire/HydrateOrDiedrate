@@ -196,13 +196,6 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
         }
         else stat.Remove("roomHeating");
     }
-
-    private static float ApplyBidirectionalMultiplier(float value, float factor)
-    {
-        if (factor <= 0f || Math.Abs(value) < float.Epsilon) return value;
-        if (value > 0f) return value * factor;
-        return value / factor;
-    }
     
     private bool HasDirectSunlight()
     {

@@ -1,5 +1,4 @@
 ﻿using HydrateOrDiedrate.Config;
-using HydrateOrDiedrate.XSkill;
 using System;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
@@ -23,7 +22,8 @@ public partial class EntityBehaviorThirst
         set
         {
             var currentMaxThirst = MaxHydration;
-            if (!float.IsFinite(value) || value == currentMaxThirst) return;
+            
+            if (!float.IsFinite(value) || Math.Abs(currentMaxThirst - value) < float.Epsilon) return;
 
             ThirstTree.SetFloat("maxHydration", value);
             entity.WatchedAttributes.MarkPathDirty(thirstTreePath);
@@ -97,9 +97,8 @@ public partial class EntityBehaviorThirst
         get => movementPenalty;
         set
         {
-
             float safeValue = GameMath.Clamp(value.GuardFinite(), 0, ModConfig.Instance.Thirst.MaxMovementSpeedPenalty);
-            if (movementPenalty == safeValue) return;
+            if (Math.Abs(movementPenalty - safeValue) < float.Epsilon) return;
 
             movementPenalty = safeValue;
             entity.Stats.Set("walkspeed", "thirstPenalty", -safeValue, false);
@@ -130,17 +129,13 @@ public partial class EntityBehaviorThirst
             entity.WatchedAttributes.SetAttribute(thirstTreePath, new TreeAttribute());
         }
         MapLegacyData();
-
-        if(!XLibSkills.Enabled) RecalculateMaxThirst();
     }
 
-    public void RecalculateMaxThirst()
+    private void OnStatsChanged()
     {
-        if(entity.Api.Side != EnumAppSide.Server) return;
-        var newMaxThirst = ModConfig.Instance.Thirst.MaxHydration;
+        MaxHydration = ModConfig.Instance.Thirst.MaxHydration * entity.Stats[HoDStats.MaxHydration].GetBlended();
 
-        if(XLibSkills.Enabled) newMaxThirst *= XLibSkills.GetDromedaryModifier(entity.Api, (entity as EntityPlayer)?.Player);
-
-        MaxHydration = newMaxThirst;
+        //HACK: manually updating blend types as workaround for https://github.com/anegostudios/VintageStory-Issues/issues/10278
+        entity.Stats[HoDStats.ThirstRate].BlendType = EnumStatBlendType.FlatMultiply;
     }
 }
