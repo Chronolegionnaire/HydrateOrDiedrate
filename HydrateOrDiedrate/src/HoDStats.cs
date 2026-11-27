@@ -10,13 +10,13 @@ namespace HydrateOrDiedrate;
 /// </summary>
 public static class HoDStats
 {
-    public const string ThirstRate = "HoD:thirstRate"; 
-    public const string Cooling = "HoD:cooling";
+    public const string ThirstRate = "hydrateordiedrate:thirstRate"; 
+    public const string Cooling = "hydrateordiedrate:cooling";
 
     /// <summary>
     /// Note: this is affects the effectiveness of cooling rather then a direct multiplier (meaning it still has a positive effect on negative cooling)
     /// </summary>
-    public const string CoolingMul = "HoD:CoolingMul";
+    public const string CoolingEfficiency = "hydrateordiedrate:coolingEfficiency";
 
-    public const string MaxHydration = "HoD:maxHydration";
+    public const string MaxHydration = "hydrateordiedrate:maxHydration";
 }

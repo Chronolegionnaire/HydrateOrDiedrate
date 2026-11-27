@@ -6,7 +6,6 @@ using HydrateOrDiedrate.patches;
 using HydrateOrDiedrate.Piping.HandPump;
 using HydrateOrDiedrate.Piping.Networking;
 using HydrateOrDiedrate.Piping.ShutoffValve;
-using HydrateOrDiedrate.XSkill;
 using InsanityLib.Generators.Attributes;
 using Newtonsoft.Json.Linq;
 using System;
@@ -120,21 +119,6 @@ public partial class HydrateOrDiedrateModSystem : ModSystem
         ClassRegistry.legacyBlockEntityClassNames["BlockEntityWellWaterSentinel"] = "HoD:BlockEntityWellWaterSentinel";
         
         api.ClassRegistry.RegisterParticlePropertyProvider("HoD:PumpCubeParticles", typeof(PumpCubeParticles));
-
-        XLibSkills.Enabled = false;
-        if (api.ModLoader.Mods.Any(mod => mod.Info.ModID.StartsWith("xlib")))
-        {
-            try
-            {
-                XLibSkills.Initialize(api);
-                XLibSkills.Enabled = true;
-            }
-            catch (Exception ex)
-            {
-                api.Logger.Warning($"Failed to initialize XLib skills compatibility: {ex}");
-                XLibSkills.Enabled = false;
-            }
-        }
     }
     
     public override void StartServerSide(ICoreServerAPI api)

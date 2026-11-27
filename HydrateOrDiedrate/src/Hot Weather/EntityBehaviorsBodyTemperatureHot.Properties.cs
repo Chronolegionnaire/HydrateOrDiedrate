@@ -1,6 +1,4 @@
-﻿using HydrateOrDiedrate.XSkill;
-using System;
-using Vintagestory.API.Common;
+﻿using System;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 
@@ -22,7 +20,7 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
     public bool HasShadeCoolingBonus => entity.Stats[HoDStats.Cooling].ValuesByKey.TryGetValue("shade") is { Value: > 0 };
 
     [Obsolete("this makes use of stats now")]
-    public float CoolingMultiplier => entity.Stats[HoDStats.CoolingMul].GetBlended();
+    public float CoolingMultiplier => entity.Stats[HoDStats.CoolingEfficiency].GetBlended();
 
     [Obsolete("this makes use of stats now")]
     public float GearCooling
@@ -38,7 +36,7 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
         get
         {
             var cooling = entity.Stats.GetBlended(HoDStats.Cooling);
-            var mult = entity.Stats.GetBlended(HoDStats.CoolingMul);
+            var mult = entity.Stats.GetBlended(HoDStats.CoolingEfficiency);
 
             if(cooling > 0)
             {

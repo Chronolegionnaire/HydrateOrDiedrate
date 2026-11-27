@@ -92,11 +92,6 @@
   "hydrateordiedrate:Config.Text.RefreshRate": "Refresh Rate",
   "hydrateordiedrate:Config.Text.SupportsWildcard": "Supports Wildcard",
 
-  "hydrateordiedrate:ability-dromedary": "Dromedary",
-  "hydrateordiedrate:ability-equatidian": "Equatidian",
-  "hydrateordiedrate:abilitydesc-dromedary": "Max hydration +{0}%",
-  "hydrateordiedrate:abilitydesc-equatidian": "Cooling is +{0}% better",
-
   "hydrateordiedrate:block-handpump-copper*": "Copper Hand Pump",
   "hydrateordiedrate:block-handpump-lead*": "Lead Hand Pump",
   "hydrateordiedrate:block-keg-tapped": "Tapped Keg",
@@ -274,6 +269,16 @@
   "hydrateordiedrate:drinking": "Drinking",
   "container-detach-contains-liquid": "Not Empty! (requires CarryOn interaction to detach)",
 
+  "cooling-effciency": "Cooling Efficiency",
+
+  "traittitle-dromedary": "Dromedary",
+  "traittitle-equatidian": "Equatidian",
+
+  "charattribute-maxHydration": "{0:+0%;-0%;0%} max hydration",
+  "charattribute-coolingEfficiency": "{0:+0%;-0%;0%} cooling efficiency",
+  "charattribute-thirstRate": "{0:+0%;-0%;0%} thirst rate",
+  "charattribute-cooling": "{0:+0.#;-0.#} cooling",
+
   "game:statkey-thirstPenalty": "Thirst",
   "game:statkey-liquidEncumbrancePenalty": "Liquid Encumbrance",
   "statkey-base": "Base",
@@ -289,7 +294,6 @@
   "statkey-exposedSkin": "Exposed Skin",
   "statkey-room": "Room",
   "statkey-roomHeating": "Room Heating",
-  "statkey-ability-equatidian": "<lang>hydrateordiedrate:ability-equatidian</lang>"
+  "hydrateordiedrate:statkey-ability-hydrateordiedrate:equatidian": "<lang>hydrateordiedrate:ability-equatidian</lang>"
 
-  //TODO create InsanityLib style stat language keys
 }

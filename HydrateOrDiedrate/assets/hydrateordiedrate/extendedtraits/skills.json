@@ -1,0 +1,24 @@
+[
+  {
+    "Code": "dromedary",
+    "Type": "positive",
+    "Skill": "survival",
+    "TraitSystems": "XLib",
+    "MaxLevel": 3,
+    "Attributes": {
+      "hydrateordiedrate:maxHydration": { "Value": 0.3 }
+    },
+    "Enabled": "config://HydrateOrDiedrateConfig/Thirst/Enabled"
+  },
+  {
+    "Code": "equatidian",
+    "Type": "positive",
+    "Skill": "survival",
+    "TraitSystems": "XLib",
+    "MaxLevel": 3,
+    "Attributes": {
+      "hydrateordiedrate:coolingEfficiency": { "ValuePerLevel": [ 0.25, 0.5, 1 ] }
+    }
+    //TODO this should be behind equivelant IF statement no?
+  }
+]
