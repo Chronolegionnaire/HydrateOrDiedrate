@@ -27,34 +27,29 @@ namespace HydrateOrDiedrate.patches
             matcher.MatchStartForward(CodeMatch.Calls(getMaxWarmth));
             if (!matcher.IsValid) return instructions;
             matcher.SetInstruction(new CodeInstruction(OpCodes.Call, helperWarmthOrCooling));
-            matcher.Start();
-            matcher.MatchEndForward(
-                CodeMatch.Calls(AccessTools.Method(typeof(ColorUtil), nameof(ColorUtil.Int2Hex))),
-                new CodeMatch(ci => ci.IsStloc() && ci.operand is LocalBuilder lb && lb.LocalIndex == 11)
-            );
-            if (!matcher.IsValid) return instructions;
+            
             matcher.Start();
             matcher.MatchEndForward(CodeMatch.LoadsConstant("clothing-maxwarmth"));
             if (!matcher.IsValid) return instructions;
 
             matcher.MatchEndForward(new CodeMatch(OpCodes.Pop));
             if (!matcher.IsValid) return instructions;
-            var skipTargetPos = matcher.Pos;
+
             var skipLabel = generator.DefineLabel();
             matcher.Instruction.labels.Add(skipLabel);
             matcher.Start();
             matcher.MatchEndForward(
                 CodeMatch.Calls(AccessTools.Method(typeof(ColorUtil), nameof(ColorUtil.Int2Hex))),
-                new CodeMatch(ci => ci.IsStloc() && ci.operand is LocalBuilder lb && lb.LocalIndex == 11)
+                new CodeMatch(ci => ci.IsStloc() && ci.operand is LocalBuilder lb && lb.LocalIndex == 10) //color 
             );
             if (!matcher.IsValid) return instructions;
             matcher.Insert(
-                CodeInstruction.LoadLocal(10),           // warmth
+                CodeInstruction.LoadLocal(9),           // warmth
                 CodeInstruction.LoadArgument(0),         // this (CollectibleBehaviorWearable)
                 CodeInstruction.LoadArgument(1),         // inSlot
                 CodeInstruction.LoadArgument(2),         // dsc
-                CodeInstruction.LoadLocal(9),            // condStr
-                CodeInstruction.LoadLocal(11),           // color
+                CodeInstruction.LoadLocal(8),            // condStr
+                CodeInstruction.LoadLocal(10),           // color
                 new CodeInstruction(OpCodes.Call, appendInfo),
                 new CodeInstruction(OpCodes.Br, skipLabel)
             );

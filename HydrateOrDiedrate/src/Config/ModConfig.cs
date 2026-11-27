@@ -72,28 +72,4 @@ public class ModConfig
     [DefaultValue(false)]
     public bool DisableDrunkSway { get; set; } = false;
 
-    // TODO See if there is a good way to re-implement this auto fill functionality
-    public void LoadLiveLiquidPortionData(ICoreAPI api)
-    {
-        foreach(var item in api.World.Items.OfType<ItemLiquidPortion>().Where(item => item.Code.Path.StartsWith("water")))
-        {
-            if (!Satiety.ItemSatietyMapping.ContainsKey(item.Code))
-            {
-                var satiety = item.Attributes?.Token["waterTightContainerProps"]?["nutritionPropsPerLitre"]?.Value<float>("satiety");
-                if(satiety is null || satiety > 0) continue;
-                
-                Satiety.ItemSatietyMapping[item.Code] = satiety.Value;
-            }
-
-            var perish = item.TransitionableProps?.FirstOrDefault(static item => item.Type == EnumTransitionType.Perish);
-            if(perish is not null)
-            {
-                PerishRates.TransitionConfig[item.Code] = new ItemTransitionConfig
-                {
-                    FreshHours = perish.FreshHours.avg,
-                    TransitionHours = perish.TransitionHours.avg,
-                };
-            }
-        }
-    }
 }

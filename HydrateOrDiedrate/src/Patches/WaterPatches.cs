@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using Vintagestory.API.Common;
+using Vintagestory.API.MathTools;
 
 namespace HydrateOrDiedrate;
 
@@ -34,13 +35,23 @@ public static class WaterPatches
                     var perishtTransition = collectible.TransitionableProps.FirstOrDefault(static item => item.Type == EnumTransitionType.Perish);
                     if (perishtTransition is not null)
                     {
-                        perishtTransition.FreshHours.avg = config.FreshHours;
+                        if(perishtTransition.FreshHours is NatFloat freshHoursNatFloat)
+                        {
+                            freshHoursNatFloat.avg = config.FreshHours;
+                        }
+                        else api.Logger.Warning("[hydrateordiedrate] FreshHours could not be applied from configs for '{0}' as it is not the expected '{1}' but instead '{2}'", collectible, typeof(NatFloat), perishtTransition.FreshHours?.GetType());
+
                         if(config.TransitionHours <= 0)
                         {
                             api.Logger.Warning("[hydrateordiedrate] TransitionHours of '{0}' is configured to 0, this will cause NaN values using minimum of 0.001f instead", collectible.Code);
                             config.TransitionHours = 0.001f;
                         }
-                        perishtTransition.TransitionHours.avg = config.TransitionHours;
+                        
+                        if(perishtTransition.FreshHours is NatFloat transitionHoursNatFloat)
+                        {
+                            transitionHoursNatFloat.avg = config.TransitionHours;
+                        }
+                        else api.Logger.Warning("[hydrateordiedrate] FreshHours could not be applied from configs for '{0}' as it is not the expected '{1}' but instead '{2}'", collectible, typeof(NatFloat), perishtTransition.TransitionHours?.GetType());
                     }
                 }
             }

@@ -126,16 +126,7 @@ public class WinchTopRenderer : IRenderer
         switch (Winch.RotationMode)
         {
             case EWinchRotationMode.MechanicalNetwork:
-                float mechAngle = mpc.AngleRad;
-                float turnDirSign = (mpc.Network.TurnDir == EnumRotDirection.Counterclockwise) ? 1f : -1f;
-                
-                AngleRad = Direction switch
-                {
-                    "east" => -mechAngle * turnDirSign,
-                    "west" => mechAngle * turnDirSign,
-                    "south" => mechAngle,
-                    _ => -mechAngle,
-                };
+                AngleRad = -mpc.AngleRad;
                 break;
 
             case EWinchRotationMode.Player:

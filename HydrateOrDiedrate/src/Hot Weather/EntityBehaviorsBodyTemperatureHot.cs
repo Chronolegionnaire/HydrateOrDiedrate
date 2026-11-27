@@ -16,6 +16,7 @@ public partial class EntityBehaviorBodyTemperatureHot : EntityBehavior
 
     public EntityBehaviorBodyTemperatureHot(Entity entity) : base(entity)
     {
+        entity.Stats.Register(HoDStats.CoolingEfficiency);
         entity.Stats.Register(HoDStats.Cooling, EnumStatBlendType.FlatSum);
         entity.Stats[HoDStats.Cooling].Set("base", 0, true);
     }

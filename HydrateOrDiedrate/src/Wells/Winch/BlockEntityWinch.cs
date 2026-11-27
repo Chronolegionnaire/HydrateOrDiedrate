@@ -141,7 +141,7 @@ namespace HydrateOrDiedrate.Wells.Winch
 
         public void UpdateIsRaising() => IsRaising = RotationMode switch
         {
-            EWinchRotationMode.MechanicalNetwork => mpc.Network.TurnDir == EnumRotDirection.Counterclockwise,
+            EWinchRotationMode.MechanicalNetwork => (mpc.IsRotationReversed() ? -mpc.CurrentSpeed : mpc.CurrentSpeed) > 0,
             EWinchRotationMode.Player => RotationPlayer?.Entity?.Controls.Sneak ?? false,
             _ => false,
         };

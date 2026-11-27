@@ -365,10 +365,8 @@ namespace HydrateOrDiedrate.Piping.HandPump
             ItemStack stack = null;
             if (msg.StackBytes != null && msg.StackBytes.Length > 0)
             {
-                using var ms = new MemoryStream(msg.StackBytes);
-                using var br = new BinaryReader(ms);
-                stack = new ItemStack();
-                stack.FromBytes(br);
+                stack = new ItemStack(msg.StackBytes.AsSpan());
+
                 stack.ResolveBlockOrItem(capi.World);
             }
 

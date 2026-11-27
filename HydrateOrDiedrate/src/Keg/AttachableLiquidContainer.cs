@@ -30,11 +30,11 @@ public class AttachableLiquidContainer(Block block) : BlockBehavior(block),  IAt
         PreventDetachWithLiquid = properties[nameof(PreventDetachWithLiquid)].AsBool(PreventDetachWithLiquid);
     }
 
+    public CompositeShape GetAttachedShape(ItemStack stack, Entity onentity, string slotCode) => block.Shape;
+
     public void CollectTextures(ItemStack stack, Shape shape, string texturePrefixCode, Dictionary<string, CompositeTexture> intoDict)
     {
     }
-
-    public CompositeShape GetAttachedShape(ItemStack stack, string slotCode) => block.Shape;
 
     public string GetCategoryCode(ItemStack stack)  => block.Attributes?["attachableCategoryCode"].AsString("chest");
 
