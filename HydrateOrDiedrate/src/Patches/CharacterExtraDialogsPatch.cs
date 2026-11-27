@@ -321,17 +321,18 @@ public static class CharacterExtraDialogsPatch
         }
 
         var coolingEfficiencyStat = agent.Stats[HoDStats.CoolingEfficiency];
-        if(coolingEfficiencyStat.ValuesByKey.Count > 0)
+        bool HasAppendedPrefix = false;
+        foreach ((var key, var value) in coolingEfficiencyStat.ValuesByKey)
         {
-            sb.Append(Lang.Get("hydrateordiedrate:cooling-effciency"));
-            sb.AppendLine(":");
-
-            foreach ((var key, var value) in coolingEfficiencyStat.ValuesByKey)
+            if (key == "base" || Math.Abs(value.Value) < float.Epsilon) continue;
+            if (!HasAppendedPrefix)
             {
-                if (key == "base" || Math.Abs(value.Value) < float.Epsilon) continue;
-
-                sb.AppendFormat("{0}: {1:+0%;-0%;0%}", Lang.Get($"hydrateordiedrate:statkey-{key}"), value.Value).AppendLine();
+                sb.Append(Lang.Get("hydrateordiedrate:cooling-effciency"));
+                sb.AppendLine(":");
+                HasAppendedPrefix = true;
             }
+
+            sb.AppendFormat("{0}: {1:+0%;-0%;0%}", Lang.Get($"hydrateordiedrate:statkey-{key}"), value.Value).AppendLine();
         }
         
         return sb.ToString();
